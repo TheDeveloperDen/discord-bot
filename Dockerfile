@@ -8,4 +8,4 @@ RUN yarn install
 
 COPY . /usr/src/bot
 
-CMD ["node", "index.js"]
+CMD ["node", "index.ts"]
