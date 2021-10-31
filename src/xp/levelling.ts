@@ -11,5 +11,4 @@ export async function shouldCountForStats(author: User, content: string, channel
     if (content.length < minMessageLength) return false;
     const asArray = content.split('');
     return asArray.some(it => it.match(/[a-z ]/i));
-
 }

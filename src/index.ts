@@ -7,6 +7,7 @@ import {MarkedClient} from "./MarkedClient";
 import {readdirSync} from "fs";
 import {Command} from "./commands/Command";
 import {loadCommands} from "./deploy-commands";
+import {DDUser, Users} from "./store/DDUser";
 
 // @ts-ignore
 const client: MarkedClient = new Client({
@@ -23,8 +24,10 @@ for (const file of commandFiles) {
     client.commands.set(command.info.name, command)
 }
 
-client.on('ready', async () => {
+client.once('ready', async () => {
     console.log(`Logged in as ${client.user?.tag}`)
+
+    await Users.sync()
 })
 
 client.on('interactionCreate', async interaction => {
@@ -40,10 +43,13 @@ client.on('messageCreate', async msg => {
         return
     }
     if (await shouldCountForStats(msg.author, msg.content, msg.channel, config)) {
-        console.log(xpForMessage(msg.content));
+        const xp = xpForMessage(msg.content);
+        const [user] = await DDUser.findOrCreate({where: {id: msg.author.id}})
+        if (!user) console.error(`Could not find or create user with id ${msg.author.id}`)
+        await user.update({xp: user.xp + xp})
+        console.log(`Gave ${xp} XP to user ${user.id}`)
     }
 })
-
 
 
 const token = process.env.BOT_TOKEN!!;

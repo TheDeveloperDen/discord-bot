@@ -19,7 +19,10 @@
     "discord.js": "^13.3.0",
     "erlpack": "discord/erlpack",
     "fastest-levenshtein": "^1.0.12",
+    "mariadb": "^2.5.5",
     "save-dev": "^0.0.1-security",
+    "sequelize": "^6.8.0",
+    "sqlite3": "^5.0.2",
     "typescript": "^4.4.4"
   },
   "repository": "https://github.com/TheDeveloperDen/DevDenBot-rewrite.git",
