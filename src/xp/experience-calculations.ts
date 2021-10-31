@@ -1,4 +1,4 @@
-import {compose} from "../util/functions";
+import {compose} from '../util/functions';
 
 const pingRegex = /<[a-zA-Z0-9@:&!#]+?[0-9]+>/;
 
