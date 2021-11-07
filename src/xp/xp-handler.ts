@@ -10,7 +10,7 @@ const xpHandler: EventHandler = (client) => {
         if (!(msg.channel instanceof TextChannel)) {
             return
         }
-        if (await shouldCountForStats(msg.author, msg.content, msg.channel, config)) {
+        if (await shouldCountForStats(msg.author, msg, msg.channel, config)) {
             const xp = xpForMessage(msg.content);
             const [user] = await DDUser.findOrCreate({where: {id: msg.author.id}})
             if (!user) {

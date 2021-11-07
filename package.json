@@ -23,7 +23,8 @@
     "save-dev": "^0.0.1-security",
     "sequelize": "^6.8.0",
     "sqlite3": "^5.0.2",
-    "typescript": "^4.4.4"
+    "typescript": "^4.4.4",
+    "winston": "^3.3.3"
   },
   "repository": "https://github.com/TheDeveloperDen/DevDenBot-rewrite.git",
   "private": false,

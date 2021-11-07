@@ -8,6 +8,7 @@ import {loadCommands} from "./deploy-commands";
 import {Users} from "./store/DDUser";
 import {EventHandler} from "./EventHandler";
 import xpHandler from "./xp/xp-handler";
+import {previousMessageListener} from "./xp/previous-messages";
 
 // @ts-ignore
 const client: MarkedClient = new Client({
@@ -40,7 +41,7 @@ client.on('interactionCreate', async interaction => {
 
 const registerListener = (events: EventHandler[]) => events.forEach(e => e(client))
 
-registerListener([xpHandler])
+registerListener([xpHandler, previousMessageListener])
 
 const token = process.env.BOT_TOKEN!!;
 
