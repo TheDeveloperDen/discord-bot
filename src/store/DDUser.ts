@@ -2,7 +2,7 @@ import Sequelize, {Model} from "sequelize";
 import {sequelize} from "./storage";
 
 export class DDUser extends Model {
-    public id!: number;
+    public id!: bigint;
     public xp!: number;
     public level!: number;
     public bumps!: number;
@@ -10,6 +10,21 @@ export class DDUser extends Model {
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
 
+}
+
+export const getUserById = async (id: bigint) => {
+    const [user] = await DDUser.findOrCreate({
+        where: {
+            id: id
+        },
+        defaults: {
+            id: id,
+            xp: 0,
+            level: 0,
+            bumps: 0
+        }
+    });
+    return user
 }
 
 export const Users = DDUser.init({

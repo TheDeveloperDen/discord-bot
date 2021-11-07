@@ -8,7 +8,7 @@ import {loadCommands} from "./deploy-commands";
 import {Users} from "./store/DDUser";
 import {EventHandler} from "./EventHandler";
 import xpHandler from "./xp/xp-handler";
-import {previousMessageListener} from "./xp/previous-messages";
+import {previousMessageListener} from "./xp/previousMessages";
 
 // @ts-ignore
 const client: MarkedClient = new Client({
