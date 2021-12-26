@@ -1,8 +1,8 @@
 import {compose} from '../util/functions';
 
-const pingRegex = /<[a-zA-Z0-9@:&!#]+?[0-9]+>/;
+const pingRegex = /<[a-zA-Z0-9@:&!#]+?[0-9]+>/g;
 
-const punctuationRegex = /[.?,!\-'"` ]/;
+const punctuationRegex = /[.?,!\-'"` ]/g;
 const stripPunctuation = (message: string) => message.replace(punctuationRegex, "");
 
 const stripPings = (message: string) => message.replace(pingRegex, "");
