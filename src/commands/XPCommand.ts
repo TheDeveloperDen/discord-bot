@@ -64,7 +64,7 @@ const createXPImage = async (xp: number, user: GuildMember) => {
 
     ctx.fillStyle = user.roles?.color?.hexColor ?? config.color
 
-    const message = `${xp} XP`;
+    const message = `${xp.toLocaleString()} XP`;
     drawText(ctx, message, hortaFont, {
         x: 0,
         y: 0,
