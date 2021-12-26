@@ -10,6 +10,7 @@ import {Command, commands} from "./commands/Commands.js";
 import {roleChangeListener} from "./xp/roleUpdates.js";
 import {SavedMessage} from "./store/models/SavedMessage.js";
 import {logger} from "./logging.js";
+import {loadCommands} from "./deploy-commands.js";
 
 // @ts-ignore
 const client: MarkedClient = new Client({
@@ -56,7 +57,8 @@ registerListener([xpHandler, messageLoggerListener, roleChangeListener])
 
 const token = process.env.BOT_TOKEN!!;
 
+const firstTask = process.env.UPDATE_COMMANDS ? () => loadCommands(token, config) : () => Promise.resolve()
 // loadCommands(token, config)
-Promise.resolve()
+firstTask()
     .then(() => client.login(token))
     .then(init)
