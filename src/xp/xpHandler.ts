@@ -7,6 +7,7 @@ import {EventHandler} from "../EventHandler.js";
 import {createStandardEmbed} from "../util/embeds.js";
 import {mention, mentionWithNoPingMessage, pseudoMention} from "../util/users.js";
 import {modifyRoles} from "../util/roles.js";
+import {logger} from "../logging.js";
 
 const xpHandler: EventHandler = (client) => {
     client.on('messageCreate', async msg => {
@@ -17,13 +18,14 @@ const xpHandler: EventHandler = (client) => {
             const xp = xpForMessage(msg.content);
             const user = await getUserById(BigInt(msg.author.id))
             if (!user) {
-                console.error(`Could not find or create user with id ${msg.author.id}`)
+
+                logger.error(`Could not find or create user with id ${msg.author.id}`)
                 return
             }
             user.xp += xp
             await levelUp(client, await msg.guild.members.fetch(msg.author), user)
             await user.save()
-            console.log(`Gave ${xp} XP to user ${user.id} for message ${msg.id}`)
+            logger.info(`Gave ${xp} XP to user ${user.id} for message ${msg.id}`)
         }
     })
 }

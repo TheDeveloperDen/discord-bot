@@ -11,6 +11,7 @@ import {messageLoggerListener} from "./xp/messageLogger.js";
 import {commands} from "./commands/Commands.js";
 import {roleChangeListener} from "./xp/roleUpdates.js";
 import {SavedMessage} from "./store/models/SavedMessage.js";
+import {logger} from "./logging.js";
 
 // @ts-ignore
 const client: MarkedClient = new Client({
@@ -22,11 +23,11 @@ client.commands = new Collection();
 for (const commandType of commands) {
     const command = new commandType()
     client.commands.set(command.info.name, command)
-    console.log(`Loaded command: ${command.info.name}`)
+    logger.info(`Loaded command: ${command.info.name}`)
 }
 
 client.once('ready', async () => {
-    console.log(`Logged in as ${client.user?.tag}`)
+    logger.info(`Logged in as ${client.user?.tag}`)
 
     await Users.sync()
     await SavedMessage.sync()
