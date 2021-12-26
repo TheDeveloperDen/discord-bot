@@ -8,7 +8,7 @@ import {Users} from "./store/models/DDUser.js";
 import {EventHandler} from "./EventHandler.js";
 import xpHandler from "./xp/xpHandler.js";
 import {messageLoggerListener} from "./xp/messageLogger.js";
-import {commands} from "./commands/Commands.js";
+import {Command, commands} from "./commands/Commands.js";
 import {roleChangeListener} from "./xp/roleUpdates.js";
 import {SavedMessage} from "./store/models/SavedMessage.js";
 import {logger} from "./logging.js";
@@ -20,10 +20,22 @@ const client: MarkedClient = new Client({
 client.commands = new Collection();
 
 
-for (const commandType of commands) {
-    const command = new commandType()
-    client.commands.set(command.info.name, command)
-    logger.info(`Loaded command: ${command.info.name}`)
+async function init() {
+    const guild = await client.guilds.fetch(config.guildId)
+    await guild.commands.fetch()
+    for (const commandType of commands) {
+        const command = new commandType() as Command
+
+        const slash = guild.commands.cache.find(cmd => cmd.name == command.info.name)
+        if (!slash) {
+            logger.error(`Command ${command.info.name} not found in guild ${config.guildId}`)
+            continue
+        }
+        await command.init?.(slash)
+        client.commands.set(command.info.name, command)
+        logger.info(`Loaded command: ${command.info.name}`)
+    }
+
 }
 
 client.once('ready', async () => {
@@ -48,3 +60,4 @@ const token = process.env.BOT_TOKEN!!;
 
 loadCommands(token, config)
     .then(() => client.login(token))
+    .then(init)
