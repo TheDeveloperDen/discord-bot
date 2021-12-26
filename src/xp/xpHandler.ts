@@ -14,6 +14,9 @@ const xpHandler: EventHandler = (client) => {
         if (!(msg.channel instanceof TextChannel)) {
             return
         }
+        if(msg.guild == null) {
+            return
+        }
         if (await shouldCountForStats(msg.author, msg, msg.channel, config)) {
             const xp = xpForMessage(msg.content);
             const user = await getUserById(BigInt(msg.author.id))

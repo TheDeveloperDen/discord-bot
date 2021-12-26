@@ -11,7 +11,10 @@ export const roleChangeListener: EventHandler = (client) =>
         }
         editing.add(event.user.id)
         setTimeout(async () => {
-            await modifyRoles(client, event.guild.members.resolve(event.user), {toRemove: [], toAdd: []})
+            const user = event.guild.members.resolve(event.user);
+            if (user) {
+                await modifyRoles(client, user, {toRemove: [], toAdd: []})
+            }
             editing.delete(event.user.id)
         }, 800)
     });

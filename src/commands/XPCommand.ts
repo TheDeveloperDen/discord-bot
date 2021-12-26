@@ -1,11 +1,12 @@
 import {SlashCommandBuilder} from "@discordjs/builders";
 import {CommandInteraction, GuildMember, MessageEmbedOptions, User} from "discord.js";
 import {getUserById} from "../store/models/DDUser.js";
-import {createImage} from "../util/imageUtils.js";
+import {createImage, getCanvasContext, hortaFont} from "../util/imageUtils.js";
 import {createStandardEmbed} from "../util/embeds.js";
 import {xpForLevel} from "../xp/experienceCalculations.js";
 import {Command} from "./Commands.js";
 import {config} from "../Config.js";
+import {drawText} from "../util/textRendering.js";
 
 
 export class XPCommand implements Command {
@@ -56,20 +57,25 @@ export class XPCommand implements Command {
 
 }
 
+const xpBackground = createImage(1000, 500, '#2b2d2f')
 const createXPImage = async (xp: number, user: GuildMember) => {
-    const [canvas, ctx] = createImage(1000, 500, '#2b2d2f')
+    const [canvas, ctx] = getCanvasContext(1000, 500)
+    ctx.drawImage(xpBackground, 0, 0)
+
     ctx.fillStyle = user.roles?.color?.hexColor ?? config.color
 
     const message = `${xp} XP`;
-    let size = 500;
-    do {
-        ctx.font = `${size}px Horta`
-        size--
-    } while (ctx.measureText(message).width >= canvas.width * 2 / 3)
-
-    const metrics = ctx.measureText(message);
-    const x = (canvas.width - metrics.width) / 2.0
-    const y = (canvas.height + metrics.actualBoundingBoxAscent) / 2.0
-    ctx.fillText(message, x, y);
+    drawText(ctx, message, hortaFont, {
+        x: 0,
+        y: 0,
+        width: canvas.width,
+        height: canvas.height,
+    }, {
+        hAlign: 'center',
+        vAlign: 'center',
+        maxSize: 500,
+        minSize: 1,
+        granularity: 2
+    })
     return canvas
 }

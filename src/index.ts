@@ -2,8 +2,6 @@ import {config} from "./Config.js";
 import {Client, Collection, Intents} from "discord.js";
 
 import {MarkedClient} from "./MarkedClient.js";
-
-import {loadCommands} from "./deploy-commands.js";
 import {Users} from "./store/models/DDUser.js";
 import {EventHandler} from "./EventHandler.js";
 import xpHandler from "./xp/xpHandler.js";
@@ -58,6 +56,7 @@ registerListener([xpHandler, messageLoggerListener, roleChangeListener])
 
 const token = process.env.BOT_TOKEN!!;
 
-loadCommands(token, config)
+// loadCommands(token, config)
+Promise.resolve()
     .then(() => client.login(token))
     .then(init)

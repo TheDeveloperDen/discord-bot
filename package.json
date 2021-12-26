@@ -21,6 +21,7 @@
     "erlpack": "discord/erlpack",
     "fastest-levenshtein": "^1.0.12",
     "mariadb": "^2.5.5",
+    "opentype.js": "^1.3.4",
     "reflect-metadata": "^0.1.13",
     "save-dev": "^0.0.1-security",
     "sequelize": "^6.12.2",

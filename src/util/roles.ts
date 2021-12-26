@@ -22,7 +22,7 @@ export const modifyRoles = async (client: Client, user: GuildMember, roleChanges
         return role
     }
 
-    const addRole = roleId => currentRoles.set(roleId, getRole(roleId))
+    const addRole = (roleId: string) => currentRoles.set(roleId, getRole(roleId))
     roleChanges.toAdd.forEach(addRole)
     roleChanges.toRemove.forEach(role => currentRoles.delete(role))
 
@@ -50,7 +50,7 @@ export const modifyRoles = async (client: Client, user: GuildMember, roleChanges
     await user.roles.set(currentRoles)
 }
 
-const hasRolesBetween = (upperBound?: string, lowerBound?: string) => (roles: Collection<string, Role>) => {
+const hasRolesBetween = (upperBound: string | null, lowerBound: string | null) => (roles: Collection<string, Role>) => {
     let match = true
     if (upperBound && lowerBound) {
         match &&= roles.some(role => role.comparePositionTo(upperBound) < 0 && role.comparePositionTo(lowerBound) > 0)
