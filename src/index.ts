@@ -4,12 +4,13 @@ import {Client, Collection, Intents} from "discord.js";
 import {MarkedClient} from "./MarkedClient.js";
 
 import {loadCommands} from "./deploy-commands.js";
-import {Users} from "./store/DDUser.js";
+import {Users} from "./store/models/DDUser.js";
 import {EventHandler} from "./EventHandler.js";
 import xpHandler from "./xp/xpHandler.js";
-import {previousMessageListener} from "./xp/previousMessages.js";
+import {messageLoggerListener} from "./xp/messageLogger.js";
 import {commands} from "./commands/Commands.js";
 import {roleChangeListener} from "./xp/roleUpdates.js";
+import {SavedMessage} from "./store/models/SavedMessage.js";
 
 // @ts-ignore
 const client: MarkedClient = new Client({
@@ -28,6 +29,7 @@ client.once('ready', async () => {
     console.log(`Logged in as ${client.user?.tag}`)
 
     await Users.sync()
+    await SavedMessage.sync()
 })
 
 client.on('interactionCreate', async interaction => {
@@ -39,7 +41,7 @@ client.on('interactionCreate', async interaction => {
 
 const registerListener = (events: EventHandler[]) => events.forEach(e => e(client))
 
-registerListener([xpHandler, previousMessageListener, roleChangeListener])
+registerListener([xpHandler, messageLoggerListener, roleChangeListener])
 
 const token = process.env.BOT_TOKEN!!;
 

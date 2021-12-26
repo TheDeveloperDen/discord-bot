@@ -2,7 +2,7 @@ import {Client, GuildMember, MessageEmbedOptions, TextChannel} from "discord.js"
 import {shouldCountForStats, tierRoleId, tierRoles} from "./levelling.js";
 import {config} from "../Config.js";
 import {xpForLevel, xpForMessage} from "./experienceCalculations.js";
-import {DDUser, getUserById} from "../store/DDUser.js";
+import {DDUser, getUserById} from "../store/models/DDUser.js";
 import {EventHandler} from "../EventHandler.js";
 import {createStandardEmbed} from "../util/embeds.js";
 import {mention, mentionWithNoPingMessage, pseudoMention} from "../util/users.js";

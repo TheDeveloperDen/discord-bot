@@ -1,5 +1,5 @@
 import Sequelize from "sequelize";
-import {sequelize} from "./storage.js";
+import {sequelize} from "../storage.js";
 
 const {Model} = Sequelize;
 

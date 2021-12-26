@@ -1,6 +1,6 @@
 import {SlashCommandBuilder} from "@discordjs/builders";
 import {CommandInteraction, GuildMember, MessageEmbedOptions, User} from "discord.js";
-import {getUserById} from "../store/DDUser.js";
+import {getUserById} from "../store/models/DDUser.js";
 import {createImage} from "../util/imageUtils.js";
 import {createStandardEmbed} from "../util/embeds.js";
 import {xpForLevel} from "../xp/experienceCalculations.js";
