@@ -1,4 +1,6 @@
-import {Canvas, createCanvas, NodeCanvasRenderingContext2D, registerFont} from "canvas";
+import canvas, {Canvas, NodeCanvasRenderingContext2D} from "canvas";
+
+const {createCanvas, registerFont} = canvas;
 
 registerFont('Horta.otf', {family: 'Horta'})
 

@@ -1,8 +1,8 @@
 import {distance} from "fastest-levenshtein";
 import {Message, TextChannel, User} from "discord.js";
-import {Config} from "../config";
-import {getMessages} from "./previousMessages";
-import {logger} from "../logging";
+import {Config} from "../Config.js";
+import {getMessages} from "./previousMessages.js";
+import {logger} from "../logging.js";
 
 const similarityProportion = (a: string, b: string) => distance(a, b) / b.length;
 const minMessageLength = 6

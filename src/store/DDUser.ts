@@ -1,5 +1,7 @@
-import Sequelize, {Model} from "sequelize";
-import {sequelize} from "./storage";
+import Sequelize from "sequelize";
+import {sequelize} from "./storage.js";
+
+const {Model} = Sequelize;
 
 export class DDUser extends Model {
     public id!: bigint;

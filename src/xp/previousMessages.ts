@@ -1,6 +1,6 @@
 import {User} from "discord.js";
-import {EventHandler} from "../EventHandler";
-import {logger} from "../logging";
+import {EventHandler} from "../EventHandler.js";
+import {logger} from "../logging.js";
 
 const previousMessages: Map<User, string[]> = new Map<User, string[]>();
 

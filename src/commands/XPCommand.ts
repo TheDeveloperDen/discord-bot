@@ -1,12 +1,13 @@
-import {Command} from "./Command";
 import {SlashCommandBuilder} from "@discordjs/builders";
 import {CommandInteraction, GuildMember, MessageEmbedOptions, User} from "discord.js";
-import {getUserById} from "../store/DDUser";
-import {createImage} from "../util/imageUtils";
-import {createStandardEmbed} from "../util/embeds";
-import {xpForLevel} from "../xp/experienceCalculations";
+import {getUserById} from "../store/DDUser.js";
+import {createImage} from "../util/imageUtils.js";
+import {createStandardEmbed} from "../util/embeds.js";
+import {xpForLevel} from "../xp/experienceCalculations.js";
+import {Command} from "./Commands.js";
 
-class XPCommand implements Command {
+
+export class XPCommand implements Command {
     info = new SlashCommandBuilder()
         .setName("xp")
         .setDescription("Show a member's XP")
@@ -15,14 +16,16 @@ class XPCommand implements Command {
             .setDescription("The member to show XP for")
             .setRequired(false))
 
+
     async execute(interaction: CommandInteraction) {
         const user = interaction.options.getUser("member") || interaction.user as User;
         const member = interaction.options.getMember("member") as GuildMember ?? interaction.member as GuildMember
         const ddUser = await getUserById(BigInt(user.id))
         const xp = ddUser.xp
 
+        await interaction.deferReply()
         const image = await createXPImage(xp, member);
-        await interaction.reply({
+        await interaction.followUp({
             embeds: [{
                 ...createStandardEmbed(member),
                 title: `Profile of ${user.username}#${user.discriminator}`,
@@ -69,5 +72,3 @@ const createXPImage = async (xp: number, user: GuildMember) => {
     ctx.fillText(message, x, y);
     return canvas
 }
-
-module.exports = new XPCommand()

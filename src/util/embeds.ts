@@ -1,4 +1,4 @@
-import {config} from "../config";
+import {config} from "../Config.js";
 import {GuildMember} from "discord.js";
 
 export const createStandardEmbed = (user?: GuildMember) => {

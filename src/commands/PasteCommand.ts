@@ -1,9 +1,9 @@
-import {Command} from "./Command";
 import {SlashCommandBuilder} from "@discordjs/builders";
 import {CommandInteraction} from "discord.js";
+import {Command} from "./Commands.js";
 
-class PasteCommand implements Command {
-    info: SlashCommandBuilder = new SlashCommandBuilder()
+export class PasteCommand implements Command {
+    info = new SlashCommandBuilder()
         .setName("paste")
         .setDescription("Show the paste link")
 
@@ -11,5 +11,3 @@ class PasteCommand implements Command {
         await interaction.reply('https://paste.developerden.net')
     }
 }
-
-module.exports = new PasteCommand()

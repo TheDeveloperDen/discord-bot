@@ -1,14 +1,14 @@
-import {config} from "./config";
+import {config} from "./Config.js";
 import {Client, Collection, Intents} from "discord.js";
 
-import {MarkedClient} from "./MarkedClient";
-import {readdirSync} from "fs";
-import {Command} from "./commands/Command";
-import {loadCommands} from "./deploy-commands";
-import {Users} from "./store/DDUser";
-import {EventHandler} from "./EventHandler";
-import xpHandler from "./xp/xp-handler";
-import {previousMessageListener} from "./xp/previousMessages";
+import {MarkedClient} from "./MarkedClient.js";
+
+import {loadCommands} from "./deploy-commands.js";
+import {Users} from "./store/DDUser.js";
+import {EventHandler} from "./EventHandler.js";
+import xpHandler from "./xp/xp-handler.js";
+import {previousMessageListener} from "./xp/previousMessages.js";
+import {commands} from "./commands/Commands.js";
 
 // @ts-ignore
 const client: MarkedClient = new Client({
@@ -16,13 +16,11 @@ const client: MarkedClient = new Client({
 })
 client.commands = new Collection();
 
-const commandFiles = readdirSync('./src/commands')
-    .filter(file => file.endsWith('.ts'))
-    .filter(file => file != 'Command.ts')
 
-for (const file of commandFiles) {
-    const command: Command = require(`./commands/${file}`)
+for (const commandType of commands) {
+    const command = new commandType()
     client.commands.set(command.info.name, command)
+    console.log(`Loaded command: ${command.info.name}`)
 }
 
 client.once('ready', async () => {

@@ -1,10 +1,10 @@
 import {Client, MessageEmbedOptions, TextChannel, User} from "discord.js";
-import {shouldCountForStats} from "./levelling";
-import {config} from "../config";
-import {xpForLevel, xpForMessage} from "./experienceCalculations";
-import {DDUser, getUserById} from "../store/DDUser";
-import {EventHandler} from "../EventHandler";
-import {createStandardEmbed} from "../util/embeds";
+import {shouldCountForStats} from "./levelling.js";
+import {config} from "../Config.js";
+import {xpForLevel, xpForMessage} from "./experienceCalculations.js";
+import {DDUser, getUserById} from "../store/DDUser.js";
+import {EventHandler} from "../EventHandler.js";
+import {createStandardEmbed} from "../util/embeds.js";
 
 const xpHandler: EventHandler = (client) => {
     client.on('messageCreate', async msg => {

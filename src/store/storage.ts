@@ -8,6 +8,6 @@ const host = process.env.HOST ?? 'localhost'
 export const sequelize = new Sequelize.Sequelize(database, username, password, {
     host: host,
     dialect: 'mariadb',
-    logging: true
+    logging: console.log
 })
 
