@@ -44,7 +44,7 @@ export class XPCommand implements Command {
                     },
                     {
                         name: "📈 XP Until Level Up",
-                        value: `${xpForLevel(ddUser.level + 1)}`
+                        value: `${ddUser.xp}/${xpForLevel(ddUser.level + 1)}`
                     }
                 ],
                 image: {url: "attachment://xp.png"}
