@@ -33,9 +33,11 @@ export const getMessages = (user: User) => {
 
 const messageContent = (message: Message | PartialMessage) => message.content + message.attachments.map(a => a.url).join(",");
 
+const shouldLog = (message: Message | PartialMessage) => message.author?.bot == false && message.interaction != null
+
 export const messageLoggerListener: EventHandler = (client) => {
     client.on("messageCreate", async (message) => {
-        if (message.author.bot) {
+        if (!shouldLog(message)) {
             return;
         }
         logger.debug(`Saving message from ${message.author.id}: ${message.id}`);
@@ -43,8 +45,11 @@ export const messageLoggerListener: EventHandler = (client) => {
     });
 
     client.on('messageUpdate', async (oldMessage, message) => {
+        if (!shouldLog(message)) {
+            return;
+        }
         const msg = new SavedMessage({
-            user_id: message.author.id,
+            user_id: message.author?.id ?? -1,
             channel_id: message.channel.id,
             message_id: message.id,
             timestamp: message.editedTimestamp ?? message.createdTimestamp,
@@ -55,8 +60,11 @@ export const messageLoggerListener: EventHandler = (client) => {
     })
 
     client.on('messageDelete', async (message) => {
+        if (!shouldLog(message)) {
+            return;
+        }
         const msg = new SavedMessage({
-            user_id: message.author.id,
+            user_id: message.author?.id ?? -1,
             channel_id: message.channel.id,
             message_id: message.id,
             timestamp: new Date(),
