@@ -1,11 +1,12 @@
 import {Client, GuildMember, MessageEmbedOptions, TextChannel} from "discord.js";
-import {shouldCountForStats} from "./levelling.js";
+import {shouldCountForStats, tierRoleId, tierRoles} from "./levelling.js";
 import {config} from "../Config.js";
 import {xpForLevel, xpForMessage} from "./experienceCalculations.js";
 import {DDUser, getUserById} from "../store/DDUser.js";
 import {EventHandler} from "../EventHandler.js";
 import {createStandardEmbed} from "../util/embeds.js";
 import {mention, mentionWithNoPingMessage, pseudoMention} from "../util/users.js";
+import {modifyRoles} from "../util/roles.js";
 
 const xpHandler: EventHandler = (client) => {
     client.on('messageCreate', async msg => {
@@ -36,7 +37,16 @@ const levelUp = async (client: Client, user: GuildMember, ddUser: DDUser) => {
         return
     }
     ddUser.level = level
+    await applyTierRoles(client, user, ddUser)
     await sendLevelUpMessage(client, user, ddUser)
+}
+
+const applyTierRoles = async (client: Client, user: GuildMember, ddUser: DDUser) => {
+    const tier = tierRoleId(ddUser.level)
+    await modifyRoles(client, user, {
+        toAdd: [tier],
+        toRemove: tierRoles.filter(it => it != tier)
+    })
 }
 
 const sendLevelUpMessage = async (client: Client, member: GuildMember, ddUser: DDUser) => {
@@ -47,7 +57,7 @@ const sendLevelUpMessage = async (client: Client, member: GuildMember, ddUser: D
         return
     }
     const embed = {
-        ...createStandardEmbed(),
+        ...createStandardEmbed(member),
         title: `⚡ Level Up!`,
         author: {
             name: pseudoMention(user),

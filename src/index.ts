@@ -9,6 +9,7 @@ import {EventHandler} from "./EventHandler.js";
 import xpHandler from "./xp/xpHandler.js";
 import {previousMessageListener} from "./xp/previousMessages.js";
 import {commands} from "./commands/Commands.js";
+import {roleChangeListener} from "./xp/roleUpdates.js";
 
 // @ts-ignore
 const client: MarkedClient = new Client({
@@ -36,10 +37,9 @@ client.on('interactionCreate', async interaction => {
     await command.execute(interaction)
 })
 
-
 const registerListener = (events: EventHandler[]) => events.forEach(e => e(client))
 
-registerListener([xpHandler, previousMessageListener])
+registerListener([xpHandler, previousMessageListener, roleChangeListener])
 
 const token = process.env.BOT_TOKEN!!;
 

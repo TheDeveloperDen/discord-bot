@@ -5,6 +5,7 @@ import {createImage} from "../util/imageUtils.js";
 import {createStandardEmbed} from "../util/embeds.js";
 import {xpForLevel} from "../xp/experienceCalculations.js";
 import {Command} from "./Commands.js";
+import {config} from "../Config.js";
 
 
 export class XPCommand implements Command {
@@ -57,7 +58,7 @@ export class XPCommand implements Command {
 
 const createXPImage = async (xp: number, user: GuildMember) => {
     const [canvas, ctx] = createImage(1000, 500, '#2b2d2f')
-    ctx.fillStyle = user.roles.highest.hexColor
+    ctx.fillStyle = user.roles?.color?.hexColor ?? config.color
 
     const message = `${xp} XP`;
     let size = 500;

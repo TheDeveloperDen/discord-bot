@@ -4,7 +4,7 @@ export type Config = { botCommandsChannelId: Snowflake; color: HexColorString, g
 
 export const config: Config = {
     color: "#0xC6BFF7",
-    botCommandsChannelId: '906954540039938048',
+    botCommandsChannelId: '821820015917006868',
     clientId: '904478222455029821',
-    guildId: '904478147351806012'
+    guildId: '821743100203368458'
 }
