@@ -1,10 +1,11 @@
-import {Client, MessageEmbedOptions, TextChannel, User} from "discord.js";
+import {Client, GuildMember, MessageEmbedOptions, TextChannel} from "discord.js";
 import {shouldCountForStats} from "./levelling.js";
 import {config} from "../Config.js";
 import {xpForLevel, xpForMessage} from "./experienceCalculations.js";
 import {DDUser, getUserById} from "../store/DDUser.js";
 import {EventHandler} from "../EventHandler.js";
 import {createStandardEmbed} from "../util/embeds.js";
+import {mention, mentionWithNoPingMessage, pseudoMention} from "../util/users.js";
 
 const xpHandler: EventHandler = (client) => {
     client.on('messageCreate', async msg => {
@@ -19,14 +20,14 @@ const xpHandler: EventHandler = (client) => {
                 return
             }
             user.xp += xp
-            await levelUp(client, msg.author, user)
+            await levelUp(client, await msg.guild.members.fetch(msg.author), user)
             await user.save()
             console.log(`Gave ${xp} XP to user ${user.id} for message ${msg.id}`)
         }
     })
 }
 
-const levelUp = async (client: Client, user: User, ddUser: DDUser) => {
+const levelUp = async (client: Client, user: GuildMember, ddUser: DDUser) => {
     let level = ddUser.level;
     while (xpForLevel(level) <= ddUser.xp) {
         level++
@@ -38,8 +39,8 @@ const levelUp = async (client: Client, user: User, ddUser: DDUser) => {
     await sendLevelUpMessage(client, user, ddUser)
 }
 
-const sendLevelUpMessage = async (client: Client, user: User, ddUser: DDUser) => {
-
+const sendLevelUpMessage = async (client: Client, member: GuildMember, ddUser: DDUser) => {
+    const user = member.user
     const channel = await client.channels.fetch(config.botCommandsChannelId) as TextChannel
     if (!channel) {
         console.error(`Could not find level up channel with id ${config.botCommandsChannelId}`)
@@ -47,16 +48,20 @@ const sendLevelUpMessage = async (client: Client, user: User, ddUser: DDUser) =>
     }
     const embed = {
         ...createStandardEmbed(),
-        title: `Level Up!`,
-        footer: 'Don\'t want to be pinged? **/role No Ping**',
+        title: `⚡ Level Up!`,
+        author: {
+            name: pseudoMention(user),
+            iconURL: user.avatarURL()
+        },
         fields: [
             {
-                name: 'XP',
+                name: '📈 XP',
                 value: `${ddUser.xp}/${xpForLevel(ddUser.level + 1)}`
             }],
-        description: `${user.username}, you leveled up to level **${ddUser.level}**!`
+        description: `${mention(member)}, you leveled up to level **${ddUser.level}**!`
     } as MessageEmbedOptions
-    await channel.send({content: `<@${user.id}>`, embeds: [embed]})
+    const message = mentionWithNoPingMessage(member)
+    await channel.send({content: message, embeds: [embed]})
 }
 
 export default xpHandler;

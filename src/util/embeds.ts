@@ -5,9 +5,7 @@ export const createStandardEmbed = (user?: GuildMember) => {
     return {
         color: user?.roles?.highest?.color ?? config.color,
         footer: 'Developer Den',
-        author: {
-            url: "https://developerden.net/logo.png"
-        },
+        thumbnail: {url: "https://developerden.net/static/logo.png"},
         timestamp: new Date(),
     }
 }

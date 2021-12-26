@@ -6,7 +6,7 @@ import {MarkedClient} from "./MarkedClient.js";
 import {loadCommands} from "./deploy-commands.js";
 import {Users} from "./store/DDUser.js";
 import {EventHandler} from "./EventHandler.js";
-import xpHandler from "./xp/xp-handler.js";
+import xpHandler from "./xp/xpHandler.js";
 import {previousMessageListener} from "./xp/previousMessages.js";
 import {commands} from "./commands/Commands.js";
 
