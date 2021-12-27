@@ -64,4 +64,4 @@ jobs:
             docker pull ghcr.io/thedeveloperden/${{ env.name }}:master # DO NOT REMOVE THIS OR EVERYTHING WILL BREAK
             docker stop ${{ env.name }}
             docker rm ${{ env.name }}
-            docker run --name ${{ env.name }} -d -e "NODE_ENV=production" --env SENTRY_DSN=${{ secrets.SENTRY_DSN }} --env BOT_TOKEN=${{ secrets.DDB_TOKEN }} --env USERNAME=${{ secrets.DDB_DB_USERNAME }} --env DATABASE=devden --env PASSWORD=${{ secrets.DDB_DB_PASSWORD }} --env HOST=${{ secrets.DDB_DB_HOST }}  --net=net --restart unless-stopped ghcr.io/thedeveloperden/${{ env.name }}:master
+            docker run --name ${{ env.name }} -d -e "NODE_ENV=production" --env SENTRY_DSN=${{ secrets.SENTRY_DSN }} --env BOT_TOKEN=${{ secrets.DDB_TOKEN }} --env USERNAME=${{ secrets.DDB_DB_USERNAME }} --env DATABASE=devden --env PASSWORD=${{ secrets.DDB_DB_PASSWORD }} --env HOST=${{ secrets.DDB_DB_HOST }}  --net=net -it --restart unless-stopped ghcr.io/thedeveloperden/${{ env.name }}:master
