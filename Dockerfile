@@ -1,11 +1,16 @@
-FROM node:latest
+FROM node:17 as base
+WORKDIR /usr/src/bot/
 
-RUN mkdir -p /usr/src/bot
-WORKDIR /usr/src/bot
+COPY package.json /usr/src/bot/
+COPY yarn.lock /usr/src/bot/
+COPY tsconfig.json /usr/src/bot/
 
-COPY package.json /usr/src/bot
-RUN yarn install
+RUN apt update && apt install -y python3
+RUN yarn install --immutable --immutable-cache --check-cache
 
-COPY . /usr/src/bot
+COPY . .
 
-CMD ["node", "index.ts"]
+FROM base as production
+RUN yarn build
+
+CMD ["node", "bin/index.js"]
