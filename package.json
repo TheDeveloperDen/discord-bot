@@ -5,6 +5,7 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
+    "version": "echo $npm_package_version",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "build": "tsc",
     "build-prod": "tsc -p tsconfig.production.json",

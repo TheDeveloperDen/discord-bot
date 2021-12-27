@@ -34,7 +34,7 @@ export class InfoCommand implements Command {
 				fields: [
 					{
 						name: 'Version',
-						value: format(process.env.npm_package_version), inline: true
+						value: format(process.env.npm_package_version ?? process.env.VERSION), inline: true
 					},
 					{
 						name: 'Total XP',

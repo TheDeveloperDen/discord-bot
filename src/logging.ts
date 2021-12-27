@@ -14,6 +14,7 @@ export const logger = createLogger({
 	),
 	defaultMeta: {service: 'DevDenBot'},
 	transports: [
+		new transports.Console(),
 		//
 		// - Write all logs with level `error` and below to `error.log`
 		// - Write all logs with level `info` and below to `combined.log`
@@ -33,7 +34,4 @@ export const logger = createLogger({
 //
 if (process.env.NODE_ENV !== 'production') {
 	logger.level = 'debug'
-	logger.add(new transports.Console({
-		format: format.simple(),
-	}))
 }
