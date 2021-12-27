@@ -5,7 +5,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  name: devdenbot-rewrite
+  name: devdenbot
 
 jobs:
   push_to_registry:
