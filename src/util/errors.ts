@@ -3,7 +3,7 @@ import {RewriteFrames} from "@sentry/integrations";
 import {logger} from "../logging.js";
 
 Sentry.init({
-    dsn: "https://5af1a6678a03488e8b75f890cae76081@o668259.ingest.sentry.io/6124318",
+    dsn: process.env.SENTRY_DSN,
     tracesSampleRate: 1.0,
     integrations: [
         new RewriteFrames({
