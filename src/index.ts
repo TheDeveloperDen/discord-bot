@@ -11,6 +11,7 @@ import {roleChangeListener} from "./xp/roleUpdates.js";
 import {SavedMessage} from "./store/models/SavedMessage.js";
 import {logger} from "./logging.js";
 import {loadCommands} from "./deploy-commands.js";
+import {bumpNotificationListener} from "./bumpNotifications.js";
 
 // @ts-ignore
 const client: MarkedClient = new Client({
@@ -53,7 +54,7 @@ client.on('interactionCreate', async interaction => {
 
 const registerListener = (events: EventHandler[]) => events.forEach(e => e(client))
 
-registerListener([xpHandler, messageLoggerListener, roleChangeListener])
+registerListener([xpHandler, messageLoggerListener, roleChangeListener, bumpNotificationListener])
 
 const token = process.env.BOT_TOKEN!!;
 
