@@ -9,6 +9,6 @@ const stripPings = (message: string) => message.replace(pingRegex, "");
 const strip = compose(stripPunctuation, stripPings)
 
 
-export const xpForLevel = (level: number) => Math.floor((level ** 3) + (55 / 2) * (level ** 2) + (755 / 6) * level);
+export const xpForLevel = (level: number) => Math.floor(level ** 3 + 27 * level ** 2 + 125 * level);
 
-export const xpForMessage = (message: string) => Math.floor(Math.cbrt(strip(message).length))
+export const xpForMessage = (message: string) => Math.round(Math.sqrt(strip(message).length))
