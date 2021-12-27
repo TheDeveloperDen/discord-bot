@@ -1,14 +1,20 @@
 FROM node:17-alpine as build
 WORKDIR /usr/src/bot/
 
-COPY package.json yarn.lock tsconfig.json /usr/src/bot/
+COPY package.json yarn.lock ./
+RUN apk add --no-cache python3 libpng libpng-dev jpeg-dev pango-dev cairo-dev giflib-dev git build-base g++ make gcc
+RUN yarn install --production
 
-
-RUN apk add --no-cache python3 libpng libpng-dev jpeg-dev pango-dev cairo-dev giflib-dev \
-    && apk add --no-cache --virtual .build-deps git build-base g++ make gcc
-RUN yarn install --immutable --immutable-cache --check-cache
-COPY . .
+COPY tsconfig.json tsconfig.production.json ./
+COPY src/ ./src/
 RUN yarn build-prod
-RUN apk del .build-deps
 
+FROM node:17-alpine
+WORKDIR /usr/src/bot/
+COPY src/ ./
+COPY Horta.otf ./
+COPY --from=build /usr/src/bot/node_modules ./node_modules/
+COPY --from=build /usr/src/bot/bin ./bin/
+COPY --from=build /usr/src/bot/package.json ./package.json
+RUN apk add --no-cache cairo-dev pango-dev jpeg-dev giflib-dev # these are needed by canvas at runtime
 CMD ["node", "bin/index.js"]
