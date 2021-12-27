@@ -33,7 +33,7 @@ export const getMessages = (user: User) => {
 
 const messageContent = (message: Message | PartialMessage) => message.content + message.attachments.map(a => a.url).join(",");
 
-const shouldLog = (message: Message | PartialMessage) => message.author?.bot == false && message.interaction != null
+const shouldLog = (message: Message | PartialMessage) => message.author?.bot == false && message.interaction == null
 
 export const messageLoggerListener: EventHandler = (client) => {
     client.on("messageCreate", async (message) => {
