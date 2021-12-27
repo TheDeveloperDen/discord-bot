@@ -73,9 +73,9 @@ const createXPImage = async (xp: number, user: GuildMember) => {
     }, {
         hAlign: 'center',
         vAlign: 'center',
-        maxSize: 500,
+        maxSize: 450,
         minSize: 1,
-        granularity: 2
+        granularity: 3
     })
     return canvas
 }
