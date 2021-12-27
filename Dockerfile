@@ -1,16 +1,18 @@
-FROM node:17 as base
+FROM node:17-alpine as build
 WORKDIR /usr/src/bot/
 
-COPY package.json /usr/src/bot/
-COPY yarn.lock /usr/src/bot/
-COPY tsconfig.json /usr/src/bot/
+COPY package.json yarn.lock tsconfig.json /usr/src/bot/
 
-RUN apt update && apt install -y python3
+
+RUN apk add  --no-cache python3 make g++ gcc libpng libpng-dev jpeg-dev pango-dev cairo-dev giflib-dev
 RUN yarn install --immutable --immutable-cache --check-cache
-
 COPY . .
-
-FROM base as production
 RUN yarn build-prod
+RUN npm prune --production
+
+FROM node:17-alpine as production
+WORKDIR /usr/src/bot/
+COPY --from=build /usr/src/bot/bin ./bin
+COPY --from=build /usr/src/bot/node_modules ./node_modules
 
 CMD ["node", "bin/index.js"]
