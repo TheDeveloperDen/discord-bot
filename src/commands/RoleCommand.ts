@@ -13,7 +13,7 @@ export class RoleCommand implements Command {
             .setRequired(true))
 
     allowedRoles = [
-        '907028864839069716'
+        '848197427617595393'
     ]
 
     async execute(interaction: CommandInteraction) {
