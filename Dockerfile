@@ -11,6 +11,6 @@ RUN yarn install --immutable --immutable-cache --check-cache
 COPY . .
 
 FROM base as production
-RUN yarn build
+RUN yarn build-prod
 
 CMD ["node", "bin/index.js"]

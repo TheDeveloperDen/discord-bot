@@ -13,10 +13,10 @@ import {logger} from "./logging.js";
 import {loadCommands} from "./deploy-commands.js";
 import {bumpNotificationListener} from "./bumpNotifications.js";
 
-// @ts-ignore
-const client: MarkedClient = new Client({
+
+const client = new Client({
     intents: [Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]
-})
+}) as MarkedClient
 client.commands = new Collection();
 
 
@@ -59,7 +59,7 @@ registerListener([xpHandler, messageLoggerListener, roleChangeListener, bumpNoti
 const token = process.env.BOT_TOKEN!!;
 
 const firstTask = process.env.UPDATE_COMMANDS ? () => loadCommands(token, config) : () => Promise.resolve()
-// loadCommands(token, config)
+
 firstTask()
     .then(() => client.login(token))
     .then(init)

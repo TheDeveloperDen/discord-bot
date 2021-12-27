@@ -6,6 +6,7 @@
   "main": "src/index.ts",
   "scripts": {
     "build": "tsc",
+    "build-prod": "tsc -p tsconfig.production.json",
     "start": "nodemon --exec node --loader ts-node/esm/transpile-only src/index.ts",
     "dev": "node --loader ts-node/esm/transpile-only src/index.ts"
   },
@@ -15,6 +16,9 @@
   "dependencies": {
     "@discordjs/builders": "^0.10.0",
     "@discordjs/rest": "^0.2.0-canary.0",
+    "@sentry/integrations": "^6.16.1",
+    "@sentry/node": "^6.16.1",
+    "@sentry/tracing": "^6.16.1",
     "canvas": "^2.8.0",
     "discord-api-types": "^0.26.0",
     "discord.js": "^13.4.0",
