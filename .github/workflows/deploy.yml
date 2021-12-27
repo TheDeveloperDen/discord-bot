@@ -1,10 +1,7 @@
 name: Deploy to Server
 
 on:
-  push:
-    branches:
-      - master
-
+  push
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
