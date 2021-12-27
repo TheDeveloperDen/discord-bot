@@ -1,13 +1,13 @@
-import {ApplicationCommand, CommandInteraction} from "discord.js";
+import {ApplicationCommand, CommandInteraction} from 'discord.js'
 
-import {PasteCommand} from "./PasteCommand.js";
-import {XPCommand} from "./XPCommand.js";
-import {RoleCommand} from "./RoleCommand.js";
-import {SetCommand} from "./SetCommand.js";
-import {InfoCommand} from "./InfoCommand.js";
+import {PasteCommand} from './PasteCommand.js'
+import {XPCommand} from './XPCommand.js'
+import {RoleCommand} from './RoleCommand.js'
+import {SetCommand} from './SetCommand.js'
+import {InfoCommand} from './InfoCommand.js'
 
 export interface Command {
-    info: { name: string, toJSON(): any; }
+    info: { name: string, toJSON(): unknown; }
 
     execute(interaction: CommandInteraction): Promise<void>;
 

@@ -5,6 +5,7 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "build": "tsc",
     "build-prod": "tsc -p tsconfig.production.json",
     "start": "nodemon --exec node --loader ts-node/esm/transpile-only src/index.ts",
@@ -30,7 +31,7 @@
     "save-dev": "^0.0.1-security",
     "sequelize": "^6.12.2",
     "sequelize-typescript": "^2.1.1",
-    "typescript": "^4.4.4",
+    "typescript": "^4.5.4",
     "winston": "^3.3.3"
   },
   "repository": "https://github.com/TheDeveloperDen/DevDenBot-rewrite.git",
@@ -44,7 +45,9 @@
     "@types/sequelize": "^4.28.11",
     "@types/sqlite3": "^3.1.8",
     "@types/validator": "^13.7.1",
-    "eslint": "^8.1.0",
+    "@typescript-eslint/eslint-plugin": "^5.8.0",
+    "@typescript-eslint/parser": "^5.8.0",
+    "eslint": "^8.5.0",
     "nodemon": "^2.0.15",
     "ts-node": "^10.4.0"
   }
