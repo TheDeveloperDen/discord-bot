@@ -11,4 +11,4 @@ const strip = compose(stripPunctuation, stripPings)
 
 export const xpForLevel = (level: number) => Math.floor((level ** 3) + (55 / 2) * (level ** 2) + (755 / 6) * level);
 
-export const xpForMessage = (message: string) => Math.floor(Math.sqrt(strip(message).length))
+export const xpForMessage = (message: string) => Math.floor(Math.cbrt(strip(message).length))
