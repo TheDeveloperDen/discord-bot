@@ -1,0 +1,6 @@
+/tsconfig.production.tsbuildinfo
+/tsconfig.tsbuildinfo
+node_modules/**
+.idea/
+bin/
+logs/
