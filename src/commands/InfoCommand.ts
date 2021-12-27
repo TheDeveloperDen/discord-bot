@@ -14,14 +14,13 @@ export class InfoCommand implements Command {
     async execute(interaction: CommandInteraction) {
         await interaction.deferReply()
         const guild = interaction.guild!!;
-        const allUsers = await DDUser.findAll();
-        const totalXP = allUsers.reduce((acc, user) => acc + user.xp, 0)
+        const totalXP = await DDUser.sum("xp")
         const memberCount = guild.memberCount;
-        const membersStored = allUsers.length;
+        const membersStored = await DDUser.count();
         const dateCreated = `
             <t:${guild.createdAt.getTime() / 1000 | 0}>`;
-        const levelUps = allUsers.reduce((acc, user) => acc + user.level, 0);
-        const messageCount = (await SavedMessage.findAll()).length;
+        const levelUps = await DDUser.sum("level")
+        const messageCount = await SavedMessage.count();
         await interaction.followUp({
             embeds: [{
                 ...createStandardEmbed(interaction.member as GuildMember),

@@ -16,14 +16,8 @@ Sentry.init({
     ],
 });
 
-export function runCatching<T>(fn: () => T): T {
-    try {
-        return fn();
-    } catch (e) {
-        Sentry.captureException(e);
-        logger.error(e);
-        throw e;
-    }
-}
 
-export const sentry = Sentry.captureException
+export const sentry = (e: any) => {
+    logger.error(e);
+    Sentry.captureException(e);
+}
