@@ -32,7 +32,7 @@ export const bumpNotificationListener: EventHandler = (client) => {
 		logger.info(`Incremented bumps for ${message.author.username}`)
 		setTimeout(async () => {
 			const channel = await client.channels.fetch(config.botCommandsChannelId) as TextChannel
-			await channel.send(`<@&${config.bumpNotificationRoleId}>, the server is ready to be bumped! **!d bump**"`)
+			await channel.send(`<@&${config.bumpNotificationRoleId}>, the server is ready to be bumped! **!d bump**`)
 		}, 1000 * 60 * 60 * 2)
 	})
 }
