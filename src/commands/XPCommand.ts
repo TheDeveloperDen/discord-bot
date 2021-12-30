@@ -38,7 +38,7 @@ export class XPCommand implements Command {
 					},
 					{
 						name: '📝 Tier',
-						value: `${ddUser.level == 0 ? 0 : Math.floor(ddUser.level / 10)}`
+						value: `${ddUser.level == 0 ? 0 : Math.floor(ddUser.level / 10) + 1}`
 					},
 					{
 						name: '❗ Disboard Bumps',
