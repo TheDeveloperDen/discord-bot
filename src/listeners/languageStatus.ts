@@ -1,5 +1,5 @@
-import {EventHandler} from './EventHandler.js'
-import {randomElement} from './util/random.js'
+import {EventHandler} from '../EventHandler.js'
+import {randomElement} from '../util/random.js'
 
 const languages = [
 	'C',

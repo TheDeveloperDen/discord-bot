@@ -1,9 +1,9 @@
-import {EventHandler} from './EventHandler.js'
-import {getUserById} from './store/models/DDUser.js'
-import {logger} from './logging.js'
-import {config} from './Config.js'
+import {EventHandler} from '../EventHandler.js'
+import {getUserById} from '../store/models/DDUser.js'
+import {logger} from '../logging.js'
+import {config} from '../Config.js'
 import {TextChannel} from 'discord.js'
-import {sentry} from './util/errors.js'
+import {sentry} from '../util/errors.js'
 
 
 const disboardId = '302050872383242240'
