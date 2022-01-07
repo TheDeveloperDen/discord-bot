@@ -2,7 +2,7 @@ import {EventHandler} from '../EventHandler.js'
 import {logger} from '../logging.js'
 import {TextChannel} from "discord.js";
 import {createStandardEmbed} from "../util/embeds.js";
-import {mention} from "../util/users.js";
+import {mention, pseudoMention} from "../util/users.js";
 
 const welcomeChannelId = '821743171942744114'
 export const joinLeaveListener: EventHandler = (client) => {
@@ -12,6 +12,8 @@ export const joinLeaveListener: EventHandler = (client) => {
 			logger.error('Could not find welcome channel');
 			return
 		}
+		await new Promise(r => setTimeout(r, 1000));
+		await client.users.fetch(member.id)
 		await channel.send({
 			embeds: [
 				{
@@ -20,10 +22,10 @@ export const joinLeaveListener: EventHandler = (client) => {
 					description: `Welcome ${mention(member)} to the Developer Den!\nCurrent Member Count: ${member.guild.memberCount}`,
 					color: '#77dd77',
 					thumbnail: {
-						url: member.avatarURL() ?? 'https://cdn.discordapp.com/embed/avatars/0.png'
+						url: member.user.avatarURL() ?? 'https://cdn.discordapp.com/embed/avatars/0.png'
 					},
 					author: {
-						name: member.displayName
+						name: pseudoMention(member.user)
 					}
 				}
 			]
@@ -35,6 +37,7 @@ export const joinLeaveListener: EventHandler = (client) => {
 			logger.error('Could not find welcome channel');
 			return
 		}
+		await new Promise(r => setTimeout(r, 1000));
 		await channel.send({
 			embeds: [
 				{
@@ -43,10 +46,10 @@ export const joinLeaveListener: EventHandler = (client) => {
 					description: `${mention(member)} has left! :(\nCurrent Member Count: ${member.guild.memberCount}`,
 					color: '#aa4344',
 					thumbnail: {
-						url: member.avatarURL() ?? 'https://cdn.discordapp.com/embed/avatars/0.png'
+						url: member.user.avatarURL() ?? 'https://cdn.discordapp.com/embed/avatars/0.png'
 					},
 					author: {
-						name: member.displayName
+						name: pseudoMention(member.user)
 					}
 				}
 			]
