@@ -101,7 +101,7 @@ export class SetCommand implements Command {
 			return
 		}
 		const collector = await channel.createMessageComponentCollector({
-			filter: i => i.isButton() && i.message?.interaction?.id == interaction.id,
+			filter: i => i.isButton() && i.message?.interaction?.id == interaction.id && i.user.id == interaction.user.id,
 			time: 15000,
 			maxComponents: 1
 		})
