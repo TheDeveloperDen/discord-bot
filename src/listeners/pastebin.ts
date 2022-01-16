@@ -9,8 +9,10 @@ const codeBlockPattern = /```(?:(?<lang>[a-zA-Z]+)?\n)?(?<content>(?:.|\n)*?)```
 /*
  * Uploads if all the following is true:
  *
- * - contains a code block OR a sequence of text that contains braces, parentheses, angle brackets or equals
- * - is above the length threshold
+ * - Contains either:
+ *   - a code block
+ *   - one of the chars `{}<>()=`
+ * - Has a line count above the threshold as set in the config
  */
 function contentToUpload(message: string): { lang?: string, content: string } | null {
 	const lineCount = (message.match(/\n/g)||[]).length
