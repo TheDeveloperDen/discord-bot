@@ -14,6 +14,7 @@ import {loadCommands} from './deploy-commands.js'
 import {bumpNotificationListener} from './listeners/bumpNotifications.js'
 import {joinLeaveListener} from './listeners/joinLeaveMessages.js'
 import {languageStatusListener} from './listeners/languageStatus.js'
+import {pastebinListener} from './listeners/pastebin.js'
 
 
 const client = new Client({
@@ -57,7 +58,13 @@ client.on('interactionCreate', async interaction => {
 const registerListener = (events: EventHandler[]) => events.forEach(e => e(client))
 
 function main() {
-	registerListener([xpHandler, messageLoggerListener, roleChangeListener, bumpNotificationListener, joinLeaveListener, languageStatusListener])
+	registerListener([xpHandler,
+		messageLoggerListener,
+		roleChangeListener,
+		bumpNotificationListener,
+		joinLeaveListener,
+		languageStatusListener,
+		pastebinListener])
 
 	const token = process.env.BOT_TOKEN
 	if (!token) {
