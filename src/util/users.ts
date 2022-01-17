@@ -1,5 +1,5 @@
 import {GuildMember, PartialGuildMember, User} from 'discord.js'
-import {config} from '../Config'
+import {config} from '../Config.js'
 
 export const userShouldBePinged = (user: GuildMember|PartialGuildMember) => !user.roles.cache.has(config.roles.noPing)
 
