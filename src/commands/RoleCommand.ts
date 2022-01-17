@@ -1,6 +1,7 @@
 import {SlashCommandBuilder} from '@discordjs/builders'
 import {CommandInteraction, GuildMember} from 'discord.js'
 import {Command} from './Commands.js'
+import {config} from '../Config.js'
 
 
 export class RoleCommand implements Command {
@@ -13,7 +14,9 @@ export class RoleCommand implements Command {
 			.setRequired(true))
 
 	allowedRoles = [
-		'848197427617595393'
+		...config.roles.usersAllowedToSet,
+		config.roles.noPing,
+		config.roles.bumpNotifications
 	]
 
 	async execute(interaction: CommandInteraction) {

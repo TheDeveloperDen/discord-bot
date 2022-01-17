@@ -1,9 +1,9 @@
-import {config} from '../Config.js'
 import {GuildMember, MessageEmbedOptions, PartialGuildMember} from 'discord.js'
+import {branding} from './branding.js'
 
 export const createStandardEmbed = (user?: GuildMember|PartialGuildMember) => <MessageEmbedOptions>{
-	color: user?.roles?.color?.hexColor ?? config.color,
-	footer: {text: 'Developer Den', icon_url: 'https://developerden.net/static/logo.png'},
+	color: user?.roles?.color?.hexColor ?? branding.color,
+	footer: {text: branding.name, icon_url: branding.iconUrl},
 	timestamp: new Date(),
 }
 

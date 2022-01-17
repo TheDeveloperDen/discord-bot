@@ -1,53 +1,39 @@
-import {HexColorString, Snowflake} from 'discord.js'
+import {mention} from './util/users.js'
+import {Config} from './config.type'
 
-export type Config = {
-	bumpNotificationRoleId: Snowflake,
-	color: HexColorString,
-	guildId: string,
-	clientId: string,
-	pastebin: { url: string, threshold: number },
-	channels: { welcome: string, botCommands: string },
-	roles: {
-		tiers: string[],
-		bumpNotifications: string,
-		separators: { general: string, tags: string, langs: string },
-		noPing: string
-	}
-}
 
+// Config file for the DevDen Testing server
 export const config: Config = {
-	color: '#0xC6BFF7',
 	channels: {
-		welcome: '821743171942744114',
-		botCommands: '821820015917006868',
+		welcome: '932633680634081301',
+		botCommands: '906954540039938048',
 	},
 	roles: {
 		tiers: [
-			'821743100203368458', //@everyone (tier 0)
-			'823167811555033150', // tier 1
-			'837653180774875178', // 2
-			'837661828405395476', // 3
-			'837662055921221712', // 4
-			'837662277577998356', // 5
-			'837662496432193640', // 6
-			'837662699235311616', // 7
-			'837662908703703070', // 8
-			'837663085657194546', // 9
-			'837663288064999424'
+			'904478147351806012', //@everyone (tier 0)
+			'932637161528909865', // tier 1
+			'932637187030257694', // tier 2
 		],
+		admin: '932644914066501652',
 		separators: {
-			general: '874786063493787658',
-			tags: '874783773605130280',
-			langs: '874783339981189240'
+			general: '932638046153744434',
+			tags: '932638097311666218',
+			langs: '932638149618835466'
 		},
-		bumpNotifications: '838500233268691005',
-		noPing: '848197427617595393'
+		bumpNotifications: '932637334103531521',
+		noPing: '932637353263128577',
+		usersAllowedToSet: []
 	},
-	bumpNotificationRoleId: '',
-	clientId: '904478222455029821',
-	guildId: '821743100203368458',
+	clientId: '932387188585398353',
+	guildId: '904478147351806012',
 	pastebin: {
 		url: 'https://paste.developerden.net',
 		threshold: 10
+	},
+	branding: {
+		color: '#ffaaff',
+		font: 'font.otf',
+		welcomeMessage: member => 
+			`Welcome ${mention(member)} to the Developer Den test server!\nCurrent Member Count: ${member.guild.memberCount}`
 	}
 }

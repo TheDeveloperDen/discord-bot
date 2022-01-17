@@ -4,6 +4,7 @@ import {TextChannel} from 'discord.js'
 import {createStandardEmbed} from '../util/embeds.js'
 import {mention, pseudoMention} from '../util/users.js'
 import {config} from '../Config.js'
+import {branding} from '../util/branding.js'
 
 export const joinLeaveListener: EventHandler = (client) => {
 	client.on('guildMemberAdd', async member => {
@@ -19,7 +20,7 @@ export const joinLeaveListener: EventHandler = (client) => {
 				{
 					...createStandardEmbed(member),
 					title: 'members++',
-					description: `Welcome ${mention(member)} to the Developer Den!\nCurrent Member Count: ${member.guild.memberCount}`,
+					description: branding.welcomeMessage(member),
 					color: '#77dd77',
 					thumbnail: {
 						url: member.user.avatarURL() ?? 'https://cdn.discordapp.com/embed/avatars/0.png'

@@ -1,9 +1,10 @@
 import canvas, {Canvas, NodeCanvasRenderingContext2D} from 'canvas'
 import opentype from 'opentype.js'
+import {branding} from './branding.js'
 
 const {createCanvas} = canvas
 
-export const hortaFont = opentype.loadSync('Horta.otf')
+export const font = opentype.loadSync(branding.font)
 
 export const createImage = (width: number, height: number, color: string): Canvas => {
 	const canvas = createCanvas(width, height)

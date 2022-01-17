@@ -1,12 +1,12 @@
 import {SlashCommandBuilder} from '@discordjs/builders'
 import {CommandInteraction, GuildMember, MessageEmbedOptions, User} from 'discord.js'
 import {getUserById} from '../store/models/DDUser.js'
-import {createImage, getCanvasContext, hortaFont} from '../util/imageUtils.js'
+import {createImage, getCanvasContext, font} from '../util/imageUtils.js'
 import {createStandardEmbed} from '../util/embeds.js'
 import {xpForLevel} from '../xp/experienceCalculations.js'
 import {Command} from './Commands.js'
-import {config} from '../Config.js'
 import {drawText} from '../util/textRendering.js'
+import {branding} from '../util/branding.js'
 
 
 export class XPCommand implements Command {
@@ -62,10 +62,10 @@ const createXPImage = async (xp: number, user: GuildMember) => {
 	const [canvas, ctx] = getCanvasContext(1000, 500)
 	ctx.drawImage(xpBackground, 0, 0)
 
-	ctx.fillStyle = user.roles?.color?.hexColor ?? config.color
+	ctx.fillStyle = user.roles?.color?.hexColor ?? branding.color
 
 	const message = `${xp.toLocaleString()} XP`
-	drawText(ctx, message, hortaFont, {
+	drawText(ctx, message, font, {
 		x: 0,
 		y: 0,
 		width: canvas.width,

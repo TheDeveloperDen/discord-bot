@@ -1,6 +1,7 @@
 import {distance} from 'fastest-levenshtein'
 import {Message, TextChannel, User} from 'discord.js'
-import {config, Config} from '../Config.js'
+import {config} from '../Config.js'
+import {Config} from '../config.type'
 import {getMessages} from '../listeners/messageLogger.js'
 import {logger} from '../logging.js'
 

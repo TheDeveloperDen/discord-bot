@@ -15,6 +15,7 @@ import {createStandardEmbed} from '../util/embeds.js'
 import {mention} from '../util/users.js'
 import {DiscordColor} from '@api-typings/discord'
 import {sentry} from '../util/errors.js'
+import {config} from '../Config.js'
 
 
 export class SetCommand implements Command {
@@ -38,7 +39,8 @@ export class SetCommand implements Command {
 
 	async init(command: ApplicationCommand) {
 		const permissions = [{
-			id: '821814446749646853',
+			id: config.roles.admin,
+			
 			type: 'ROLE',
 			permission: true
 		} as ApplicationCommandPermissionData]
