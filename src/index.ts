@@ -15,6 +15,7 @@ import {bumpNotificationListener} from './listeners/bumpNotifications.js'
 import {joinLeaveListener} from './listeners/joinLeaveMessages.js'
 import {languageStatusListener} from './listeners/languageStatus.js'
 import {pastebinListener} from './listeners/pastebin.js'
+import {setupBranding} from './util/branding.js'
 
 
 const client = new Client({
@@ -25,6 +26,7 @@ client.commands = new Collection()
 
 async function init() {
 	const guild = await client.guilds.fetch(config.guildId)
+	setupBranding(guild)
 	await guild.commands.fetch()
 	for (const commandType of commands) {
 		const command = new commandType() as Command
