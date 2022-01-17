@@ -1,5 +1,5 @@
 import {Client, Collection, GuildMember, Role} from 'discord.js'
-import {config} from '../Config'
+import {config} from '../Config.js'
 
 export type RoleChanges = {
     toAdd: string[],
