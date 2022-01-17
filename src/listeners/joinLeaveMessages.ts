@@ -1,18 +1,18 @@
 import {EventHandler} from '../EventHandler.js'
 import {logger} from '../logging.js'
-import {TextChannel} from "discord.js";
-import {createStandardEmbed} from "../util/embeds.js";
-import {mention, pseudoMention} from "../util/users.js";
+import {TextChannel} from 'discord.js'
+import {createStandardEmbed} from '../util/embeds.js'
+import {mention, pseudoMention} from '../util/users.js'
+import {config} from '../Config.js'
 
-const welcomeChannelId = '821743171942744114'
 export const joinLeaveListener: EventHandler = (client) => {
 	client.on('guildMemberAdd', async member => {
-		const channel = await client.channels.fetch(welcomeChannelId) as TextChannel
+		const channel = await client.channels.fetch(config.channels.welcome) as TextChannel
 		if (!channel) {
-			logger.error('Could not find welcome channel');
+			logger.error('Could not find welcome channel')
 			return
 		}
-		await new Promise(r => setTimeout(r, 1000));
+		await new Promise(r => setTimeout(r, 1000))
 		await client.users.fetch(member.id)
 		await channel.send({
 			embeds: [
@@ -32,12 +32,12 @@ export const joinLeaveListener: EventHandler = (client) => {
 		})
 	})
 	client.on('guildMemberRemove', async member => {
-		const channel = await client.channels.fetch(welcomeChannelId) as TextChannel
+		const channel = await client.channels.fetch(config.channels.welcome) as TextChannel
 		if (!channel) {
-			logger.error('Could not find welcome channel');
+			logger.error('Could not find welcome channel')
 			return
 		}
-		await new Promise(r => setTimeout(r, 1000));
+		await new Promise(r => setTimeout(r, 1000))
 		await channel.send({
 			embeds: [
 				{

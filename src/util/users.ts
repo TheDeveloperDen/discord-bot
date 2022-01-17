@@ -1,7 +1,7 @@
 import {GuildMember, PartialGuildMember, User} from 'discord.js'
+import {config} from '../Config'
 
-const noPingId = '848197427617595393'
-export const userShouldBePinged = (user: GuildMember|PartialGuildMember) => !user.roles.cache.has(noPingId)
+export const userShouldBePinged = (user: GuildMember|PartialGuildMember) => !user.roles.cache.has(config.roles.noPing)
 
 export const pseudoMention = (user: User) => `${user.username}#${user.discriminator}`
 

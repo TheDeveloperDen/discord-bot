@@ -1,5 +1,5 @@
 import {Client, GuildMember, MessageEmbedOptions, TextChannel} from 'discord.js'
-import {shouldCountForStats, tierRoleId, tierRoles} from './levelling.js'
+import {shouldCountForStats, tierRoleId} from './levelling.js'
 import {config} from '../Config.js'
 import {xpForLevel, xpForMessage} from './experienceCalculations.js'
 import {DDUser, getUserById} from '../store/models/DDUser.js'
@@ -50,15 +50,15 @@ const applyTierRoles = async (client: Client, user: GuildMember, ddUser: DDUser)
 	const tier = tierRoleId(ddUser.level)
 	await modifyRoles(client, user, {
 		toAdd: [tier],
-		toRemove: tierRoles.filter(it => it != tier)
+		toRemove: config.roles.tiers.filter(it => it != tier)
 	})
 }
 
 const sendLevelUpMessage = async (client: Client, member: GuildMember, ddUser: DDUser) => {
 	const user = member.user
-	const channel = await client.channels.fetch(config.botCommandsChannelId) as TextChannel
+	const channel = await client.channels.fetch(config.channels.botCommands) as TextChannel
 	if (!channel) {
-		console.error(`Could not find level up channel with id ${config.botCommandsChannelId}`)
+		console.error(`Could not find level up channel with id ${config.channels.botCommands}`)
 		return
 	}
 	const embed = {
