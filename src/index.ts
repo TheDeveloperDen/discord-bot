@@ -16,6 +16,7 @@ import {joinLeaveListener} from './listeners/joinLeaveMessages.js'
 import {languageStatusListener} from './listeners/languageStatus.js'
 import {pastebinListener} from './listeners/pastebin.js'
 import {setupBranding} from './util/branding.js'
+import {tokenScanner} from './listeners/tokenScanner.js'
 
 
 const client = new Client({
@@ -66,7 +67,8 @@ function main() {
 		bumpNotificationListener,
 		joinLeaveListener,
 		languageStatusListener,
-		pastebinListener])
+		pastebinListener,
+		tokenScanner])
 
 	const token = process.env.BOT_TOKEN
 	if (!token) {
