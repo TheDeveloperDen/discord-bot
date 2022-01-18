@@ -3,6 +3,7 @@ import {config} from '../Config.js'
 import {logger} from '../logging.js'
 import {createStandardEmbed} from '../util/embeds.js'
 import fetch from 'node-fetch'
+import {mention} from '../util/users.js'
 
 const codeBlockPattern = /```(?:(?<lang>[a-zA-Z]+)?\n)?(?<content>(?:.|\n)*?)```/
 
@@ -55,7 +56,7 @@ export const pastebinListener: EventHandler = (client) => {
 		await message.reply({
 			embeds: [{
 				...createStandardEmbed(message.member ?? undefined),
-				description: `${config.pastebin.url}/${key}${content.lang ? '.' + content.lang : ''}`,
+				description: `${mention(message.member!)} ${config.pastebin.url}/${key}${content.lang ? '.' + content.lang : ''}`,
 				footer: {
 					text: 'This message was converted automatically to keep the channels clean from large code blocks.'
 				}
