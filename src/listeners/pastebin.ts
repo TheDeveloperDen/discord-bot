@@ -15,6 +15,7 @@ const codeBlockPattern = /```(?:(?<lang>[a-zA-Z]+)?\n)?(?<content>(?:.|\n)*?)```
  * - Has a line count above the threshold as set in the config
  */
 function contentToUpload(message: string): { lang?: string, content: string } | null {
+	if (message.startsWith('!nopaste')) return null
 	const lineCount = (message.match(/\n/g)||[]).length
 	if (lineCount < config.pastebin.threshold) return null
 
