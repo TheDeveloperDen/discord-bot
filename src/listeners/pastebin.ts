@@ -14,18 +14,22 @@ const codeBlockPattern = /```(?:(?<lang>[a-zA-Z]+)?\n)?(?<content>(?:.|\n)*?)```
  *   - a code block
  *   - one of the chars `{}<>()=`
  * - Has a line count above the threshold as set in the config
+ * - Does not start with '!nopaste' or a forward slash
  */
 function contentToUpload(message: string): { lang?: string, content: string } | null {
-	if (message.startsWith('!nopaste')) return null
-	const lineCount = (message.match(/\n/g)||[]).length
+	if (message.startsWith('!nopaste') || message.startsWith('/')) return null
+	const lineCount = (message.match(/\n/g) || []).length
 	if (lineCount < config.pastebin.threshold) return null
 
 	const match = codeBlockPattern.exec(message)
 	if (match) {
-		return {
-			lang: match?.groups?.lang,
-			content: match?.groups?.content || ''
-		}
+		const content = match?.groups?.content
+		return content?.startsWith('```') && content?.endsWith('````') || false ?
+			{
+				lang: match?.groups?.lang,
+				content: match?.groups?.content || ''
+			} :
+			{content: message}
 	}
 
 	return message.match(/[{}<>()=]+/g) ? {content: message} : null
@@ -46,7 +50,7 @@ export const pastebinListener: EventHandler = (client) => {
 			return
 		}
 
-		const key = (await response.json() as {key: string})['key']
+		const key = (await response.json() as { key: string })['key']
 
 		if (!key) {
 			logger.warn('Key was missing from pastebin response')
