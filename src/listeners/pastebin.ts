@@ -24,7 +24,7 @@ function contentToUpload(message: string): { lang?: string, content: string } | 
 	const match = codeBlockPattern.exec(message)
 	if (match) {
 		const content = match?.groups?.content
-		return content?.startsWith('```') && content?.endsWith('````') || false ?
+		return content?.startsWith('```') && content?.endsWith('```') || false ?
 			{
 				lang: match?.groups?.lang,
 				content: match?.groups?.content || ''
