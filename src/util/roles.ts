@@ -1,9 +1,5 @@
 import {Client, Collection, GuildMember, Role} from 'discord.js'
-
-const generalSeparatorRole = '874786063493787658'
-const tagsSeparatorRole = '874783773605130280'
-const langsSeparatorRole = '874783339981189240'
-
+import {config} from '../Config.js'
 
 export type RoleChanges = {
     toAdd: string[],
@@ -22,29 +18,31 @@ export const modifyRoles = async (client: Client, user: GuildMember, roleChanges
 		return role
 	}
 
+	const roles = config.roles.separators
+
 	const addRole = (roleId: string) => currentRoles.set(roleId, getRole(roleId))
 	roleChanges.toAdd.forEach(addRole)
 	roleChanges.toRemove.forEach(role => currentRoles.delete(role))
 
-	const langsSeparator = hasRolesBetween(langsSeparatorRole, null)(currentRoles)
+	const langsSeparator = hasRolesBetween(roles.langs, null)(currentRoles)
 	if (langsSeparator) {
-		addRole(langsSeparatorRole)
+		addRole(roles.langs)
 	} else {
-		currentRoles.delete(langsSeparatorRole)
+		currentRoles.delete(roles.langs)
 	}
-	const tagsSeparator = hasRolesBetween(tagsSeparatorRole, langsSeparatorRole)(currentRoles)
+	const tagsSeparator = hasRolesBetween(roles.tags, roles.langs)(currentRoles)
 	if (tagsSeparator) {
-		addRole(tagsSeparatorRole)
+		addRole(roles.tags)
 	} else {
-		currentRoles.delete(tagsSeparatorRole)
+		currentRoles.delete(roles.tags)
 	}
 
-	const generalSeparator = hasRolesBetween(null, generalSeparatorRole)(currentRoles)
-        && hasRolesBetween(generalSeparatorRole, tagsSeparatorRole)(currentRoles)
+	const generalSeparator = hasRolesBetween(null, roles.general)(currentRoles)
+        && hasRolesBetween(roles.general, roles.tags)(currentRoles)
 	if (generalSeparator) {
-		addRole(generalSeparatorRole)
+		addRole(roles.general)
 	} else {
-		currentRoles.delete(generalSeparatorRole)
+		currentRoles.delete(roles.general)
 	}
 
 	await user.roles.set(currentRoles)

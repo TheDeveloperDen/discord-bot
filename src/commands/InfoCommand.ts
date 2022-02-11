@@ -4,6 +4,7 @@ import {Command} from './Commands.js'
 import {createStandardEmbed} from '../util/embeds.js'
 import {DDUser} from '../store/models/DDUser.js'
 import {SavedMessage} from '../store/models/SavedMessage.js'
+import {branding} from '../util/branding.js'
 
 export class InfoCommand implements Command {
 	info = new SlashCommandBuilder()
@@ -28,7 +29,7 @@ export class InfoCommand implements Command {
 		await interaction.followUp({
 			embeds: [{
 				...createStandardEmbed(interaction.member as GuildMember),
-				title: 'Developer Den',
+				title: branding.name,
 				description: 'This is the bot for the Developer Den server. It\'s written in **TypeScript** using the **Discord.js** library.' +
 					'The source can be found [here](https://github.com/TheDeveloperDen/DevDenBot)',
 				fields: [

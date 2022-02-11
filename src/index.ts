@@ -14,6 +14,9 @@ import {loadCommands} from './deploy-commands.js'
 import {bumpNotificationListener} from './listeners/bumpNotifications.js'
 import {joinLeaveListener} from './listeners/joinLeaveMessages.js'
 import {languageStatusListener} from './listeners/languageStatus.js'
+import {pastebinListener} from './listeners/pastebin.js'
+import {setupBranding} from './util/branding.js'
+import {tokenScanner} from './listeners/tokenScanner.js'
 
 
 const client = new Client({
@@ -24,6 +27,7 @@ client.commands = new Collection()
 
 async function init() {
 	const guild = await client.guilds.fetch(config.guildId)
+	setupBranding(guild)
 	await guild.commands.fetch()
 	for (const commandType of commands) {
 		const command = new commandType() as Command
@@ -57,7 +61,14 @@ client.on('interactionCreate', async interaction => {
 const registerListener = (events: EventHandler[]) => events.forEach(e => e(client))
 
 function main() {
-	registerListener([xpHandler, messageLoggerListener, roleChangeListener, bumpNotificationListener, joinLeaveListener, languageStatusListener])
+	registerListener([xpHandler,
+		messageLoggerListener,
+		roleChangeListener,
+		bumpNotificationListener,
+		joinLeaveListener,
+		languageStatusListener,
+		pastebinListener,
+		tokenScanner])
 
 	const token = process.env.BOT_TOKEN
 	if (!token) {

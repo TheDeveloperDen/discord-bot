@@ -1,5 +1,6 @@
 import {EventHandler} from '../EventHandler.js'
 import {randomElement} from '../util/random.js'
+import {ClientUser} from 'discord.js'
 
 const languages = [
 	'C',
@@ -40,7 +41,10 @@ const languages = [
 	'ALGOL 55'
 ]
 export const languageStatusListener: EventHandler = (client) => {
-	client.on('ready', event => {
-		event.user.setActivity(`Coding in ${randomElement(languages)}`, {type: 'PLAYING'})
-	})
+	const update = (user: ClientUser) => {
+		user.setActivity(`Coding in ${randomElement(languages)}`, {type: 'PLAYING'})
+		setTimeout(() => update(user), 3.6e+6)
+	}
+	
+	client.on('ready', event => update(event.user))
 }
