@@ -18,7 +18,6 @@ function findForward(input: string, index: number, set: Set<string>): number {
         index++
     }
     set.add(current)
-    console.log(current)
     return current.length
 }
 
