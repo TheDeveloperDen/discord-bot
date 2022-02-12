@@ -30,7 +30,7 @@ export class InfoCommand implements Command {
 			embeds: [{
 				...createStandardEmbed(interaction.member as GuildMember),
 				title: branding.name,
-				description: 'This is the bot for the Developer Den server. It\'s written in **TypeScript** using the **Discord.js** library. ' +
+				description: 'This is the bot for the Developer Den server. It\'s written in **TypeScript** using the **Discord.js** library.' +
 					'The source can be found [here](https://github.com/TheDeveloperDen/DevDenBot)',
 				fields: [
 					{
