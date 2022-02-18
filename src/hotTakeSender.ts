@@ -67,7 +67,7 @@ function getRandomPlaceholderValue(placeholder: Placeholder): string {
 	return randomElement(placeholderValues(placeholder))
 }
 
-export function generateHotTake(): string {
+export async function generateHotTake(): Promise<string> {
 	const data = hotTakeData
 	let take = data.takes[Math.floor(Math.random() * data.takes.length)]
 
@@ -92,7 +92,7 @@ export const hotTakeListener: EventHandler = (client: MarkedClient) => {
 		if (lastMessage?.author == client.user || timeSinceLastMessage < 60 * 5) {
 			return
 		}
-		const hotTake = generateHotTake()
+		const hotTake = await generateHotTake()
 		await channel.send(hotTake)
 	}
 

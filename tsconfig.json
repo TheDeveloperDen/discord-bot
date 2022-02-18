@@ -5,7 +5,6 @@
     "outDir": "./bin",
     "rootDir": "./src",
     "esModuleInterop": true,
-    "resolveJsonModule": true,
     "moduleResolution": "Node",
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
