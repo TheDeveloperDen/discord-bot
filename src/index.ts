@@ -2,7 +2,7 @@ import {config} from './Config.js'
 import {Client, Collection, Intents} from 'discord.js'
 
 import {MarkedClient} from './MarkedClient.js'
-import {Users} from './store/models/DDUser.js'
+import {DDUser} from './store/models/DDUser.js'
 import {EventHandler} from './EventHandler.js'
 import xpHandler from './xp/xpHandler.js'
 import {messageLoggerListener} from './listeners/messageLogger.js'
@@ -18,6 +18,7 @@ import {pastebinListener} from './listeners/pastebin.js'
 import {setupBranding} from './util/branding.js'
 import {tokenScanner} from './listeners/tokenScanner.js'
 import {hotTakeListener} from "./hotTakeSender.js";
+import {sequelize} from "./store/storage.js";
 
 
 const client = new Client({
@@ -48,8 +49,11 @@ async function init() {
 client.once('ready', async () => {
 	logger.info(`Logged in as ${client.user?.tag}`)
 
-	await Users.sync()
-	await SavedMessage.sync()
+	const models = [DDUser, SavedMessage]
+	sequelize.addModels(models)
+	for (const model of models) {
+		await model.sync()
+	}
 })
 
 client.on('interactionCreate', async interaction => {

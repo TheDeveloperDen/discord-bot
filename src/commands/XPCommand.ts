@@ -24,7 +24,6 @@ export class XPCommand implements Command {
 		const member = interaction.options.getMember('member') as GuildMember ?? interaction.member as GuildMember
 		const ddUser = await getUserById(BigInt(user.id))
 		const xp = ddUser.xp
-
 		await interaction.deferReply()
 		const image = await createXPImage(xp, member)
 		await interaction.followUp({

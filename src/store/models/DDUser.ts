@@ -1,17 +1,28 @@
-import Sequelize from 'sequelize'
-import {sequelize} from '../storage.js'
+import {Column, DataType, Model, Table} from 'sequelize-typescript'
 
-const {Model} = Sequelize
 
+@Table ({
+	tableName: 'Users'
+})
 export class DDUser extends Model {
-	public id!: bigint
+	@Column({
+		type: new DataType.BIGINT({length: 20}),
+		primaryKey: true
+	})
+	declare public id: bigint
+
+	@Column({
+		type: new DataType.BIGINT({length: 20})
+	})
 	public xp!: number
+	@Column({
+		type: new DataType.INTEGER({length: 11})
+	})
 	public level!: number
+	@Column({
+		type: new DataType.INTEGER({length: 11})
+	})
 	public bumps!: number
-
-	public readonly createdAt!: Date
-	public readonly updatedAt!: Date
-
 }
 
 export const getUserById = async (id: bigint) => {
@@ -28,16 +39,3 @@ export const getUserById = async (id: bigint) => {
 	})
 	return user
 }
-
-export const Users = DDUser.init({
-	id: {
-		type: new Sequelize.BIGINT({length: 20}),
-		primaryKey: true
-	},
-	xp: new Sequelize.BIGINT({length: 20}),
-	level: new Sequelize.INTEGER({length: 11}),
-	bumps: new Sequelize.INTEGER({length: 11}),
-}, {
-	tableName: 'Users',
-	sequelize: sequelize
-})

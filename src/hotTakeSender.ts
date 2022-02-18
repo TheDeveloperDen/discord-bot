@@ -1,18 +1,9 @@
-import hotTakeData from './hotTakeData.json' assert {type: 'json'}
 import {randomElement} from "./util/random.js";
 import {TextChannel} from "discord.js";
 import {EventHandler} from "./EventHandler.js";
 import {MarkedClient} from "./MarkedClient.js";
 import {config} from "./Config.js";
-
-type HotTakeData = {
-	people: string[],
-	companies: string[],
-	languages: string[]
-	technologies: string[],
-	problems: string[]
-	takes: string[],
-}
+import {hotTakeData} from "./hotTakeData.js";
 
 const placeholderRegex = /{([^}]+)}/g;
 
@@ -77,7 +68,7 @@ function getRandomPlaceholderValue(placeholder: Placeholder): string {
 }
 
 export function generateHotTake(): string {
-	const data = hotTakeData as HotTakeData
+	const data = hotTakeData
 	let take = data.takes[Math.floor(Math.random() * data.takes.length)]
 
 	const placeholders = findPlaceholders(take)

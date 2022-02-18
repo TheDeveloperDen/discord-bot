@@ -6,12 +6,12 @@ import {Column, DataType, Model, Table} from 'sequelize-typescript'
 	tableName: 'Messages'
 })
 export class SavedMessage extends Model {
+
 	@Column({
 		type: DataType.INTEGER,
 		primaryKey: true,
 		autoIncrement: true
 	})
-
 	declare public id: bigint
 
 	@Column(DataType.DATE(6))
