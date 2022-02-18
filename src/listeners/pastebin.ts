@@ -5,7 +5,7 @@ import {createStandardEmbed} from '../util/embeds.js'
 import fetch from 'node-fetch'
 import {mention} from '../util/users.js'
 
-const codeBlockPattern = /```(?:(?<lang>[a-zA-Z]+)?\n)?(?<content>(?:.|\n)*?)```|(?:.(?!```)\n?)+/g
+const codeBlockPattern = /```(?:(?<lang>[a-zA-Z]+)?\n)?(?<content>(?:.|\n)*?)```|(?:(?:.|\n)(?!```))+/g
 
 type SplitMessageComponent = {text: string} | {content: string, language?: string};
 
@@ -15,13 +15,13 @@ function splitMessage(message: string) {
 	const out: SplitMessageComponent[] = []
 
 	for (const match of matches) {
-		if (match[0].split('/n').length < config.pastebin.threshold) {
+		if (match[0].split('\n').length < config.pastebin.threshold) {
 			out.push({text: match[0]})
 			continue
 		}
 
 		if ((match.groups?.content || match[0].match(/[{}<>()=]+/g))) {
-			out.push({ content: match.groups?.content || match[0], language: match?.groups?.content || undefined })
+			out.push({ content: match.groups?.content || match[0], language: match?.groups?.lang || undefined })
 		}
 	}
 
@@ -57,6 +57,7 @@ export const pastebinListener: EventHandler = (client) => {
 	client.on('messageCreate', async (message) => {
 		
 		const split = splitMessage(message.content)
+		console.log(split)
 
 		// if it's just a string, do nothing
 		if (!split.some(part => 'content' in part)) return
