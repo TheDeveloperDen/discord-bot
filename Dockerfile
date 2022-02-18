@@ -13,6 +13,7 @@ FROM node:17-alpine
 WORKDIR /usr/src/bot/
 COPY src/ ./
 COPY font.otf ./
+COPY hotTakeData.json ./
 COPY --from=build /usr/src/bot/node_modules ./node_modules/
 COPY --from=build /usr/src/bot/bin ./bin/
 COPY --from=build /usr/src/bot/package.json ./package.json
