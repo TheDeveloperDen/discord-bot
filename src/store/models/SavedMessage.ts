@@ -11,7 +11,6 @@ export class SavedMessage extends Model {
 		primaryKey: true,
 		autoIncrement: true
 	})
-	public id!: bigint
 
 	@Column(DataType.DATE(6))
 	public timestamp!: Date

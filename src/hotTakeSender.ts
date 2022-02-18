@@ -1,4 +1,4 @@
-import hotTakeData from '../hotTakeData.json'
+import hotTakeData from './hotTakeData.json' assert {type: 'json'}
 import {randomElement} from "./util/random.js";
 import {TextChannel} from "discord.js";
 import {EventHandler} from "./EventHandler.js";
