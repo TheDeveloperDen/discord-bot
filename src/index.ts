@@ -17,6 +17,7 @@ import {languageStatusListener} from './listeners/languageStatus.js'
 import {pastebinListener} from './listeners/pastebin.js'
 import {setupBranding} from './util/branding.js'
 import {tokenScanner} from './listeners/tokenScanner.js'
+import {hotTakeListener} from "./hotTakeSender.js";
 
 
 const client = new Client({
@@ -68,7 +69,8 @@ function main() {
 		joinLeaveListener,
 		languageStatusListener,
 		pastebinListener,
-		tokenScanner])
+		tokenScanner,
+		hotTakeListener])
 
 	const token = process.env.BOT_TOKEN
 	if (!token) {

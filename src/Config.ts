@@ -7,6 +7,7 @@ export const config: Config = {
 	channels: {
 		welcome: '932633680634081301',
 		botCommands: '906954540039938048',
+		hotTake: '904478147351806015'
 	},
 	roles: {
 		tiers: [
