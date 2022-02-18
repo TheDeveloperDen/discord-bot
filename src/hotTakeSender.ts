@@ -75,7 +75,7 @@ export async function generateHotTake(): Promise<string> {
 	placeholders.forEach(placeholder => {
 		take = take.replace(`{${stringPlaceholder(placeholder)}}`, () => getRandomPlaceholderValue(placeholder))
 	})
-	return "Hot take! " + capitalize(take)
+	return capitalize(take)
 }
 
 
