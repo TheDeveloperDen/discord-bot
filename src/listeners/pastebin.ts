@@ -5,62 +5,69 @@ import {createStandardEmbed} from '../util/embeds.js'
 import fetch from 'node-fetch'
 import {mention} from '../util/users.js'
 
-const codeBlockPattern = /```(?:(?<lang>[a-zA-Z]+)?\n)?(?<content>(?:.|\n)*?)```/
+const codeBlockPattern = /```(?:(?<lang>[a-zA-Z]+)?\n)?(?<content>(?:.|\n)*?)```|(?:(?:.|\n)(?!```))+/g
 
-/*
- * Uploads if all the following is true:
- *
- * - Contains either:
- *   - a code block
- *   - one of the chars `{}<>()=`
- * - Has a line count above the threshold as set in the config
- * - Does not start with '!nopaste' or a forward slash
- */
-function contentToUpload(message: string): { lang?: string, content: string } | null {
-	if (message.startsWith('!nopaste') || message.startsWith('/')) return null
-	const lineCount = (message.match(/\n/g) || []).length
-	if (lineCount < config.pastebin.threshold) return null
+type SplitMessageComponent = {text: string} | {content: string, language?: string};
 
-	const match = codeBlockPattern.exec(message)
-	if (match) {
-		const content = match?.groups?.content
-		return content?.startsWith('```') && content?.endsWith('```') || false ?
-			{
-				lang: match?.groups?.lang,
-				content: match?.groups?.content || ''
-			} :
-			{content: message}
+function splitMessage(message: string) {
+	const matches = message.matchAll(codeBlockPattern)
+
+	const out: SplitMessageComponent[] = []
+
+	for (const match of matches) {
+		if (match[0].split('\n').length < config.pastebin.threshold) {
+			out.push({text: match[0]})
+			continue
+		}
+
+		if ((match.groups?.content || match[0].match(/[{}<>()=]+/g))) {
+			out.push({ content: match.groups?.content || match[0], language: match?.groups?.lang || undefined })
+		}
 	}
 
-	return message.match(/[{}<>()=]+/g) ? {content: message} : null
+	return out
+}
+
+async function upload(component: SplitMessageComponent) {
+	if ('text' in component) {
+		return component.text
+	}
+
+	const response = await fetch(`${config.pastebin.url}/documents`, {
+		method: 'POST',
+		body: component.content
+	})
+
+	if (!response.ok) {
+		logger.warn(`Failed to upload message to pastebin: ${response.statusText}`)
+		return ''
+	}
+
+	const key = (await response.json() as { key: string })['key']
+
+	if (!key) {
+		logger.warn('Key was missing from pastebin response')
+		return ''
+	}
+
+	return `${config.pastebin.url}/${key}${component.language ? '.' + component.language : ''}`
 }
 
 export const pastebinListener: EventHandler = (client) => {
 	client.on('messageCreate', async (message) => {
-		const content = contentToUpload(message.content)
-		if (content == null) return
+		
+		const split = splitMessage(message.content)
+		console.log(split)
 
-		const response = await fetch(`${config.pastebin.url}/documents`, {
-			method: 'POST',
-			body: content.content
-		})
+		// if it's just a string, do nothing
+		if (!split.some(part => 'content' in part)) return
 
-		if (!response.ok) {
-			logger.warn(`Failed to upload message to pastebin: ${response.statusText}`)
-			return
-		}
-
-		const key = (await response.json() as { key: string })['key']
-
-		if (!key) {
-			logger.warn('Key was missing from pastebin response')
-			return
-		}
-
+		const lines = await Promise.all(split.map(upload))
+	
 		await message.reply({
 			embeds: [{
 				...createStandardEmbed(message.member ?? undefined),
-				description: `${mention(message.member!)} ${config.pastebin.url}/${key}${content.lang ? '.' + content.lang : ''}`,
+				description: `${mention(message.member!)} \n${lines.join('\n')}`,
 				footer: {
 					text: 'This message was converted automatically to keep the channels clean from large code blocks.'
 				}
