@@ -1,9 +1,10 @@
 import {randomElement} from "./util/random.js";
-import {TextChannel} from "discord.js";
+import {Guild, TextChannel} from "discord.js";
 import {EventHandler} from "./EventHandler.js";
 import {MarkedClient} from "./MarkedClient.js";
 import {config} from "./Config.js";
 import {hotTakeData} from "./hotTakeData.js";
+import {actualMention} from "./util/users.js";
 
 const placeholderRegex = /{([^}]+)}/g;
 
@@ -32,9 +33,9 @@ function parsePlaceholder(message: string): Placeholder {
 	}
 }
 
-function placeholderValues(placeholder: Placeholder): string[] {
+function placeholderValues(placeholder: Placeholder, extraUsers: string[] = []): string[] {
 	if (Array.isArray(placeholder)) {
-		return placeholder.flatMap(placeholderValues)
+		return placeholder.flatMap(p => placeholderValues(p, extraUsers))
 	}
 	switch (placeholder) {
 		case 'language':
@@ -44,7 +45,7 @@ function placeholderValues(placeholder: Placeholder): string[] {
 		case 'thing':
 			return hotTakeData.languages.concat(hotTakeData.technologies)
 		case 'person':
-			return hotTakeData.people
+			return hotTakeData.people.concat(extraUsers)
 		case 'company':
 			return hotTakeData.companies
 		case 'group':
@@ -63,21 +64,27 @@ function stringPlaceholder(placeholder: Placeholder): string {
 	return placeholder
 }
 
-function getRandomPlaceholderValue(placeholder: Placeholder): string {
-	return randomElement(placeholderValues(placeholder))
+function getRandomPlaceholderValue(placeholder: Placeholder, extraUsers: string[]): string {
+	return randomElement(placeholderValues(placeholder, extraUsers))
 }
 
-export async function generateHotTake(): Promise<string> {
+export async function generateHotTake(guild?: Guild): Promise<string> {
 	const data = hotTakeData
 	let take = data.takes[Math.floor(Math.random() * data.takes.length)]
-
 	const placeholders = findPlaceholders(take)
+	const extraUsers = (guild && await getExtraUsersInGuild(guild)) ?? []
 	placeholders.forEach(placeholder => {
-		take = take.replace(`{${stringPlaceholder(placeholder)}}`, () => getRandomPlaceholderValue(placeholder))
+		take = take.replace(`{${stringPlaceholder(placeholder)}}`, () => getRandomPlaceholderValue(placeholder, extraUsers))
 	})
 	return capitalize(take)
 }
 
+async function getExtraUsersInGuild(guild: Guild): Promise<string[]> {
+	const users = await guild.members.fetch()
+	return users.filter(user => {
+		return user.premiumSinceTimestamp != null || user.roles.cache.has(config.roles.staff) || user.roles.cache.has(config.roles.notable ?? "")
+	}).map(user => actualMention(user))
+}
 
 function capitalize(s: string): string {
 	return s.charAt(0).toUpperCase() + s.slice(1)
@@ -92,8 +99,8 @@ export const hotTakeListener: EventHandler = (client: MarkedClient) => {
 		if (lastMessage?.author == client.user || timeSinceLastMessage < 60 * 30) {
 			return
 		}
-		const hotTake = await generateHotTake()
-		await channel.send(hotTake)
+		const hotTake = await generateHotTake(channel.guild)
+		await channel.send({content: hotTake, allowedMentions: {users: []}})
 	}
 
 	async function hotTakeLoop() {

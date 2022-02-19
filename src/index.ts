@@ -6,7 +6,7 @@ import {DDUser} from './store/models/DDUser.js'
 import {EventHandler} from './EventHandler.js'
 import xpHandler from './xp/xpHandler.js'
 import {messageLoggerListener} from './listeners/messageLogger.js'
-import {Command, commands} from './commands/Commands.js'
+import {commands} from './commands/Commands.js'
 import {roleChangeListener} from './xp/roleUpdates.js'
 import {SavedMessage} from './store/models/SavedMessage.js'
 import {logger} from './logging.js'
@@ -23,7 +23,8 @@ import {ColourRoles} from "./store/models/ColourRoles.js";
 
 
 const client = new Client({
-	intents: [Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]
+	intents: [Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
+
 }) as MarkedClient
 client.commands = new Collection()
 

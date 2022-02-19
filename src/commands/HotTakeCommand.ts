@@ -23,7 +23,7 @@ export const HotTakeCommand: Command = {
 	},
 
 	async execute(interaction: CommandInteraction) {
-		const hotTake = await generateHotTake()
-		await interaction.reply(hotTake)
+		const hotTake = await generateHotTake(interaction.guild ?? undefined)
+		await interaction.reply({content: hotTake, allowedMentions: {users: []}})
 	}
 }

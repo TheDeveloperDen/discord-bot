@@ -24,6 +24,7 @@ export const config: Config = {
 		],
 		admin: '821814446749646853',
 		staff: '857288092741009478',
+		notable: '821815023223308300',
 		separators: {
 			general: '874786063493787658',
 			tags: '874783773605130280',
