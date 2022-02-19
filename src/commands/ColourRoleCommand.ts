@@ -7,8 +7,8 @@ import {
 	CommandInteraction,
 	GuildMember
 } from 'discord.js'
-import {config} from '../Config'
-import {ColourRoles} from '../store/models/ColourRoles'
+import {config} from '../Config.js'
+import {ColourRoles} from '../store/models/ColourRoles.js'
 
 export const ColourRoleCommand: Command = {
 	info: new SlashCommandBuilder()
