@@ -6,7 +6,7 @@ import {RoleCommand} from './RoleCommand.js'
 import {SetCommand} from './SetCommand.js'
 import {InfoCommand} from './InfoCommand.js'
 import {HotTakeCommand} from './HotTakeCommand.js';
-import {ColourRoleCommand} from "./ColourRoleCommand";
+import {ColourRoleCommand} from "./ColourRoleCommand.js";
 
 export interface Command {
     info: { name: string, toJSON(): unknown; }
