@@ -35,10 +35,13 @@
     "Tim Cook",
     "Ajit Pai",
     "Jack Dorsey",
+    "Aiden",
+    "NotAiden",
     "Susan Wojcicki"
   ],
   "companies": [
     "JetBrains",
+    "Apache",
     "Google",
     "Microsoft",
     "Apple",
@@ -203,6 +206,7 @@
     "thread safety",
     "race condition",
     "buffer overflow",
+    "mutability",
     "Log4j",
     "technical debt"
   ],
