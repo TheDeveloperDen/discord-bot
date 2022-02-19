@@ -89,7 +89,7 @@ export const hotTakeListener: EventHandler = (client: MarkedClient) => {
 		const lastMessage = await channel.messages.fetch({limit: 1}).then(m => m.first())
 		const lastMessageSentAt = lastMessage?.createdAt ?? new Date(0);
 		const timeSinceLastMessage = (Date.now() - lastMessageSentAt.getTime()) / 1000
-		if (lastMessage?.author == client.user || timeSinceLastMessage < 60 * 5) {
+		if (lastMessage?.author == client.user || timeSinceLastMessage < 60 * 30) {
 			return
 		}
 		const hotTake = await generateHotTake()
