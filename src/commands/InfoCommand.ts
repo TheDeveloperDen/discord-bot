@@ -6,10 +6,10 @@ import {DDUser} from '../store/models/DDUser.js'
 import {SavedMessage} from '../store/models/SavedMessage.js'
 import {branding} from '../util/branding.js'
 
-export class InfoCommand implements Command {
-	info = new SlashCommandBuilder()
+export const InfoCommand: Command = {
+	info: new SlashCommandBuilder()
 		.setName('info')
-		.setDescription('Show information about the bot and server')
+		.setDescription('Show information about the bot and server'),
 
 
 	async execute(interaction: CommandInteraction) {

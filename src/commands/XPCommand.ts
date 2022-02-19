@@ -9,14 +9,14 @@ import {drawText} from '../util/textRendering.js'
 import {branding} from '../util/branding.js'
 
 
-export class XPCommand implements Command {
-	info = new SlashCommandBuilder()
+export const XPCommand: Command = {
+	info: new SlashCommandBuilder()
 		.setName('xp')
 		.setDescription('Show a member\'s XP')
 		.addUserOption(option => option
 			.setName('member')
 			.setDescription('The member to show XP for')
-			.setRequired(false))
+			.setRequired(false)),
 
 
 	async execute(interaction: CommandInteraction) {

@@ -4,25 +4,25 @@ import {Command} from './Commands.js'
 import {config} from '../Config.js'
 
 
-export class RoleCommand implements Command {
-	info = new SlashCommandBuilder()
+const allowedRoles = [
+	...config.roles.usersAllowedToSet,
+	config.roles.noPing,
+	config.roles.bumpNotifications
+]
+
+export const RoleCommand: Command = {
+	info: new SlashCommandBuilder()
 		.setName('role')
 		.setDescription('Get or remove a Role')
 		.addRoleOption(option => option
 			.setName('role')
 			.setDescription('The role to get')
-			.setRequired(true))
-
-	allowedRoles = [
-		...config.roles.usersAllowedToSet,
-		config.roles.noPing,
-		config.roles.bumpNotifications
-	]
+			.setRequired(true)),
 
 	async execute(interaction: CommandInteraction) {
 		const role = interaction.options.getRole('role', true)
-		if (!this.allowedRoles.includes(role.id)) {
-			await interaction.reply(`You cannot get or remove this Role. Options: ${this.allowedRoles.map(r => `<@&${r}>`).join(', ')}`)
+		if (!allowedRoles.includes(role.id)) {
+			await interaction.reply(`You cannot get or remove this Role. Options: ${allowedRoles.map(r => `<@&${r}>`).join(', ')}`)
 			return
 		}
 
