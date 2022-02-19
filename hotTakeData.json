@@ -23,7 +23,15 @@
     "Dennis Ritchie",
     "Rich Hickey",
     "Rasmus Lerdorf",
-    "Richard Stallman"
+    "Richard Stallman",
+    "Mark Zuckerberg",
+    "Elon Musk",
+    "Don Syme",
+    "Jeff Bezos",
+    "Tim Cook",
+    "Ajit Pai",
+    "Jack Dorsey",
+    "Susan Wojcicki"
   ],
   "companies": [
     "JetBrains",
@@ -223,6 +231,8 @@
     "{company} employees are subhumans.",
     "Why are schools not teaching about {thing}? We're setting our kids up to fail.",
     "Did you know {language} is the oldest programming language in the world?",
-    "Ada Lovelace invented {thing}."
+    "Ada Lovelace invented {thing}.",
+    "{person}, inventor of {thing} is who we should all aspire to be like.",
+    "I have been coding in {language} for 12 years and I still do not understand {thing}",
   ]
 }
