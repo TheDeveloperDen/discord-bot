@@ -18,8 +18,8 @@ import {sentry} from '../util/errors.js'
 import {config} from '../Config.js'
 
 
-export class SetCommand implements Command {
-	info = new SlashCommandBuilder()
+export const SetCommand: Command = {
+	info: new SlashCommandBuilder()
 		.setName('set')
 		.setDefaultPermission(false)
 		.setDescription('Set data for a user')
@@ -35,7 +35,7 @@ export class SetCommand implements Command {
 		.addIntegerOption(option => option
 			.setName('value')
 			.setDescription('The value to set')
-			.setRequired(true))
+			.setRequired(true)),
 
 	async init(command: ApplicationCommand) {
 		const permissions = [{
@@ -46,7 +46,7 @@ export class SetCommand implements Command {
 		} as ApplicationCommandPermissionData]
 
 		await command.permissions.add({permissions})
-	}
+	},
 
 	async execute(interaction: CommandInteraction) {
 		const target = interaction.options.getMember('target')

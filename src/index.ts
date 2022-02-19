@@ -17,8 +17,9 @@ import {languageStatusListener} from './listeners/languageStatus.js'
 import {pastebinListener} from './listeners/pastebin.js'
 import {setupBranding} from './util/branding.js'
 import {tokenScanner} from './listeners/tokenScanner.js'
-import {hotTakeListener} from "./hotTakeSender.js";
-import {sequelize} from "./store/storage.js";
+import {hotTakeListener} from './hotTakeSender.js'
+import {sequelize} from './store/storage.js'
+import {ColourRoles} from "./store/models/ColourRoles";
 
 
 const client = new Client({
@@ -31,9 +32,7 @@ async function init() {
 	const guild = await client.guilds.fetch(config.guildId)
 	setupBranding(guild)
 	await guild.commands.fetch()
-	for (const commandType of commands) {
-		const command = new commandType() as Command
-
+	for (const command of commands) {
 		const slash = guild.commands.cache.find(cmd => cmd.name == command.info.name)
 		if (!slash) {
 			logger.error(`Command ${command.info.name} not found in guild ${config.guildId}`)
@@ -49,7 +48,7 @@ async function init() {
 client.once('ready', async () => {
 	logger.info(`Logged in as ${client.user?.tag}`)
 
-	const models = [DDUser, SavedMessage]
+	const models = [DDUser, SavedMessage, ColourRoles]
 	sequelize.addModels(models)
 	for (const model of models) {
 		await model.sync()

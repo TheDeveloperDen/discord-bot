@@ -2,14 +2,14 @@ import {SlashCommandBuilder} from '@discordjs/builders'
 import {ApplicationCommand, ApplicationCommandPermissionData, CommandInteraction} from 'discord.js'
 import {Command} from './Commands.js'
 import {config} from '../Config.js'
-import {generateHotTake} from "../hotTakeSender.js";
+import {generateHotTake} from '../hotTakeSender.js';
 
 
-export class HotTakeCommand implements Command {
-	info = new SlashCommandBuilder()
+export const HotTakeCommand: Command = {
+	info: new SlashCommandBuilder()
 		.setName('hottake')
 		.setDefaultPermission(false)
-		.setDescription('Summon a hot take from the database.')
+		.setDescription('Summon a hot take from the database.'),
 
 	async init(command: ApplicationCommand) {
 		const permissions = [{
@@ -20,7 +20,7 @@ export class HotTakeCommand implements Command {
 		} as ApplicationCommandPermissionData]
 
 		await command.permissions.add({permissions})
-	}
+	},
 
 	async execute(interaction: CommandInteraction) {
 		const hotTake = await generateHotTake()

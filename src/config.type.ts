@@ -9,6 +9,7 @@ export type Config = {
 	roles: {
 		tiers: Snowflake[],
 		admin: Snowflake,
+		staff: Snowflake,
 		bumpNotifications: Snowflake,
 		separators: { general: Snowflake, tags: Snowflake, langs: Snowflake },
 		noPing: Snowflake,

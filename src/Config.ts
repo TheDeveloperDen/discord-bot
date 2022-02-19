@@ -16,6 +16,7 @@ export const config: Config = {
 			'932637187030257694', // tier 2
 		],
 		admin: '932644914066501652',
+		staff: '932644914066501652',
 		separators: {
 			general: '932638046153744434',
 			tags: '932638097311666218',

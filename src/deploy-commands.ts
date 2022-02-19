@@ -8,7 +8,6 @@ import {Config} from './config.type'
 export async function loadCommands(token: string, config: Config) {
 
 	const commandsToRegister = commands
-		.map(type => new type())
 		.map(command => command.info.toJSON())
 
 	const rest = new REST({version: '9'}).setToken(token)
@@ -16,6 +15,6 @@ export async function loadCommands(token: string, config: Config) {
 
 	await rest.put(Routes.applicationGuildCommands(config.clientId, config.guildId), {body: commandsToRegister})
 
-	console.log(`Successfully reloaded application (/) commands : ${commands.map(it => it.name)}`)
+	console.log(`Successfully reloaded application (/) commands : ${commands.map(it => it.info.name)}`)
 }
 
