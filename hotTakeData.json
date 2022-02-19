@@ -210,7 +210,8 @@
     "Riemann zeta function",
     "Windows 98",
     "Copilot",
-    "machine learning"
+    "machine learning",
+    "Fast Inverse Square Root algorithm"
   ],
   "problems": [
     "backward compatibility",
@@ -277,7 +278,7 @@
     "Every day when I wake up, I spent 30 minutes just reading the documentation for {language}. It sounds odd, but it always gets me excited to start working",
     "Why are {language} developers paid so much even though they don't understand {thing}?",
     "The {problem} issue is just a thinly veiled advertisement for {thing}.",
-    "{person} debunked Fast Inverse Square Root algorithm a long time ago.",
+    "{person} debunked {technology} a long time ago.",
     "{person} was the first true computer scientist.",
     "{thing} fans are quickly taking over the tech world and that's good.",
     "{thing} fans are quickly taking over the tech world and that's bad.",
