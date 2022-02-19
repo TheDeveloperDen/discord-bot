@@ -188,7 +188,9 @@
     "Endofunctors",
     "Procedural Programming",
     "static typing",
-    "dynamic typing"
+    "dynamic typing",
+    "Lambda Calculus",
+    "Turing Machines"
   ],
   "problems": [
     "backward compatibility",
@@ -233,6 +235,7 @@
     "Did you know {language} is the oldest programming language in the world?",
     "Ada Lovelace invented {thing}.",
     "{person}, inventor of {thing} is who we should all aspire to be like.",
-    "I have been coding in {language} for 12 years and I still do not understand {thing}"
+    "I have been coding in {language} for 12 years and I still do not understand {thing}",
+    "{language} is not even Turing Complete."
   ]
 }
