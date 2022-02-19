@@ -57,7 +57,6 @@ export const pastebinListener: EventHandler = (client) => {
 	client.on('messageCreate', async (message) => {
 		
 		const split = splitMessage(message.content)
-		console.log(split)
 
 		// if it's just a string, do nothing
 		if (!split.some(part => 'content' in part)) return
