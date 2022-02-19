@@ -12,7 +12,7 @@ env:
 jobs:
   push_to_registry:
     name: Push Docker image to GitHub Packages
-    runs-on: buildjet-4vcpu-ubuntu-2004
+    runs-on: ubuntu-latest
     permissions:
       packages: write
       contents: read
