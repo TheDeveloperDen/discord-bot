@@ -19,7 +19,7 @@ import {setupBranding} from './util/branding.js'
 import {tokenScanner} from './listeners/tokenScanner.js'
 import {hotTakeListener} from './hotTakeSender.js'
 import {sequelize} from './store/storage.js'
-import {ColourRoles} from "./store/models/ColourRoles";
+import {ColourRoles} from "./store/models/ColourRoles.js";
 
 
 const client = new Client({
