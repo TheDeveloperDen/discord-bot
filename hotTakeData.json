@@ -25,7 +25,12 @@
     "Jack Dorsey",
     "Aiden",
     "NotAiden",
-    "Susan Wojcicki"
+    "Susan Wojcicki",
+    "Bill Gates",
+    "Steve Jobs",
+    "Kevin Mitnick",
+    "Troy Hunt",
+    "Euclid of Alexandria"
   ],
   "companies": [
     "JetBrains",
@@ -43,7 +48,12 @@
     "Nvidia",
     "Mozilla",
     "Free Software Foundation",
-    "GNU"
+    "GNU",
+    "Tencent",
+    "Samsung",
+    "Cisco",
+    "OVH",
+    "Cloudflare"
   ],
   "languages": [
     "Solidity",
@@ -100,7 +110,9 @@
     "LESS",
     "Angular",
     "React",
-    "Vue"
+    "Vue",
+    "Malbolge",
+    "Zaskroniec"
   ],
   "technologies": [
     "web3",
@@ -192,7 +204,14 @@
     "static typing",
     "dynamic typing",
     "Lambda Calculus",
-    "Turing Machines"
+    "Turing Machines",
+    "IPoAC",
+    "Sieve of Eratosthenes",
+    "Riemann zeta function",
+    "Windows 98",
+    "Copilot",
+    "machine learning",
+    "Fast Inverse Square Root algorithm"
   ],
   "problems": [
     "backward compatibility",
@@ -206,7 +225,12 @@
     "technical debt",
     "undefined behavior",
     "unit testing",
-    "memory usage"
+    "memory usage",
+    "memory leak",
+    "Y2K",
+    "IPv4 address exhaustion",
+    "Y2038",
+    "syntax error"
   ],
   "takes": [
     "{language|technology} is just {language|technology} mixed with {language|technology}.",
@@ -253,6 +277,14 @@
     "Ultimately, {thing} will succeed where others haven't, because it unites {thing} and {thing}.",
     "Every day when I wake up, I spent 30 minutes just reading the documentation for {language}. It sounds odd, but it always gets me excited to start working",
     "Why are {language} developers paid so much even though they don't understand {thing}?",
-    "The {problem} issue is just a thinly veiled advertisement for {thing}."
+    "The {problem} issue is just a thinly veiled advertisement for {thing}.",
+    "{person} debunked {technology} a long time ago.",
+    "{person} was the first true computer scientist.",
+    "{thing} fans are quickly taking over the tech world and that's good.",
+    "{thing} fans are quickly taking over the tech world and that's bad.",
+    "{technology} users couldn't even print Hello World in {language}.",
+    "0xDEADBEEF > {thing}",
+    "{problem} this, {problem} that. How about you learn {thing} instead?",
+    "Did you hear what happened over at {company}? Me neither, nobody cares about them."
   ]
 }
