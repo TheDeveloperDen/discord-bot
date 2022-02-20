@@ -19,7 +19,7 @@ export const setupBranding = (guild: Guild) => {
 	branding = {
 		...{
 			name: guild.name,
-			iconUrl: guild.icon || 'https://cdn.discordapp.com/embed/avatars/0.png'
+			iconUrl: guild.iconURL() || 'https://cdn.discordapp.com/embed/avatars/0.png'
 		},
 		...config.branding
 	}
