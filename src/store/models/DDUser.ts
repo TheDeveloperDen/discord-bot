@@ -1,7 +1,7 @@
-import {AllowNull, Column, DataType, Model, Table} from 'sequelize-typescript'
+import {Column, DataType, Model, Table} from 'sequelize-typescript'
 
 
-@Table ({
+@Table({
 	tableName: 'Users'
 })
 export class DDUser extends Model {
@@ -33,8 +33,7 @@ export const getUserById = async (id: bigint) => {
 			id: id,
 			xp: 0,
 			level: 0,
-			bumps: 0,
-			colourRole: null
+			bumps: 0
 		}
 	})
 	return user
