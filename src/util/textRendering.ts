@@ -1,5 +1,5 @@
 // adjusted from https://github.com/kaivi/node-canvas-text
-import {NodeCanvasRenderingContext2D} from 'canvas'
+import {CanvasRenderingContext2D} from 'canvas'
 import {Font} from 'opentype.js'
 
 const measureText = (text: string, font: Font, fontSize: number) => {
@@ -44,7 +44,7 @@ type Options = {
 	vAlign: string,
 	granularity: number;
 }
-export const drawText = (ctx: NodeCanvasRenderingContext2D, text: string, fontObject: Font, rectangle: Rectangle, options: Options) => {
+export const drawText = (ctx: CanvasRenderingContext2D, text: string, fontObject: Font, rectangle: Rectangle, options: Options) => {
 	if (options.minSize > options.maxSize) throw 'Min font size can not be larger than max font size'
 
 	ctx.save()
@@ -66,32 +66,32 @@ export const drawText = (ctx: NodeCanvasRenderingContext2D, text: string, fontOb
 	let yPos = rectangle.y + rectangle.height - Math.abs(textMetrics.actualBoundingBoxDescent)
 
 	switch (options.hAlign) {
-	case 'right':
-		xPos = xPos + rectangle.width - textWidth
-		break
-	case 'center':
-	case 'middle':
-		xPos = xPos + (rectangle.width / 2) - (textWidth / 2)
-		break
-	case 'left':
-		break
-	default:
-		throw 'Invalid options.hAlign parameter: ' + options.hAlign
+		case 'right':
+			xPos = xPos + rectangle.width - textWidth
+			break
+		case 'center':
+		case 'middle':
+			xPos = xPos + (rectangle.width / 2) - (textWidth / 2)
+			break
+		case 'left':
+			break
+		default:
+			throw 'Invalid options.hAlign parameter: ' + options.hAlign
 	}
 
 	switch (options.vAlign) {
-	case 'top':
-		yPos = yPos - rectangle.height + textHeight
-		break
-	case 'center':
-	case 'middle':
-		yPos = yPos + textHeight / 2 - rectangle.height / 2
-		break
-	case 'bottom':
-	case 'baseline':
-		break
-	default:
-		throw 'Invalid options.vAlign parameter: ' + options.vAlign
+		case 'top':
+			yPos = yPos - rectangle.height + textHeight
+			break
+		case 'center':
+		case 'middle':
+			yPos = yPos + textHeight / 2 - rectangle.height / 2
+			break
+		case 'bottom':
+		case 'baseline':
+			break
+		default:
+			throw 'Invalid options.vAlign parameter: ' + options.vAlign
 
 	}
 

@@ -1,4 +1,4 @@
-import canvas, {Canvas, NodeCanvasRenderingContext2D} from 'canvas'
+import canvas, {Canvas, CanvasRenderingContext2D} from 'canvas'
 import opentype from 'opentype.js'
 import {branding} from './branding.js'
 
@@ -14,7 +14,7 @@ export const createImage = (width: number, height: number, color: string): Canva
 	return canvas
 }
 
-export function getCanvasContext(width: number, height: number): [Canvas, NodeCanvasRenderingContext2D] {
+export function getCanvasContext(width: number, height: number): [Canvas, CanvasRenderingContext2D] {
 	const canvas = createCanvas(width, height)
 	const ctx = canvas.getContext('2d', {alpha: false})
 	return [canvas, ctx]
