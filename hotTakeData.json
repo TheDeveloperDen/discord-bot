@@ -285,6 +285,7 @@
     "{technology} users couldn't even print Hello World in {language}.",
     "0xDEADBEEF > {thing}",
     "{problem} this, {problem} that. How about you learn {thing} instead?",
-    "Did you hear what happened over at {company}? Me neither, nobody cares about them."
+    "Did you hear what happened over at {company}? Me neither, nobody cares about them.",
+    "\"{thing|group}\".js is the next big JS framework."
   ]
 }
