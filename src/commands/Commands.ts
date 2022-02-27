@@ -7,7 +7,7 @@ import {SetCommand} from './SetCommand.js'
 import {InfoCommand} from './InfoCommand.js'
 import {HotTakeCommand} from './HotTakeCommand.js'
 import {ColourRoleCommand} from './ColourRoleCommand.js'
-import {TimeoutCommand} from './TimeoutCommand'
+import {TimeoutCommand} from './TimeoutCommand.js'
 
 export interface Command {
 	info: { name: string, toJSON(): unknown; }

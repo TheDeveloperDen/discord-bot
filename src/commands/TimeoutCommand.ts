@@ -1,9 +1,9 @@
 import {Command} from './Commands.js'
 import {ApplicationCommand, ApplicationCommandPermissionData, CommandInteraction, GuildMember} from 'discord.js'
 import {SlashCommandBuilder} from '@discordjs/builders'
-import {config} from '../Config'
-import {parseTimespan} from '../util/timespan'
-import {createStandardEmbed} from '../util/embeds'
+import {config} from '../Config.js'
+import {parseTimespan} from '../util/timespan.js'
+import {createStandardEmbed} from '../util/embeds.js'
 
 export const TimeoutCommand: Command = {
 	info: new SlashCommandBuilder()
