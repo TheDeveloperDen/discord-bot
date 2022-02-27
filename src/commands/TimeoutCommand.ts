@@ -54,7 +54,7 @@ export const TimeoutCommand: Command = {
 					fields: [
 						{
 							name: 'Timed out until',
-							value: new Date(Date.now() + period).toLocaleString()
+							value: `<t:${((Date.now() + period) / 1000).toFixed(0)}>`
 						},
 						{
 							name: 'Reason',

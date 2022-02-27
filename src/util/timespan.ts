@@ -47,13 +47,13 @@ function getDuration(duration: string) {
  * 	- s for seconds
  */
 export function parseTimespan(span: string): number {
-	const inputSplit = span.split(/(?!\D)/)
+	const inputSplit = span.matchAll(/(\d+)(\D+)/g)
 	let out = 0
 	for (const element of inputSplit) {
-		const number = parseInt(element)
+		console.log(element)
+		const number = parseInt(element[1])
 		if (isNaN(number)) continue
-		const unit = element.substring(Math.ceil(Math.log10(number + 1)))
-		out += number * getDuration(unit)
+		out += number * getDuration(element[2])
 	}
 	return out
 }
