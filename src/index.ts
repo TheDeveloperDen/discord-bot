@@ -19,7 +19,7 @@ import {setupBranding} from './util/branding.js'
 import {tokenScanner} from './listeners/tokenScanner.js'
 import {hotTakeListener} from './hotTakeSender.js'
 import {sequelize} from './store/storage.js'
-import {ColourRoles} from "./store/models/ColourRoles.js";
+import {ColourRoles} from './store/models/ColourRoles.js'
 
 
 const client = new Client({
@@ -60,7 +60,12 @@ client.on('interactionCreate', async interaction => {
 	if (!interaction.isCommand()) return
 	const command = client.commands.get(interaction.commandName)
 	if (!command) return
-	await command.execute(interaction)
+	try {
+		await command.execute(interaction)
+	} catch (e) {
+		logger.error(e)
+		await interaction.reply('There was an internal error')
+	}
 })
 
 const registerListener = (events: EventHandler[]) => events.forEach(e => e(client))
