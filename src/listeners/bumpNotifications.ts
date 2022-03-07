@@ -18,7 +18,7 @@ export const bumpNotificationListener: EventHandler = (client) => {
 
 	const sendBumpMessage = async () => {
 		const channel = await client.channels.fetch(config.channels.botCommands) as TextChannel
-		await channel.send(`<@&${config.roles.bumpNotifications}>, the server is ready to be bumped! **!d bump**`)
+		await channel.send(`<@&${config.roles.bumpNotifications}>, the server is ready to be bumped! **/bump**`)
 	}
 
 	const init = async () => {
