@@ -12,13 +12,13 @@ export const bumpNotificationListener: EventHandler = (client) => {
 
 	const successPredicate = (msg: Message) =>
 		(msg.author.id == disboardId &&
-			msg.embeds[0]?.description?.includes(':thumbsup:') &&
+			msg.embeds[0]?.description?.includes('Bump done!') &&
 			Date.now() - msg.createdTimestamp <= 7200 * 1000
 		) ?? false
 
 	const sendBumpMessage = async () => {
 		const channel = await client.channels.fetch(config.channels.botCommands) as TextChannel
-		await channel.send(`<@&${config.roles.bumpNotifications}>, the server is ready to be bumped! **!d bump**`)
+		await channel.send(`<@&${config.roles.bumpNotifications}>, the server is ready to be bumped! **/bump**`)
 	}
 
 	const init = async () => {
