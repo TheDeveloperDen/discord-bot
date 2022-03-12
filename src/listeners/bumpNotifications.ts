@@ -12,7 +12,7 @@ export const bumpNotificationListener: EventHandler = (client) => {
 
 	const successPredicate = (msg: Message) =>
 		(msg.author.id == disboardId &&
-			msg.embeds[0]?.description?.includes(':thumbsup:') &&
+			msg.embeds[0]?.description?.includes('Bump done!') &&
 			Date.now() - msg.createdTimestamp <= 7200 * 1000
 		) ?? false
 
