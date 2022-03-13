@@ -1,6 +1,6 @@
 import {randomElement} from "./util/random.js";
 import {Guild, TextChannel} from "discord.js";
-import {EventHandler} from "./EventHandler.js";
+import {Listener} from "./listeners/listener.js";
 import {MarkedClient} from "./MarkedClient.js";
 import {config} from "./Config.js";
 import {hotTakeData} from "./hotTakeData.js";
@@ -90,7 +90,7 @@ function capitalize(s: string): string {
 	return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
-export const hotTakeListener: EventHandler = (client: MarkedClient) => {
+export const hotTakeListener: Listener = (client: MarkedClient) => {
 	async function sendHotTake(channel?: TextChannel) {
 		channel = channel || await client.channels.fetch(config.channels.hotTake) as TextChannel
 		const lastMessage = await channel.messages.fetch({limit: 1}).then(m => m.first())
