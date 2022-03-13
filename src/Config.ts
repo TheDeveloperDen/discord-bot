@@ -30,7 +30,7 @@ export const config: Config = {
 	guildId: '904478147351806012',
 	pastebin: {
 		url: 'https://paste.developerden.net',
-		threshold: 10
+		threshold: 15
 	},
 	branding: {
 		color: '#ffaaff',

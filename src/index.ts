@@ -6,7 +6,7 @@ import {DDUser} from './store/models/DDUser.js'
 import {EventHandler} from './EventHandler.js'
 import xpHandler from './xp/xpHandler.js'
 import {messageLoggerListener} from './listeners/messageLogger.js'
-import {commands} from './commands/Commands.js'
+import {Command, commands} from './commands/Commands.js'
 import {roleChangeListener} from './xp/roleUpdates.js'
 import {SavedMessage} from './store/models/SavedMessage.js'
 import {logger} from './logging.js'
@@ -57,8 +57,8 @@ client.once('ready', async () => {
 })
 
 client.on('interactionCreate', async interaction => {
-	if (!interaction.isCommand()) return
-	const command = client.commands.get(interaction.commandName)
+	if (!interaction.isCommand() && !interaction.isMessageContextMenu()) return
+	const command = client.commands.get(interaction.commandName) as Command<typeof interaction>
 	if (!command) return
 	try {
 		await command.execute(interaction)
