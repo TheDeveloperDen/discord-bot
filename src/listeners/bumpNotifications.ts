@@ -32,12 +32,13 @@ export const bumpNotificationListener: EventHandler = (client) => {
 	
 	client.once('ready', init)
 
-	client.on('messageCreate', async message => {
-		if (message.content !== '!d bump') return
+	client.on('interactionCreate', async interaction => {
+		if (!interaction.isCommand()) return
+		if (interaction.commandName !== 'bump') return
 
 		let messages
 		try {
-			messages = await message.channel.awaitMessages({
+			messages = await interaction.channel?.awaitMessages({
 				filter: successPredicate,
 				max: 1,
 				time: 3000
@@ -46,13 +47,13 @@ export const bumpNotificationListener: EventHandler = (client) => {
 			sentry(e)
 			return
 		}
-		if (messages.size == 0) return
+		if (messages?.size == 0) return
 
 
-		const user = await getUserById(BigInt(message.author.id))
+		const user = await getUserById(BigInt(interaction.user.id))
 		user.bumps++
 		await user.save()
-		logger.info(`Incremented bumps for ${message.author.username}`)
+		logger.info(`Incremented bumps for ${interaction.user.username}`)
 		setTimeout(sendBumpMessage, 1000 * 60 * 60 * 2)
 	})
 }
