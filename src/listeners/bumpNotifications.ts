@@ -1,4 +1,4 @@
-import {EventHandler} from '../EventHandler.js'
+import {Listener} from './listener.js'
 import {getUserById} from '../store/models/DDUser.js'
 import {logger} from '../logging.js'
 import {config} from '../Config.js'
@@ -8,7 +8,7 @@ import {sentry} from '../util/errors.js'
 
 const disboardId = '302050872383242240'
 
-export const bumpNotificationListener: EventHandler = (client) => {
+export const bumpNotificationListener: Listener = (client) => {
 
 	const successPredicate = (msg: Message) =>
 		(msg.author.id == disboardId &&

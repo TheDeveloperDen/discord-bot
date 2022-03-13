@@ -1,10 +1,10 @@
-import {EventHandler} from '../EventHandler.js'
+import {Listener} from './listener.js'
 import {Message} from 'discord.js'
 import {createStandardEmbed} from '../util/embeds.js'
 
 const tokenPattern = /[MN][A-Za-z\d]{23}\.[\w-]{6}\.[\w-]{27}/g
 
-export const tokenScanner: EventHandler = (client) => {
+export const tokenScanner: Listener = (client) => {
 
 	client.on('messageCreate', async (message: Message) => {
 		const matches = message.content.match(tokenPattern)

@@ -1,4 +1,4 @@
-import {EventHandler} from '../EventHandler.js'
+import {Listener} from './listener.js'
 import {randomElement} from '../util/random.js'
 import {ClientUser} from 'discord.js'
 
@@ -40,7 +40,7 @@ const languages = [
 	'Fortran',
 	'ALGOL 55'
 ]
-export const languageStatusListener: EventHandler = (client) => {
+export const languageStatusListener: Listener = (client) => {
 	const update = (user: ClientUser) => {
 		user.setActivity(`Coding in ${randomElement(languages)}`, {type: 'PLAYING'})
 		setTimeout(() => update(user), 3.6e+6)

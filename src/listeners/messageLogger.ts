@@ -1,5 +1,5 @@
 import {Message, PartialMessage, User} from 'discord.js'
-import {EventHandler} from '../EventHandler.js'
+import {Listener} from './listener.js'
 import {logger} from '../logging.js'
 import {SavedMessage} from '../store/models/SavedMessage.js'
 
@@ -32,7 +32,7 @@ const messageContent = (message: Message | PartialMessage) => message.content + 
 
 const shouldLog = (message: Message | PartialMessage) => message.author?.bot == false && message.interaction == null
 
-export const messageLoggerListener: EventHandler = (client) => {
+export const messageLoggerListener: Listener = (client) => {
 	client.on('messageCreate', async (message) => {
 		if (!shouldLog(message)) {
 			return

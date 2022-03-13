@@ -3,13 +3,13 @@ import {shouldCountForStats, tierRoleId} from './levelling.js'
 import {config} from '../Config.js'
 import {xpForLevel, xpForMessage} from './experienceCalculations.js'
 import {DDUser, getUserById} from '../store/models/DDUser.js'
-import {EventHandler} from '../EventHandler.js'
+import {Listener} from '../listeners/listener.js'
 import {createStandardEmbed} from '../util/embeds.js'
 import {mention, mentionWithNoPingMessage, pseudoMention} from '../util/users.js'
 import {modifyRoles} from '../util/roles.js'
 import {logger} from '../logging.js'
 
-const xpHandler: EventHandler = (client) => {
+const xpHandler: Listener = (client) => {
 	client.on('messageCreate', async msg => {
 		if (!(msg.channel instanceof TextChannel)) {
 			return
