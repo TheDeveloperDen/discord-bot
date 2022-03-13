@@ -1,4 +1,4 @@
-import {ApplicationCommand, CommandInteraction} from 'discord.js'
+import {ApplicationCommand, CommandInteraction, MessageContextMenuInteraction} from 'discord.js'
 
 import {PasteCommand} from './PasteCommand.js'
 import {XPCommand} from './XPCommand.js'
@@ -8,14 +8,15 @@ import {InfoCommand} from './InfoCommand.js'
 import {HotTakeCommand} from './HotTakeCommand.js'
 import {ColourRoleCommand} from './ColourRoleCommand.js'
 import {TimeoutCommand} from './TimeoutCommand.js'
+import {PastifyCommand} from './PastifyCommand.js'
 
-export interface Command {
+export interface Command<T extends CommandInteraction | MessageContextMenuInteraction = CommandInteraction> {
 	info: { name: string, toJSON(): unknown; }
 
-	execute(interaction: CommandInteraction): Promise<void>;
+	execute(interaction: T): Promise<void>;
 
 	init?(command: ApplicationCommand): Promise<void>;
 }
 
 export const commands = [PasteCommand, XPCommand, RoleCommand, SetCommand, InfoCommand, HotTakeCommand,
-	ColourRoleCommand, TimeoutCommand]
+	ColourRoleCommand, TimeoutCommand, PastifyCommand]
