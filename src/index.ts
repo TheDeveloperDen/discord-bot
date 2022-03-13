@@ -20,6 +20,7 @@ import {tokenScanner} from './listeners/tokenScanner.js'
 import {hotTakeListener} from './hotTakeSender.js'
 import {sequelize} from './store/storage.js'
 import {ColourRoles} from './store/models/ColourRoles.js'
+import {showcaseListener} from './listeners/showcase.js'
 
 
 const client = new Client({
@@ -79,7 +80,8 @@ function main() {
 		languageStatusListener,
 		pastebinListener,
 		tokenScanner,
-		hotTakeListener])
+		hotTakeListener,
+		showcaseListener])
 
 	const token = process.env.BOT_TOKEN
 	if (!token) {
