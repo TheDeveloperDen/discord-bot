@@ -15,7 +15,6 @@ const expressions: readonly string[] = [
 const uwuChannels: readonly Snowflake[] = [
 	'932633680634081301', // testing general
 	'821743100657270876', // general
-	'847936633964724254', // showcase
 	'932661343520194640', // random
 	'881463087037841430', // memes
 	'946856101817757767', // no-mic
