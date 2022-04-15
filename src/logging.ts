@@ -21,7 +21,7 @@ export const logger = createLogger({
 		// - Write all logs with level `error` and below to `error.log`
 		// - Write all logs with level `info` and below to `combined.log`
 		//
-		new transports.File({filename: 'logs/errlor.log', level: 'error'}),
+		new transports.File({filename: 'logs/error.log', level: 'error'}),
 		// write all logs to a file named the current time
 		new transports.File({
 			filename: `logs/${new Date().toISOString().replace(/:/g, '-')}.log`,
