@@ -13,9 +13,10 @@ import {PastifyCommand} from '../commands/PastifyCommand.js'
 import {REST} from '@discordjs/rest'
 import {Routes} from 'discord-api-types/v9'
 import {config} from '../Config.js'
+import {LeaderboardCommand} from '../commands/LeaderboardCommand'
 
 export const commands = [PasteCommand, XPCommand, RoleCommand, SetCommand, InfoCommand, HotTakeCommand,
-	ColourRoleCommand, TimeoutCommand, PastifyCommand]
+	ColourRoleCommand, TimeoutCommand, PastifyCommand, LeaderboardCommand]
 
 const rest = new REST().setToken(process.env.BOT_TOKEN ?? '')
 

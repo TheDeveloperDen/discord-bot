@@ -8,7 +8,7 @@ export const pseudoMention = (user: User) => `${user.username}#${user.discrimina
 export const mention = (user: GuildMember | PartialGuildMember) =>
 	userShouldBePinged(user) ? actualMention(user) : pseudoMention(user.user)
 
-export const actualMention = (user: GuildMember | PartialGuildMember) => `<@${user.id}>`
+export const actualMention = (user: GuildMember | User | PartialGuildMember) => `<@${user.id}>`
 
 export const mentionWithNoPingMessage = (user: GuildMember) =>
 	userShouldBePinged(user) ? `<@${user.id}> (Don't want to be pinged? **/role No Ping**)` : pseudoMention(user.user)
