@@ -6,6 +6,20 @@ import {DDUser} from '../store/models/DDUser.js'
 import {branding} from '../util/branding.js'
 import {actualMention} from '../util/users.js'
 
+interface LeaderboardType {
+	name: string,
+
+	calculate(user: DDUser): number,
+
+	format(value: number): string
+}
+
+const info: { [name: string]: LeaderboardType | undefined } = {
+	'xp': {name: 'XP', calculate: user => user.xp, format: value => `${value} XP`},
+	'bumps': {name: 'Disboard Bumps', calculate: user => user.bumps, format: value => `${value} Bumps`},
+	'level': {name: 'Level', calculate: user => user.level, format: value => `Level ${value}`}
+}
+
 export const LeaderboardCommand: Command = {
 	info: new SlashCommandBuilder()
 		.setName('leaderboard')
@@ -14,7 +28,8 @@ export const LeaderboardCommand: Command = {
 			.setName('type')
 			.setDescription('The type of leaderboard to show')
 			.setRequired(true)
-			.addChoices([['xp', 'xp'], ['bumps', 'bumps'], ['level', 'level']])),
+			.addChoices(
+				Object.keys(info).map(it => [it, it]))),
 
 
 	async execute(interaction: CommandInteraction) {
@@ -29,12 +44,12 @@ export const LeaderboardCommand: Command = {
 			order: [[option, 'DESC']],
 			limit: 10
 		})
-		const traitInfo = info.get(option)
+		const traitInfo = info[option]
 		if (!traitInfo) {
 			await interaction.reply('Invalid leaderboard type')
 			return
 		}
-		const [getter, formatter, name] = traitInfo
+		const {calculate, format, name} = traitInfo
 		const embed = {
 			...createStandardEmbed(interaction.member as GuildMember),
 			title: `${branding.name} Leaderboard`,
@@ -42,7 +57,7 @@ export const LeaderboardCommand: Command = {
 			fields: await Promise.all(users.map(async (user, index) => {
 				const discordUser = await guild.client.users.fetch(user.id.toString()).catch(() => null)
 				return {
-					name: `#${index + 1} - ${formatter(getter(user))}`,
+					name: `#${index + 1} - ${format(calculate(user))}`,
 					value: discordUser == null ? 'Unknown User' : actualMention(discordUser)
 				}
 			}))
@@ -50,9 +65,3 @@ export const LeaderboardCommand: Command = {
 		await interaction.followUp({embeds: [embed]})
 	}
 }
-
-const info: Map<string, [(arg0: DDUser) => number, (value: number) => string, string]> = new Map([
-	['xp', [user => user.xp, value => `${value} XP`, 'XP']],
-	['bumps', [user => user.bumps, value => `${value} Bumps`, 'Disboard Bumps']],
-	['level', [user => user.level, value => `Level ${value}`, 'Level']]
-])
