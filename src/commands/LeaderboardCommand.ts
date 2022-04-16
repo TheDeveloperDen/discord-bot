@@ -4,7 +4,7 @@ import {Command} from './Commands.js'
 import {createStandardEmbed} from '../util/embeds.js'
 import {DDUser} from '../store/models/DDUser.js'
 import {branding} from '../util/branding.js'
-import {actualMention} from '../util/users'
+import {actualMention} from '../util/users.js'
 
 export const LeaderboardCommand: Command = {
 	info: new SlashCommandBuilder()
