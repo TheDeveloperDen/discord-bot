@@ -230,7 +230,8 @@
     "Y2K",
     "IPv4 address exhaustion",
     "Y2038",
-    "syntax error"
+    "syntax error",
+    "bloat"
   ],
   "takes": [
     "{language|technology} is just {language|technology} mixed with {language|technology}.",
@@ -286,6 +287,7 @@
     "0xDEADBEEF > {thing}",
     "{problem} this, {problem} that. How about you learn {thing} instead?",
     "Did you hear what happened over at {company}? Me neither, nobody cares about them.",
-    "\"{thing|group}\".js is the next big JS framework."
+    "\"{thing|group}\".js is the next big JS framework.",
+    "Lots of programming languages and tools have already fixed {problem} - {thing}, {thing}, {thing}, etc."
   ]
 }
