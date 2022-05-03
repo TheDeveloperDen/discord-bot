@@ -31,7 +31,7 @@ export const SetCommand: Command = {
 			.setName('field')
 			.setDescription('The field to edit')
 			.setRequired(true)
-			.addChoices([['xp', 'xp'], ['bumps', 'bumps']]))
+			.addChoices({name: 'xp', value: 'xp'}, {name: 'bumps', value: 'bumps'}))
 		.addIntegerOption(option => option
 			.setName('value')
 			.setDescription('The value to set')
@@ -40,7 +40,7 @@ export const SetCommand: Command = {
 	async init(command: ApplicationCommand) {
 		const permissions = [{
 			id: config.roles.admin,
-			
+
 			type: 'ROLE',
 			permission: true
 		} as ApplicationCommandPermissionData]
@@ -102,7 +102,7 @@ export const SetCommand: Command = {
 			await interaction.reply('You can\'t do this in DMs')
 			return
 		}
-		const collector = await channel.createMessageComponentCollector({
+		const collector = channel.createMessageComponentCollector({
 			filter: i => i.isButton() && i.message?.interaction?.id == interaction.id && i.user.id == interaction.user.id,
 			time: 15000,
 			maxComponents: 1

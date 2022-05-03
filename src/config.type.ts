@@ -1,5 +1,5 @@
+import { Snowflake } from 'discord.js'
 import {BrandingConfig} from './util/branding.js'
-import {Snowflake} from 'discord-api-types'
 
 export type Config = {
 	guildId: string,

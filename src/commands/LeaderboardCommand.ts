@@ -5,20 +5,21 @@ import {createStandardEmbed} from '../util/embeds.js'
 import {DDUser} from '../store/models/DDUser.js'
 import {branding} from '../util/branding.js'
 import {actualMention} from '../util/users.js'
+import {
+	APIApplicationCommandOptionChoice
+} from 'discord-api-types/payloads/v10/_interactions/_applicationCommands/_chatInput/shared'
 
-interface LeaderboardType {
-	name: string,
-
+interface LeaderboardType extends APIApplicationCommandOptionChoice<string> {
 	calculate(user: DDUser): number,
 
 	format(value: number): string
 }
 
-const info: { [name: string]: LeaderboardType | undefined } = {
-	'xp': {name: 'XP', calculate: user => user.xp, format: value => `${value} XP`},
-	'bumps': {name: 'Disboard Bumps', calculate: user => user.bumps, format: value => `${value} Bumps`},
-	'level': {name: 'Level', calculate: user => user.level, format: value => `Level ${value}`}
-}
+const info: LeaderboardType[] = [
+	{name: 'xp', value: 'XP', calculate: user => user.xp, format: value => `${value} XP`},
+	{name: 'bumps', value: 'Disboard Bumps', calculate: user => user.bumps, format: value => `${value} Bumps`},
+	{name: 'level', value: 'Level', calculate: user => user.level, format: value => `Level ${value}`}
+]
 
 export const LeaderboardCommand: Command = {
 	info: new SlashCommandBuilder()
@@ -28,8 +29,7 @@ export const LeaderboardCommand: Command = {
 			.setName('type')
 			.setDescription('The type of leaderboard to show')
 			.setRequired(true)
-			.addChoices(
-				Object.keys(info).map(it => [it, it]))),
+			.addChoices(...info)),
 
 
 	async execute(interaction: CommandInteraction) {
@@ -44,7 +44,7 @@ export const LeaderboardCommand: Command = {
 			order: [[option, 'DESC']],
 			limit: 10
 		})
-		const traitInfo = info[option]
+		const traitInfo = info.find(it => it.name == option)
 		if (!traitInfo) {
 			await interaction.reply('Invalid leaderboard type')
 			return
