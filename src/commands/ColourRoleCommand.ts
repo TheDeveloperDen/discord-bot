@@ -1,8 +1,6 @@
 import {Command} from './Commands'
 import {SlashCommandBuilder} from '@discordjs/builders'
 import {
-	ApplicationCommand,
-	ApplicationCommandPermissionData,
 	ColorResolvable,
 	CommandInteraction,
 	GuildMember
@@ -19,16 +17,6 @@ export const ColourRoleCommand: Command = {
 			.setName('colour')
 			.setDescription('The colour to set as a hex string')
 			.setRequired(true)),
-
-	async init(command: ApplicationCommand) {
-		const permissions = [{
-			id: config.roles.staff,
-			type: 'ROLE',
-			permission: true
-		} as ApplicationCommandPermissionData]
-
-		await command.permissions.add({permissions})
-	},
 
 	async execute(interaction: CommandInteraction) {
 
