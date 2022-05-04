@@ -1,7 +1,5 @@
 import {SlashCommandBuilder} from '@discordjs/builders'
 import {
-	ApplicationCommand,
-	ApplicationCommandPermissionData,
 	CommandInteraction,
 	GuildMember,
 	Message,
@@ -15,7 +13,6 @@ import {createStandardEmbed} from '../util/embeds.js'
 import {mention} from '../util/users.js'
 import {DiscordColor} from '@api-typings/discord'
 import {sentry} from '../util/errors.js'
-import {config} from '../Config.js'
 
 
 export const SetCommand: Command = {
@@ -36,17 +33,6 @@ export const SetCommand: Command = {
 			.setName('value')
 			.setDescription('The value to set')
 			.setRequired(true)),
-
-	async init(command: ApplicationCommand) {
-		const permissions = [{
-			id: config.roles.admin,
-
-			type: 'ROLE',
-			permission: true
-		} as ApplicationCommandPermissionData]
-
-		await command.permissions.add({permissions})
-	},
 
 	async execute(interaction: CommandInteraction) {
 		const target = interaction.options.getMember('target')

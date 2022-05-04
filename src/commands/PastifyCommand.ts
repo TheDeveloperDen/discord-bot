@@ -1,7 +1,6 @@
 import {Command} from './Commands.js'
-import {ApplicationCommandPermissionData, Message, MessageContextMenuInteraction} from 'discord.js'
+import {Message, MessageContextMenuInteraction} from 'discord.js'
 import {ContextMenuCommandBuilder} from '@discordjs/builders'
-import {config} from '../Config.js'
 import {pastify} from '../util/pastify.js'
 
 export const PastifyCommand: Command<MessageContextMenuInteraction> = {
@@ -10,15 +9,6 @@ export const PastifyCommand: Command<MessageContextMenuInteraction> = {
 		.setName('pastify')
 		.setType(3)
 		.setDefaultPermission(false),
-
-	async init(command) {
-		const permission: ApplicationCommandPermissionData = {
-			id: config.roles.staff,
-			type: 'ROLE',
-			permission: true
-		}
-		await command.permissions.add({permissions: [permission]})
-	},
 
 
 	async execute(interaction) {

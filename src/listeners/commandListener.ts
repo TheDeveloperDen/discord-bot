@@ -38,7 +38,6 @@ export async function init(client: MarkedClient) {
 			logger.error(`Command ${command.info.name} not found in guild ${config.guildId}`)
 			return
 		}
-		await command.init?.(slash)
 		client.commands.set(command.info.name, command)
 		logger.info(`Loaded command: ${command.info.name}`)
 	}))

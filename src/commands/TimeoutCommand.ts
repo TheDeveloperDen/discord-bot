@@ -1,7 +1,6 @@
 import {Command} from './Commands.js'
-import {ApplicationCommand, ApplicationCommandPermissionData, CommandInteraction, GuildMember} from 'discord.js'
+import {CommandInteraction, GuildMember} from 'discord.js'
 import {SlashCommandBuilder} from '@discordjs/builders'
-import {config} from '../Config.js'
 import {parseTimespan} from '../util/timespan.js'
 import {createStandardEmbed} from '../util/embeds.js'
 
@@ -24,15 +23,7 @@ export const TimeoutCommand: Command = {
 			.setDescription('The reason for issuing the timeout')
 			.setRequired(true)),
 
-	async init(command: ApplicationCommand) {
-		const permissions = [{
-			id: config.roles.staff,
-			type: 'ROLE',
-			permission: true
-		} as ApplicationCommandPermissionData]
 
-		await command.permissions.add({permissions})
-	},
 	async execute(interaction: CommandInteraction) {
 		// capped at 28 days
 		const period = Math.min(parseTimespan(interaction.options.getString('duration', true)), 2.419e+9)
