@@ -36,7 +36,7 @@ export const LeaderboardCommand: Command = {
 		await interaction.deferReply()
 		const guild = interaction.guild
 		if (!guild) {
-			await interaction.reply('This command can only be used in a server')
+			await interaction.followUp('This command can only be used in a server')
 			return
 		}
 		const option = interaction.options.getString('type', true)
@@ -46,7 +46,7 @@ export const LeaderboardCommand: Command = {
 		})
 		const traitInfo = info.find(it => it.name == option)
 		if (!traitInfo) {
-			await interaction.reply('Invalid leaderboard type')
+			await interaction.followUp('Invalid leaderboard type')
 			return
 		}
 		const {calculate, format, name} = traitInfo
