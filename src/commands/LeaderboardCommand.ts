@@ -44,7 +44,7 @@ export const LeaderboardCommand: Command = {
 			order: [[option, 'DESC']],
 			limit: 10
 		})
-		const traitInfo = info.find(it => it.name == option)
+		const traitInfo = info.find(it => it.value == option)
 		if (!traitInfo) {
 			await interaction.followUp('Invalid leaderboard type')
 			return
