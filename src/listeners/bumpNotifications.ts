@@ -25,7 +25,7 @@ export const bumpNotificationListener: Listener = (client) => {
 		const lastMessage = botChannel.messages.cache.find(bumpPredicate)
 		const delay = twoHours + (lastMessage?.createdTimestamp || Date.now()) - Date.now()
 		logger.info(`Next bump due in ${delay / 60000} minutes`)
-		setTimeout(sendBumpMessage, (delay < 0 ? 0 : delay))
+		setTimeout(sendBumpMessage, Math.abs(delay))
 	}
 	
 	client.once('ready', init)
