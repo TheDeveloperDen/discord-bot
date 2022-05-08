@@ -40,15 +40,15 @@ export const LeaderboardCommand: Command = {
 			return
 		}
 		const option = interaction.options.getString('type', true)
-		const users = await DDUser.findAll({
-			order: [[option, 'DESC']],
-			limit: 10
-		})
 		const traitInfo = info.find(it => it.value == option)
 		if (!traitInfo) {
 			await interaction.followUp('Invalid leaderboard type')
 			return
 		}
+		const users = await DDUser.findAll({
+			order: [[traitInfo.name, 'DESC']],
+			limit: 10
+		})
 		const {calculate, format, name} = traitInfo
 		const embed = {
 			...createStandardEmbed(interaction.member as GuildMember),
