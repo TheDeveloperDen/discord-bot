@@ -10,11 +10,8 @@ const disboardId = '302050872383242240'
 
 export const bumpNotificationListener: Listener = (client) => {
 
-	const successPredicate = (msg: Message) =>
-		(msg.author.id == disboardId &&
-			msg.embeds[0]?.description?.includes('Bump done!') &&
-			Date.now() - msg.createdTimestamp <= 7200 * 1000
-		) ?? false
+	const bumpPredicate = (msg: Message) =>
+		(msg.author.id == disboardId && msg.embeds[0]?.description?.includes('Bump done!')) ?? false
 
 	const sendBumpMessage = async () => {
 		const channel = await client.channels.fetch(config.channels.botCommands) as TextChannel
@@ -24,8 +21,8 @@ export const bumpNotificationListener: Listener = (client) => {
 	const init = async () => {
 		const botChannel = await client.channels.fetch(config.channels.botCommands) as TextChannel
 
-		const lastMessage = botChannel.messages.cache.find(successPredicate)
-		const delay = 7200 * 1000 + (lastMessage?.createdTimestamp || Date.now()) - Date.now()
+		const lastMessage = botChannel.messages.cache.find(bumpPredicate)
+		const delay = 7200000 + (lastMessage?.createdTimestamp || Date.now()) - Date.now()
 		logger.info(`Next bump due in ${delay / 60000} minutes`)
 		setTimeout(sendBumpMessage, delay)
 	}
@@ -39,7 +36,7 @@ export const bumpNotificationListener: Listener = (client) => {
 		let messages
 		try {
 			messages = await interaction.channel?.awaitMessages({
-				filter: successPredicate,
+				filter: bumpPredicate,
 				max: 1,
 				time: 3000
 			})
