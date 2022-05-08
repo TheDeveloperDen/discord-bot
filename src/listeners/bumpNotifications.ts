@@ -7,6 +7,7 @@ import {sentry} from '../util/errors.js'
 
 
 const disboardId = '302050872383242240'
+const twoHours = 7200000
 
 export const bumpNotificationListener: Listener = (client) => {
 
@@ -22,9 +23,9 @@ export const bumpNotificationListener: Listener = (client) => {
 		const botChannel = await client.channels.fetch(config.channels.botCommands) as TextChannel
 
 		const lastMessage = botChannel.messages.cache.find(bumpPredicate)
-		const delay = 7200000 + (lastMessage?.createdTimestamp || Date.now()) - Date.now()
+		const delay = twoHours + (lastMessage?.createdTimestamp || Date.now()) - Date.now()
 		logger.info(`Next bump due in ${delay / 60000} minutes`)
-		setTimeout(sendBumpMessage, delay)
+		setTimeout(sendBumpMessage, (delay < 0 ? 0 : delay))
 	}
 	
 	client.once('ready', init)
@@ -51,6 +52,6 @@ export const bumpNotificationListener: Listener = (client) => {
 		user.bumps++
 		await user.save()
 		logger.info(`Incremented bumps for ${interaction.user.username}`)
-		setTimeout(sendBumpMessage, 1000 * 60 * 60 * 2)
+		setTimeout(sendBumpMessage, twoHours)
 	})
 }
