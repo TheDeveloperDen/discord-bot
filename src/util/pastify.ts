@@ -72,11 +72,10 @@ export async function pastify<force extends boolean = false>
 	const lines = await Promise.all(split.map(upload))
 
 	await message.delete()
-
 	return {
 		embeds: [{
 			...createStandardEmbed(message.member ?? undefined),
-			description: `${mention(message.member!)} \n${lines.join('\n')}`,
+			description: `${mention(message.member ?? message.author)} \n${lines.join('\n')}`,
 			footer: {
 				text: 'This message was converted automatically to keep the channels clean from large code blocks.'
 			}

@@ -66,32 +66,32 @@ export const drawText = (ctx: CanvasRenderingContext2D, text: string, fontObject
 	let yPos = rectangle.y + rectangle.height - Math.abs(textMetrics.actualBoundingBoxDescent)
 
 	switch (options.hAlign) {
-		case 'right':
-			xPos = xPos + rectangle.width - textWidth
-			break
-		case 'center':
-		case 'middle':
-			xPos = xPos + (rectangle.width / 2) - (textWidth / 2)
-			break
-		case 'left':
-			break
-		default:
-			throw 'Invalid options.hAlign parameter: ' + options.hAlign
+	case 'right':
+		xPos = xPos + rectangle.width - textWidth
+		break
+	case 'center':
+	case 'middle':
+		xPos = xPos + (rectangle.width / 2) - (textWidth / 2)
+		break
+	case 'left':
+		break
+	default:
+		throw 'Invalid options.hAlign parameter: ' + options.hAlign
 	}
 
 	switch (options.vAlign) {
-		case 'top':
-			yPos = yPos - rectangle.height + textHeight
-			break
-		case 'center':
-		case 'middle':
-			yPos = yPos + textHeight / 2 - rectangle.height / 2
-			break
-		case 'bottom':
-		case 'baseline':
-			break
-		default:
-			throw 'Invalid options.vAlign parameter: ' + options.vAlign
+	case 'top':
+		yPos = yPos - rectangle.height + textHeight
+		break
+	case 'center':
+	case 'middle':
+		yPos = yPos + textHeight / 2 - rectangle.height / 2
+		break
+	case 'bottom':
+	case 'baseline':
+		break
+	default:
+		throw 'Invalid options.vAlign parameter: ' + options.vAlign
 
 	}
 
