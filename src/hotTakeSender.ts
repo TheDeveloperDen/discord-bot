@@ -5,6 +5,7 @@ import {MarkedClient} from './MarkedClient.js'
 import {config} from './Config.js'
 import {hotTakeData} from './hotTakeData.js'
 import {actualMention} from './util/users.js'
+import {randomInt} from 'crypto'
 
 const placeholderRegex = /{([^}]+)}/g
 
@@ -17,6 +18,7 @@ type Placeholder
 	| 'group' // Alias for person|company
 	| 'problem'
 	| 'entity' // everything except problem
+	| 'year' // A random year in the 20th or 21st centuries
 	| Placeholder[]
 
 function findPlaceholders(message: string): Placeholder[] {
@@ -54,6 +56,8 @@ function placeholderValues(placeholder: Placeholder, extraUsers: string[] = []):
 		return hotTakeData.problems
 	case 'entity':
 		return placeholderValues(['language', 'technology', 'thing', 'group'], extraUsers)
+	case 'year':
+		return [randomInt(1900, 2022).toString()]
 	default:
 		throw new Error(`Unknown placeholder: ${placeholder}`)
 	}
