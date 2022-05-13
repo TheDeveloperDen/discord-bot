@@ -18,6 +18,5 @@ COPY --from=build /usr/src/bot/node_modules ./node_modules/
 COPY --from=build /usr/src/bot/bin ./bin/
 COPY --from=build /usr/src/bot/package.json ./package.json
 RUN apk add --no-cache cairo-dev pango-dev jpeg-dev giflib-dev # these are needed by canvas at runtime
-RUN export VERSION=$(npm run version)
 ENV NODE_ENV production
-CMD ["node", "--experimental-json-modules", "bin/index.js"]
+CMD ["yarn", "start-built"]

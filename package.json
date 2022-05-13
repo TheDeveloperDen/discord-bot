@@ -10,7 +10,8 @@
     "build": "tsc",
     "build-prod": "tsc -p tsconfig.production.json && mv -f bin/Config.prod.js bin/Config.js",
     "start": "nodemon --exec node --experimental-specifier-resolution=node --loader ts-node/esm src/index.ts",
-    "dev": "node --experimental-specifier-resolution=node --loader ts-node/esm src/index.ts"
+    "dev": "node --experimental-specifier-resolution=node --loader ts-node/esm src/index.ts",
+    "start-built": "node --experimental-json-modules bin/index.js"
   },
   "keywords": [],
   "author": "BristerMitten",
