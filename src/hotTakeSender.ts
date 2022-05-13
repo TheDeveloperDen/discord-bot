@@ -16,6 +16,7 @@ type Placeholder
 	| 'company'
 	| 'group' // Alias for person|company
 	| 'problem'
+	| 'entity' // everything except problem
 	| Placeholder[]
 
 function findPlaceholders(message: string): Placeholder[] {
@@ -42,15 +43,17 @@ function placeholderValues(placeholder: Placeholder, extraUsers: string[] = []):
 	case 'technology':
 		return hotTakeData.technologies
 	case 'thing':
-		return hotTakeData.languages.concat(hotTakeData.technologies)
+		return placeholderValues(['language', 'technology'], extraUsers)
 	case 'person':
 		return hotTakeData.people.concat(extraUsers)
 	case 'company':
 		return hotTakeData.companies
 	case 'group':
-		return hotTakeData.people.concat(hotTakeData.companies)
+		return placeholderValues(['person', 'company'], extraUsers)
 	case 'problem':
 		return hotTakeData.problems
+	case 'entity':
+		return placeholderValues(['language', 'technology', 'thing', 'group'], extraUsers)
 	default:
 		throw new Error(`Unknown placeholder: ${placeholder}`)
 	}
