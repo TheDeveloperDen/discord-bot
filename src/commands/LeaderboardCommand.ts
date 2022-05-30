@@ -10,21 +10,34 @@ import {
 } from 'discord-api-types/payloads/v10/_interactions/_applicationCommands/_chatInput/shared'
 
 interface LeaderboardType extends APIApplicationCommandOptionChoice<string> {
-	calculate(user: DDUser): number,
+	calculate?: (user: DDUser) => number,
 
-	format(value: number): string
+	format(value: number): string,
+
+	name: keyof DDUser
 }
 
+// es cringe
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const info: LeaderboardType[] = [
-	{name: 'xp', value: 'XP', calculate: user => user.xp, format: value => `${value} XP`},
-	{name: 'bumps', value: 'Disboard Bumps', calculate: user => user.bumps, format: value => `${value} Bumps`},
-	{name: 'level', value: 'Level', calculate: user => user.level, format: value => `Level ${value}`}
+	{name: 'xp', value: 'XP', format: value => `${value} XP`},
+	{name: 'level', value: 'Level', format: value => `Level ${value}`},
+	{
+		name: 'currentDailyStreak',
+		value: 'Current Daily Streak',
+		format: s => `${s} day(s)`
+	},
+	{
+		name: 'highestDailyStreak',
+		value: 'Highest Daily Streak',
+		format: s => `${s} day(s)`
+	}
 ]
 
 export const LeaderboardCommand: Command = {
 	info: new SlashCommandBuilder()
 		.setName('leaderboard')
-		.setDescription('Show the top 10 users based on XP, Level, or Disboard Bumps')
+		.setDescription('Show the top 10 users based on XP, Level, or Daily Streak')
 		.addStringOption(option => option
 			.setName('type')
 			.setDescription('The type of leaderboard to show')
@@ -49,7 +62,8 @@ export const LeaderboardCommand: Command = {
 			order: [[traitInfo.name, 'DESC']],
 			limit: 10
 		})
-		const {calculate, format, name} = traitInfo
+		const {format, name} = traitInfo
+		const calculate = traitInfo.calculate ?? ((user: DDUser) => user[name])
 		const embed = {
 			...createStandardEmbed(interaction.member as GuildMember),
 			title: `${branding.name} Leaderboard`,
