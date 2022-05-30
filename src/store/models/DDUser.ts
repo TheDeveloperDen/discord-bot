@@ -1,6 +1,5 @@
 import {Column, DataType, Model, Table} from 'sequelize-typescript'
 
-
 @Table({
 	tableName: 'Users'
 })
@@ -22,6 +21,23 @@ export class DDUser extends Model {
 		type: new DataType.INTEGER({length: 11})
 	})
 	public bumps!: number
+
+	@Column({
+		type: new DataType.INTEGER({length: 11})
+	})
+	public currentDailyStreak!: number
+
+	@Column({
+		type: new DataType.INTEGER({length: 11}),
+
+	})
+	public highestDailyStreak!: number
+
+	@Column({
+		type: new DataType.DATE(),
+		allowNull: true
+	})
+	public lastDailyTime?: Date
 }
 
 export const getUserById = async (id: bigint) => {
@@ -33,7 +49,9 @@ export const getUserById = async (id: bigint) => {
 			id: id,
 			xp: 0,
 			level: 0,
-			bumps: 0
+			bumps: 0,
+			currentDailyStreak: 0,
+			highestDailyStreak: 0
 		}
 	})
 	return user
