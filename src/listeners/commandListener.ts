@@ -14,11 +14,13 @@ import {REST} from '@discordjs/rest'
 import {Routes} from 'discord-api-types/v9'
 import {config} from '../Config.js'
 import {LeaderboardCommand} from '../commands/LeaderboardCommand.js'
+import {DailyRewardCommand} from '../commands/DailyRewardCommand.js'
 
 export const commands = [PasteCommand, XPCommand, RoleCommand, SetCommand, InfoCommand, HotTakeCommand,
-	ColourRoleCommand, TimeoutCommand, PastifyCommand, LeaderboardCommand]
+	ColourRoleCommand, TimeoutCommand, PastifyCommand, LeaderboardCommand,
+	DailyRewardCommand]
 
-const rest = new REST({ version: '10' }).setToken(process.env.BOT_TOKEN ?? '')
+const rest = new REST({version: '10'}).setToken(process.env.BOT_TOKEN ?? '')
 
 export async function init(client: MarkedClient) {
 	if (process.env.UPDATE_COMMANDS) {
