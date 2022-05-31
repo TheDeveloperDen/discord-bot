@@ -1,15 +1,14 @@
 import {MarkedClient} from '../MarkedClient.js'
 import {getUserById} from '../store/models/DDUser.js'
-import fuzzysort from 'fuzzysort'
+import stringSimilarity from 'string-similarity'
 import {Listener} from './listener.js'
 import {createFAQEmbed} from './faqListener.js'
 import {FAQ} from '../store/models/FAQ.js'
 import {logger} from '../logging.js'
 import {tierOf} from '../xp/levelling.js'
 
-const targets = ['help', 'question', 'have', 'ask', 'problem', 'need', 'i', 'issue']
+const targets = ['i need help', 'i have a problem', 'help me please', 'can anyone help me', 'someone help me', 'i have a question']
 	.map(x => x.toLowerCase())
-	.map(x => fuzzysort.prepare(x))
 
 export const askToAskListener: Listener = (client: MarkedClient) => {
 	client.on('messageCreate', async message => {
@@ -18,13 +17,10 @@ export const askToAskListener: Listener = (client: MarkedClient) => {
 		if (tierOf(ddUser.level) >= 2) return // Hopefully they will have learned by now
 		const c = message.content.toLowerCase().trim().replace(/[^a-z\d ]/g, '')
 		if (!c) return
-		const words = c.split(/ /)
-		const results = words.flatMap(word => fuzzysort.go(word, targets, {
-			all: true,
-		}))
-		if (results.length === 0) return
-		const score = results.map(i => i.score).reduce((a, b) => a + b, 0)
-		if (score > -1000 * targets.length) {
+		const words = c.split(/ /).filter(s => s.length > 1).join(' ')
+		const results = stringSimilarity.findBestMatch(words, targets)
+		logger.info(`Ask to ask score for ${c} was ${results.bestMatch.rating}`)
+		if (results.bestMatch.rating > 0.5) {
 			const faq = await FAQ.findOne({where: {name: 'ask'}})
 			if (!faq) {
 				logger.error('Could not find FAQ for ask')
