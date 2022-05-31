@@ -14,23 +14,23 @@ interface LeaderboardType extends APIApplicationCommandOptionChoice<string> {
 
 	format(value: number): string,
 
-	name: keyof DDUser
+	value: keyof DDUser
 }
 
 // es cringe
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const info: LeaderboardType[] = [
-	{name: 'xp', value: 'XP', format: value => `${value} XP`},
-	{name: 'level', value: 'Level', format: value => `Level ${value}`},
+	{value: 'xp', name: 'XP', format: value => `${value} XP`},
+	{value: 'level', name: 'Level', format: value => `Level ${value}`},
 	{
-		name: 'currentDailyStreak',
-		value: 'Current Daily Streak',
-		format: s => `${s} day(s)`
+		value: 'currentDailyStreak',
+		name: 'Current Daily Streak',
+		format: s => `${formatDays(s)}`
 	},
 	{
-		name: 'highestDailyStreak',
-		value: 'Highest Daily Streak',
-		format: s => `${s} day(s)`
+		value: 'highestDailyStreak',
+		name: 'Highest Daily Streak',
+		format: s => `${formatDays(s)}`
 	}
 ]
 
@@ -58,16 +58,20 @@ export const LeaderboardCommand: Command = {
 			await interaction.followUp('Invalid leaderboard type')
 			return
 		}
+		const {format, value, name} = traitInfo
+		const calculate = traitInfo.calculate ?? ((user: DDUser) => user[value])
 		const users = await DDUser.findAll({
-			order: [[traitInfo.name, 'DESC']],
+			order: [[value, 'DESC']],
 			limit: 10
-		})
-		const {format, name} = traitInfo
-		const calculate = traitInfo.calculate ?? ((user: DDUser) => user[name])
+		}).then(users => users.filter(it => it[value] > 0))
+		if (users.length == 0) {
+			await interaction.followUp('No applicable users')
+			return
+		}
 		const embed = {
 			...createStandardEmbed(interaction.member as GuildMember),
 			title: `${branding.name} Leaderboard`,
-			description: `The top 10 users based on ${name}`,
+			description: `The top ${users.length} users based on ${name}`,
 			fields: await Promise.all(users.map(async (user, index) => {
 				const discordUser = await guild.client.users.fetch(user.id.toString()).catch(() => null)
 				return {
@@ -78,4 +82,11 @@ export const LeaderboardCommand: Command = {
 		}
 		await interaction.followUp({embeds: [embed]})
 	}
+}
+
+function formatDays(days: number) {
+	if (days == 1) {
+		return '1 day'
+	}
+	return `${days} days`
 }
