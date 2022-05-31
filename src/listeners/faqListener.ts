@@ -18,19 +18,19 @@ export const faqListener: Listener = (client: MarkedClient) => {
 			return
 		}
 
-		const embed: MessageEmbedOptions = createFAQEmbed(message.author, faq, message.member ?? undefined)
+		const embed: MessageEmbedOptions = createFAQEmbed(faq, message.author, message.member ?? undefined)
 		await message.reply({embeds: [embed]})
 	})
 }
 
-export const createFAQEmbed = (requester: User, faq: FAQ, user?: GuildMember) => {
+export const createFAQEmbed = (faq: FAQ, requester?: User, user?: GuildMember) => {
 	return {
 		...createStandardEmbed(user),
 		title: faq.title,
 		description: faq.content,
 		footer: {
 			...standardFooter(),
-			text: `Requested by ${pseudoMention(requester)} | ${faq.name}`
+			text: requester ? `Requested by ${pseudoMention(requester)} | ${faq.name}` : faq.name
 		}
 	}
 }

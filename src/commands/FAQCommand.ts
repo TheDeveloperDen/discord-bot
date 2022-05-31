@@ -1,6 +1,11 @@
 import {SlashCommandBuilder} from '@discordjs/builders'
 import {
-	CommandInteraction, GuildMember, MessageActionRow, Modal, ModalActionRowComponent, TextInputComponent
+	CommandInteraction,
+	GuildMember,
+	MessageActionRow,
+	Modal,
+	ModalActionRowComponent,
+	TextInputComponent
 } from 'discord.js'
 import {Command} from './Commands.js'
 import {FAQ} from '../store/models/FAQ.js'
@@ -55,7 +60,7 @@ export const FAQCommand: Command = {
 				await interaction.reply({ephemeral: true, content: 'No FAQ found with this name'})
 				return
 			}
-			await interaction.reply({embeds: [createFAQEmbed(interaction.user, faq, interaction.member as GuildMember ?? undefined)]})
+			await interaction.reply({embeds: [createFAQEmbed(faq, interaction.user, interaction.member as GuildMember ?? undefined)]})
 			return
 		}
 
