@@ -4,6 +4,7 @@ import {sentry} from '../util/errors.js'
 import {DDUser} from './models/DDUser.js'
 import {SavedMessage} from './models/SavedMessage.js'
 import {ColourRoles} from './models/ColourRoles.js'
+import {FAQ} from './models/FAQ.js'
 
 const database = process.env.DATABASE ?? 'database'
 const username = process.env.USERNAME ?? 'admin'
@@ -21,7 +22,7 @@ export const sequelize = new Sequelize({
 })
 
 export async function init() {
-	const models = [DDUser, SavedMessage, ColourRoles]
+	const models = [DDUser, SavedMessage, ColourRoles, FAQ]
 	sequelize.addModels(models)
 	for (const model of models) {
 		await model.sync()

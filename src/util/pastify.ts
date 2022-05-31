@@ -3,7 +3,7 @@ import {config} from '../Config.js'
 import {logger} from '../logging.js'
 import {createStandardEmbed} from './embeds.js'
 import {mention} from './users.js'
-import {Message, MessageOptions} from 'discord.js'
+import {InteractionReplyOptions, Message} from 'discord.js'
 
 const codeBlockPattern = /```(?:(?<lang>[a-zA-Z]+)?\n)?(?<content>(?:.|\n)*?)```|(?:(?:.|\n)(?!```))+/g
 type SplitMessageComponent = { text: string } | { content: string, language?: string };
@@ -52,7 +52,7 @@ export async function upload(component: SplitMessageComponent) {
 	return `${config.pastebin.url}/${key}${component.language ? '.' + component.language : ''}`
 }
 
-type PastifyReturn<T extends boolean> = T extends true ? MessageOptions : MessageOptions | null
+type PastifyReturn<T extends boolean> = T extends true ? InteractionReplyOptions : InteractionReplyOptions | null
 
 /**
  * Pastifies a message.

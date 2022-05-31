@@ -13,6 +13,7 @@ export const PastifyCommand: Command<MessageContextMenuInteraction> = {
 
 	async execute(interaction) {
 		const message = interaction.options.data[0].message
-		await interaction.reply(await pastify(message as Message, true, 10))
+		const options = await pastify(message as Message, true, 10)
+		await interaction.reply(options)
 	}
 }
