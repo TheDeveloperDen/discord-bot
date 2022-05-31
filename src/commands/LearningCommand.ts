@@ -36,6 +36,18 @@ export const LearningCommand: Command = {
 
 	async execute(interaction: CommandInteraction) {
 		if (interaction.options.getSubcommand() == 'update') {
+			const member = interaction.member as GuildMember
+			if (!member) {
+				await interaction.reply({ephemeral: true, content: 'You must be in a guild to use this command'})
+				return
+			}
+			if (!member.permissions.has('MANAGE_MESSAGES')) {
+				await interaction.reply({
+					ephemeral: true,
+					content: 'You must have the Manage Messages permission to use this command'
+				})
+				return
+			}
 			await interaction.deferReply({ephemeral: true})
 			const client = interaction.client as MarkedClient
 			await update(client, [this])

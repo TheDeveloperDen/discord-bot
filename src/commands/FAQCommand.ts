@@ -63,7 +63,18 @@ export const FAQCommand: Command = {
 			await interaction.reply({embeds: [createFAQEmbed(faq, interaction.user, interaction.member as GuildMember ?? undefined)]})
 			return
 		}
-
+		const member = interaction.member as GuildMember
+		if (!member) {
+			await interaction.reply({ephemeral: true, content: 'You must be in a guild to use this command'})
+			return
+		}
+		if (!member.permissions.has('MANAGE_MESSAGES')) {
+			await interaction.reply({
+				ephemeral: true,
+				content: 'You must have the Manage Messages permission to use this command'
+			})
+			return
+		}
 		if (interaction.options.getSubcommand() == 'create') {
 			const name = interaction.options.getString('name')
 			const faq = await FAQ.findOne({where: {name}})
