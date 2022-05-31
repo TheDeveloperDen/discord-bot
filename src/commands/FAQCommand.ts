@@ -45,7 +45,7 @@ async function createCommandInfo() {
 }
 
 export const FAQCommand: Command = {
-	getInfo: async () => await createCommandInfo(),
+	getInfo: createCommandInfo,
 
 	async execute(interaction: CommandInteraction) {
 		if (interaction.options.getSubcommand() == 'get') {

@@ -17,10 +17,11 @@ import {LeaderboardCommand} from '../commands/LeaderboardCommand.js'
 import {DailyRewardCommand} from '../commands/DailyRewardCommand.js'
 import {MessageContextMenuInteraction} from 'discord.js'
 import {FAQCommand} from '../commands/FAQCommand.js'
+import {LearningCommand} from '../commands/LearningCommand.js'
 
 export const commands = [PasteCommand, XPCommand, RoleCommand, SetCommand, InfoCommand, HotTakeCommand,
 	ColourRoleCommand, TimeoutCommand, PastifyCommand, LeaderboardCommand,
-	DailyRewardCommand, FAQCommand]
+	DailyRewardCommand, FAQCommand, LearningCommand]
 
 const rest = new REST({version: '10'}).setToken(process.env.BOT_TOKEN ?? '')
 
