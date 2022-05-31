@@ -14,12 +14,13 @@ export const askToAskListener: Listener = (client: MarkedClient) => {
 		const ddUser = await getUserById(BigInt(message.author.id))
 		if (tierOf(ddUser.level) >= 2) return // Hopefully they will have learned by now
 		const c = message.content.toLowerCase()
+		if (!c) return
 		const results = fuzzysort.go(c, targets, {
 			all: true,
 			threshold: -200
 		})
 		if (results.length > 0) {
-			await message.reply('Ask away! Please give as much information as possible to help us help you! (https://dontasktoask.com/)')
+			await message.reply('Ask away! Please give as much information as possible to help us help you! (<https://dontasktoask.com/>)')
 		}
 	})
 }
