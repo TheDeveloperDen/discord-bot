@@ -1,12 +1,13 @@
 import {SlashCommandBuilder} from '@discordjs/builders'
 import {CommandInteraction, GuildMember, MessageEmbedOptions, User} from 'discord.js'
 import {getUserById} from '../store/models/DDUser.js'
-import {createImage, getCanvasContext, font} from '../util/imageUtils.js'
+import {createImage, font, getCanvasContext} from '../util/imageUtils.js'
 import {createStandardEmbed} from '../util/embeds.js'
 import {xpForLevel} from '../xp/experienceCalculations.js'
 import {Command} from './Commands.js'
 import {drawText} from '../util/textRendering.js'
 import {branding} from '../util/branding.js'
+import {formatDayCount} from './DailyRewardCommand.js'
 
 
 export const XPCommand: Command = {
@@ -40,8 +41,8 @@ export const XPCommand: Command = {
 						value: `${ddUser.level == 0 ? 0 : Math.floor(ddUser.level / 10) + 1}`
 					},
 					{
-						name: '❗ Disboard Bumps',
-						value: `${ddUser.bumps}`
+						name: '❗ Daily Streak (Current / Max)',
+						value: `${formatDayCount(ddUser.currentDailyStreak)} / ${formatDayCount(ddUser.highestDailyStreak)}`
 					},
 					{
 						name: '📈 XP Until Level Up',

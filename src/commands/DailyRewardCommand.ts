@@ -61,7 +61,7 @@ export const DailyRewardCommand: Command = {
 	}
 }
 
-const formatDayCount = (count: number) => {
+export const formatDayCount = (count: number) => {
 	if (count === 1) {
 		return '1 day'
 	}
