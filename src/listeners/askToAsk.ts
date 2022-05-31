@@ -4,7 +4,7 @@ import fuzzysort from 'fuzzysort'
 import {Listener} from './listener.js'
 import {tierOf} from '../xp/levelling.js'
 
-const targets = ['I have a question', 'I need help', 'Can I ask a question?', 'Can I ask questions here?', 'I have a problem']
+const targets = ['I have a question', 'I need help', 'Can I ask a question', 'Can I ask questions here', 'I have a problem', 'help', 'please help']
 	.map(x => x.toLowerCase())
 	.map(x => fuzzysort.prepare(x))
 
@@ -13,11 +13,11 @@ export const askToAskListener: Listener = (client: MarkedClient) => {
 		if (message.author.bot) return
 		const ddUser = await getUserById(BigInt(message.author.id))
 		if (tierOf(ddUser.level) >= 2) return // Hopefully they will have learned by now
-		const c = message.content.toLowerCase()
+		const c = message.content.toLowerCase().trim().replace(/[^a-z\d]/g, '')
 		if (!c) return
 		const results = fuzzysort.go(c, targets, {
 			all: true,
-			threshold: -200
+			threshold: -150
 		})
 		if (results.length > 0) {
 			await message.reply('Ask away! Please give as much information as possible to help us help you! (<https://dontasktoask.com/>)')
