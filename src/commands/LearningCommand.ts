@@ -63,7 +63,7 @@ export const LearningCommand: Command = {
 			const embed: MessageEmbedOptions = {
 				...createStandardEmbed(interaction.member as GuildMember ?? undefined),
 				title: 'Resource List',
-				description: resources + '\n\n[Contribute to our resource collection](https://github.com/TheDeveloperDen/LearningResources)',
+				description: resources + extraFooter,
 				footer: {
 					...standardFooter(),
 					text: `Requested by ${pseudoMention(interaction.user)} | Learning Resources`
@@ -80,20 +80,21 @@ export const LearningCommand: Command = {
 
 			const embed: MessageEmbedOptions = {
 				...createStandardEmbed(interaction.member as GuildMember ?? undefined),
-				author: {name: resource.name},
-				title: resource.description,
+				title: resource.name,
 				footer: {
 					...standardFooter(),
 					text: `Requested by ${pseudoMention(interaction.user)} | Learning Resources`
 				},
-				description: resource.resources
-					.map(res => {
-						const pros = res.pros.length == 0 ? '' : '\n**Pros**\n' + res.pros.map(i => '• ' + i).join('\n')
-						const cons = res.cons.length == 0 ? '' : '\n**Cons**\n' + res.cons.map(i => '• ' + i).join('\n')
-						const linkedName = `[${res.name}](${res.url})`
-						const price = res.price ? `${res.price}` : 'Free!'
-						return `${linkedName} - ${price}${pros}${cons}\n`
-					}).join('\n')
+				description: `**${resource.description}**\n` +
+					resource.resources
+						.map(res => {
+							const pros = res.pros.length == 0 ? '' : '\n**Pros**\n' + res.pros.map(i => '• ' + i).join('\n')
+							const cons = res.cons.length == 0 ? '' : '\n**Cons**\n' + res.cons.map(i => '• ' + i).join('\n')
+							const linkedName = `[${res.name}](${res.url})`
+							const price = res.price ? `${res.price}` : 'Free!'
+							return `${linkedName} - ${price}${pros}${cons}\n`
+						}).join('\n')
+					+ extraFooter
 			}
 
 			await interaction.reply({embeds: [embed]})
@@ -101,3 +102,5 @@ export const LearningCommand: Command = {
 	}
 
 }
+
+const extraFooter = '\n\n[Contribute to our resource collection](https://github.com/TheDeveloperDen/LearningResources)'
