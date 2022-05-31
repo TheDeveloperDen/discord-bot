@@ -10,6 +10,7 @@ import {pastebinListener} from './pastebin.js'
 import {tokenScanner} from './tokenScanner.js'
 import {hotTakeListener} from '../hotTakeSender.js'
 import * as commandListener from './commandListener.js'
+import {askToAskListener} from './askToAsk.js'
 
 export type Listener = (client: MarkedClient) => void;
 
@@ -23,4 +24,5 @@ export const listeners = [xpHandler,
 	tokenScanner,
 	hotTakeListener,
 	showcaseListener,
+	askToAskListener,
 	commandListener.handle]
