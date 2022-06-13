@@ -1,4 +1,4 @@
-import {readFileSync} from "fs";
+import {readFileSync} from 'fs'
 
 export type HotTakeData = {
 	people: string[],
@@ -12,4 +12,4 @@ export type HotTakeData = {
 
 export const hotTakeData = JSON.parse(
 	readFileSync(process.cwd()+'/hotTakeData.json').toString()
-) as HotTakeData;
+) as HotTakeData

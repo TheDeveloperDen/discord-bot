@@ -1,7 +1,5 @@
 import {SlashCommandBuilder} from '@discordjs/builders'
 import {
-	ApplicationCommand,
-	ApplicationCommandPermissionData,
 	CommandInteraction,
 	GuildMember,
 	Message,
@@ -15,7 +13,6 @@ import {createStandardEmbed} from '../util/embeds.js'
 import {mention} from '../util/users.js'
 import {DiscordColor} from '@api-typings/discord'
 import {sentry} from '../util/errors.js'
-import {config} from '../Config.js'
 
 
 export const SetCommand: Command = {
@@ -31,22 +28,11 @@ export const SetCommand: Command = {
 			.setName('field')
 			.setDescription('The field to edit')
 			.setRequired(true)
-			.addChoices([['xp', 'xp'], ['bumps', 'bumps']]))
+			.addChoices({name: 'xp', value: 'xp'}, {name: 'bumps', value: 'bumps'}))
 		.addIntegerOption(option => option
 			.setName('value')
 			.setDescription('The value to set')
 			.setRequired(true)),
-
-	async init(command: ApplicationCommand) {
-		const permissions = [{
-			id: config.roles.admin,
-			
-			type: 'ROLE',
-			permission: true
-		} as ApplicationCommandPermissionData]
-
-		await command.permissions.add({permissions})
-	},
 
 	async execute(interaction: CommandInteraction) {
 		const target = interaction.options.getMember('target')
@@ -102,7 +88,7 @@ export const SetCommand: Command = {
 			await interaction.reply('You can\'t do this in DMs')
 			return
 		}
-		const collector = await channel.createMessageComponentCollector({
+		const collector = channel.createMessageComponentCollector({
 			filter: i => i.isButton() && i.message?.interaction?.id == interaction.id && i.user.id == interaction.user.id,
 			time: 15000,
 			maxComponents: 1

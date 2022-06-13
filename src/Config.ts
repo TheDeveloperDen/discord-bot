@@ -7,7 +7,8 @@ export const config: Config = {
 	channels: {
 		welcome: '932633680634081301',
 		botCommands: '906954540039938048',
-		hotTake: '904478147351806015'
+		hotTake: '904478147351806015',
+		showcase: '952536628533030942'
 	},
 	roles: {
 		tiers: [
@@ -30,7 +31,7 @@ export const config: Config = {
 	guildId: '904478147351806012',
 	pastebin: {
 		url: 'https://paste.developerden.net',
-		threshold: 10
+		threshold: 15
 	},
 	branding: {
 		color: '#ffaaff',

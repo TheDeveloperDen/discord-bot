@@ -1,4 +1,4 @@
-import {EventHandler} from '../EventHandler.js'
+import {Listener} from './listener.js'
 import {logger} from '../logging.js'
 import {TextChannel} from 'discord.js'
 import {createStandardEmbed} from '../util/embeds.js'
@@ -6,7 +6,7 @@ import {mention, pseudoMention} from '../util/users.js'
 import {config} from '../Config.js'
 import {branding} from '../util/branding.js'
 
-export const joinLeaveListener: EventHandler = (client) => {
+export const joinLeaveListener: Listener = (client) => {
 	client.on('guildMemberAdd', async member => {
 		const channel = await client.channels.fetch(config.channels.welcome) as TextChannel
 		if (!channel) {

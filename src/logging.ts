@@ -2,7 +2,6 @@ import w from 'winston'
 
 const {createLogger, format, transports} = w
 const baseFormat = format.combine(
-	format.colorize({all: true}),
 	format.timestamp({
 		format: 'YYYY-MM-DD HH:mm:ss'
 	}),
@@ -16,7 +15,8 @@ export const logger = createLogger({
 	format: baseFormat,
 	defaultMeta: {service: 'DevDenBot'},
 	transports: [
-		new transports.Console({format: format.combine(baseFormat, format.uncolorize())}),
+		// something slightly more readable for the cli
+		new transports.Console({format: format.cli()}),
 		//
 		// - Write all logs with level `error` and below to `error.log`
 		// - Write all logs with level `info` and below to `combined.log`

@@ -50,20 +50,3 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-  deploy:
-    needs: [ push_to_registry ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - name: Push to server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.DEPLOY_USERNAME }}
-          password: ${{ secrets.DEPLOY_PASSWORD }}
-          script: |
-            docker pull ghcr.io/thedeveloperden/${{ env.name }}:master # DO NOT REMOVE THIS OR EVERYTHING WILL BREAK
-            docker stop ${{ env.name }}
-            docker rm ${{ env.name }}
-            docker run --name ${{ env.name }} -d -e "NODE_ENV=production" --env UPDATE_COMMANDS=1 --env SENTRY_DSN=${{ secrets.SENTRY_DSN }} --env BOT_TOKEN=${{ secrets.DDB_TOKEN }} --env USERNAME=${{ secrets.DDB_DB_USERNAME }} --env DATABASE=devden --env PASSWORD=${{ secrets.DDB_DB_PASSWORD }} --env HOST=${{ secrets.DDB_DB_HOST }}  --net=net --restart unless-stopped ghcr.io/thedeveloperden/${{ env.name }}:master

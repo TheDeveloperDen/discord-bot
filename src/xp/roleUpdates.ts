@@ -1,9 +1,9 @@
-import {EventHandler} from '../EventHandler.js'
+import {Listener} from '../listeners/listener.js'
 import {modifyRoles} from '../util/roles.js'
 
 const editing = new Set<string>()
 
-export const roleChangeListener: EventHandler = (client) =>
+export const roleChangeListener: Listener = (client) =>
 // save the user's message when they send a message
 	client.on('guildMemberUpdate', (event) => {
 		if (editing.has(event.user.id)) {
