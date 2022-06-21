@@ -16,6 +16,7 @@ export const DailyRewardCommand: Command = {
 			await interaction.reply('You must be in a guild to use this command')
 			return
 		}
+		await interaction.deferReply()
 		const ddUser = await getUserById(BigInt(user.id))
 		const difference = new Date().getTime() - (ddUser.lastDailyTime?.getTime() ?? 0)
 		if (difference < 1000 * 60 * 60 * 24) {
@@ -25,7 +26,7 @@ export const DailyRewardCommand: Command = {
 				return
 			}
 			const nextClaimTime = new Date(lastClaimTime.getTime() + 1000 * 60 * 60 * 24)
-			await interaction.reply({
+			await interaction.followUp({
 				ephemeral: true,
 				content: `You can only claim your daily reward once every 24 hours. You can claim it again <t:${nextClaimTime.getTime() / 1000}:R>.`
 			})
@@ -45,7 +46,7 @@ export const DailyRewardCommand: Command = {
 		ddUser.lastDailyTime = new Date()
 		await ddUser.save()
 
-		await interaction.reply({
+		await interaction.followUp({
 			ephemeral: false,
 			embeds: [
 				{
