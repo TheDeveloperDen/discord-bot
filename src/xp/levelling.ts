@@ -25,11 +25,7 @@ export async function shouldCountForStats(author: User, message: Message, channe
 	return asArray.some(it => it.match(/[a-z ]/i))
 }
 
-
-export const tierOf = (level: number) => {
-	if (level <= 0) return 0
-	return 1 + Math.floor(level / 10)
-}
+export const tierOf = (level: number) => level <= 0 ? 0 : 1 + Math.floor(level / 10)
 
 export const tierRoleId = (level: number) => {
 	const tier = tierOf(level)

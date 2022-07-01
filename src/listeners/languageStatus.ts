@@ -1,5 +1,4 @@
 import {Listener} from './listener.js'
-import {randomElement} from '../util/random.js'
 import {ClientUser} from 'discord.js'
 
 const languages = [
@@ -42,9 +41,9 @@ const languages = [
 ]
 export const languageStatusListener: Listener = (client) => {
 	const update = (user: ClientUser) => {
-		user.setActivity(`Coding in ${randomElement(languages)}`, {type: 'PLAYING'})
+		user.setActivity(`Coding in ${languages.randomElement()}`, {type: 'PLAYING'})
 		setTimeout(() => update(user), 3.6e+6)
 	}
-	
+
 	client.on('ready', event => update(event.user))
 }

@@ -6,6 +6,7 @@ import {listeners} from './listeners/listener.js'
 import {setupBranding} from './util/branding.js'
 import * as commandListener from './listeners/commandListener.js'
 import * as storage from './store/storage.js'
+import './util/random.js'
 
 const client = new Client({
 	intents: [Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]

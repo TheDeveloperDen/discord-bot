@@ -1,4 +1,4 @@
-import {randomElement} from './util/random.js'
+
 import {Guild, TextChannel} from 'discord.js'
 import {Listener} from './listeners/listener.js'
 import {MarkedClient} from './MarkedClient.js'
@@ -71,7 +71,7 @@ function stringPlaceholder(placeholder: Placeholder): string {
 }
 
 function getRandomPlaceholderValue(placeholder: Placeholder, extraUsers: string[]): string {
-	return randomElement(placeholderValues(placeholder, extraUsers))
+	return placeholderValues(placeholder, extraUsers).randomElement()
 }
 
 export async function generateHotTake(guild?: Guild): Promise<string> {

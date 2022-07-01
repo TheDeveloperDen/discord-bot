@@ -15,7 +15,7 @@ export let branding: Required<BrandingConfig> = {
 	iconUrl: ''
 }
 
-export const setupBranding = (guild: Guild) => {
+export function setupBranding(guild: Guild) {
 	branding = {
 		...{
 			name: guild.name,

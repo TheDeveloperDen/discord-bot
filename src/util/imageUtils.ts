@@ -6,7 +6,7 @@ const {createCanvas} = canvas
 
 export const font = opentype.loadSync(branding.font)
 
-export const createImage = (width: number, height: number, color: string): Canvas => {
+export function createImage(width: number, height: number, color: string): Canvas {
 	const canvas = createCanvas(width, height)
 	const ctx = canvas.getContext('2d', {alpha: false})
 	ctx.fillStyle = color

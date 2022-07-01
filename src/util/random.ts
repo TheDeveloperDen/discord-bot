@@ -1,6 +1,10 @@
-export function randomElement<T>(array: T[]): T {
-	if(array.length == 1) {
-		return array[0]
+interface Array<T> {
+	randomElement(): T
+}
+
+Array.prototype.randomElement = function randomElement() {
+	if(this.length == 1) {
+		return this[0]
 	}
-	return array[Math.floor(Math.random() * array.length)]
+	return this[Math.floor(Math.random() * this.length)]
 }
