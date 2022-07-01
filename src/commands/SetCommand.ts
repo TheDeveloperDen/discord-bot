@@ -12,8 +12,6 @@ import {Command} from './Commands.js'
 import {createStandardEmbed} from '../util/embeds.js'
 import {mention} from '../util/users.js'
 import {DiscordColor} from '@api-typings/discord'
-import {sentry} from '../util/errors.js'
-
 
 export const SetCommand: Command = {
 	info: new SlashCommandBuilder()
@@ -46,8 +44,7 @@ export const SetCommand: Command = {
 		const getter = getters.get(option)
 		const setter = setters.get(option)
 		if (!getter || !setter) {
-			sentry(new Error(`Unknown field ${option}`))
-			return
+			throw new Error(`Unknown field ${option}`)
 		}
 		const value = interaction.options.getInteger('value', true)
 

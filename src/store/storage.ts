@@ -1,6 +1,5 @@
 import {Sequelize} from 'sequelize-typescript'
 import {logger} from '../logging.js'
-import {sentry} from '../util/errors.js'
 import {DDUser} from './models/DDUser.js'
 import {SavedMessage} from './models/SavedMessage.js'
 import {ColourRoles} from './models/ColourRoles.js'
@@ -28,15 +27,4 @@ export async function init() {
 		await model.sync()
 	}
 	logger.info('Initialised database')
-}
-
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-sequelize.query = async function (...args) {
-	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-	// @ts-ignore
-	return Sequelize.prototype.query.apply(this, args).catch(err => {
-		sentry(err)
-		throw err
-	})
 }

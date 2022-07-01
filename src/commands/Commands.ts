@@ -2,6 +2,9 @@ import {CommandInteraction, MessageContextMenuInteraction} from 'discord.js'
 
 type Info = { name: string, toJSON(): unknown; }
 
+/**
+ * @deprecated
+ */
 export interface Command<T extends CommandInteraction | MessageContextMenuInteraction = CommandInteraction> {
 	info?: Info
 
