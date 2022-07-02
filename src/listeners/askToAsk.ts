@@ -2,10 +2,10 @@ import {MarkedClient} from '../MarkedClient.js'
 import {getUserById} from '../store/models/DDUser.js'
 import stringSimilarity from 'string-similarity'
 import {Listener} from './listener.js'
-import {createFAQEmbed} from './faqListener.js'
 import {FAQ} from '../store/models/FAQ.js'
 import {logger} from '../logging.js'
 import {tierOf} from '../xp/levelling.js'
+import {createFaqEmbed} from '../modules/faq/faq.util.js'
 
 const targets = ['i need help', 'i have a problem', 'help me please', 'can anyone help me', 'someone help me', 'i have a question']
 	.map(x => x.toLowerCase())
@@ -29,7 +29,7 @@ export const askToAskListener: Listener = (client: MarkedClient) => {
 				logger.error('Could not find FAQ for ask')
 				return
 			}
-			await message.reply({embeds: [createFAQEmbed(faq, undefined)]})
+			await message.reply({embeds: [createFaqEmbed(faq, undefined)]})
 		}
 	})
 }

@@ -1,14 +1,10 @@
-import {Listener} from './listener.js'
-import {MarkedClient} from '../MarkedClient.js'
-import {FAQ} from '../store/models/FAQ.js'
+import {FAQ} from '../../store/models/FAQ.js'
 import {MessageEmbedOptions} from 'discord.js'
-import {createFaqEmbed} from '../modules/faq/faq.util.js'
+import {EventListener} from '../module.js'
+import {createFaqEmbed} from './faq.util.js'
 
-/**
- * @deprecated
- */
-export const faqListener: Listener = (client: MarkedClient) => {
-	client.on('messageCreate', async message => {
+export const FaqCommandListener: EventListener = {
+	async messageCreate(_, message) {
 		if (!message.content.startsWith('?')) return
 		const arg = message.content.split(/ /)[0].substring(1)
 		if (!arg) return
@@ -23,6 +19,5 @@ export const faqListener: Listener = (client: MarkedClient) => {
 
 		const embed: MessageEmbedOptions = createFaqEmbed(faq, message.author, message.member ?? undefined)
 		await message.reply({embeds: [embed]})
-	})
+	}
 }
-

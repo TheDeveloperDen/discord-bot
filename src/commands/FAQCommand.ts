@@ -9,11 +9,14 @@ import {
 } from 'discord.js'
 import {Command} from './Commands.js'
 import {FAQ} from '../store/models/FAQ.js'
-import {createFAQEmbed} from '../listeners/faqListener.js'
 import {update} from '../listeners/commandListener.js'
 import {MarkedClient} from '../MarkedClient.js'
+import {createFaqEmbed} from '../modules/faq/faq.util.js'
 
 
+/**
+ * @deprecated
+ */
 async function createCommandInfo() {
 	const options = await FAQ.findAll()
 	const choices = options.map(opt => ({name: opt.name, value: opt.name}))
@@ -49,6 +52,9 @@ async function createCommandInfo() {
 				.addChoices(...choices)))
 }
 
+/**
+ * @deprecated
+ */
 export const FAQCommand: Command = {
 	getInfo: createCommandInfo,
 
@@ -60,7 +66,7 @@ export const FAQCommand: Command = {
 				await interaction.reply({ephemeral: true, content: 'No FAQ found with this name'})
 				return
 			}
-			await interaction.reply({embeds: [createFAQEmbed(faq, interaction.user, interaction.member as GuildMember ?? undefined)]})
+			await interaction.reply({embeds: [createFaqEmbed(faq, interaction.user, interaction.member as GuildMember ?? undefined)]})
 			return
 		}
 		const member = interaction.member as GuildMember
@@ -135,6 +141,9 @@ export const FAQCommand: Command = {
 	}
 }
 
+/**
+ * @deprecated
+ */
 const createFAQModal = (faq?: FAQ) => {
 	const modal = new Modal()
 		.setTitle('FAQ Content')

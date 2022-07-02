@@ -4,7 +4,7 @@ import {tierOf} from '../xp/levelling'
 import stringSimilarity from 'string-similarity'
 import {logger} from '../logging'
 import {FAQ} from '../store/models/FAQ'
-import {createFAQEmbed} from '../listeners/faqListener'
+import {createFaqEmbed} from './faq/faq.util.js'
 
 const targets = ['i need help', 'i have a problem', 'help me please', 'can anyone help me', 'someone help me', 'i have a question']
 	.map(String.prototype.toLowerCase)
@@ -27,7 +27,7 @@ export const AskToAskModule: Module = {
 					logger.error('Could not find FAQ for ask')
 					return
 				}
-				await message.reply({embeds: [createFAQEmbed(faq, undefined)]})
+				await message.reply({embeds: [createFaqEmbed(faq, undefined)]})
 			}
 		}
 	}]
