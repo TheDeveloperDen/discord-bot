@@ -1,28 +1,22 @@
-import {Command} from './Commands'
-import {SlashCommandBuilder} from '@discordjs/builders'
-import {
-	ColorResolvable,
-	CommandInteraction,
-	GuildMember
-} from 'discord.js'
-import {config} from '../Config.js'
-import {ColourRoles} from '../store/models/ColourRoles.js'
+import {Command} from 'djs-slash-helper'
+import {ColorResolvable, GuildMember} from 'discord.js'
+import {ColourRoles} from '../../store/models/ColourRoles.js'
+import {config} from '../../Config.js'
+import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10'
 
-/**
- * @deprecated
- */
-export const ColourRoleCommand: Command = {
-	info: new SlashCommandBuilder()
-		.setName('rolecolour')
-		.setDescription('Set your role colour')
-		.setDefaultPermission(false)
-		.addStringOption(option => option
-			.setName('colour')
-			.setDescription('The colour to set as a hex string')
-			.setRequired(true)),
+export const RoleColourCommand: Command<ApplicationCommandType.ChatInput> = {
+	name: 'rolecolour',
+	description: 'Set your role colour',
+	type: ApplicationCommandType.ChatInput,
+	default_permission: false,
+	options: [{
+		type: ApplicationCommandOptionType.String,
+		name: 'colour',
+		description: 'The colour to set as a hex string',
+		required: true
+	}],
 
-	async execute(interaction: CommandInteraction) {
-
+	async handle(interaction) {
 		const colour = interaction.options.getString('colour', true)
 		if (!colour.startsWith('#') || colour.length !== 7) {
 			await interaction.reply({content: 'Not a valid colour', ephemeral: true})

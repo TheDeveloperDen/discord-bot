@@ -3,13 +3,18 @@ import {CommandInteraction, GuildMember} from 'discord.js'
 import {Command} from './Commands.js'
 import {config} from '../Config.js'
 
-
+/**
+ * @deprecated
+ */
 const allowedRoles = [
 	...config.roles.usersAllowedToSet,
 	config.roles.noPing,
 	config.roles.bumpNotifications
 ]
 
+/**
+ * @deprecated
+ */
 export const RoleCommand: Command = {
 	info: new SlashCommandBuilder()
 		.setName('role')
