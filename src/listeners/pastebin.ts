@@ -1,5 +1,5 @@
 import {Listener} from './listener.js'
-import {pastify} from '../util/pastify.js'
+import {pastify} from '../modules/pastify/pastify'
 
 export const pastebinListener: Listener = (client) => {
 	client.on('messageCreate', async (message) => {

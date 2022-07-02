@@ -1,8 +1,8 @@
 import fetch from 'node-fetch'
-import {config} from '../Config.js'
-import {logger} from '../logging.js'
-import {createStandardEmbed} from './embeds.js'
-import {mention} from './users.js'
+import {config} from '../../Config'
+import {logger} from '../../logging'
+import {createStandardEmbed} from '../../util/embeds'
+import {mention} from '../../util/users'
 import {InteractionReplyOptions, Message} from 'discord.js'
 
 const codeBlockPattern = /```(?:(?<lang>[a-zA-Z]+)?\n)?(?<content>(?:.|\n)*?)```|(?:(?:.|\n)(?!```))+/g

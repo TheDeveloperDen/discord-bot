@@ -1,8 +1,11 @@
 import {Command} from './Commands.js'
 import {Message, MessageContextMenuInteraction} from 'discord.js'
 import {ContextMenuCommandBuilder} from '@discordjs/builders'
-import {pastify} from '../util/pastify.js'
+import {pastify} from '../modules/pastify/pastify'
 
+/**
+ * @deprecated
+ */
 export const PastifyCommand: Command<MessageContextMenuInteraction> = {
 
 	info: new ContextMenuCommandBuilder()
