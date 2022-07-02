@@ -4,9 +4,9 @@ import {Client, GuildMember, PartialGuildMember, TextChannel} from 'discord.js'
 import {logger} from '../logging'
 import {createStandardEmbed} from '../util/embeds'
 import {branding} from '../util/branding'
-import {pseudoMention} from '../util/users'
+import {mention, pseudoMention} from '../util/users'
 
-async function handleEvent(client: Client, member: PartialGuildMember | GuildMember) {
+const handler = (isAdding: boolean) => async function (client: Client, member: PartialGuildMember | GuildMember) {
 	const channel = await client.channels.fetch(config.channels.welcome) as TextChannel
 	if (!channel) {
 		logger.error('Could not find welcome channel')
@@ -18,8 +18,11 @@ async function handleEvent(client: Client, member: PartialGuildMember | GuildMem
 		embeds: [
 			{
 				...createStandardEmbed(member),
-				title: 'members++',
-				description: branding.welcomeMessage(member),
+				title: `members${isAdding ? '++' : '--'};`,
+				description: isAdding ?
+					branding.welcomeMessage(member) :
+					// FIXME - extract this to branding?
+					`${mention(member)} has left! :(\nCurrent Member Count: ${member.guild.memberCount}`,
 				color: '#77dd77',
 				thumbnail: {
 					url: member.user.avatarURL() ?? 'https://cdn.discordapp.com/embed/avatars/0.png'
@@ -35,8 +38,8 @@ async function handleEvent(client: Client, member: PartialGuildMember | GuildMem
 export const JoinLeaveMessageModule: Module = {
 	name: 'joinLeaveMessage',
 	listeners: [{
-		guildMemberAdd: handleEvent,
-		guildMemberRemove: handleEvent
+		guildMemberAdd: handler(true),
+		guildMemberRemove: handler(false)
 	}]
 }
 
