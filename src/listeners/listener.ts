@@ -12,8 +12,14 @@ import * as commandListener from './commandListener.js'
 import {askToAskListener} from './askToAsk.js'
 import {faqListener} from './faqListener.js'
 
+/**
+ * @deprecated
+ */
 export type Listener = (client: MarkedClient) => void;
 
+/**
+ * @deprecated
+ */
 export const listeners = [xpHandler,
 	messageLoggerListener,
 	roleChangeListener,

@@ -1,10 +1,10 @@
-import {Guild, GuildMember} from 'discord.js'
+import {Guild, GuildMember, PartialGuildMember} from 'discord.js'
 import {config} from '../Config.js'
 
 export type BrandingConfig = {
 	name?: string,
 	iconUrl?: string,
-	welcomeMessage: (member: GuildMember) => string
+	welcomeMessage: (member: GuildMember | PartialGuildMember) => string
 	font: string,
 	color: string
 }

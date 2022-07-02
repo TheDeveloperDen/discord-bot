@@ -25,6 +25,9 @@ export const commands = [PasteCommand, XPCommand, RoleCommand, SetCommand, InfoC
 
 const rest = new REST({version: '10'}).setToken(process.env.BOT_TOKEN ?? '')
 
+/**
+ * @deprecated
+ */
 export async function init(client: MarkedClient) {
 	if (process.env.UPDATE_COMMANDS) {
 		logger.info('Registering interactions')
@@ -46,6 +49,9 @@ export async function init(client: MarkedClient) {
 	}))
 }
 
+/**
+ * @deprecated
+ */
 export async function update(client: MarkedClient, command: (Command | Command<MessageContextMenuInteraction>)[]) {
 	const info = await Promise.all(command.map(
 		async cmd => await commandInfo(cmd)
@@ -55,6 +61,9 @@ export async function update(client: MarkedClient, command: (Command | Command<M
 	})
 }
 
+/**
+ * @deprecated
+ */
 export function handle(client: MarkedClient) {
 	client.on('interactionCreate', async interaction => {
 		if (!interaction.isCommand() && !interaction.isMessageContextMenu()) return

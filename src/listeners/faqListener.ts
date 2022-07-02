@@ -5,6 +5,9 @@ import {createStandardEmbed, standardFooter} from '../util/embeds.js'
 import {GuildMember, MessageEmbedOptions, User} from 'discord.js'
 import {pseudoMention} from '../util/users.js'
 
+/**
+ * @deprecated
+ */
 export const faqListener: Listener = (client: MarkedClient) => {
 	client.on('messageCreate', async message => {
 		if (!message.content.startsWith('?')) return
@@ -24,6 +27,9 @@ export const faqListener: Listener = (client: MarkedClient) => {
 	})
 }
 
+/**
+ * @deprecated
+ */
 export const createFAQEmbed = (faq: FAQ, requester?: User, user?: GuildMember) => {
 	return {
 		...createStandardEmbed(user),

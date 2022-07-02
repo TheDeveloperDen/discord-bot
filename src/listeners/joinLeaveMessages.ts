@@ -6,6 +6,9 @@ import {mention, pseudoMention} from '../util/users.js'
 import {config} from '../Config.js'
 import {branding} from '../util/branding.js'
 
+/**
+ * @deprecated
+ */
 export const joinLeaveListener: Listener = (client) => {
 	client.on('guildMemberAdd', async member => {
 		const channel = await client.channels.fetch(config.channels.welcome) as TextChannel

@@ -1,6 +1,9 @@
 import {Listener} from './listener.js'
 import {ClientUser} from 'discord.js'
 
+/**
+ * @deprecated
+ */
 const languages = [
 	'C',
 	'C++',
@@ -39,6 +42,10 @@ const languages = [
 	'Fortran',
 	'ALGOL 55'
 ]
+
+/**
+ * @deprecated
+ */
 export const languageStatusListener: Listener = (client) => {
 	const update = (user: ClientUser) => {
 		user.setActivity(`Coding in ${languages.randomElement()}`, {type: 'PLAYING'})

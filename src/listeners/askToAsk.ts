@@ -10,6 +10,9 @@ import {tierOf} from '../xp/levelling.js'
 const targets = ['i need help', 'i have a problem', 'help me please', 'can anyone help me', 'someone help me', 'i have a question']
 	.map(x => x.toLowerCase())
 
+/**
+ * @deprecated
+ */
 export const askToAskListener: Listener = (client: MarkedClient) => {
 	client.on('messageCreate', async message => {
 		if (message.author.bot) return
