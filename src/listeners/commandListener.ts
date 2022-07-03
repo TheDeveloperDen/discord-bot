@@ -1,27 +1,19 @@
 import {Command, commandInfo} from '../commands/Commands.js'
 import {logger} from '../logging.js'
 import {MarkedClient} from '../MarkedClient.js'
-import {PasteCommand} from '../commands/PasteCommand.js'
-import {XPCommand} from '../commands/XPCommand.js'
-import {RoleCommand} from '../commands/RoleCommand.js'
 import {SetCommand} from '../commands/SetCommand.js'
 import {InfoCommand} from '../commands/InfoCommand.js'
 import {HotTakeCommand} from '../commands/HotTakeCommand.js'
-import {ColourRoleCommand} from '../commands/ColourRoleCommand.js'
 import {TimeoutCommand} from '../commands/TimeoutCommand.js'
-import {PastifyCommand} from '../commands/PastifyCommand.js'
 import {REST} from '@discordjs/rest'
 import {Routes} from 'discord-api-types/v9'
 import {config} from '../Config.js'
 import {LeaderboardCommand} from '../commands/LeaderboardCommand.js'
-import {DailyRewardCommand} from '../commands/DailyRewardCommand.js'
 import {MessageContextMenuInteraction} from 'discord.js'
-import {FAQCommand} from '../commands/FAQCommand.js'
 import {LearningCommand} from '../commands/LearningCommand.js'
 
-export const commands = [PasteCommand, XPCommand, RoleCommand, SetCommand, InfoCommand, HotTakeCommand,
-	ColourRoleCommand, TimeoutCommand, PastifyCommand, LeaderboardCommand,
-	DailyRewardCommand, FAQCommand, LearningCommand]
+export const commands = [ SetCommand, InfoCommand, HotTakeCommand,
+	TimeoutCommand, LeaderboardCommand, LearningCommand]
 
 const rest = new REST({version: '10'}).setToken(process.env.BOT_TOKEN ?? '')
 

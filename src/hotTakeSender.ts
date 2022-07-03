@@ -21,11 +21,17 @@ type Placeholder
 	| 'year' // A random year in the 20th or 21st centuries
 	| Placeholder[]
 
+/**
+ * @deprecated
+ */
 function findPlaceholders(message: string): Placeholder[] {
 	const matches = Array.from(message.matchAll(placeholderRegex))
 	return matches.map(match => parsePlaceholder(match[1]))
 }
 
+/**
+ * @deprecated
+ */
 function parsePlaceholder(message: string): Placeholder {
 	const parts = message.split('|')
 	if (parts.length == 1) {
@@ -35,6 +41,9 @@ function parsePlaceholder(message: string): Placeholder {
 	}
 }
 
+/**
+ * @deprecated
+ */
 function placeholderValues(placeholder: Placeholder, extraUsers: string[] = []): string[] {
 	if (Array.isArray(placeholder)) {
 		return placeholder.flatMap(p => placeholderValues(p, extraUsers))
@@ -63,6 +72,9 @@ function placeholderValues(placeholder: Placeholder, extraUsers: string[] = []):
 	}
 }
 
+/**
+ * @deprecated
+ */
 function stringPlaceholder(placeholder: Placeholder): string {
 	if (Array.isArray(placeholder)) {
 		return placeholder.map(stringPlaceholder).join('|')
@@ -85,6 +97,9 @@ export async function generateHotTake(guild?: Guild): Promise<string> {
 	return capitalize(take)
 }
 
+/**
+ * @deprecated
+ */
 async function getExtraUsersInGuild(guild: Guild): Promise<string[]> {
 	const users = await guild.members.fetch()
 	return users.filter(user => {
