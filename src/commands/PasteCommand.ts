@@ -3,6 +3,9 @@ import {CommandInteraction} from 'discord.js'
 import {Command} from './Commands.js'
 import {config} from '../Config.js'
 
+/**
+ * @deprecated
+ */
 export const PasteCommand: Command = {
 	info: new SlashCommandBuilder()
 		.setName('paste')
