@@ -1,19 +1,17 @@
-import {Command} from './Commands.js'
-import {SlashCommandBuilder} from '@discordjs/builders'
 import {CommandInteraction, GuildMember} from 'discord.js'
-import {getUserById} from '../store/models/DDUser.js'
-import {createStandardEmbed} from '../util/embeds.js'
-import {logger} from '../logging.js'
+import {Command} from 'djs-slash-helper'
+import {ApplicationCommandType} from 'discord-api-types/v10'
+import {logger} from '../../logging.js'
+import {getUserById} from '../../store/models/DDUser.js'
+import {createStandardEmbed} from '../../util/embeds.js'
 
-/**
- * @deprecated
- */
-export const DailyRewardCommand: Command = {
-	info: new SlashCommandBuilder()
-		.setName('daily')
-		.setDescription('Claim your daily reward'),
+export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
+	name: 'daily',
+	description: 'Claim your daily reward',
+	type: ApplicationCommandType.ChatInput,
+	options: [],
 
-	async execute(interaction: CommandInteraction) {
+	async handle(interaction: CommandInteraction) {
 		const user = interaction.member as GuildMember
 		if (!user) {
 			await interaction.reply('You must be in a guild to use this command')
@@ -65,9 +63,6 @@ export const DailyRewardCommand: Command = {
 	}
 }
 
-/**
- * @deprecated
- */
 export const formatDayCount = (count: number) => {
 	if (count === 1) {
 		return '1 day'
