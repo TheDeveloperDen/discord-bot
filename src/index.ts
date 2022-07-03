@@ -7,10 +7,17 @@ import {setupBranding} from './util/branding.js'
 import * as commandListener from './listeners/commandListener.js'
 import * as storage from './store/storage.js'
 import './util/random.js'
+import ModuleManager from './modules/moduleManager.js'
 
 const client = new Client({
 	intents: [Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]
 }) as MarkedClient
+
+const moduleManager = new ModuleManager(client,
+	config.clientId,
+	config.guildId,
+	[])
+
 client.commands = new Collection()
 
 async function logIn() {
@@ -31,5 +38,8 @@ async function main() {
 	await Promise.all([storage.init(), logIn().then(commandListener.init)])
 	const guild = await client.guilds.fetch(config.guildId)
 	setupBranding(guild)
+
+	await moduleManager.refreshCommands()
 }
+
 main()

@@ -9,6 +9,9 @@ import {mention, mentionWithNoPingMessage, pseudoMention} from '../util/users.js
 import {modifyRoles} from '../util/roles.js'
 import {logger} from '../logging.js'
 
+/**
+ * @deprecated
+ */
 const xpHandler: Listener = (client) => {
 	client.on('messageCreate', async msg => {
 		if (!(msg.channel instanceof TextChannel)) {
@@ -33,6 +36,9 @@ const xpHandler: Listener = (client) => {
 	})
 }
 
+/**
+ * @deprecated
+ */
 const levelUp = async (client: Client, user: GuildMember, ddUser: DDUser) => {
 	let level = ddUser.level
 	while (xpForLevel(level) <= ddUser.xp) {
@@ -46,6 +52,9 @@ const levelUp = async (client: Client, user: GuildMember, ddUser: DDUser) => {
 	await sendLevelUpMessage(client, user, ddUser)
 }
 
+/**
+ * @deprecated
+ */
 const applyTierRoles = async (client: Client, user: GuildMember, ddUser: DDUser) => {
 	const tier = tierRoleId(ddUser.level)
 	await modifyRoles(client, user, {
@@ -54,6 +63,9 @@ const applyTierRoles = async (client: Client, user: GuildMember, ddUser: DDUser)
 	})
 }
 
+/**
+ * @deprecated
+ */
 const sendLevelUpMessage = async (client: Client, member: GuildMember, ddUser: DDUser) => {
 	const user = member.user
 	const channel = await client.channels.fetch(config.channels.botCommands) as TextChannel

@@ -1,5 +1,5 @@
 import {Command, ExecutableSubcommand} from 'djs-slash-helper'
-import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10.js'
+import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10'
 import {FAQ} from '../../store/models/FAQ.js'
 import {createFaqEmbed} from './faq.util.js'
 import createFaqModal from './faq.modal.js'

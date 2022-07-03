@@ -3,6 +3,9 @@ import {modifyRoles} from '../util/roles.js'
 
 const editing = new Set<string>()
 
+/**
+ * @deprecated
+ */
 export const roleChangeListener: Listener = (client) =>
 // save the user's message when they send a message
 	client.on('guildMemberUpdate', (event) => {

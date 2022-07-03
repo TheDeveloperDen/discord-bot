@@ -1,4 +1,4 @@
-import {Message, TextChannel, User} from 'discord.js'
+import {Channel, Message, User} from 'discord.js'
 import {config} from '../Config.js'
 import {Config} from '../config.type'
 import {getMessages} from '../listeners/messageLogger.js'
@@ -10,7 +10,10 @@ const similarityProportion = (a: string, b: string) => distance(a, b) / b.length
 const minMessageLength = 6
 const minDistance = 0.4
 
-export async function shouldCountForStats(author: User, message: Message, channel: TextChannel, config: Config) {
+/**
+ * @deprecated
+ */
+export async function shouldCountForStats(author: User, message: Message, channel: Channel, config: Config) {
 	if (author.bot) return false
 	if (channel.id == config.channels.botCommands) return false
 	const content = message.content
@@ -25,8 +28,14 @@ export async function shouldCountForStats(author: User, message: Message, channe
 	return asArray.some(it => it.match(/[a-z ]/i))
 }
 
+/**
+ * @deprecated
+ */
 export const tierOf = (level: number) => level <= 0 ? 0 : 1 + Math.floor(level / 10)
 
+/**
+ * @deprecated
+ */
 export const tierRoleId = (level: number) => {
 	const tier = tierOf(level)
 	if (tier < config.roles.tiers.length) return config.roles.tiers[tier]

@@ -1,7 +1,7 @@
 import {config} from '../../Config.js'
 import {Command} from 'djs-slash-helper'
 import {GuildMember} from 'discord.js'
-import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10.js'
+import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10'
 
 const allowedRoles = [
 	...config.roles.usersAllowedToSet,

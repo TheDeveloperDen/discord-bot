@@ -9,8 +9,14 @@ const stripPings = (message: string) => message.replace(pingRegex, '')
 const strip = compose(stripPunctuation, stripPings)
 
 
+/**
+ * @deprecated
+ */
 export const xpForLevel = (level: number) => Math.floor(level ** 3 + 27 * level ** 2 + 125 * level)
 
+/**
+ * @deprecated
+ */
 function findForward(input: string, index: number, set: Set<string>): number {
 	let current = ''
 	while (set.has(current) && index < input.length) {
@@ -21,6 +27,9 @@ function findForward(input: string, index: number, set: Set<string>): number {
 	return current.length
 }
 
+/**
+ * @deprecated
+ */
 function compressibility(input: string): number {
 	input = input.toLowerCase()
 	const things = new Set<string>()
@@ -35,6 +44,9 @@ function compressibility(input: string): number {
 	return cut / input.length
 }
 
+/**
+ * @deprecated
+ */
 export const xpForMessage = (message: string) => {
 	const length = strip(message).length
 	return Math.round((1 - compressibility(message)) * Math.tanh(length / 3) + Math.pow(length, 0.75))

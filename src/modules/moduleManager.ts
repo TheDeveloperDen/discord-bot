@@ -1,6 +1,7 @@
-import {Client, ClientEvents} from 'discord.js'
+import {Client, ClientEvents, Snowflake} from 'discord.js'
 import Module from './module.js'
 import EventEmitter from 'events'
+import {CommandManager} from 'djs-slash-helper'
 
 export default class ModuleManager {
 
@@ -20,7 +21,7 @@ export default class ModuleManager {
 					 * so we disable typechecking with the `any` cast. a simple @ts-ignore would not be
 					 * sufficient here as it would still typecheck (which literally quadrupled the build
 					 * time) but silently fail
-					*/
+					 */
 					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					(listener as any)[event]?.(this, args)
 				}
@@ -29,8 +30,17 @@ export default class ModuleManager {
 		}
 	}
 
-	constructor(private readonly client: Client, private readonly modules: Module[]) {
+	private readonly commandManager: CommandManager
+
+	constructor(private readonly client: Client,
+				private readonly clientId: Snowflake,
+				private readonly guildId: Snowflake,
+				private readonly modules: Module[]) {
 		client.emit = this.overrideEmit()
+		this.commandManager = new CommandManager(modules.flatMap(it => it.commands ?? []), client)
 	}
 
+	async refreshCommands() {
+		await this.commandManager.setupForGuild(this.clientId, this.guildId)
+	}
 }

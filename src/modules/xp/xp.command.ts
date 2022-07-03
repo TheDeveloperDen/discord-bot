@@ -1,35 +1,34 @@
-import {SlashCommandBuilder} from '@discordjs/builders'
 import {CommandInteraction, GuildMember, MessageEmbedOptions, User} from 'discord.js'
-import {getUserById} from '../store/models/DDUser.js'
-import {createImage, font, getCanvasContext} from '../util/imageUtils.js'
-import {createStandardEmbed} from '../util/embeds.js'
-import {xpForLevel} from '../xp/experienceCalculations.js'
-import {Command} from './Commands.js'
-import {drawText} from '../util/textRendering.js'
-import {branding} from '../util/branding.js'
-import {formatDayCount} from './DailyRewardCommand.js'
+import {getUserById} from '../../store/models/DDUser.js'
+import {createStandardEmbed} from '../../util/embeds.js'
+import {formatDayCount} from '../../commands/DailyRewardCommand.js'
+import {xpForLevel} from '../../xp/experienceCalculations.js'
+import {createImage, font, getCanvasContext} from '../../util/imageUtils.js'
+import {branding} from '../../util/branding.js'
+import {drawText} from '../../util/textRendering.js'
+import {Command} from 'djs-slash-helper'
+import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10'
 
 
-/**
- * @deprecated
- */
-export const XPCommand: Command = {
-	info: new SlashCommandBuilder()
-		.setName('xp')
-		.setDescription('Show a member\'s XP')
-		.addUserOption(option => option
-			.setName('member')
-			.setDescription('The member to show XP for')
-			.setRequired(false)),
+export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
+	name: 'xp',
+	type: ApplicationCommandType.ChatInput,
+	description: 'Show a member\'s XP',
+	options: [{
+		type: ApplicationCommandOptionType.User,
+		name: 'member',
+		description: 'The member to show XP for',
+		required: false
+	}],
 
 
-	async execute(interaction: CommandInteraction) {
-		const user = interaction.options.getUser('member') || interaction.user as User
-		const member = interaction.options.getMember('member') as GuildMember ?? interaction.member as GuildMember
+	async handle(interaction: CommandInteraction) {
+		const user = interaction.options.getUser('member') ?? interaction.user as User
+		const member = (interaction.options.getMember('member') ?? interaction.member) as GuildMember
 		await interaction.deferReply()
 		const ddUser = await getUserById(BigInt(user.id))
 		const xp = ddUser.xp
-		const image = await createXPImage(xp, member)
+		const image = createXpImage(xp, member)
 		await interaction.followUp({
 			embeds: [{
 				...createStandardEmbed(member),
@@ -60,15 +59,8 @@ export const XPCommand: Command = {
 
 }
 
-/**
- * @deprecated
- */
 const xpBackground = createImage(1000, 500, '#2b2d2f')
-
-/**
- * @deprecated
- */
-const createXPImage = async (xp: number, user: GuildMember) => {
+function createXpImage(xp: number, user: GuildMember) {
 	const [canvas, ctx] = getCanvasContext(1000, 500)
 	ctx.drawImage(xpBackground, 0, 0)
 
