@@ -29,7 +29,13 @@ export const xpHandler: Listener = (client) => {
 	})
 }
 
-export const giveXP = async (user: GuildMember, xp: number) => {
+/**
+ * Gives XP to a member
+ * @param user the member to give XP to
+ * @param xp the amount of XP to give
+ * @returns How much XP was given. This may be affected by perks such as boosting. If something went wrong, -1 will be returned.
+ */
+export const giveXP = async (user: GuildMember, xp: number): Promise<number> => {
 	const client = user.client
 	if (user.premiumSince != null) {
 		xp *= 2 // double xp for boosters
@@ -37,12 +43,13 @@ export const giveXP = async (user: GuildMember, xp: number) => {
 	const ddUser = await getUserById(BigInt(user.id))
 	if (!ddUser) {
 		logger.error(`Could not find or create user with id ${user.id}`)
-		return
+		return -1
 	}
 	ddUser.xp += xp
 	await levelUp(client, user, ddUser)
 	await ddUser.save()
 	logger.info(`Gave ${xp} XP to user ${user.id}`)
+	return xp
 }
 
 const levelUp = async (client: Client, user: GuildMember, ddUser: DDUser) => {
