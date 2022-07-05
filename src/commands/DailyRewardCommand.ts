@@ -4,6 +4,7 @@ import {CommandInteraction, GuildMember} from 'discord.js'
 import {getUserById} from '../store/models/DDUser.js'
 import {createStandardEmbed} from '../util/embeds.js'
 import {logger} from '../logging.js'
+import {giveXP} from '../xp/xpHandler.js'
 
 export const DailyRewardCommand: Command = {
 	info: new SlashCommandBuilder()
@@ -42,7 +43,7 @@ export const DailyRewardCommand: Command = {
 		}
 
 		const xpToGive = Math.min(50 + 20 * (ddUser.currentDailyStreak - 1), 1000)
-		ddUser.xp += xpToGive
+		await giveXP(user, xpToGive)
 		ddUser.lastDailyTime = new Date()
 		await ddUser.save()
 
