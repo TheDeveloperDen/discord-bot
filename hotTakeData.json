@@ -294,6 +294,7 @@
     "{problem} this, {problem} that. How about you learn {thing} instead?",
     "Did you hear what happened over at {company}? Me neither, nobody cares about them.",
     "\"{entity}\".js is the next big JS framework.",
-    "Lots of programming languages and tools have already fixed {problem} - {thing}, {thing}, {thing}, etc."
+    "Lots of programming languages and tools have already fixed {problem} - {thing}, {thing}, {thing}, etc.",
+    "Everyone should learn {language} as their first language"
   ]
 }
