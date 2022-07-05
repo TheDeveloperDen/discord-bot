@@ -10,6 +10,9 @@ export const faqListener: Listener = (client: MarkedClient) => {
 		if (!message.content.startsWith('?')) return
 		const arg = message.content.split(/ /)[0].substring(1)
 		if (!arg) return
+		if (arg.match(/[?]+/)) {
+			return // Don't need to handle stuff like "???"
+		}
 		const faq = await FAQ.findOne({
 			where: {name: arg}
 		})
