@@ -43,7 +43,7 @@ export const DailyRewardCommand: Command = {
 		}
 
 		const xpToGive = Math.min(50 + 20 * (ddUser.currentDailyStreak - 1), 1000)
-		await giveXP(user, xpToGive)
+		const {xpGiven, multiplier} = await giveXP(user, xpToGive)
 		ddUser.lastDailyTime = new Date()
 		await ddUser.save()
 
@@ -55,7 +55,7 @@ export const DailyRewardCommand: Command = {
 					title: 'Daily Reward Claimed!',
 					description:
 						`📆 Current Streak = ${formatDayCount(ddUser.currentDailyStreak)}
-⭐️ + ${xpToGive} XP
+⭐️ + ${xpGiven} XP ${multiplier ? `(x${multiplier})` : ''}
 ⏰ Come back in 24 hours for a new reward!`
 				},
 			]
