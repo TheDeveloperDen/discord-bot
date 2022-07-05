@@ -33,23 +33,34 @@ export const xpHandler: Listener = (client) => {
  * Gives XP to a member
  * @param user the member to give XP to
  * @param xp the amount of XP to give
- * @returns How much XP was given. This may be affected by perks such as boosting. If something went wrong, -1 will be returned.
+ * @returns How much XP was given and the multiplier used. This may be affected by perks such as boosting. If something went wrong, -1 will be returned.
  */
-export const giveXP = async (user: GuildMember, xp: number): Promise<number> => {
+export const giveXP = async (user: GuildMember, xp: number): Promise<XPResult> => {
 	const client = user.client
+	let multiplier = 1
 	if (user.premiumSince != null) {
-		xp *= 2 // double xp for boosters
+		multiplier *= 2 // double xp for boosters
 	}
 	const ddUser = await getUserById(BigInt(user.id))
 	if (!ddUser) {
 		logger.error(`Could not find or create user with id ${user.id}`)
-		return -1
+		return {xpGiven: -1}
 	}
-	ddUser.xp += xp
+	ddUser.xp += xp * multiplier
 	await levelUp(client, user, ddUser)
 	await ddUser.save()
 	logger.info(`Gave ${xp} XP to user ${user.id}`)
-	return xp
+	return {xpGiven: xp * multiplier, multiplier: multiplier == 1 ? undefined : multiplier}
+}
+
+/**
+ * Result of giving a member XP
+ * @param xpGiven The amount of XP given
+ * @param multiplier The multiplier used. If undefined, no multiplier was used, i.e the multiplier was 1
+ */
+export type XPResult = {
+	xpGiven: number,
+	multiplier?: number
 }
 
 const levelUp = async (client: Client, user: GuildMember, ddUser: DDUser) => {
