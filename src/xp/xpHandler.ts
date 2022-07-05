@@ -31,6 +31,9 @@ export const xpHandler: Listener = (client) => {
 
 export const giveXP = async (user: GuildMember, xp: number) => {
 	const client = user.client
+	if (user.premiumSince != null) {
+		xp *= 2 // double xp for boosters
+	}
 	const ddUser = await getUserById(BigInt(user.id))
 	if (!ddUser) {
 		logger.error(`Could not find or create user with id ${user.id}`)
