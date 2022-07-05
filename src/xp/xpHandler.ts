@@ -56,7 +56,7 @@ export const giveXP = async (user: GuildMember, xp: number): Promise<XPResult> =
 /**
  * Result of giving a member XP
  * @param xpGiven The amount of XP given
- * @param multiplier The multiplier used. If undefined, no multiplier was used, i.e the multiplier was 1
+ * @param multiplier The multiplier used. If undefined, no multiplier was used, i.e. the multiplier was 1
  */
 export type XPResult = {
 	xpGiven: number,
