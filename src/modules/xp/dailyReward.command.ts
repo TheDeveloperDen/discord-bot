@@ -63,7 +63,7 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
 	}
 }
 
-export const formatDayCount = (count: number) => {
+export function formatDayCount(count: number) {
 	if (count === 1) {
 		return '1 day'
 	}

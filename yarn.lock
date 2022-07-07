@@ -571,10 +571,10 @@ camelcase@^6.2.0:
   resolved "https://registry.npmjs.org/camelcase/-/camelcase-6.3.0.tgz"
   integrity sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==
 
-canvas@^2.8.0:
-  version "2.9.0"
-  resolved "https://registry.npmjs.org/canvas/-/canvas-2.9.0.tgz"
-  integrity sha512-0l93g7uxp7rMyr7H+XRQ28A3ud0dKIUTIEkUe1Dxh4rjUYN7B93+SjC3r1PDKA18xcQN87OFGgUnyw7LSgNLSQ==
+canvas@^2.9.3:
+  version "2.9.3"
+  resolved "https://registry.yarnpkg.com/canvas/-/canvas-2.9.3.tgz#8723c4f970442d4cdcedba5221579f9660a58bdb"
+  integrity sha512-WOUM7ghii5TV2rbhaZkh1youv/vW1/Canev6Yx6BG2W+1S07w8jKZqKkPnbiPpQEDsnJdN8ouDd7OvQEGXDcUw==
   dependencies:
     "@mapbox/node-pre-gyp" "^1.0.0"
     nan "^2.15.0"

@@ -23,7 +23,7 @@ export default class ModuleManager {
 					 * time) but silently fail
 					 */
 					// eslint-disable-next-line @typescript-eslint/no-explicit-any
-					(listener as any)[event]?.(this, args)
+					(listener as any)[event]?.(this, ...args)
 				}
 			}
 			return EventEmitter.prototype.emit.call(this, event, ...args)

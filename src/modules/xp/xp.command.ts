@@ -1,13 +1,13 @@
 import {CommandInteraction, GuildMember, MessageEmbedOptions, User} from 'discord.js'
 import {getUserById} from '../../store/models/DDUser.js'
 import {createStandardEmbed} from '../../util/embeds.js'
-import {formatDayCount} from '../../commands/DailyRewardCommand.js'
-import {xpForLevel} from '../../xp/experienceCalculations.js'
+import {xpForLevel} from './xpForMessage.util.js'
 import {createImage, font, getCanvasContext} from '../../util/imageUtils.js'
 import {branding} from '../../util/branding.js'
 import {drawText} from '../../util/textRendering.js'
 import {Command} from 'djs-slash-helper'
 import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10'
+import {formatDayCount} from './dailyReward.command.js'
 
 
 export const XpCommand: Command<ApplicationCommandType.ChatInput> = {

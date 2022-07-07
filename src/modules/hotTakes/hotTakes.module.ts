@@ -1,7 +1,9 @@
 import Module from '../module.js'
-import hotTakeCommand from './hotTake.command.js'
+import HotTakeCommand from './hotTake.command.js'
+import HotTakeListener from './hotTakes.listener.js'
 
 export const HotTakesModule: Module = {
 	name: 'hotTakes',
-	commands: [hotTakeCommand]
+	commands: [HotTakeCommand],
+	listeners: [HotTakeListener]
 }
