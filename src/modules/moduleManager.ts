@@ -12,7 +12,7 @@ export default class ModuleManager {
 	overrideEmit() {
 		const modules = this.modules
 
-		return function emit<K extends keyof ClientEvents>(this: Client, event: K, args: ClientEvents[K]) {
+		return function emit<K extends keyof ClientEvents>(this: Client, event: K, ...args: ClientEvents[K]) {
 			for (const module of modules) {
 				if (!module.listeners) continue
 				for (const listener of module.listeners) {
@@ -26,7 +26,7 @@ export default class ModuleManager {
 					(listener as any)[event]?.(this, args)
 				}
 			}
-			return EventEmitter.prototype.emit.call(this, event, args)
+			return EventEmitter.prototype.emit.call(this, event, ...args)
 		}
 	}
 
@@ -36,7 +36,7 @@ export default class ModuleManager {
 				private readonly clientId: Snowflake,
 				private readonly guildId: Snowflake,
 				private readonly modules: Module[]) {
-		client.emit = this.overrideEmit()
+		client.emit = this.overrideEmit().bind(client)
 		this.commandManager = new CommandManager(modules.flatMap(it => it.commands ?? []), client)
 	}
 

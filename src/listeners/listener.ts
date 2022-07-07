@@ -8,7 +8,6 @@ import {roleChangeListener} from '../xp/roleUpdates.js'
 import {pastebinListener} from './pastebin.js'
 import {tokenScanner} from './tokenScanner.js'
 import {hotTakeListener} from '../hotTakeSender.js'
-import * as commandListener from './commandListener.js'
 import {askToAskListener} from './askToAsk.js'
 import {faqListener} from './faqListener.js'
 
@@ -30,5 +29,4 @@ export const listeners = [xpHandler,
 	hotTakeListener,
 	showcaseListener,
 	askToAskListener,
-	faqListener,
-	commandListener.handle]
+	faqListener]

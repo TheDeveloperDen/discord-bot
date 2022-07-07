@@ -2,16 +2,16 @@ import {randomInt} from 'crypto'
 import {Guild} from 'discord.js'
 import {config} from '../../Config.js'
 import {actualMention} from '../../util/users.js'
+import {readFileSync} from 'fs'
 
-// TODO
-declare const hotTakeData: {
+const hotTakeData: {
 	people: string[],
 	companies: string[],
 	languages: string[]
 	technologies: string[],
 	problems: string[]
 	takes: string[],
-}
+} = JSON.parse(readFileSync(process.cwd()+'/hotTakeData.json').toString())
 
 const placeholders = {
 	language: () => hotTakeData.languages,
@@ -35,7 +35,6 @@ function combineSources(...source: (keyof typeof hotTakeData)[]) {
 	return (users: string[]) => hotTakeData[source[0]].concat(source.slice(1).flatMap(it => hotTakeData[it]), users)
 }
 
-
 async function getAdditionalUsers(guild: Guild): Promise<string[]> {
 	const users = await guild.members.fetch()
 	return users.filter(user => {
@@ -44,19 +43,18 @@ async function getAdditionalUsers(guild: Guild): Promise<string[]> {
 }
 
 
-const parseHotTake = async (input: string, users: string[], guild: Guild) => {
+export default async function generateHotTake(guild: Guild) {
 	const members = await getAdditionalUsers(guild)
-	input.replace(/{(\w+)}/g, value => {
-		const sub = value.slice(1, -1)
-		return isValidPlaceholder(sub) ? placeholders[sub](members).randomElement() : value
-	})
+	return hotTakeData.takes.randomElement().replace(/{[\w|]+}/g, value => value
+		.slice(1, -1)
+		.split('|')
+		.filter(isValidPlaceholder)
+		.flatMap(it => placeholders[it](members))
+		.randomElement()
+	)
 }
 
 /**
  * todo:
- * - real data
- * - actually generate a take
- * - multi-type placeholders with |
  * - auto creation and stuff
- *
  */
