@@ -32,7 +32,8 @@ const EditSubcommand: ExecutableSubcommand = {
 	options: [{
 		type: ApplicationCommandOptionType.String,
 		name: 'name',
-		description: 'The name of the FAQ'
+		description: 'The name of the FAQ',
+		required: true
 	}],
 	async handle(interaction) {
 		const name = interaction.options.getString('name')
