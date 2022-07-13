@@ -59,5 +59,6 @@ export const TimeoutCommand: Command<ApplicationCommandType.ChatInput> = {
 			]
 		})
 	}
-
 }
+
+export default TimeoutCommand
