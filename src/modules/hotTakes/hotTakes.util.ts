@@ -44,7 +44,7 @@ async function getAdditionalUsers(guild: Guild): Promise<string[]> {
 
 
 export default async function generateHotTake(guild: Guild) {
-	const members = await getAdditionalUsers(guild)
+	const members = await getAdditionalUsers(guild).catch(() => [])
 	return hotTakeData.takes.randomElement().replace(/{[\w|]+}/g, value => value
 		.slice(1, -1)
 		.split('|')
