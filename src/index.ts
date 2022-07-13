@@ -9,6 +9,8 @@ import ModuleManager from './modules/moduleManager.js'
 import {HotTakesModule} from './modules/hotTakes/hotTakes.module.js'
 import ImageForwarderModule from './modules/imageForwarder.module.js'
 import {XpModule} from './modules/xp/xp.module.js'
+import {TokenScannerModule} from './modules/tokenScanner.module.js'
+import {RolesModule} from './modules/roles/roles.module.js'
 
 const client = new Client({
 	intents: [Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]
@@ -17,7 +19,12 @@ const client = new Client({
 const moduleManager = new ModuleManager(client,
 	config.clientId,
 	config.guildId,
-	[HotTakesModule, ImageForwarderModule, XpModule])
+	[
+		HotTakesModule,
+		ImageForwarderModule,
+		RolesModule,
+		TokenScannerModule,
+		XpModule])
 
 client.commands = new Collection()
 
