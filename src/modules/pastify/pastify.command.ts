@@ -4,7 +4,7 @@ import {pastify} from './pastify'
 import {Message} from 'discord.js'
 
 export const PastifyCommand: Command<ApplicationCommandType.Message> = {
-	name: 'pastify',
+	name: 'Pastify',
 	default_permission: false,
 	type: ApplicationCommandType.Message,
 	async handle(interaction) {
