@@ -1,9 +1,7 @@
 import {config} from './Config.js'
-import {Client, Collection, Intents} from 'discord.js'
-import {MarkedClient} from './MarkedClient.js'
+import {Client, Intents} from 'discord.js'
 import {logger} from './logging.js'
 import {setupBranding} from './util/branding.js'
-import * as storage from './store/storage.js'
 import './util/random.js'
 import ModuleManager from './modules/moduleManager.js'
 import {HotTakesModule} from './modules/hotTakes/hotTakes.module.js'
@@ -18,12 +16,13 @@ import {LanguageStatusModule} from './modules/languageStatus.module.js'
 import AskToAskModule from './modules/askToAsk.module.js'
 import JoinLeaveMessageModule from './modules/joinLeaveMessage.module.js'
 import {CoreModule} from './modules/core/core.module.js'
+import {LearningModule} from './modules/learning/learning.module.js'
 
 const client = new Client({
 	intents: [Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]
-}) as MarkedClient
+})
 
-const moduleManager = new ModuleManager(client,
+export const moduleManager = new ModuleManager(client,
 	config.clientId,
 	config.guildId,
 	[
@@ -34,13 +33,12 @@ const moduleManager = new ModuleManager(client,
 		ImageForwarderModule,
 		JoinLeaveMessageModule,
 		LanguageStatusModule,
+		LearningModule,
 		PastifyModule,
 		RolesModule,
 		ShowcaseModule,
 		TokenScannerModule,
 		XpModule])
-
-client.commands = new Collection()
 
 async function logIn() {
 	const token = process.env.BOT_TOKEN
@@ -56,7 +54,8 @@ async function logIn() {
 }
 
 async function main() {
-	await Promise.all([storage.init(), logIn().then(moduleManager.refreshCommands.bind(moduleManager))])
+	await logIn()
+	await moduleManager.refreshCommands()
 	const guild = await client.guilds.fetch(config.guildId)
 	setupBranding(guild)
 }

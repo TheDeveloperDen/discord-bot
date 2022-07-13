@@ -1,6 +1,6 @@
-import {LearningResource} from './models/LearningResource.js'
-import {logger} from '../logging.js'
+import {logger} from '../../logging.js'
 import fetch from 'node-fetch'
+import {LearningResource} from './learningResource.model.js'
 
 const cache = new Map<string, LearningResource>()
 
@@ -24,7 +24,7 @@ export async function updateAllResources() {
 	})
 }
 
-export async function getAllCachedResources() {
+export function getAllCachedResources() {
 	return Array.from(cache.values())
 }
 

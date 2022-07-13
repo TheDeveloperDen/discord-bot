@@ -19,11 +19,17 @@ export const sequelize = new Sequelize({
 	logging: (msg) => logger.debug(msg),
 })
 
+let resolve: () => void
+export const databaseInit = new Promise<void>(r => resolve = r)
+
 export async function init() {
 	const models = [DDUser, ColourRoles, FAQ]
 	sequelize.addModels(models)
 	for (const model of models) {
 		await model.sync()
 	}
+	resolve()
 	logger.info('Initialised database')
 }
+
+await init()

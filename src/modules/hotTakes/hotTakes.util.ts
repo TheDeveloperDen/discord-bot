@@ -53,8 +53,3 @@ export default async function generateHotTake(guild: Guild) {
 		.randomElement()
 	)
 }
-
-/**
- * todo:
- * - auto creation and stuff
- */

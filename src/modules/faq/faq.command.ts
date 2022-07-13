@@ -3,8 +3,19 @@ import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-
 import {FAQ} from '../../store/models/FAQ.js'
 import {createFaqEmbed} from './faq.util.js'
 import createFaqModal from './faq.modal.js'
+import {moduleManager} from '../../index.js'
+import {databaseInit} from '../../store/storage.js'
 
 const choices: { name: string, value: string }[] = []
+
+async function updateChoices() {
+	await databaseInit
+	const result = await FAQ.findAll()
+	choices.length = 0
+	choices.push(...result.map(it => ({name: it.name, value: it.name})))
+}
+
+await updateChoices()
 
 const GetSubcommand: ExecutableSubcommand = {
 	type: ApplicationCommandOptionType.Subcommand,
@@ -49,9 +60,8 @@ const EditSubcommand: ExecutableSubcommand = {
 		await FAQ.upsert({id: faq?.id, name, title, content, author: interaction.user.id})
 		await response.reply({ephemeral: true, content: `FAQ named ${name} created`})
 
-		// const client = interaction.client as MarkedClient
-		// FIXME - update the client
-		// return update(client, [this])
+		await updateChoices()
+		return moduleManager.refreshCommands()
 	}
 }
 
@@ -71,7 +81,9 @@ const DeleteSubcommand: ExecutableSubcommand = {
 		const faq = await FAQ.findOne({where: {name}})
 		if (!faq) return interaction.reply({ephemeral: true, content: 'No FAQ found with this name'})
 		await faq.destroy()
-		return  interaction.reply({ephemeral: true, content: `FAQ named ${name} deleted`})
+		await updateChoices()
+		await moduleManager.refreshCommands()
+		return interaction.reply({ephemeral: true, content: `FAQ named ${name} deleted`})
 
 	}
 }
@@ -81,7 +93,6 @@ export const FaqCommand: Command<ApplicationCommandType.ChatInput> = {
 	description: 'Get / set FAQs',
 	type: ApplicationCommandType.ChatInput,
 	options: [GetSubcommand, EditSubcommand, DeleteSubcommand],
-	// eslint-disable-next-line @typescript-eslint/no-empty-function
 	handle() {
 	}
 }

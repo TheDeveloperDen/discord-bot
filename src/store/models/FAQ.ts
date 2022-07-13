@@ -9,25 +9,25 @@ export class FAQ extends Model {
 		primaryKey: true,
 		autoIncrement: true
 	})
-	public id!: bigint
+	declare public id: bigint
 
 	@Column({
 		type: new DataType.BIGINT({length: 20})
 	})
-	public author!: bigint
+	declare public author: bigint
 
 	@Column({
 		type: new DataType.STRING(36)
 	})
-	public name!: string
+	declare public name: string
 
 	@Column({
 		type: new DataType.STRING(64)
 	})
-	public title!: string
+	declare public title: string
 
 	@Column({
 		type: new DataType.TEXT('long')
 	})
-	public content!: string
+	declare public content: string
 }

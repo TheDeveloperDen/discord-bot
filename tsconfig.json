@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "es6",
-    "module": "es6",
+    "target": "es2022",
+    "module": "es2022",
     "outDir": "./bin",
     "rootDir": "./src",
     "esModuleInterop": true,
