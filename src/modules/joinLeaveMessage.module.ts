@@ -23,7 +23,7 @@ const handler = (isAdding: boolean) => async function (client: Client, member: P
 					branding.welcomeMessage(member) :
 					// FIXME - extract this to branding?
 					`${mention(member)} has left! :(\nCurrent Member Count: ${member.guild.memberCount}`,
-				color: '#77dd77',
+				color: isAdding ? '#77dd77' : '#aa4344',
 				thumbnail: {
 					url: member.user.avatarURL() ?? 'https://cdn.discordapp.com/embed/avatars/0.png'
 				},
