@@ -1,7 +1,6 @@
 import {Sequelize} from 'sequelize-typescript'
 import {logger} from '../logging.js'
 import {DDUser} from './models/DDUser.js'
-import {SavedMessage} from './models/SavedMessage.js'
 import {ColourRoles} from './models/ColourRoles.js'
 import {FAQ} from './models/FAQ.js'
 
@@ -21,7 +20,7 @@ export const sequelize = new Sequelize({
 })
 
 export async function init() {
-	const models = [DDUser, SavedMessage, ColourRoles, FAQ]
+	const models = [DDUser, ColourRoles, FAQ]
 	sequelize.addModels(models)
 	for (const model of models) {
 		await model.sync()

@@ -52,3 +52,5 @@ async function sendLevelUpMessage(client: Client, member: GuildMember, ddUser: D
 	const message = mentionWithNoPingMessage(member)
 	await channel.send({content: message, embeds: [embed]})
 }
+
+export const tierOf = (level: number) => level <= 0 ? 0 : 1 + Math.floor(level / 10)

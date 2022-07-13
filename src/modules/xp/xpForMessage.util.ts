@@ -2,7 +2,6 @@ import {compose} from '../../util/functions.js'
 import {compareTwoStrings as distance} from 'string-similarity'
 import {Channel, Message, User} from 'discord.js'
 import {Config} from '../../config.type.js'
-import {getMessages} from '../../listeners/messageLogger.js'
 import {logger} from '../../logging.js'
 import {config} from '../../Config.js'
 
@@ -45,23 +44,23 @@ export function xpForMessage(message: string) {
 	return Math.round((1 - compressibility(message)) * Math.tanh(length / 3) + Math.pow(length, 0.75))
 }
 
-// FIXME - ensure that the thresholds are good here
-const similarityProportion = (a: string, b: string) => distance(a, b) / b.length
+const similarityProportion = (a: string, b: string) => distance(a, b)
 const minMessageLength = 6
-const minDistance = 0.4
+const maxSimilarity = 0.6
 
 export async function shouldCountForStats(author: User, message: Message, channel: Channel, config: Config) {
-	if (author.bot) return false
-	if (channel.id == config.channels.botCommands) return false
-	const content = message.content
-	if (content.length < minMessageLength) return false
-	const messages = getMessages(author)
-	if (messages.filter(m => similarityProportion(m, content) < minDistance).length > 0) {
-		logger.debug(`Discarded message ${message.id} from user ${author} because it was too similar to previous messages`)
-		return false
-	}
+	if (author.bot ||
+		channel.id == config.channels.botCommands ||
+		message.content.length < minMessageLength) return false
 
-	const asArray = content.split('')
+	for (const msg of message.channel.messages.cache.last(5)) {
+		if (msg.author.id !== author.id || msg.id === message.id) continue
+		if (similarityProportion(msg.content, message.content) > maxSimilarity) {
+			logger.debug(`Discarded message ${message.id} from user ${author} because it was too similar to previous messages`)
+			return false
+		}
+	}
+	const asArray = message.content.split('')
 	return asArray.some(it => it.match(/[a-z ]/i))
 }
 

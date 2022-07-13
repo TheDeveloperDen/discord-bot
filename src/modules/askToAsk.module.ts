@@ -1,10 +1,10 @@
 import Module from './module.js'
 import {getUserById} from '../store/models/DDUser'
-import {tierOf} from '../xp/levelling'
 import stringSimilarity from 'string-similarity'
 import {logger} from '../logging'
 import {FAQ} from '../store/models/FAQ'
 import {createFaqEmbed} from './faq/faq.util.js'
+import {tierOf} from './xp/xpRoles.util.js'
 
 const targets = ['i need help', 'i have a problem', 'help me please', 'can anyone help me', 'someone help me', 'i have a question']
 	.map(String.prototype.toLowerCase)
