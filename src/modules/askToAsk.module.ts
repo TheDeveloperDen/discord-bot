@@ -7,7 +7,7 @@ import {createFaqEmbed} from './faq/faq.util.js'
 import {tierOf} from './xp/xpRoles.util.js'
 
 const targets = ['i need help', 'i have a problem', 'help me please', 'can anyone help me', 'someone help me', 'i have a question']
-	.map(String.prototype.toLowerCase)
+	.map(it => it.toLowerCase())
 
 export const AskToAskModule: Module = {
 	name: 'askToAsk',

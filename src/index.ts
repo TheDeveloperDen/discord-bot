@@ -13,6 +13,9 @@ import {TokenScannerModule} from './modules/tokenScanner.module.js'
 import {RolesModule} from './modules/roles/roles.module.js'
 import FaqModule from './modules/faq/faq.module.js'
 import PastifyModule from './modules/pastify/pastify.module.js'
+import {ShowcaseModule} from './modules/showcase.module.js'
+import {LanguageStatusModule} from './modules/languageStatus.module.js'
+import AskToAskModule from './modules/askToAsk.module.js'
 
 const client = new Client({
 	intents: [Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]
@@ -22,11 +25,14 @@ const moduleManager = new ModuleManager(client,
 	config.clientId,
 	config.guildId,
 	[
+		AskToAskModule,
 		FaqModule,
 		HotTakesModule,
 		ImageForwarderModule,
+		LanguageStatusModule,
 		PastifyModule,
 		RolesModule,
+		ShowcaseModule,
 		TokenScannerModule,
 		XpModule])
 
