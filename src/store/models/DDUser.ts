@@ -12,32 +12,32 @@ export class DDUser extends Model {
 	@Column({
 		type: new DataType.BIGINT({length: 20})
 	})
-	public xp!: number
+	declare public xp: number
 	@Column({
 		type: new DataType.INTEGER({length: 11})
 	})
-	public level!: number
+	declare public level: number
 	@Column({
 		type: new DataType.INTEGER({length: 11})
 	})
-	public bumps!: number
+	declare public bumps: number
 
 	@Column({
 		type: new DataType.INTEGER({length: 11})
 	})
-	public currentDailyStreak!: number
+	declare public currentDailyStreak: number
 
 	@Column({
 		type: new DataType.INTEGER({length: 11}),
 
 	})
-	public highestDailyStreak!: number
+	declare public highestDailyStreak: number
 
 	@Column({
 		type: new DataType.DATE(),
 		allowNull: true
 	})
-	public lastDailyTime?: Date
+	declare public lastDailyTime?: Date
 }
 
 export const getUserById = async (id: bigint) => {

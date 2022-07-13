@@ -35,8 +35,8 @@ export const config: Config = {
 		threshold: 15
 	},
 	branding: {
-		color: '#ffaaff',
-		font: 'font.otf',
+		color: '#ffffff',
+		font: 'CascadiaCode.ttf',
 		welcomeMessage: member =>
 			`Welcome ${mention(member)} to the Developer Den test server!\nCurrent Member Count: ${member.guild.memberCount}`
 	}

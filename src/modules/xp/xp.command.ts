@@ -59,7 +59,7 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
 
 }
 
-const xpBackground = createImage(1000, 500, '#2b2d2f')
+const xpBackground = createImage(1000, 500, '#171834')
 function createXpImage(xp: number, user: GuildMember) {
 	const [canvas, ctx] = getCanvasContext(1000, 500)
 	ctx.drawImage(xpBackground, 0, 0)
