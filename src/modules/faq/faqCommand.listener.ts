@@ -5,7 +5,7 @@ import {createFaqEmbed} from './faq.util.js'
 
 export const FaqCommandListener: EventListener = {
 	async messageCreate(_, message) {
-		if (!message.content.startsWith('?')) return
+		if (!message.content.startsWith('?') || message.content[1] === '?') return
 		const arg = message.content.split(/ /)[0].substring(1)
 		if (!arg) return
 		const faq = await FAQ.findOne({

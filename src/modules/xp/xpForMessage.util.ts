@@ -1,9 +1,11 @@
 import {compose} from '../../util/functions.js'
 import {compareTwoStrings as distance} from 'string-similarity'
-import {Channel, Message, User} from 'discord.js'
+import {Channel, GuildMember, Message, User} from 'discord.js'
 import {Config} from '../../config.type.js'
 import {logger} from '../../logging.js'
 import {config} from '../../Config.js'
+import {getUserById} from '../../store/models/DDUser.js'
+import { levelUp } from './xpRoles.util.js'
 
 const pingRegex = /<[a-zA-Z0-9@:&!#]+?[0-9]+>/g
 
@@ -70,4 +72,35 @@ export function tierRoleId(level: number) {
 	const tier = tierOf(level)
 	if (tier < config.roles.tiers.length) return config.roles.tiers[tier]
 	return config.roles.tiers[config.roles.tiers.length - 1]
+}
+
+/**
+ * Result of giving a member XP
+ * @param xpGiven The amount of XP given
+ * @param multiplier The multiplier used. If undefined, no multiplier was used, i.e. the multiplier was 1
+ */
+export interface XPResult {
+	xpGiven: number,
+	multiplier?: number
+}
+
+/**
+ * Gives XP to a member
+ * @param user the member to give XP to
+ * @param xp the amount of XP to give
+ * @returns How much XP was given. This may be affected by perks such as boosting. If something went wrong, -1 will be returned.
+ */
+export async function giveXp(user: GuildMember, xp: number): Promise<XPResult> {
+	const client = user.client
+	const ddUser = await getUserById(BigInt(user.id))
+	const multiplier = user.premiumSince ? 2 : 1
+	if (!ddUser) {
+		logger.error(`Could not find or create user with id ${user.id}`)
+		return {xpGiven: -1}
+	}
+	ddUser.xp += xp * multiplier
+	await levelUp(client, user, ddUser)
+	await ddUser.save()
+	logger.info(`Gave ${xp} XP to user ${user.id}`)
+	return {xpGiven: xp, multiplier}
 }

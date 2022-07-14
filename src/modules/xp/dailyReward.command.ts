@@ -4,6 +4,7 @@ import {ApplicationCommandType} from 'discord-api-types/v10'
 import {logger} from '../../logging.js'
 import {getUserById} from '../../store/models/DDUser.js'
 import {createStandardEmbed} from '../../util/embeds.js'
+import {giveXp} from './xpForMessage.util.js'
 
 export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: 'daily',
@@ -43,7 +44,7 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
 		}
 
 		const xpToGive = Math.min(50 + 20 * (ddUser.currentDailyStreak - 1), 1000)
-		ddUser.xp += xpToGive
+		const {xpGiven, multiplier} = await giveXp(user, xpToGive)
 		ddUser.lastDailyTime = new Date()
 		await ddUser.save()
 
@@ -55,7 +56,7 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
 					title: 'Daily Reward Claimed!',
 					description:
 						`📆 Current Streak = ${formatDayCount(ddUser.currentDailyStreak)}
-⭐️ + ${xpToGive} XP
+⭐️ + ${xpGiven} XP  ${multiplier ? `(x${multiplier})` : ''}
 ⏰ Come back in 24 hours for a new reward!`
 				},
 			]
