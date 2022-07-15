@@ -8,7 +8,7 @@ export class ColourRoles extends Model {
 		type: new DataType.BIGINT({length: 20}),
 		primaryKey: true
 	})
-	public id!: bigint
+	declare public id: bigint
 	@Column({
 		type: new DataType.BIGINT({length: 20})
 	})

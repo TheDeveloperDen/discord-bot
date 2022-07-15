@@ -1,8 +1,6 @@
 import {Sequelize} from 'sequelize-typescript'
 import {logger} from '../logging.js'
-import {sentry} from '../util/errors.js'
 import {DDUser} from './models/DDUser.js'
-import {SavedMessage} from './models/SavedMessage.js'
 import {ColourRoles} from './models/ColourRoles.js'
 import {FAQ} from './models/FAQ.js'
 
@@ -21,22 +19,17 @@ export const sequelize = new Sequelize({
 	logging: (msg) => logger.debug(msg),
 })
 
+let resolve: () => void
+export const databaseInit = new Promise<void>(r => resolve = r)
+
 export async function init() {
-	const models = [DDUser, SavedMessage, ColourRoles, FAQ]
+	const models = [DDUser, ColourRoles, FAQ]
 	sequelize.addModels(models)
 	for (const model of models) {
 		await model.sync()
 	}
+	resolve()
 	logger.info('Initialised database')
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-sequelize.query = async function (...args) {
-	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-	// @ts-ignore
-	return Sequelize.prototype.query.apply(this, args).catch(err => {
-		sentry(err)
-		throw err
-	})
-}
+await init()

@@ -7,7 +7,8 @@ export const config: Config = {
 		welcome: '821743171942744114',
 		botCommands: '821820015917006868',
 		hotTake: '932661343520194640',
-		showcase: '847936633964724254'
+		showcase: '847936633964724254',
+		auditLog: '833758624756138044'
 	},
 	roles: {
 		tiers: [
@@ -42,8 +43,8 @@ export const config: Config = {
 		threshold: 20
 	},
 	branding: {
-		color: '#C6BFF7',
-		font: 'font.otf',
+		color: '#ffffff',
+		font: 'CascadiaCode.ttf',
 		welcomeMessage: member =>
 			`Welcome ${mention(member)} to the Developer Den!\nCurrent Member Count: ${member.guild.memberCount}`
 	}

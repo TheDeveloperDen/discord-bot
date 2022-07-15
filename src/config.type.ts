@@ -5,7 +5,7 @@ export type Config = {
 	guildId: string,
 	clientId: string,
 	pastebin: { url: string, threshold: number },
-	channels: { welcome: string, botCommands: string, hotTake: string, showcase: string },
+	channels: { welcome: string, botCommands: string, hotTake: string, showcase: string, auditLog: string },
 	roles: {
 		tiers: Snowflake[],
 		admin: Snowflake,

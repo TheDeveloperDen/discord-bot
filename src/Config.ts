@@ -8,7 +8,8 @@ export const config: Config = {
 		welcome: '932633680634081301',
 		botCommands: '906954540039938048',
 		hotTake: '904478147351806015',
-		showcase: '952536628533030942'
+		showcase: '952536628533030942',
+		auditLog: '994623474557538415'
 	},
 	roles: {
 		tiers: [
@@ -34,9 +35,9 @@ export const config: Config = {
 		threshold: 15
 	},
 	branding: {
-		color: '#ffaaff',
-		font: 'font.otf',
-		welcomeMessage: member => 
+		color: '#ffffff',
+		font: 'CascadiaCode.ttf',
+		welcomeMessage: member =>
 			`Welcome ${mention(member)} to the Developer Den test server!\nCurrent Member Count: ${member.guild.memberCount}`
 	}
 }
