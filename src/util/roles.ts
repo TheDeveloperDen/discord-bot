@@ -6,7 +6,7 @@ export type RoleChanges = {
     toRemove: string[]
 }
 
-export const modifyRoles = async (client: Client, user: GuildMember, roleChanges: RoleChanges) => {
+export async function modifyRoles(client: Client, user: GuildMember, roleChanges: RoleChanges) {
 	const currentRoles = user.roles.cache.clone()
 	const guild = user.guild
 	currentRoles.delete(guild.roles.everyone.id)
