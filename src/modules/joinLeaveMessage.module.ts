@@ -1,10 +1,10 @@
-import Module from './module'
-import {config} from '../Config'
+import Module from './module.js'
+import {config} from '../Config.js'
 import {Client, GuildMember, PartialGuildMember, TextChannel} from 'discord.js'
-import {logger} from '../logging'
-import {createStandardEmbed} from '../util/embeds'
-import {branding} from '../util/branding'
-import {mention, pseudoMention} from '../util/users'
+import {logger} from '../logging.js'
+import {createStandardEmbed} from '../util/embeds.js'
+import {branding} from '../util/branding.js'
+import {mention, pseudoMention} from '../util/users.js'
 
 const handler = (isAdding: boolean) => async function (client: Client, member: PartialGuildMember | GuildMember) {
 	const channel = await client.channels.fetch(config.channels.welcome) as TextChannel

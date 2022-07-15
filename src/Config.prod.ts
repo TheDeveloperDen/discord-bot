@@ -1,5 +1,5 @@
 import {mention} from './util/users.js'
-import {Config} from './config.type'
+import {Config} from './config.type.js'
 
 // Config file for the Developer Den server (.gg/devden)
 export const config: Config = {

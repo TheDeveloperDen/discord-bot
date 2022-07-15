@@ -1,6 +1,6 @@
 import {Command, ExecutableSubcommand} from 'djs-slash-helper'
 import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10'
-import {getAllCachedResources, getResource, updateAllResources} from './resourcesCache.util'
+import {getAllCachedResources, getResource, updateAllResources} from './resourcesCache.util.js'
 import {GuildMember, MessageEmbedOptions} from 'discord.js'
 import {createStandardEmbed, standardFooter} from '../../util/embeds.js'
 import {pseudoMention} from '../../util/users.js'

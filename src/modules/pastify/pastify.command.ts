@@ -1,6 +1,6 @@
 import {Command} from 'djs-slash-helper'
 import {ApplicationCommandType} from 'discord-api-types/v10'
-import {pastify} from './pastify'
+import {pastify} from './pastify.js'
 import {Message} from 'discord.js'
 
 export const PastifyCommand: Command<ApplicationCommandType.Message> = {

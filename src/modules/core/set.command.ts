@@ -9,7 +9,7 @@ import {
 import {Command} from 'djs-slash-helper'
 import {DiscordColor} from '@api-typings/discord'
 import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10'
-import {DDUser, getUserById} from '../../store/models/DDUser'
+import {DDUser, getUserById} from '../../store/models/DDUser.js'
 import {createStandardEmbed} from '../../util/embeds.js'
 import {mention} from '../../util/users.js'
 
