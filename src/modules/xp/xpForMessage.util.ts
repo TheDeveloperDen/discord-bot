@@ -5,7 +5,7 @@ import {Config} from '../../config.type.js'
 import {logger} from '../../logging.js'
 import {config} from '../../Config.js'
 import {getUserById} from '../../store/models/DDUser.js'
-import { levelUp } from './xpRoles.util.js'
+import {levelUp} from './xpRoles.util.js'
 
 const pingRegex = /<[a-zA-Z0-9@:&!#]+?[0-9]+>/g
 
@@ -102,5 +102,5 @@ export async function giveXp(user: GuildMember, xp: number): Promise<XPResult> {
 	await levelUp(client, user, ddUser)
 	await ddUser.save()
 	logger.info(`Gave ${xp} XP to user ${user.id}`)
-	return {xpGiven: xp, multiplier}
+	return {xpGiven: xp, multiplier: multiplier == 1 ? undefined : multiplier} // A multiplier of 1 means no multiplier was used
 }
