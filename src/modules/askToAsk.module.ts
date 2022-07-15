@@ -1,8 +1,8 @@
 import Module from './module.js'
-import {getUserById} from '../store/models/DDUser'
+import {getUserById} from '../store/models/DDUser.js'
 import stringSimilarity from 'string-similarity'
 import {logger} from '../logging'
-import {FAQ} from '../store/models/FAQ'
+import {FAQ} from '../store/models/FAQ.js'
 import {createFaqEmbed} from './faq/faq.util.js'
 import {tierOf} from './xp/xpRoles.util.js'
 
