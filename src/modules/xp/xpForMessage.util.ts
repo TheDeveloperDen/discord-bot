@@ -93,11 +93,12 @@ export interface XPResult {
 export async function giveXp(user: GuildMember, xp: number): Promise<XPResult> {
 	const client = user.client
 	const ddUser = await getUserById(BigInt(user.id))
-	const multiplier = user.premiumSince ? 2 : 1
 	if (!ddUser) {
 		logger.error(`Could not find or create user with id ${user.id}`)
 		return {xpGiven: -1}
 	}
+
+	const multiplier = user.premiumSince ? 2 : 1
 	ddUser.xp += xp * multiplier
 	await levelUp(client, user, ddUser)
 	await ddUser.save()

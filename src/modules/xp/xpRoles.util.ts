@@ -5,16 +5,19 @@ import {config} from '../../Config.js'
 import {createStandardEmbed} from '../../util/embeds.js'
 import {mention, mentionWithNoPingMessage, pseudoMention} from '../../util/users.js'
 import {tierRoleId, xpForLevel} from './xpForMessage.util.js'
+import {logger} from '../../logging.js'
 
 export async function levelUp(client: Client, user: GuildMember, ddUser: DDUser) {
 	let level = ddUser.level
-	while (xpForLevel(level) <= ddUser.xp) {
+	while (ddUser.xp >= xpForLevel(level)) {
 		level++
+		logger.info(`${ddUser.id} xp (${ddUser.xp}) was enough to level up to ${level} (${xpForLevel(level)})`)
 	}
 	if (level == ddUser.level) {
 		return
 	}
 	ddUser.level = level
+	logger.info(`${ddUser.id} leveling up to ${level}`)
 	await applyTierRoles(client, user, ddUser)
 	await sendLevelUpMessage(client, user, ddUser)
 }
