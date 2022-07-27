@@ -3,7 +3,7 @@ import {DDUser} from '../../store/models/DDUser.js'
 import {modifyRoles} from '../../util/roles.js'
 import {config} from '../../Config.js'
 import {createStandardEmbed} from '../../util/embeds.js'
-import {mention, mentionWithNoPingMessage, pseudoMention} from '../../util/users.js'
+import {mention, mentionWithNoPingMessage} from '../../util/users.js'
 import {tierRoleId, xpForLevel} from './xpForMessage.util.js'
 import {logger} from '../../logging.js'
 
@@ -42,7 +42,7 @@ async function sendLevelUpMessage(client: Client, member: GuildMember, ddUser: D
 		...createStandardEmbed(member),
 		title: '⚡ Level Up!',
 		author: {
-			name: pseudoMention(user),
+			name: mention(user),
 			iconURL: user.avatarURL()
 		},
 		fields: [
