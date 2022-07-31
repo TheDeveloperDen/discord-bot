@@ -3,7 +3,7 @@ import {DDUser} from '../../store/models/DDUser.js'
 import {modifyRoles} from '../../util/roles.js'
 import {config} from '../../Config.js'
 import {createStandardEmbed} from '../../util/embeds.js'
-import {mention, mentionWithNoPingMessage} from '../../util/users.js'
+import {actualMention, mentionWithNoPingMessage, pseudoMention} from '../../util/users.js'
 import {tierRoleId, xpForLevel} from './xpForMessage.util.js'
 import {logger} from '../../logging.js'
 
@@ -42,7 +42,7 @@ async function sendLevelUpMessage(client: Client, member: GuildMember, ddUser: D
 		...createStandardEmbed(member),
 		title: '⚡ Level Up!',
 		author: {
-			name: mention(user),
+			name: pseudoMention(user),
 			iconURL: user.avatarURL()
 		},
 		fields: [
@@ -50,7 +50,7 @@ async function sendLevelUpMessage(client: Client, member: GuildMember, ddUser: D
 				name: '📈 XP',
 				value: `${ddUser.xp}/${xpForLevel(ddUser.level + 1)}`
 			}],
-		description: `${mention(member)}, you leveled up to level **${ddUser.level}**!`
+		description: `${actualMention(member)}, you leveled up to level **${ddUser.level}**!`
 	} as MessageEmbedOptions
 	const message = mentionWithNoPingMessage(member)
 	await channel.send({content: message, embeds: [embed]})
