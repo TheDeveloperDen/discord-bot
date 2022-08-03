@@ -28,16 +28,17 @@ export const RoleColourCommand: Command<ApplicationCommandType.ChatInput> = {
 
 		const user = interaction.user
 		const member = interaction.member as GuildMember
+		console.log(user.id)
 		const colourRole = await ColourRoles.findOne({
 			where: {
 				id: user.id
 			}
 		})
+		console.log(JSON.stringify(colourRole))
 
 		let role
 		if (colourRole) {
-			logger.info(`Updating colour for ${user.username}#${user.discriminator} to ${colour} with role ${colourRole.toJSON()}`)
-			role = member.roles.cache.find((_, id) => id == colourRole.colourRole.toString())
+			role = member.roles.cache.find((_, id) => id == colourRole?.colourRole?.toString())
 			await role?.setColor(colour as ColorResolvable)
 		}
 
