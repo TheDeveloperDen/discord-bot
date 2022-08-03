@@ -3,6 +3,7 @@ import {ColorResolvable, GuildMember} from 'discord.js'
 import {ColourRoles} from '../../store/models/ColourRoles.js'
 import {config} from '../../Config.js'
 import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10'
+import {logger} from '../../logging.js'
 
 export const RoleColourCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: 'rolecolour',
@@ -35,7 +36,8 @@ export const RoleColourCommand: Command<ApplicationCommandType.ChatInput> = {
 
 		let role
 		if (colourRole) {
-			role = await member.roles.cache.find((a, id) => id == colourRole?.colourRole.toString())
+			logger.info(`Updating colour for ${user.username}#${user.discriminator} to ${colour} with role ${colourRole.toJSON()}`)
+			role = member.roles.cache.find((_, id) => id == colourRole.colourRole.toString())
 			await role?.setColor(colour as ColorResolvable)
 		}
 
