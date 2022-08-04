@@ -26,18 +26,19 @@ export const RoleColourCommand: Command<ApplicationCommandType.ChatInput> = {
 		await interaction.deferReply({ephemeral: true})
 		const user = interaction.user
 		const member = interaction.member as GuildMember
-		const colourRole = await ColourRoles.findOne({
+		const roleInfo = await ColourRoles.findOne({
 			where: {
 				id: user.id
 			}
 		})
-		console.log(JSON.stringify(colourRole), JSON.stringify(colourRole?.colourRole), user.id)
+		console.log(JSON.stringify(roleInfo), JSON.stringify(roleInfo?.colourRole), user.id)
 		let role
-		if (colourRole) {
-			if (colourRole['colourRole'] == undefined) {
+		if (roleInfo) {
+			const colourRole = roleInfo.getDataValue('colourRole') // normal field lookup doesnt work for some reason
+			if (!colourRole) {
 				throw new Error('No colour role found, database call failed?')
 			}
-			role = await member.roles.resolve(colourRole.colourRole.toString())
+			role = await member.roles.resolve(colourRole.toString())
 			await role?.setColor(colour as ColorResolvable)
 		}
 
