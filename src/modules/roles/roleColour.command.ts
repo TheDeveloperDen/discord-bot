@@ -3,7 +3,6 @@ import {ColorResolvable, GuildMember} from 'discord.js'
 import {ColourRoles} from '../../store/models/ColourRoles.js'
 import {config} from '../../Config.js'
 import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10'
-import {logger} from '../../logging.js'
 
 export const RoleColourCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: 'rolecolour',
@@ -28,27 +27,28 @@ export const RoleColourCommand: Command<ApplicationCommandType.ChatInput> = {
 
 		const user = interaction.user
 		const member = interaction.member as GuildMember
-		console.log(user.id)
 		const colourRole = await ColourRoles.findOne({
 			where: {
 				id: user.id
 			}
 		})
-		console.log(JSON.stringify(colourRole))
 
 		let role
 		if (colourRole) {
-			role = member.roles.cache.find((_, id) => id == colourRole?.colourRole?.toString())
+			if (!colourRole.colourRole) {
+				throw new Error('No colour role found, database call failed?')
+			}
+			role = await member.roles.resolve(colourRole.colourRole.toString())
 			await role?.setColor(colour as ColorResolvable)
 		}
 
 		if (!role) {
-			const position = interaction.guild?.roles.cache.find(role => role.id == config.roles.admin)?.position || 0
+			const position = interaction.guild?.roles.cache.get(config.roles.admin)?.position || 0
 
 			role = await member.guild.roles.create({
 				color: colour as ColorResolvable,
 				permissions: [],
-				name: member.displayName,
+				name: member.user.username,
 				position: position + 1
 			})
 			await ColourRoles.upsert({
