@@ -16,7 +16,7 @@ export const RoleColourCommand: Command<ApplicationCommandType.ChatInput> = {
 		required: true
 	}],
 
-	async handle(interaction) {
+	handle: async function (interaction) {
 		const colour = interaction.options.getString('colour', true)
 		if (!colour.startsWith('#') || colour.length !== 7) {
 			await interaction.reply({content: 'Not a valid colour', ephemeral: true})
@@ -34,7 +34,7 @@ export const RoleColourCommand: Command<ApplicationCommandType.ChatInput> = {
 		console.log(JSON.stringify(colourRole), user.id)
 		let role
 		if (colourRole) {
-			if (!colourRole.colourRole) {
+			if (colourRole.colourRole == undefined) {
 				throw new Error('No colour role found, database call failed?')
 			}
 			role = await member.roles.resolve(colourRole.colourRole.toString())
