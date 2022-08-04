@@ -31,10 +31,10 @@ export const RoleColourCommand: Command<ApplicationCommandType.ChatInput> = {
 				id: user.id
 			}
 		})
-		console.log(JSON.stringify(colourRole), user.id)
+		console.log(JSON.stringify(colourRole), JSON.stringify(colourRole?.colourRole), user.id)
 		let role
 		if (colourRole) {
-			if (colourRole.colourRole == undefined) {
+			if (colourRole['colourRole'] == undefined) {
 				throw new Error('No colour role found, database call failed?')
 			}
 			role = await member.roles.resolve(colourRole.colourRole.toString())
