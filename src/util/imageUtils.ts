@@ -1,10 +1,10 @@
 import canvas, {Canvas, CanvasRenderingContext2D} from 'canvas'
-import opentype from 'opentype.js'
+import {loadSync} from 'opentype.js'
 import {branding} from './branding.js'
 
 const {createCanvas} = canvas
 
-export const font = opentype.loadSync(branding.font)
+export const font = loadSync(branding.font)
 
 export function createImage(width: number, height: number, color: string): Canvas {
 	const canvas = createCanvas(width, height)
