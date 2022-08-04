@@ -48,7 +48,7 @@ async function sendLevelUpMessage(client: Client, member: GuildMember, ddUser: D
 		fields: [
 			{
 				name: '📈 XP',
-				value: `${ddUser.xp}/${xpForLevel(ddUser.level + 1)}`
+				value: `${ddUser.xp}/${xpForLevel(ddUser.level)}`
 			}],
 		description: `${actualMention(member)}, you leveled up to level **${ddUser.level}**!`
 	} as MessageEmbedOptions
