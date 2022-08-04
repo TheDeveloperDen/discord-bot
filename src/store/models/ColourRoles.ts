@@ -12,7 +12,8 @@ export class ColourRoles extends Model {
 
 	@Column({
 		type: new DataType.BIGINT({length: 20}),
-		allowNull: false
+		allowNull: false,
+		field: 'colourRole'
 	})
-	public colourRole!: bigint
+	public role!: bigint
 }

@@ -31,14 +31,13 @@ export const RoleColourCommand: Command<ApplicationCommandType.ChatInput> = {
 				id: user.id
 			}
 		})
-		console.log(JSON.stringify(roleInfo), JSON.stringify(roleInfo?.colourRole), user.id)
+		console.log(JSON.stringify(roleInfo), JSON.stringify(roleInfo?.role), user.id)
 		let role
 		if (roleInfo) {
-			const colourRole = roleInfo.getDataValue('colourRole') // normal field lookup doesnt work for some reason
-			if (!colourRole) {
+			if (!roleInfo.role) {
 				throw new Error('No colour role found, database call failed?')
 			}
-			role = await member.roles.resolve(colourRole.toString())
+			role = await member.roles.resolve(roleInfo.role.toString())
 			await role?.setColor(colour as ColorResolvable)
 		}
 
