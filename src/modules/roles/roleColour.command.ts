@@ -24,7 +24,6 @@ export const RoleColourCommand: Command<ApplicationCommandType.ChatInput> = {
 		}
 
 		await interaction.deferReply({ephemeral: true})
-
 		const user = interaction.user
 		const member = interaction.member as GuildMember
 		const colourRole = await ColourRoles.findOne({
@@ -32,7 +31,7 @@ export const RoleColourCommand: Command<ApplicationCommandType.ChatInput> = {
 				id: user.id
 			}
 		})
-
+		console.log(JSON.stringify(colourRole), user.id)
 		let role
 		if (colourRole) {
 			if (!colourRole.colourRole) {
