@@ -31,19 +31,18 @@ export const RoleColourCommand: Command<ApplicationCommandType.ChatInput> = {
 				id: user.id
 			}
 		})
-		console.log(JSON.stringify(roleInfo), JSON.stringify(roleInfo?.role), user.id)
 		let role
 		if (roleInfo) {
-			if (!roleInfo.role) {
+			const roleId = roleInfo.getDataValue('role') // no idea why normal property lookup doesnt work
+			if (!roleId) {
 				throw new Error('No colour role found, database call failed?')
 			}
-			role = await member.roles.resolve(roleInfo.role.toString())
+			role = await member.roles.resolve(roleId.toString())
 			await role?.setColor(colour as ColorResolvable)
 		}
 
 		if (!role) {
 			const position = interaction.guild?.roles.resolve(config.roles.admin)?.position || 0
-
 			role = await member.guild.roles.create({
 				color: colour as ColorResolvable,
 				permissions: [],
@@ -52,7 +51,7 @@ export const RoleColourCommand: Command<ApplicationCommandType.ChatInput> = {
 			})
 			await ColourRoles.upsert({
 				id: BigInt(user.id),
-				colourRole: BigInt(role.id)
+				role: BigInt(role.id)
 			})
 		}
 
