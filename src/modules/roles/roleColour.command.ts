@@ -43,7 +43,7 @@ export const RoleColourCommand: Command<ApplicationCommandType.ChatInput> = {
 		}
 
 		if (!role) {
-			const position = interaction.guild?.roles.cache.get(config.roles.admin)?.position || 0
+			const position = interaction.guild?.roles.resolve(config.roles.admin)?.position || 0
 
 			role = await member.guild.roles.create({
 				color: colour as ColorResolvable,
