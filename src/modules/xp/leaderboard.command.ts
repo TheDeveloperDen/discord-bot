@@ -65,7 +65,7 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
 		const users = await DDUser.findAll({
 			order: [[value, 'DESC']],
 			limit: 10
-		}).then(users => users.filter(it => it[value] > 0))
+		}).then(users => users.filter(async it => await calculate(it) > 0))
 		if (users.length == 0) {
 			await interaction.followUp('No applicable users')
 			return
