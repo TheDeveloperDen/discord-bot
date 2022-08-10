@@ -2,7 +2,7 @@ import {CommandInteraction, GuildMember} from 'discord.js'
 import {Command} from 'djs-slash-helper'
 import {ApplicationCommandType} from 'discord-api-types/v10'
 import {logger} from '../../logging.js'
-import {getUserById} from '../../store/models/DDUser.js'
+import {DDUser, getUserById} from '../../store/models/DDUser.js'
 import {createStandardEmbed} from '../../util/embeds.js'
 import {giveXp} from './xpForMessage.util.js'
 
@@ -34,11 +34,8 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
 			})
 			return
 		}
-		if (difference >= 1000 * 60 * 60 * 24 * 2) {
-			// Set streak to 0
-			ddUser.currentDailyStreak = 0
-		}
-		ddUser.currentDailyStreak++
+
+		ddUser.currentDailyStreak = await getActualDailyStreak(ddUser) + 1
 		if (ddUser.currentDailyStreak > ddUser.highestDailyStreak) {
 			ddUser.highestDailyStreak = ddUser.currentDailyStreak
 		}
@@ -69,4 +66,19 @@ export function formatDayCount(count: number) {
 		return '1 day'
 	}
 	return `${count} days`
+}
+
+
+/**
+ * Gets a user's current daily streak, resetting it to 0 if they haven't used it in 24 hours
+ * @param ddUser The user to get the streak for
+ */
+export async function getActualDailyStreak(ddUser: DDUser): Promise<number> {
+	const difference = new Date().getTime() - (ddUser.lastDailyTime?.getTime() ?? 0)
+	if (difference >= 1000 * 60 * 60 * 24 * 2) {
+		// Set streak to 0
+		ddUser.currentDailyStreak = 0
+	}
+
+	return ddUser.currentDailyStreak
 }

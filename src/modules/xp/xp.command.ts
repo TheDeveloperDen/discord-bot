@@ -7,7 +7,7 @@ import {branding} from '../../util/branding.js'
 import {drawText} from '../../util/textRendering.js'
 import {Command} from 'djs-slash-helper'
 import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10'
-import {formatDayCount} from './dailyReward.command.js'
+import {formatDayCount, getActualDailyStreak} from './dailyReward.command.js'
 
 
 export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
@@ -44,7 +44,7 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
 					},
 					{
 						name: '❗ Daily Streak (Current / Max)',
-						value: `${formatDayCount(ddUser.currentDailyStreak)} / ${formatDayCount(ddUser.highestDailyStreak)}`
+						value: `${formatDayCount(await getActualDailyStreak(ddUser))} / ${formatDayCount(ddUser.highestDailyStreak)}`
 					},
 					{
 						name: '📈 XP Until Level Up',
@@ -60,6 +60,7 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
 }
 
 const xpBackground = createImage(1000, 500, '#171834')
+
 function createXpImage(xp: number, user: GuildMember) {
 	const [canvas, ctx] = getCanvasContext(1000, 500)
 	ctx.drawImage(xpBackground, 0, 0)

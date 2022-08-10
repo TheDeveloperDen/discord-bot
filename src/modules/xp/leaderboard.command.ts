@@ -9,9 +9,10 @@ import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-
 import {createStandardEmbed} from '../../util/embeds.js'
 import {branding} from '../../util/branding.js'
 import {actualMention} from '../../util/users.js'
+import {getActualDailyStreak} from './dailyReward.command.js'
 
 interface LeaderboardType extends APIApplicationCommandOptionChoice<string> {
-	calculate?: (user: DDUser) => number,
+	calculate?: (user: DDUser) => Promise<number>,
 
 	format(value: number): string,
 
@@ -23,6 +24,7 @@ const info: LeaderboardType[] = [
 	{value: 'level', name: 'Level', format: value => `Level ${value}`},
 	{
 		value: 'currentDailyStreak',
+		calculate: user => getActualDailyStreak(user),
 		name: 'Current Daily Streak',
 		format: s => `${formatDays(s)}`
 	},
@@ -59,7 +61,7 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
 			return
 		}
 		const {format, value, name} = traitInfo
-		const calculate = traitInfo.calculate ?? ((user: DDUser) => user[value])
+		const calculate = traitInfo.calculate ?? ((user: DDUser) => Promise.resolve(user[value]))
 		const users = await DDUser.findAll({
 			order: [[value, 'DESC']],
 			limit: 10
@@ -75,7 +77,7 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
 			fields: await Promise.all(users.map(async (user, index) => {
 				const discordUser = await guild.client.users.fetch(user.id.toString()).catch(() => null)
 				return {
-					name: `#${index + 1} - ${format(calculate(user))}`,
+					name: `#${index + 1} - ${format(await calculate(user))}`,
 					value: discordUser == null ? 'Unknown User' : actualMention(discordUser)
 				}
 			}))
