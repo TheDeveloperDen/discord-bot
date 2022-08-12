@@ -4,12 +4,6 @@ import {createFaqEmbed} from './faq.util.js'
 
 export const FaqCommandListener: EventListener = {
 	async messageCreate(_, message) {
-		console.log(message.content)
-		console.log(message.content)
-		console.log(message.content)
-		console.log(message.content)
-		console.log(message.content)
-
 		if (!message.content.startsWith('?')) return
 		const arg = message.content.split(/ /)[0].substring(1)
 		if (!arg) return
