@@ -120,24 +120,24 @@ export const config: Config = {
 					.setStyle(ButtonStyle.Success)
 					.setEmoji('📚')
 			}],
-			[{
-				type: 'faq',
-				faqId: 'role-info',
-				button: new ButtonBuilder()
-					.setLabel('Our Server Roles')
-					.setStyle(ButtonStyle.Success)
-					.setEmoji('🎖')
-			},
+			[
+				{
+					type: 'faq',
+					faqId: 'role-info',
+					button: new ButtonBuilder()
+						.setLabel('Our Server Roles')
+						.setStyle(ButtonStyle.Success)
+						.setEmoji('🎖')
+				},
 				{
 					type: 'faq',
 					faqId: 'xp-guide',
 					button: new ButtonBuilder()
 						.setLabel('How XP works')
 						.setStyle(ButtonStyle.Success)
-						.setEmoji('⭐️')
+						.setEmoji('⭐')
 				},
 			],
-
 		]
 	}
 }
