@@ -52,20 +52,48 @@ export const config: Config = {
 
 	informationMessage: {
 		embed: new EmbedBuilder()
-			.setTitle('Server Information')
-			.setDescription('Welcome'),
+			.setImage('https://developerden.net/static/banner.png')
+			.setTitle('⭐About the Server⭐')
+			.setDescription(`
+			Welcome to the **Developer Den**!
+			We're a community of programmers who love to share knowledge and ideas.
+			
+			**Need help?**
+			Find the channel for the language you're using and ask away! Can't find the right channel? Use <#826146919536656495>
+			
+			**Want to show off things you've made?**
+			Post them in <#847936633964724254>!
+			
+			**Just want to talk?**
+		    Say hello in <#821743100657270876>!
+			
+			
+			To invite other people to this server, you can use either of these links:
+			https://developerden.net/discord
+			https://discord.gg/devden`),
 
 		buttonRows: [
 			[
 				new ButtonBuilder()
 					.setLabel('Permanent Invite Link')
 					.setURL('https://developerden.net/discord')
+					.setEmoji({
+						id: '1007753088003747910'
+					})
 					.setStyle(ButtonStyle.Link)
 				,
 				new ButtonBuilder()
 					.setLabel('Our GitHub Organization')
 					.setURL('https://github.com/TheDeveloperDen')
+					.setEmoji({
+						id: '1007741713026134107'
+					})
 					.setStyle(ButtonStyle.Link),
+				new ButtonBuilder()
+					.setLabel('Our Website')
+					.setURL('https://developerden.net')
+					.setEmoji('🌐')
+					.setStyle(ButtonStyle.Link)
 			],
 			[
 				{
@@ -74,14 +102,33 @@ export const config: Config = {
 					button: new ButtonBuilder()
 						.setLabel('How to share code')
 						.setStyle(ButtonStyle.Primary)
-				}],
+						.setEmoji('📝')
+				},
+				{
+					faqId: 'ask',
+					type: 'faq',
+					button: new ButtonBuilder()
+						.setLabel('How to ask for help')
+						.setStyle(ButtonStyle.Primary)
+						.setEmoji('❓')
+				},
+			],
 			[{
 				type: 'learning',
 				button: new ButtonBuilder()
 					.setLabel('Learn a new Language')
 					.setStyle(ButtonStyle.Success)
 					.setEmoji('📚')
-			}]
+			}],
+			[{
+				type: 'faq',
+				faqId: 'role-info',
+				button: new ButtonBuilder()
+					.setLabel('What do the different roles mean?')
+					.setStyle(ButtonStyle.Success)
+					.setEmoji('🎖')
+			}],
+
 		]
 	}
 }
