@@ -124,10 +124,19 @@ export const config: Config = {
 				type: 'faq',
 				faqId: 'role-info',
 				button: new ButtonBuilder()
-					.setLabel('What do the different roles mean?')
+					.setLabel('Our Server Roles')
 					.setStyle(ButtonStyle.Success)
 					.setEmoji('🎖')
-			}],
+			},
+				{
+					type: 'faq',
+					faqId: 'xp-guide',
+					button: new ButtonBuilder()
+						.setLabel('How XP works')
+						.setStyle(ButtonStyle.Success)
+						.setEmoji('⭐️')
+				},
+			],
 
 		]
 	}
