@@ -1,5 +1,6 @@
 export interface LearningResource {
-	name: string
+	name: string,
+	emoji?: string,
 	description: string
 	resources: Resource[]
 }

@@ -1,6 +1,7 @@
 import {logger} from '../../logging.js'
 import fetch from 'node-fetch'
 import {LearningResource} from './learningResource.model.js'
+import {parse} from 'yaml'
 
 const cache = new Map<string, LearningResource>()
 
@@ -32,7 +33,8 @@ const baseUrl = 'https://learningresources.developerden.net'
 
 async function queryResource(name: string): Promise<LearningResource> {
 	const resource = await fetch(`${baseUrl}/${name}`)
-		.then(r => r.json())
+		.then(r => r.text())
+		.then(r => parse(r))
 
 	return resource as LearningResource
 }
