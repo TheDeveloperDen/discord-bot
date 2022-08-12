@@ -753,7 +753,7 @@ discord.js@^14.2.0:
     undici "^5.8.2"
     ws "^8.8.1"
 
-"djs-slash-helper@https://github.com/knightzmc/djs-slash-helper":
+"djs-slash-helper@https://github.com/knightzmc/djs-slash-helper#465860dd48441b28a5aacaa6951cdb277e73c4c9":
   version "1.2.0"
   resolved "https://github.com/knightzmc/djs-slash-helper#465860dd48441b28a5aacaa6951cdb277e73c4c9"
   dependencies:
