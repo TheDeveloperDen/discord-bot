@@ -755,7 +755,7 @@ discord.js@^14.2.0:
 
 "djs-slash-helper@https://github.com/knightzmc/djs-slash-helper":
   version "1.2.0"
-  resolved "https://github.com/knightzmc/djs-slash-helper#133b07acf52e1aa828674cebdb87d0e3ba3c1817"
+  resolved "https://github.com/knightzmc/djs-slash-helper#465860dd48441b28a5aacaa6951cdb277e73c4c9"
   dependencies:
     "@discordjs/rest" "^1.0.1"
     discord-api-types "^0.37.2"
