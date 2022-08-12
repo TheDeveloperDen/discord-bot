@@ -23,7 +23,7 @@ export const stringifyEmoji = (emoji: string | GuildEmoji) => {
 }
 
 export const toComponentEmojiResolvable: (emoji: (string | GuildEmoji)) => ComponentEmojiResolvable = emoji => {
-	return typeof emoji === 'string' ? emoji : {
+	return typeof emoji === 'string' ? `:${emoji}:` : {
 		id: emoji.id,
 		name: emoji.name ?? undefined,
 		animated: emoji.animated ?? undefined,
