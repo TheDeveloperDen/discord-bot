@@ -17,6 +17,7 @@ import AskToAskModule from './modules/askToAsk.module.js'
 import JoinLeaveMessageModule from './modules/joinLeaveMessage.module.js'
 import {CoreModule} from './modules/core/core.module.js'
 import {LearningModule} from './modules/learning/learning.module.js'
+import {InformationModule} from './modules/information/information.module.js'
 
 const client = new Client({
 	intents: [Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]
@@ -31,6 +32,7 @@ export const moduleManager = new ModuleManager(client,
 		FaqModule,
 		HotTakesModule,
 		ImageForwarderModule,
+		InformationModule,
 		JoinLeaveMessageModule,
 		LanguageStatusModule,
 		LearningModule,
