@@ -1,6 +1,6 @@
 import {config} from '../../Config.js'
 import {Command} from 'djs-slash-helper'
-import {GuildMember} from 'discord.js'
+import {GuildMember, Role} from 'discord.js'
 import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10'
 
 const allowedRoles = [
@@ -21,7 +21,7 @@ export const RoleCommand: Command<ApplicationCommandType.ChatInput> = {
 	}],
 
 	async handle(interaction) {
-		const role = interaction.options.getRole('role', true)
+		const role = interaction.options.get('role', true).role as Role
 		if (!allowedRoles.includes(role.id)) {
 			return interaction.reply(`You cannot get or remove this Role. Options: ${allowedRoles.map(r => `<@&${r}>`).join(', ')}`)
 		}

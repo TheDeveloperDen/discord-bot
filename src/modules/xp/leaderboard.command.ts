@@ -54,7 +54,7 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
 			await interaction.followUp('This command can only be used in a server')
 			return
 		}
-		const option = interaction.options.getString('type', true)
+		const option = interaction.options.get('type', true).value as string
 		const traitInfo = info.find(it => it.value == option)
 		if (!traitInfo) {
 			await interaction.followUp('Invalid leaderboard type')

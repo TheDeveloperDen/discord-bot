@@ -1,32 +1,32 @@
 import {FAQ} from '../../store/models/FAQ.js'
-import {MessageActionRow, Modal, ModalActionRowComponent, TextInputComponent} from 'discord.js'
+import {ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle} from 'discord.js'
 
 export const createFaqModal = (faq?: FAQ) => {
-	const modal = new Modal()
+	const modal = new ModalBuilder()
 		.setTitle('FAQ Content')
 		.setCustomId('faqContent')
 
-	const titleField = new TextInputComponent()
+	const titleField = new TextInputBuilder()
 		.setCustomId('titleField')
 		.setLabel('Title')
 		.setMaxLength(64)
-		.setStyle('SHORT')
+		.setStyle(TextInputStyle.Short)
 
 	if (faq) {
 		titleField.setValue(faq.title)
 	}
 
-	const contentField = new TextInputComponent()
+	const contentField = new TextInputBuilder()
 		.setCustomId('faqContentField')
 		.setLabel('Content')
-		.setStyle('PARAGRAPH')
+		.setStyle(TextInputStyle.Paragraph)
 
 	if (faq) {
 		contentField.setValue(faq.content)
 	}
 
-	modal.addComponents(new MessageActionRow<ModalActionRowComponent>().addComponents(titleField))
-	modal.addComponents(new MessageActionRow<ModalActionRowComponent>().addComponents(contentField))
+	modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(titleField))
+	modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(contentField))
 
 	return modal
 }

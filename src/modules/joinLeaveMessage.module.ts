@@ -16,21 +16,17 @@ const handler = (isAdding: boolean) => async function (client: Client, member: P
 	await client.users.fetch(member.id)
 	await channel.send({
 		embeds: [
-			{
-				...createStandardEmbed(member),
-				title: `members${isAdding ? '++' : '--'};`,
-				description: isAdding ?
+			createStandardEmbed(member)
+				.setTitle(`members${isAdding ? '++' : '--'};`)
+				.setDescription(isAdding ?
 					branding.welcomeMessage(member) :
 					// FIXME - extract this to branding?
-					`${mention(member)} has left! :(\nCurrent Member Count: ${member.guild.memberCount}`,
-				color: isAdding ? '#77dd77' : '#aa4344',
-				thumbnail: {
-					url: member.user.avatarURL() ?? 'https://cdn.discordapp.com/embed/avatars/0.png'
-				},
-				author: {
+					`${mention(member)} has left! :(\nCurrent Member Count: ${member.guild.memberCount}`)
+				.setColor(isAdding ? '#77dd77' : '#aa4344')
+				.setThumbnail(member.user.avatarURL() ?? 'https://cdn.discordapp.com/embed/avatars/0.png')
+				.setAuthor({
 					name: pseudoMention(member.user)
-				}
-			}
+				})
 		]
 	})
 }

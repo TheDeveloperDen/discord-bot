@@ -1,12 +1,15 @@
-import {ColorResolvable, GuildMember, MessageEmbedOptions, PartialGuildMember} from 'discord.js'
+import {ColorResolvable, EmbedBuilder, GuildMember, PartialGuildMember} from 'discord.js'
 import {branding} from './branding.js'
 import {EmbedFooterOptions} from '@discordjs/builders'
 
-export const createStandardEmbed: (user?: GuildMember | PartialGuildMember) => MessageEmbedOptions = (user) => ({
-	color: user?.roles?.color?.hexColor ?? branding.color as ColorResolvable,
-	footer: standardFooter(),
-	timestamp: new Date(),
-})
+export const createStandardEmbed = (user?: GuildMember | PartialGuildMember) => {
+	const builder = new EmbedBuilder()
+	builder.setColor(user?.roles?.color?.hexColor ?? branding.color as ColorResolvable)
+	builder.setFooter(standardFooter())
+	builder.setTimestamp(new Date())
+	return builder
+}
+
 
 export const standardFooter: () => EmbedFooterOptions = () =>
 	({

@@ -1,4 +1,4 @@
-import {Client, GuildMember, MessageEmbedOptions, TextChannel} from 'discord.js'
+import {Client, GuildMember, TextChannel} from 'discord.js'
 import {DDUser} from '../../store/models/DDUser.js'
 import {modifyRoles} from '../../util/roles.js'
 import {config} from '../../Config.js'
@@ -38,20 +38,18 @@ async function sendLevelUpMessage(client: Client, member: GuildMember, ddUser: D
 		console.error(`Could not find level up channel with id ${config.channels.botCommands}`)
 		return
 	}
-	const embed = {
-		...createStandardEmbed(member),
-		title: '⚡ Level Up!',
-		author: {
+	const embed = createStandardEmbed(member)
+		.setTitle('⚡ Level Up!')
+		.setAuthor({
 			name: pseudoMention(user),
-			iconURL: user.avatarURL()
-		},
-		fields: [
-			{
-				name: '📈 XP',
-				value: `${ddUser.xp}/${xpForLevel(ddUser.level + 1)}`
-			}],
-		description: `${actualMention(member)}, you leveled up to level **${ddUser.level}**!`
-	} as MessageEmbedOptions
+			iconURL: user.avatarURL() ?? undefined
+		})
+		.setFields({
+			name: '📈 XP',
+			value: `${ddUser.xp}/${xpForLevel(ddUser.level + 1)}`
+		})
+		.setDescription(`${actualMention(member)}, you leveled up to level **${ddUser.level}**!`)
+
 	const message = mentionWithNoPingMessage(member)
 	await channel.send({content: message, embeds: [embed]})
 }

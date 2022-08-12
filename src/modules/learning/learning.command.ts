@@ -1,10 +1,11 @@
 import {Command, ExecutableSubcommand} from 'djs-slash-helper'
-import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10'
+import {ApplicationCommandOptionType, ApplicationCommandType, PermissionFlagsBits} from 'discord-api-types/v10'
 import {getAllCachedResources, getResource, updateAllResources} from './resourcesCache.util.js'
-import {GuildMember, MessageEmbedOptions} from 'discord.js'
+import {GuildMember} from 'discord.js'
 import {createStandardEmbed, standardFooter} from '../../util/embeds.js'
 import {pseudoMention} from '../../util/users.js'
 import {moduleManager} from '../../index.js'
+
 
 const resources: { name: string, value: string }[] = []
 
@@ -31,19 +32,18 @@ const LearningGetSubcommand: ExecutableSubcommand = {
 		required: true
 	}],
 	async handle(interaction) {
-		const name = interaction.options.getString('resource')
+		const name = interaction.options.get('resource')?.value as string | null
 		if (!name) return
 		const resource = await getResource(name)
 		if (!resource) return interaction.reply(`Could not find resource ${name}`)
 
-		const embed: MessageEmbedOptions = {
-			...createStandardEmbed(interaction.member as GuildMember ?? undefined),
-			title: resource.name,
-			footer: {
+		const embed = createStandardEmbed(interaction.member as GuildMember ?? undefined)
+			.setTitle(resource.name)
+			.setFooter({
 				...standardFooter(),
 				text: `Requested by ${pseudoMention(interaction.user)} | Learning Resources`
-			},
-			description: `**${resource.description}**\n` +
+			})
+			.setDescription(`**${resource.description}**\n` +
 				resource.resources
 					.map(res => {
 						const pros = res.pros.length == 0 ? '' : '\n**Pros**\n' + res.pros.map(i => '• ' + i).join('\n')
@@ -52,8 +52,7 @@ const LearningGetSubcommand: ExecutableSubcommand = {
 						const price = res.price ? `${res.price}` : 'Free!'
 						return `${linkedName} - ${price}${pros}${cons}\n`
 					}).join('\n')
-				+ extraFooter
-		}
+				+ extraFooter)
 
 		await interaction.reply({embeds: [embed]})
 	}
@@ -65,7 +64,7 @@ const LearningUpdateSubcommand: ExecutableSubcommand = {
 	description: 'Update the learning resources cache',
 	async handle(interaction) {
 		const member = interaction.member as GuildMember
-		if (!member.permissions.has('MANAGE_MESSAGES')) return interaction.reply({
+		if (!member.permissions.has(PermissionFlagsBits.ManageMessages)) return interaction.reply({
 			ephemeral: true,
 			content: 'No permission'
 		})
@@ -86,15 +85,14 @@ const LearningListSubcommand: ExecutableSubcommand = {
 
 	async handle(interaction) {
 		const resources = getAllCachedResources().map(i => i.name).join(', ')
-		const embed: MessageEmbedOptions = {
-			...createStandardEmbed(interaction.member as GuildMember ?? undefined),
-			title: 'Resource List',
-			description: resources + extraFooter,
-			footer: {
+		const embed = createStandardEmbed(interaction.member as GuildMember ?? undefined)
+			.setTitle('Resource List')
+			.setDescription(resources + extraFooter)
+			.setFooter({
 				...standardFooter(),
 				text: `Requested by ${pseudoMention(interaction.user)} | Learning Resources`
-			}
-		}
+			})
+
 		await interaction.reply({ephemeral: true, embeds: [embed]})
 	}
 }

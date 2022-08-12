@@ -17,7 +17,7 @@ export const RoleColourCommand: Command<ApplicationCommandType.ChatInput> = {
 	}],
 
 	handle: async function (interaction) {
-		const colour = interaction.options.getString('colour', true)
+		const colour = interaction.options.get('colour', true).value as string
 		if (!colour.startsWith('#') || colour.length !== 7) {
 			await interaction.reply({content: 'Not a valid colour', ephemeral: true})
 			return

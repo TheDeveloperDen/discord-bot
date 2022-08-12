@@ -29,14 +29,14 @@ export const TimeoutCommand: Command<ApplicationCommandType.ChatInput> = {
 
 	async handle(interaction: CommandInteraction) {
 		// capped at 28 days
-		const period = Math.min(parseTimespan(interaction.options.getString('duration', true)), 2.419e+9)
+		const period = Math.min(parseTimespan(interaction.options.get('duration', true).value as string), 2.419e+9)
 
 		if (period == 0) {
 			await interaction.reply('Invalid timespan')
 		}
 
 		const user = interaction.options.getMember('target') as GuildMember
-		const reason = interaction.options.getString('reason', true)
+		const reason = interaction.options.get('reason', true).value as string
 
 		await user.timeout(period, reason)
 		await interaction.reply({

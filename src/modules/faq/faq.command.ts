@@ -29,7 +29,7 @@ const GetSubcommand: ExecutableSubcommand = {
 		choices
 	}],
 	async handle(interaction) {
-		const name = interaction.options.getString('name')
+		const name = interaction.options.get('name')?.value as string | null
 		const faq = await FAQ.findOne({where: {name}})
 		if (!faq) return interaction.reply({ephemeral: true, content: 'No FAQ found with this name'})
 		return interaction.reply({embeds: [createFaqEmbed(faq)]})
@@ -47,15 +47,15 @@ const EditSubcommand: ExecutableSubcommand = {
 		required: true
 	}],
 	async handle(interaction) {
-		const name = interaction.options.getString('name')
+		const name = interaction.options.get('name')?.value as string | null
 		const faq = await FAQ.findOne({where: {name}})
 
 		const modal = createFaqModal(faq ?? undefined)
 
 		await interaction.showModal(modal)
 		const response = await interaction.awaitModalSubmit({time: 2 ** 31 - 1})
-		const title = response.fields.getField('titleField').value
-		const content = response.fields.getField('faqContentField').value
+		const title = response.fields.getTextInputValue('titleField')
+		const content = response.fields.getTextInputValue('faqContentField')
 
 		await FAQ.upsert({id: faq?.id, name, title, content, author: interaction.user.id})
 		await response.reply({ephemeral: true, content: `FAQ named ${name} created`})
@@ -77,7 +77,8 @@ const DeleteSubcommand: ExecutableSubcommand = {
 		choices
 	}],
 	async handle(interaction) {
-		const name = interaction.options.getString('name')
+		const name = interaction.options.get('name')?.value as string | null
+
 		const faq = await FAQ.findOne({where: {name}})
 		if (!faq) return interaction.reply({ephemeral: true, content: 'No FAQ found with this name'})
 		await faq.destroy()

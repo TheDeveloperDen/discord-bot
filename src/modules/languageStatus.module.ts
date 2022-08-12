@@ -1,4 +1,5 @@
 import Module from './module.js'
+import {ActivityType} from 'discord-api-types/v10'
 
 const languages = [
 	'C',
@@ -44,7 +45,7 @@ export const LanguageStatusModule: Module = {
 	listeners: [{
 		ready(_, event) {
 			setInterval(
-				() => event.user.setActivity(`Coding in ${languages.randomElement()}`, {type: 'PLAYING'}),
+				() => event.user.setActivity(`Coding in ${languages.randomElement()}`, {type: ActivityType.Playing}),
 				3.6e+6)
 		}
 	}]

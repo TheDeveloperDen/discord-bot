@@ -1,4 +1,4 @@
-import {CommandInteraction, GuildMember, MessageEmbedOptions, User} from 'discord.js'
+import {CommandInteraction, GuildMember, User} from 'discord.js'
 import {getUserById} from '../../store/models/DDUser.js'
 import {createStandardEmbed} from '../../util/embeds.js'
 import {xpForLevel} from './xpForMessage.util.js'
@@ -30,11 +30,10 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
 		const xp = ddUser.xp
 		const image = createXpImage(xp, member)
 		await interaction.followUp({
-			embeds: [{
-				...createStandardEmbed(member),
-				title: `Profile of ${user.username}#${user.discriminator}`,
-				fields: [
-					{
+			embeds: [
+				createStandardEmbed(member)
+					.setTitle(`Profile of ${user.username}#${user.discriminator}`)
+					.setFields({
 						name: '🔮 Level',
 						value: `${ddUser.level}`
 					},
@@ -49,10 +48,9 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
 					{
 						name: '📈 XP Until Level Up',
 						value: `${ddUser.xp}/${xpForLevel(ddUser.level + 1)}`
-					}
-				],
-				image: {url: 'attachment://xp.png'}
-			} as MessageEmbedOptions],
+					})
+					.setImage('attachment://xp.png')
+			],
 			files: [{attachment: image.toBuffer(), name: 'xp.png'}]
 		})
 	}

@@ -1,11 +1,4 @@
-import {
-	CommandInteraction,
-	GuildMember,
-	Message,
-	MessageActionRow,
-	MessageButton,
-	MessageEmbedOptions
-} from 'discord.js'
+import {ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, GuildMember, Message} from 'discord.js'
 import {Command} from 'djs-slash-helper'
 import {DiscordColor} from '@api-typings/discord'
 import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10'
@@ -44,17 +37,16 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
 		}
 		const user = await getUserById(BigInt(target.id))
 
-		const option = interaction.options.getString('field', true)
+		const option = interaction.options.get('field', true).value as string
 		const getter = getters.get(option)
 		const setter = setters.get(option)
 		if (!getter || !setter) return
-		const value = interaction.options.getInteger('value', true)
+		const value = interaction.options.get('value', true).value as number
 
-		const embed: MessageEmbedOptions = {
-			...createStandardEmbed(target),
-			title: 'Confirm',
-			description: `Are you sure you want to set ${mention(target)}'s ${option} to ${value}?`,
-			fields: [
+		const embed = createStandardEmbed(target)
+			.setTitle('Confirm')
+			.setDescription(`Are you sure you want to set ${mention(target)}'s ${option} to ${value}?`)
+			.setFields([
 				{
 					name: 'Current Value',
 					value: getter(user).toString(),
@@ -65,17 +57,16 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
 					value: value.toString(),
 					inline: true
 				},
-			]
-		}
-		const buttons = new MessageActionRow()
+			])
+		const buttons = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents(
-				new MessageButton()
+				new ButtonBuilder()
 					.setCustomId('confirm')
-					.setStyle('SUCCESS')
+					.setStyle(ButtonStyle.Success)
 					.setLabel('Confirm'),
-				new MessageButton()
+				new ButtonBuilder()
 					.setCustomId('cancel')
-					.setStyle('DANGER')
+					.setStyle(ButtonStyle.Danger)
 					.setLabel('Cancel'))
 		const reply = await interaction.reply({
 			embeds: [embed],
@@ -102,12 +93,11 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
 			setter(user, value)
 			await user.save()
 			await event.followUp({
-				ephemeral: true, embeds: [{
-					...createStandardEmbed(target),
-					title: 'Success',
-					color: DiscordColor.Green,
-					description: `Set ${mention(target)}'s ${option} to ${value}`
-				}]
+				ephemeral: true, embeds: [
+					createStandardEmbed(target)
+						.setTitle('Success')
+						.setColor(DiscordColor.Green)
+						.setDescription(`Set ${mention(target)}'s ${option} to ${value}`)]
 			})
 		}
 		await (reply as Message).delete()

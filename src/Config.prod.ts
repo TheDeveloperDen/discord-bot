@@ -1,5 +1,6 @@
 import {mention} from './util/users.js'
 import {Config} from './config.type.js'
+import {ButtonBuilder, ButtonStyle, EmbedBuilder} from 'discord.js'
 
 // Config file for the Developer Den server (.gg/devden)
 export const config: Config = {
@@ -47,5 +48,37 @@ export const config: Config = {
 		font: 'CascadiaCode.ttf',
 		welcomeMessage: member =>
 			`Welcome ${mention(member)} to the Developer Den!\nCurrent Member Count: ${member.guild.memberCount}`
+	},
+
+	informationMessage: {
+		embed: new EmbedBuilder()
+			.setTitle('Server Information')
+			.setDescription('Welcome'),
+
+		buttons: [
+			new ButtonBuilder()
+				.setLabel('Permanent Invite Link')
+				.setURL('https://developerden.net/discord')
+				.setStyle(ButtonStyle.Link)
+			,
+			new ButtonBuilder()
+				.setLabel('Our GitHub Organization')
+				.setURL('https://github.com/TheDeveloperDen')
+				.setStyle(ButtonStyle.Link),
+			{
+				faqId: 'codeblocks',
+				type: 'faq',
+				button: new ButtonBuilder()
+					.setLabel('How to share code')
+					.setStyle(ButtonStyle.Primary)
+			},
+			{
+				type: 'learning',
+				button: new ButtonBuilder()
+					.setLabel('Learn a new Language')
+					.setStyle(ButtonStyle.Secondary)
+					.setEmoji('📚')
+			}
+		]
 	}
 }

@@ -1,5 +1,4 @@
 import {FAQ} from '../../store/models/FAQ.js'
-import {MessageEmbedOptions} from 'discord.js'
 import {EventListener} from '../module.js'
 import {createFaqEmbed} from './faq.util.js'
 
@@ -17,7 +16,7 @@ export const FaqCommandListener: EventListener = {
 			return
 		}
 
-		const embed: MessageEmbedOptions = createFaqEmbed(faq, message.author, message.member ?? undefined)
+		const embed = createFaqEmbed(faq, message.author, message.member ?? undefined)
 		await message.reply({embeds: [embed]})
 	}
 }

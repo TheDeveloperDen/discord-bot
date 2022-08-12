@@ -1,5 +1,6 @@
-import { Snowflake } from 'discord.js'
+import {Snowflake} from 'discord.js'
 import {BrandingConfig} from './util/branding.js'
+import {InformationMessage} from './modules/information/information.js'
 
 export type Config = {
 	guildId: string,
@@ -16,5 +17,6 @@ export type Config = {
 		noPing: Snowflake,
 		usersAllowedToSet: Snowflake[]
 	},
-	branding: BrandingConfig
+	branding: BrandingConfig,
+	informationMessage?: InformationMessage
 }
