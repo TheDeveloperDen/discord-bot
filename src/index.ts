@@ -20,7 +20,7 @@ import {LearningModule} from './modules/learning/learning.module.js'
 import {InformationModule} from './modules/information/information.module.js'
 
 const client = new Client({
-	intents: [GatewayIntentBits.GuildMembers, GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages]
+	intents: [GatewayIntentBits.GuildMembers, GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
 })
 
 export const moduleManager = new ModuleManager(client,

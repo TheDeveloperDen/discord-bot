@@ -55,30 +55,33 @@ export const config: Config = {
 			.setTitle('Server Information')
 			.setDescription('Welcome'),
 
-		buttons: [
-			new ButtonBuilder()
-				.setLabel('Permanent Invite Link')
-				.setURL('https://developerden.net/discord')
-				.setStyle(ButtonStyle.Link)
-			,
-			new ButtonBuilder()
-				.setLabel('Our GitHub Organization')
-				.setURL('https://github.com/TheDeveloperDen')
-				.setStyle(ButtonStyle.Link),
-			{
-				faqId: 'codeblocks',
-				type: 'faq',
-				button: new ButtonBuilder()
-					.setLabel('How to share code')
-					.setStyle(ButtonStyle.Primary)
-			},
-			{
+		buttonRows: [
+			[
+				new ButtonBuilder()
+					.setLabel('Permanent Invite Link')
+					.setURL('https://developerden.net/discord')
+					.setStyle(ButtonStyle.Link)
+				,
+				new ButtonBuilder()
+					.setLabel('Our GitHub Organization')
+					.setURL('https://github.com/TheDeveloperDen')
+					.setStyle(ButtonStyle.Link),
+			],
+			[
+				{
+					faqId: 'codeblocks',
+					type: 'faq',
+					button: new ButtonBuilder()
+						.setLabel('How to share code')
+						.setStyle(ButtonStyle.Primary)
+				}],
+			[{
 				type: 'learning',
 				button: new ButtonBuilder()
 					.setLabel('Learn a new Language')
-					.setStyle(ButtonStyle.Secondary)
+					.setStyle(ButtonStyle.Success)
 					.setEmoji('📚')
-			}
+			}]
 		]
 	}
 }

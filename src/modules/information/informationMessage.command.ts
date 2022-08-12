@@ -3,6 +3,19 @@ import {APIEmbed, ApplicationCommandType} from 'discord-api-types/v10'
 import {config} from '../../Config.js'
 import {ActionRowBuilder, ButtonBuilder} from 'discord.js'
 import {createStandardEmbed} from '../../util/embeds.js'
+import {CustomButton} from './information.js'
+
+function loadCustomButton(customButton: CustomButton) {
+	if (customButton instanceof ButtonBuilder) {
+		return customButton
+	}
+	switch (customButton.type) {
+		case 'faq':
+			return customButton.button.setCustomId(`faq-${customButton.faqId}`)
+		case 'learning':
+			return customButton.button.setCustomId('learning-resources')
+	}
+}
 
 export const InformationMessageCommand: Command<ApplicationCommandType.Message> = {
 	name: 'Set Information Message',
@@ -24,29 +37,19 @@ export const InformationMessageCommand: Command<ApplicationCommandType.Message> 
 			...createStandardEmbed().data,
 			...informationMessage.embed.data
 		} as APIEmbed
-		const faqButtons = informationMessage.buttons
+		const rows = informationMessage.buttonRows
 
 		await interaction.targetMessage.edit({
-			content: informationMessage.content,
+			content: informationMessage.content ?? null,
 			embeds: [embed],
-			components: faqButtons.map(faqButton => {
-				let button: ButtonBuilder
-				if (faqButton instanceof ButtonBuilder) {
-					button = faqButton
-				} else {
-					switch (faqButton.type) {
-					case 'faq':
-						button = faqButton.button.setCustomId(`faq-${faqButton.faqId}`)
-						break
-					case 'learning':
-						button = faqButton.button.setCustomId('learning-resources')
-						break
-					}
-				}
-				return new ActionRowBuilder<ButtonBuilder>().addComponents(button)
+			components: rows.map(row => {
+				const rowEntries = row.map(loadCustomButton)
+				return new ActionRowBuilder<ButtonBuilder>().addComponents(...rowEntries)
 			})
 		})
 
 		await interaction.reply({ephemeral: true, content: 'Information message set.'})
 	}
 }
+
+

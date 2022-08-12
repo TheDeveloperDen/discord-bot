@@ -3,8 +3,10 @@ import {ButtonBuilder, EmbedBuilder} from 'discord.js'
 export type InformationMessage = {
 	content?: string,
 	embed: EmbedBuilder,
-	buttons: (FAQButton | LearningButton | PlainButton)[]
+	buttonRows: CustomButton[][]
 }
+
+export type CustomButton = (FAQButton | LearningButton | PlainButton)
 
 export type FAQButton = { type: 'faq' } & {
 	faqId: string,

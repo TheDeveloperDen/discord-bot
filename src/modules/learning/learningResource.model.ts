@@ -8,7 +8,7 @@ export interface LearningResource {
 export interface Resource {
 	name: string
 	url: string
-	price?: string
+	price?: string | number
 	pros: string[]
 	cons: string[]
 }

@@ -1,10 +1,13 @@
 import {Command, ExecutableSubcommand} from 'djs-slash-helper'
 import {ApplicationCommandOptionType, ApplicationCommandType, PermissionFlagsBits} from 'discord-api-types/v10'
 import {getAllCachedResources, getResource, updateAllResources} from './resourcesCache.util.js'
-import {GuildMember} from 'discord.js'
+import {Client, GuildMember, User} from 'discord.js'
 import {createStandardEmbed, standardFooter} from '../../util/embeds.js'
 import {pseudoMention} from '../../util/users.js'
 import {moduleManager} from '../../index.js'
+import {getEmoji, stringifyEmoji} from '../../util/emojis.js'
+import {logger} from '../../logging.js'
+import {LearningResource} from './learningResource.model.js'
 
 
 const resources: { name: string, value: string }[] = []
@@ -19,6 +22,39 @@ async function updateResources() {
 await updateResources()
 
 const extraFooter = '\n\n[Contribute to our resource collection](https://github.com/TheDeveloperDen/LearningResources)'
+
+
+export function getResourceEmbed(client: Client, resource: LearningResource, user?: User, member?: GuildMember) {
+	const embed = createStandardEmbed(member)
+		.setTitle(resource.name)
+		.setDescription(`**${resource.description}**\n` +
+			resource.resources
+				.map(res => {
+					const pros = res.pros.length == 0 ? '' : '\n**Pros**\n' + res.pros.map(i => '• ' + i).join('\n')
+					const cons = res.cons.length == 0 ? '' : '\n**Cons**\n' + res.cons.map(i => '• ' + i).join('\n')
+					const linkedName = `[${res.name}](${res.url})`
+					const price = res.price ? `${res.price}` : 'Free!'
+					return `${linkedName} - ${price}${pros}${cons}\n`
+				}).join('\n')
+			+ extraFooter)
+
+	if (user || member) {
+		embed.setFooter({
+			...standardFooter(),
+			text: `Requested by ${pseudoMention((user ?? member?.user)!)} | Learning Resources`
+		})
+	}
+
+	if (resource.emoji) {
+		const emoji = getEmoji(client, resource.emoji)
+		if (!emoji) {
+			logger.warn(`Could not find emoji ${resource.emoji} for resource ${resource.name}`)
+		} else {
+			embed.setTitle(`${stringifyEmoji(emoji)} ${resource.name}`)
+		}
+	}
+	return embed
+}
 
 const LearningGetSubcommand: ExecutableSubcommand = {
 	type: ApplicationCommandOptionType.Subcommand,
@@ -37,23 +73,7 @@ const LearningGetSubcommand: ExecutableSubcommand = {
 		const resource = await getResource(name)
 		if (!resource) return interaction.reply(`Could not find resource ${name}`)
 
-		const embed = createStandardEmbed(interaction.member as GuildMember ?? undefined)
-			.setTitle(resource.name)
-			.setFooter({
-				...standardFooter(),
-				text: `Requested by ${pseudoMention(interaction.user)} | Learning Resources`
-			})
-			.setDescription(`**${resource.description}**\n` +
-				resource.resources
-					.map(res => {
-						const pros = res.pros.length == 0 ? '' : '\n**Pros**\n' + res.pros.map(i => '• ' + i).join('\n')
-						const cons = res.cons.length == 0 ? '' : '\n**Cons**\n' + res.cons.map(i => '• ' + i).join('\n')
-						const linkedName = `[${res.name}](${res.url})`
-						const price = res.price ? `${res.price}` : 'Free!'
-						return `${linkedName} - ${price}${pros}${cons}\n`
-					}).join('\n')
-				+ extraFooter)
-
+		const embed = getResourceEmbed(interaction.client, resource, interaction.user, interaction.member as GuildMember ?? undefined,)
 		await interaction.reply({embeds: [embed]})
 	}
 }
