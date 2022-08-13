@@ -44,7 +44,7 @@ export const config: Config = {
 		threshold: 20
 	},
 	branding: {
-		color: '#ffffff',
+		color: '#C6BFF7',
 		font: 'CascadiaCode.ttf',
 		welcomeMessage: member =>
 			`Welcome ${mention(member)} to the Developer Den!\nCurrent Member Count: ${member.guild.memberCount}`
