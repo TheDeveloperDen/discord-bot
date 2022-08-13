@@ -44,7 +44,7 @@ export const InformationButtonListener: EventListener = {
 		if (!faq) {
 			return
 		}
-		const embed = createFaqEmbed(faq, interaction.user)
+		const embed = createFaqEmbed(faq, interaction.user, interaction.member as GuildMember ?? undefined)
 		await interaction.reply({
 			ephemeral: true,
 			embeds: [embed]
