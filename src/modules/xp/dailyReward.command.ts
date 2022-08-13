@@ -48,14 +48,11 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
 		await interaction.followUp({
 			ephemeral: false,
 			embeds: [
-				{
-					...createStandardEmbed(user),
-					title: 'Daily Reward Claimed!',
-					description:
-						`📆 Current Streak = ${formatDayCount(ddUser.currentDailyStreak)}
+				createStandardEmbed(user)
+					.setTitle('Daily Reward Claimed!')
+					.setDescription(`📆 Current Streak = ${formatDayCount(ddUser.currentDailyStreak)}
 ⭐️ + ${xpGiven} XP  ${multiplier ? `(x${multiplier})` : ''}
-⏰ Come back in 24 hours for a new reward!`
-				},
+⏰ Come back in 24 hours for a new reward!`)
 			]
 		})
 	}
