@@ -9,7 +9,7 @@ import {logger} from '../../logging.js'
 
 export async function levelUp(client: Client, user: GuildMember, ddUser: DDUser) {
 	let level = ddUser.level
-	while (ddUser.xp >= xpForLevel(level)) {
+	while (ddUser.xp >= xpForLevel(level + 1)) {
 		level++
 		logger.info(`${ddUser.id} xp (${ddUser.xp}) was enough to level up to ${level} (${xpForLevel(level)})`)
 	}
