@@ -42,7 +42,7 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
 						value: `${ddUser.level == 0 ? 0 : Math.floor(ddUser.level / 10) + 1}`
 					},
 					{
-						name: '❗ Daily Streak (Current / Max)',
+						name: '❗ Daily Streak (Current / Highest)',
 						value: `${formatDayCount(await getActualDailyStreak(ddUser))} / ${formatDayCount(ddUser.highestDailyStreak)}`
 					},
 					{
