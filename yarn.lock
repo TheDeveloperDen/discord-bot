@@ -753,9 +753,10 @@ discord.js@^14.2.0:
     undici "^5.8.2"
     ws "^8.8.1"
 
-"djs-slash-helper@https://github.com/knightzmc/djs-slash-helper#465860dd48441b28a5aacaa6951cdb277e73c4c9":
-  version "1.2.0"
-  resolved "https://github.com/knightzmc/djs-slash-helper#465860dd48441b28a5aacaa6951cdb277e73c4c9"
+djs-slash-helper@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/djs-slash-helper/-/djs-slash-helper-2.0.0.tgz#06e16fcc2de2759bc5225b8bc47f05056d733882"
+  integrity sha512-tmnKwfRaW4UPA/OrIII2DAUvwicoOGnZbfBCCyJmJNc7ieKX451J+kV3ElDmPg8x+bMlGrzWw/ek7ZtTmqSnTw==
   dependencies:
     "@discordjs/rest" "^1.0.1"
     discord-api-types "^0.37.2"
