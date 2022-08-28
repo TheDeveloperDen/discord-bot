@@ -18,6 +18,7 @@ import JoinLeaveMessageModule from './modules/joinLeaveMessage.module.js'
 import {CoreModule} from './modules/core/core.module.js'
 import {LearningModule} from './modules/learning/learning.module.js'
 import {InformationModule} from './modules/information/information.module.js'
+import {Web3Module} from './modules/web3/web3.module.js'
 
 const client = new Client({
 	intents: [
@@ -36,6 +37,7 @@ export const moduleManager = new ModuleManager(client,
 		CoreModule,
 		FaqModule,
 		HotTakesModule,
+		Web3Module,
 		ImageForwarderModule,
 		InformationModule,
 		JoinLeaveMessageModule,
