@@ -4,6 +4,7 @@ import {ActivityType} from 'discord-api-types/v10'
 const languages = [
 	'C',
 	'C++',
+	'Carbon',
 	'D',
 	'C#',
 	'F#',
@@ -24,6 +25,7 @@ const languages = [
 	'PHP (jk)',
 	'Python',
 	'Go',
+	'Vlang',
 	'Rust',
 	'Ruby',
 	'Crystal',
