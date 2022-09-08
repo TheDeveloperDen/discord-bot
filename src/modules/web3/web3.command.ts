@@ -14,6 +14,14 @@ const turndownService = new TurndownService({ bulletListMarker: '-' })
 
 const imgTag = /<img.*?\/>/g
 
+const fetchPeriod = 5 * 60 * 1000
+
+// this any type is part of what rssParser returns
+let rssUpdate: {feed: {[p: string]: any}, timestamp: number} = {
+	feed: {},
+	timestamp: 0
+}
+
 export const Web3Command: Command<ApplicationCommandType.ChatInput> = {
 	name: 'web3fact',
 	description: 'Learn more about Web3, the future of human society',
@@ -21,16 +29,17 @@ export const Web3Command: Command<ApplicationCommandType.ChatInput> = {
 	options: [],
 
 	async handle(interaction: CommandInteraction) {
-		const xml = await fetch(web3RssUrl, {compress: true})
-			.then(r => r.text())
-			.catch(e => console.log(e))
-		if (xml == undefined) {
-			await interaction.reply({content: 'Couldn\'t fetch RSS feed.'})
-			return
+		if (Date.now() - rssUpdate.timestamp > fetchPeriod) {
+			const xml = await fetch(web3RssUrl, {compress: true})
+				.then(r => r.text())
+				.catch(e => console.log(e))
+			if (xml !== undefined) {
+				rssUpdate = { feed: await rssParser.parseString(xml as string), timestamp: Date.now() }
+			}
 		}
-		const feed = await rssParser.parseString(xml as string)
-		const recentEntries = feed.items.slice(0, 10)
-		const entry = recentEntries.randomElement()
+
+		const feed = rssUpdate.feed
+		const entry = feed.items.randomElement()
 		const embed = new EmbedBuilder()
 			.setTitle(entry.title ?? 'Missing title')
 			.setAuthor({name: 'Molly White', url: 'https://mollywhite.net', iconURL: 'https://storage.googleapis.com/primary-web3/monkey_500.webp'})
