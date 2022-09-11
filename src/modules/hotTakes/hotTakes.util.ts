@@ -22,7 +22,9 @@ const placeholders = {
 	group: combineSources('people', 'companies'),
 	problem: () => hotTakeData.problems,
 	entity: combineSources('languages', 'technologies', 'people', 'companies'),
-	year: () => [randomInt(1900, 2022).toString()]
+	year: () => [randomInt(1500, 2022).toString()],
+	age: () => [randomInt(1, 50).toString()],
+	bigNumber: () => [randomInt(2, 100000).toString()]
 }
 
 type Placeholder = keyof typeof placeholders
