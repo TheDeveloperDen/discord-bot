@@ -54,15 +54,26 @@
     "Free Software Foundation",
     "GNU",
     "Tencent",
+    "Alibaba",
+    "Baidu",
     "Samsung",
+    "Sony",
     "Cisco",
     "OVH",
-    "Cloudflare"
+    "Scaleway",
+    "Vultr",
+    "Hetzner",
+    "Linode",
+    "Cloudflare",
+    "ARM",
+    "Tesla",
+    "Space X"
   ],
   "languages": [
     "Solidity",
     "C",
     "C++",
+    "Carbon",
     "D",
     "C#",
     "F#",
@@ -216,7 +227,8 @@
     "Windows 98",
     "Copilot",
     "machine learning",
-    "Fast Inverse Square Root algorithm"
+    "Fast Inverse Square Root algorithm",
+    "Wave function collapse"
   ],
   "problems": [
     "backward compatibility",
@@ -236,7 +248,8 @@
     "IPv4 address exhaustion",
     "Y2038",
     "syntax error",
-    "bloat"
+    "bloat",
+    "circular import"
   ],
   "takes": [
     "{thing} is just {thing} mixed with {thing}.",
