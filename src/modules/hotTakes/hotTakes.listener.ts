@@ -8,7 +8,7 @@ async function sendHotTake(client: Client) {
 	const lastMessage = await channel.messages.fetch({limit: 1}).then(m => m.first())
 	const lastMessageSentAt = lastMessage?.createdAt ?? new Date(0)
 	const timeSinceLastMessage = (Date.now() - lastMessageSentAt.getTime()) / 1000
-	if (lastMessage?.author == client.user || timeSinceLastMessage < 60 * 30) {
+	if (lastMessage?.author?.bot || timeSinceLastMessage < 60 * 60 * 2) {
 		return
 	}
 	const hotTake = await generateHotTake(channel.guild)

@@ -11,7 +11,7 @@ const hotTakeData: {
 	technologies: string[],
 	problems: string[]
 	takes: string[],
-} = JSON.parse(readFileSync(process.cwd()+'/hotTakeData.json').toString())
+} = JSON.parse(readFileSync(process.cwd() + '/hotTakeData.json').toString())
 
 const placeholders = {
 	language: () => hotTakeData.languages,
@@ -48,10 +48,10 @@ async function getAdditionalUsers(guild: Guild): Promise<string[]> {
 export default async function generateHotTake(guild: Guild) {
 	const members = await getAdditionalUsers(guild).catch(() => [])
 	return hotTakeData.takes.randomElement().replace(/{[\w|]+}/g, value => value
-		.slice(1, -1)
-		.split('|')
-		.filter(isValidPlaceholder)
-		.flatMap(it => placeholders[it](members))
-		.randomElement()
+		.slice(1, -1)// remove the {}
+		.split('|') // split into options
+		.filter(isValidPlaceholder) // filter out invalid placeholders
+		.flatMap(it => placeholders[it](members))  // get the values for each placeholder
+		.randomElement() // pick a random value
 	)
 }

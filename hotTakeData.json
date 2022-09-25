@@ -67,7 +67,13 @@
     "Cloudflare",
     "ARM",
     "Tesla",
-    "Space X"
+    "SpaceX",
+    "NASA",
+    "Mojang",
+    "GNU",
+    "Spigot",
+    "Bukkit",
+    "PaperMC"
   ],
   "languages": [
     "Solidity",
@@ -127,7 +133,8 @@
     "React",
     "Vue",
     "Malbolge",
-    "Zaskroniec"
+    "Zaskroniec",
+    "Verilog"
   ],
   "technologies": [
     "web3",
@@ -228,7 +235,21 @@
     "Copilot",
     "machine learning",
     "Fast Inverse Square Root algorithm",
-    "Wave function collapse"
+    "Wave function collapse",
+    "Spigot",
+    "Paper",
+    "Bukkit",
+    "Fabric",
+    "Forge",
+    "EssentialsX",
+    "LuckPerms",
+    "Apple Silicon",
+    "M1",
+    "Garbage Collection",
+    "curly braces",
+    "semicolons",
+    "indentation",
+    "tail recursion"
   ],
   "problems": [
     "backward compatibility",
@@ -249,7 +270,8 @@
     "Y2038",
     "syntax error",
     "bloat",
-    "circular import"
+    "circular import",
+    "performance issues"
   ],
   "takes": [
     "{thing} is just {thing} mixed with {thing}.",
@@ -309,6 +331,13 @@
     "\"{entity}\".js is the next big JS framework.",
     "Lots of programming languages and tools have already fixed {problem} - {thing}, {thing}, {thing}, etc.",
     "Everyone should learn {language} as their first language",
-    "{thing} is more of a kids toy than a respectable tool."
+    "{thing} is more of a kids toy than a respectable tool.",
+    "{thing} has {technology} so it is webscale.",
+    "The {thing} community is toxic.",
+    "The {thing} community are the nicest people I've ever met.",
+    "{thing} needs to support {thing} if it wants to be taken seriously.",
+    "I'm looking for a new job. I'm not sure if I should apply to {company}. I've heard they're {thing} haters.",
+    "I'm looking for a new job. I'm not sure if I should apply to {company}. I've heard they're {thing} fans.",
+    "Every stack should include {thing}."
   ]
 }
