@@ -9,13 +9,15 @@ const hotTakeData: {
 	companies: string[],
 	languages: string[]
 	technologies: string[],
-	problems: string[]
+	problems: string[],
+	tlds: string[]
 	takes: string[],
 } = JSON.parse(readFileSync(process.cwd() + '/hotTakeData.json').toString())
 
 const placeholders = {
 	language: () => hotTakeData.languages,
 	technology: () => hotTakeData.technologies,
+	tld: () => hotTakeData.tlds,
 	thing: combineSources('languages', 'technologies'),
 	person: combineSources('people'),
 	company: () => hotTakeData.companies,
@@ -24,7 +26,8 @@ const placeholders = {
 	entity: combineSources('languages', 'technologies', 'people', 'companies'),
 	year: () => [randomInt(1500, 2022).toString()],
 	age: () => [randomInt(1, 50).toString()],
-	bigNumber: () => [randomInt(2, 100000).toString()]
+	bigNumber: () => [randomInt(2, 100000).toString()],
+	oneWordThing: (users: string[]) => mappedPlaceholders('thing', it => it.replace(' ', ''))(users),
 }
 
 type Placeholder = keyof typeof placeholders
@@ -35,6 +38,10 @@ function isValidPlaceholder(value: string): value is Placeholder {
 
 function combineSources(...source: (keyof typeof hotTakeData)[]) {
 	return (users: string[]) => hotTakeData[source[0]].concat(source.slice(1).flatMap(it => hotTakeData[it]), users)
+}
+
+function mappedPlaceholders(key: Placeholder, f: (s: string) => string): (users: string[]) => string[] {
+	return (users: string[]) => placeholders[key](users).map(f)
 }
 
 async function getAdditionalUsers(guild: Guild): Promise<string[]> {

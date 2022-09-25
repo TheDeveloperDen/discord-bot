@@ -273,6 +273,22 @@
     "circular import",
     "performance issues"
   ],
+  "tlds": [
+    "com",
+    "org",
+    "net",
+    "io",
+    "co",
+    "dev",
+    "xyz",
+    "club",
+    "tech",
+    "space",
+    "app",
+    "info",
+    "gov",
+    "edu"
+  ],
   "takes": [
     "{thing} is just {thing} mixed with {thing}.",
     "{language} is heavily influenced by {thing|group}.",
@@ -328,7 +344,7 @@
     "{entity} > {entity}.",
     "{problem} this, {problem} that. How about you learn {thing} instead?",
     "Did you hear what happened over at {company}? Me neither, nobody cares about them.",
-    "\"{entity}\".js is the next big JS framework.",
+    "{oneWordThing}.js is the next big JS framework.",
     "Lots of programming languages and tools have already fixed {problem} - {thing}, {thing}, {thing}, etc.",
     "Everyone should learn {language} as their first language",
     "{thing} is more of a kids toy than a respectable tool.",
@@ -338,6 +354,13 @@
     "{thing} needs to support {thing} if it wants to be taken seriously.",
     "I'm looking for a new job. I'm not sure if I should apply to {company}. I've heard they're {thing} haters.",
     "I'm looking for a new job. I'm not sure if I should apply to {company}. I've heard they're {thing} fans.",
-    "Every stack should include {thing}."
+    "Every stack should include {thing}.",
+    "I think I'm addicted to working with {thing}. Does anyone else feel the same?",
+    "{thing} is toxic for humanity. This is not an opinion, it's an absolute truth.",
+    "People may disagree with the things I say, but I'd like to remind the haters that I have worked on a one-billion line {language} codebase.",
+    "{thing} users should be sent to prison for life.",
+    "I have a PhD in Computer Science and I'm still not sure how {thing} works.",
+    "If someone can explain to me how {thing} works, I'll give them ${bigNumber}.",
+    "I just purchased the domain name {oneWordThing}.{tld}. I'm going to make a fortune."
   ]
 }
