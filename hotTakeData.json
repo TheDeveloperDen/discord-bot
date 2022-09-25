@@ -73,7 +73,9 @@
     "GNU",
     "Spigot",
     "Bukkit",
-    "PaperMC"
+    "PaperMC",
+    "Patreon",
+    "PayPal"
   ],
   "languages": [
     "Solidity",
@@ -274,7 +276,8 @@
     "performance issues",
     "goto statement",
     "infinite loops",
-    "anti-patterns"
+    "anti-patterns",
+    "software licensing"
   ],
   "tlds": [
     "com",
@@ -357,17 +360,21 @@
     "{thing} needs to support {thing} if it wants to be taken seriously.",
     "I'm looking for a new job. I'm not sure if I should apply to {company}. I've heard they're {thing} haters.",
     "I'm looking for a new job. I'm not sure if I should apply to {company}. I've heard they're {thing} fans.",
-    "Every stack should include {thing}.",
+    "Every tech stack should include {thing}.",
     "I think I'm addicted to working with {thing}. Does anyone else feel the same?",
     "{thing} is toxic for humanity. This is not an opinion, it's an absolute truth.",
     "People may disagree with the things I say, but I'd like to remind the haters that I have worked on a one-billion line {language} codebase.",
     "{thing} users should be sent to prison for life.",
     "I have a PhD in Computer Science and I'm still not sure how {thing} works.",
     "If someone can explain to me how {thing} works, I'll give them ${bigNumber}.",
-    "I just purchased the domain name {oneWordThing}.{tld}. I'm going to make a fortune.",
+    "I just purchased the domain name {oneWordAnything}.{tld}. I'm going to make a fortune.",
     "AITA for banning my GF from using {thing}?",
     "If {thing} was rewritten in {language} all its problems would go away.",
     "If Jesus was alive today, he would use {thing}.",
-    "{language} is almost close to the bare metal now thanks to the stunningly optimized JIT."
+    "{language} is almost close to the bare metal now thanks to the stunningly optimized JIT.",
+    "Most programmers are not like {person}. I'm one of the few that is.",
+    "I had an interviewer laugh in my face when I said I use {thing}.",
+    "I just donated ${bigNumber} to {group}'s Patreon. They deserve it.",
+    "One of my greatest achievements is becoming a moderator of r/{oneWordAnything}."
   ]
 }
