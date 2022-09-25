@@ -296,7 +296,7 @@
     "{thing} is just {thing} mixed with {thing}.",
     "{language} is heavily influenced by {thing|group}.",
     "We should really stop listening to {group}. They told us to use {thing}, after all.",
-    "I'm not sure if {thing} is a programming language or a {problem} disaster waiting to happen.",
+    "{thing} is a {problem} disaster waiting to happen.",
     "My latest project is a lightweight Electron wrapper for {technology}.",
     "{technology} doesn't need {technology}, it's perfect already.",
     "Could {technology} be the solution to the {problem|technology|person|company} problem?",
