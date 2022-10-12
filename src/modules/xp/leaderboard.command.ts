@@ -1,4 +1,4 @@
-import {CommandInteraction, GuildMember} from 'discord.js'
+import {CommandInteraction, GuildMember, User} from 'discord.js'
 
 import {
 	APIApplicationCommandOptionChoice
@@ -10,6 +10,9 @@ import {createStandardEmbed} from '../../util/embeds.js'
 import {branding} from '../../util/branding.js'
 import {actualMention} from '../../util/users.js'
 import {getActualDailyStreak} from './dailyReward.command.js'
+import {createImage, getCanvasContext} from '../../util/imageUtils.js'
+import { drawText } from '../../util/textRendering.js'
+import { loadImage } from 'canvas'
 
 interface LeaderboardType extends APIApplicationCommandOptionChoice<string> {
 	calculate?: (user: DDUser) => Promise<number>,
@@ -17,6 +20,12 @@ interface LeaderboardType extends APIApplicationCommandOptionChoice<string> {
 	format(value: number): string,
 
 	value: keyof DDUser
+}
+
+type LeaderboardData = {
+	name: string;
+	value: string;
+	avatar: string;
 }
 
 const info: LeaderboardType[] = [
@@ -64,26 +73,51 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
 		const calculate = traitInfo.calculate ?? ((user: DDUser) => Promise.resolve(user[value]))
 		const users = await DDUser.findAll({
 			order: [[value, 'DESC']],
-			limit: 10
+			limit: 3
 		}).then(users => users.filter(async it => await calculate(it) > 0))
 		if (users.length == 0) {
 			await interaction.followUp('No applicable users')
 			return
 		}
-		const embed = {
-			...createStandardEmbed(interaction.member as GuildMember),
-			title: `${branding.name} Leaderboard`,
-			description: `The top ${users.length} users based on ${name}`,
-			fields: await Promise.all(users.map(async (user, index) => {
-				const discordUser = await guild.client.users.fetch(user.id.toString()).catch(() => null)
-				return {
-					name: `#${index + 1} - ${format(await calculate(user))}`,
-					value: discordUser == null ? 'Unknown User' : actualMention(discordUser)
-				}
-			}))
-		}
-		await interaction.followUp({embeds: [embed]})
+
+		const data = await Promise.all(users.map(async (user, index) => {
+			const discordUser = await guild.client.users.fetch(user.id.toString()).catch(() => null)
+			const value = format(await calculate(user))
+
+			if (discordUser == null) return null
+
+			return {
+				name: discordUser.username,
+				value: value,
+				avatar: discordUser.avatar
+			}
+		}))
+
+		const member = (interaction.options.getMember('member') ?? interaction.member) as GuildMember
+		const image = await createLeaderboardImage(traitInfo, data as LeaderboardData[])
+
+		await interaction.followUp({
+			embeds: [
+				createStandardEmbed(member)
+					.setTitle(`${branding.name} Leaderboard`)
+					.setImage('attachment://leaderboard.png')
+			],
+			files: [{ attachment: image.toBuffer(), name: 'leaderboard.png' }]
+		})
 	}
+}
+
+const defaultDiscordLogo = 'https://i.imgur.com/sxS0Due.png'
+
+async function createLeaderboardImage(type: LeaderboardType, [first, second, third]: LeaderboardData[]) {
+	const [canvas, ctx] = getCanvasContext(1000, 500)
+
+	const goldAvatar = await loadImage(first.avatar ?? defaultDiscordLogo)
+
+	ctx.drawImage(await loadImage('leaderboardBackground.png'))
+	ctx.drawImage(goldAvatar, 43, 142, 85, 85)
+
+	return canvas
 }
 
 function formatDays(days: number) {
@@ -92,3 +126,4 @@ function formatDays(days: number) {
 	}
 	return `${days} days`
 }
+
