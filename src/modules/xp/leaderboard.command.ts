@@ -10,9 +10,9 @@ import {createStandardEmbed} from '../../util/embeds.js'
 import {branding} from '../../util/branding.js'
 import {actualMention} from '../../util/users.js'
 import {getActualDailyStreak} from './dailyReward.command.js'
-import {createImage, getCanvasContext} from '../../util/imageUtils.js'
+import {createImage, font, getCanvasContext} from '../../util/imageUtils.js'
 import { drawText } from '../../util/textRendering.js'
-import { loadImage } from 'canvas'
+import {loadImage, NodeCanvasRenderingContext2DSettings} from 'canvas'
 
 interface LeaderboardType extends APIApplicationCommandOptionChoice<string> {
 	calculate?: (user: DDUser) => Promise<number>,
@@ -89,7 +89,7 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
 			return {
 				name: discordUser.username,
 				value: value,
-				avatar: discordUser.avatar
+				avatar: discordUser.displayAvatarURL({ extension: 'png' })
 			}
 		}))
 
@@ -99,7 +99,7 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
 		await interaction.followUp({
 			embeds: [
 				createStandardEmbed(member)
-					.setTitle(`${branding.name} Leaderboard`)
+					.setTitle(`${branding.name} Leaderboard - ${traitInfo.name}`)
 					.setImage('attachment://leaderboard.png')
 			],
 			files: [{ attachment: image.toBuffer(), name: 'leaderboard.png' }]
@@ -107,15 +107,99 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
 	}
 }
 
-const defaultDiscordLogo = 'https://i.imgur.com/sxS0Due.png'
-
 async function createLeaderboardImage(type: LeaderboardType, [first, second, third]: LeaderboardData[]) {
 	const [canvas, ctx] = getCanvasContext(1000, 500)
 
-	const goldAvatar = await loadImage(first.avatar ?? defaultDiscordLogo)
+	const background = await loadImage('leaderboardBackground.png')
+	ctx.drawImage(background, 0, 0)
 
-	ctx.drawImage(await loadImage('leaderboardBackground.png'))
-	ctx.drawImage(goldAvatar, 43, 142, 85, 85)
+	const goldAvatar = await loadImage(first.avatar)
+	const silverAvatar = await loadImage(second.avatar)
+	const bronzeAvatar = await loadImage(third.avatar)
+
+	ctx.drawImage(goldAvatar, 457, 108, 85, 85)
+	ctx.drawImage(silverAvatar, 152, 158, 85, 85)
+	ctx.drawImage(bronzeAvatar, 762, 208, 85, 85)
+	ctx.drawImage(background, 0, 0)
+
+	drawText(ctx, first.value, font, {
+		x: 405,
+		y: 448,
+		width: 190,
+		height: 40
+	}, {
+		hAlign: 'center',
+		vAlign: 'center',
+		maxSize: 70,
+		minSize: 1,
+		granularity: 3
+	})
+
+	drawText(ctx, first.name, font, {
+		x: 405,
+		y: 213,
+		width: 190,
+		height: 40
+	}, {
+		hAlign: 'center',
+		vAlign: 'center',
+		maxSize: 25,
+		minSize: 1,
+		granularity: 3
+	})
+
+	drawText(ctx, second.value, font, {
+		x: 99,
+		y: 448,
+		width: 190,
+		height: 40
+	}, {
+		hAlign: 'center',
+		vAlign: 'center',
+		maxSize: 70,
+		minSize: 1,
+		granularity: 3
+	})
+
+	drawText(ctx, second.name, font, {
+		x: 99,
+		y: 263,
+		width: 190,
+		height: 40
+	}, {
+		hAlign: 'center',
+		vAlign: 'center',
+		maxSize: 25,
+		minSize: 1,
+		granularity: 3
+	})
+
+	drawText(ctx, third.value, font, {
+		x: 710,
+		y: 448,
+		width: 190,
+		height: 40
+	}, {
+		hAlign: 'center',
+		vAlign: 'center',
+		maxSize: 70,
+		minSize: 1,
+		granularity: 3
+	})
+
+	drawText(ctx, third.name, font, {
+		x: 710,
+		y: 312,
+		width: 190,
+		height: 40
+	}, {
+		hAlign: 'center',
+		vAlign: 'center',
+		maxSize: 25,
+		minSize: 1,
+		granularity: 3
+	})
+
 
 	return canvas
 }
@@ -126,4 +210,5 @@ function formatDays(days: number) {
 	}
 	return `${days} days`
 }
+
 
