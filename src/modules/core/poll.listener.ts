@@ -12,20 +12,26 @@ export const PollListener: EventListener = {
 				return;
 			}
 		}
-		console.log(reaction);
 		const pollConfig = config.poll;
-		console.log(pollConfig);
 		if (pollConfig == null) {
 			return
 		}
-		console.log(reaction.emoji)
 		if (reaction.emoji.id !== pollConfig.emojiId && reaction.emoji.name !== pollConfig.emojiId) {
 			return
 		}
 		const message = reaction.message;
+		if (message.partial) {
+			try {
+				await message.fetch();
+			} catch (error) {
+				console.error('Something went wrong when fetching the message:', error);
+				return;
+			}
+		}
 		if ((!(message instanceof Message))) {
 			return
 		}
+		await reaction.remove();
 		await message.react(pollConfig.yesEmojiId);
 		await message.react(pollConfig.noEmojiId);
 	}

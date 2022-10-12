@@ -40,9 +40,9 @@ export const config: Config = {
 	clientId: '904478222455029821',
 	guildId: '821743100203368458',
 	poll: {
-		emojiId: '1029839987652448258',
-		yesEmojiId: '1029843670205218977',
-		noEmojiId: '1029843702144848002'
+		emojiId: '1029839969658880041',
+		yesEmojiId: '997496973093502986',
+		noEmojiId: '1012427085798723666'
 	},
 	pastebin: {
 		url: 'https://paste.developerden.net',
