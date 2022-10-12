@@ -1,5 +1,5 @@
 import {config} from './Config.js'
-import {Client, GatewayIntentBits} from 'discord.js'
+import {Client, GatewayIntentBits, Partials} from 'discord.js'
 import {logger} from './logging.js'
 import {setupBranding} from './util/branding.js'
 import './util/random.js'
@@ -24,8 +24,11 @@ const client = new Client({
 		GatewayIntentBits.GuildMembers,
 		GatewayIntentBits.Guilds,
 		GatewayIntentBits.GuildMessages,
+		GatewayIntentBits.GuildMessageReactions,
 		GatewayIntentBits.MessageContent,
-	]
+		GatewayIntentBits.GuildMembers
+	],
+	partials: [Partials.Message, Partials.Channel, Partials.Reaction]
 })
 
 export const moduleManager = new ModuleManager(client,

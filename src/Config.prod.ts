@@ -39,6 +39,11 @@ export const config: Config = {
 	},
 	clientId: '904478222455029821',
 	guildId: '821743100203368458',
+	poll: {
+		emojiId: '1029839987652448258',
+		yesEmojiId: '1029843670205218977',
+		noEmojiId: '1029843702144848002'
+	},
 	pastebin: {
 		url: 'https://paste.developerden.net',
 		threshold: 20
