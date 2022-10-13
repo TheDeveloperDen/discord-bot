@@ -79,14 +79,14 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
 			return
 		}
 
-		const data = await Promise.all(users.map(async (user, index) => {
-			const discordUser = await guild.client.users.fetch(user.id.toString()).catch(() => null)
+		const data = await Promise.all(users.map(async (user) => {
+			const discordUser = await guild.members.fetch(user.id.toString()).catch(() => null)
 			const value = format(await calculate(user))
 
 			if (discordUser == null) return null
 
 			return {
-				name: discordUser.username,
+				name: discordUser.displayName,
 				value: value,
 				avatar: discordUser.displayAvatarURL({ extension: 'png' })
 			}
