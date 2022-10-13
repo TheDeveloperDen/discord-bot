@@ -34,7 +34,11 @@ export const config: Config = {
 	pastebin: prodConfig.pastebin,
 	branding: {
 		color: '#ffffff',
-		font: 'CascadiaCode.ttf',
+		fonts: {
+			cascadia: 'static/Cascadia/CascadiaCode.ttf',
+			montserratBold: 'static/Montserrat/Montserrat-Bold.ttf',
+			montserratSemiBold: 'static/Montserrat/Montserrat-SemiBold.ttf'
+		},
 		welcomeMessage: member =>
 			`Welcome ${mention(member)} to the Developer Den test server!\nCurrent Member Count: ${member.guild.memberCount}`
 	},

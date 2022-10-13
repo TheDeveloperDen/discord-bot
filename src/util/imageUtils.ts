@@ -4,7 +4,11 @@ import {branding} from './branding.js'
 
 const {createCanvas} = canvas
 
-export const font = loadSync(branding.font)
+export const fonts = {
+	cascadia: loadSync(branding.fonts.cascadia),
+	montserratBold: loadSync(branding.fonts.montserratBold),
+	montserratSemiBold: loadSync(branding.fonts.montserratSemiBold)
+}
 
 export function createImage(width: number, height: number, color: string): Canvas {
 	const canvas = createCanvas(width, height)
