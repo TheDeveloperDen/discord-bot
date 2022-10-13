@@ -8,6 +8,9 @@ export const PastifyModule: Module = {
 	commands: [PastifyCommand, PasteCommand],
 	listeners: [{
 		async messageCreate(_, message) {
+			if (message.channel.isThread()) {
+				return // Don't pastify messages in threads since theres nothing to "interrupt"
+			}
 			const pastified = await pastify(message)
 			if (pastified) return message.channel.send({...pastified, flags: 0})
 		}
