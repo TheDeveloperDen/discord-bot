@@ -2,7 +2,7 @@ import {CommandInteraction, GuildMember, User} from 'discord.js'
 import {getUserById} from '../../store/models/DDUser.js'
 import {createStandardEmbed} from '../../util/embeds.js'
 import {xpForLevel} from './xpForMessage.util.js'
-import {createImage, font, getCanvasContext} from '../../util/imageUtils.js'
+import {createImage, fonts, getCanvasContext} from '../../util/imageUtils.js'
 import {branding} from '../../util/branding.js'
 import {drawText} from '../../util/textRendering.js'
 import {Command} from 'djs-slash-helper'
@@ -66,7 +66,7 @@ function createXpImage(xp: number, user: GuildMember) {
 	ctx.fillStyle = user.roles?.color?.hexColor ?? branding.color
 
 	const message = `${xp.toLocaleString()} XP`
-	drawText(ctx, message, font, {
+	drawText(ctx, message, fonts.cascadia, {
 		x: 0,
 		y: 0,
 		width: canvas.width,

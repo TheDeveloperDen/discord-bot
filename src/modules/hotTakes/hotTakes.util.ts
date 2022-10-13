@@ -12,7 +12,7 @@ const hotTakeData: {
 	problems: string[],
 	tlds: string[]
 	takes: string[],
-} = JSON.parse(readFileSync(process.cwd() + '/hotTakeData.json').toString())
+} = JSON.parse(readFileSync(process.cwd() + '/static/Storage/hotTakeData.json').toString())
 
 const placeholders = {
 	language: () => hotTakeData.languages,

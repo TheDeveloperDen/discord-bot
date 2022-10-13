@@ -5,7 +5,7 @@ export type BrandingConfig = {
 	name?: string,
 	iconUrl?: string,
 	welcomeMessage: (member: GuildMember | PartialGuildMember) => string
-	font: string,
+	fonts: { cascadia: string, montserratBold: string, montserratSemiBold: string },
 	color: string
 }
 

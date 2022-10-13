@@ -45,7 +45,11 @@ export const config: Config = {
 	},
 	branding: {
 		color: '#C6BFF7',
-		font: 'CascadiaCode.ttf',
+		fonts: {
+			cascadia: 'static/Cascadia/CascadiaCode.ttf',
+			montserratBold: 'static/Montserrat/Montserrat-Bold.ttf',
+			montserratSemiBold: 'static/Montserrat/Montserrat-SemiBold.ttf'
+		},
 		welcomeMessage: member =>
 			`Welcome ${mention(member)} to the Developer Den!\nCurrent Member Count: ${member.guild.memberCount}`
 	},

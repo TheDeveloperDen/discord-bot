@@ -8,11 +8,10 @@ import {Command} from 'djs-slash-helper'
 import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10'
 import {createStandardEmbed} from '../../util/embeds.js'
 import {branding} from '../../util/branding.js'
-import {actualMention} from '../../util/users.js'
 import {getActualDailyStreak} from './dailyReward.command.js'
-import {createImage, font, getCanvasContext} from '../../util/imageUtils.js'
+import {fonts, getCanvasContext} from '../../util/imageUtils.js'
 import { drawText } from '../../util/textRendering.js'
-import {loadImage, NodeCanvasRenderingContext2DSettings} from 'canvas'
+import {loadImage} from 'canvas'
 
 interface LeaderboardType extends APIApplicationCommandOptionChoice<string> {
 	calculate?: (user: DDUser) => Promise<number>,
@@ -99,7 +98,7 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
 		await interaction.followUp({
 			embeds: [
 				createStandardEmbed(member)
-					.setTitle(`${branding.name} Leaderboard - ${traitInfo.name}`)
+					.setTitle(`${branding.name} Leaderboard - ${name}`)
 					.setImage('attachment://leaderboard.png')
 			],
 			files: [{ attachment: image.toBuffer(), name: 'leaderboard.png' }]
@@ -110,7 +109,7 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
 async function createLeaderboardImage(type: LeaderboardType, [first, second, third]: LeaderboardData[]) {
 	const [canvas, ctx] = getCanvasContext(1000, 500)
 
-	const background = await loadImage('leaderboardBackground.png')
+	const background = await loadImage('static/Pictures/leaderboardBackground.png')
 	ctx.drawImage(background, 0, 0)
 
 	const goldAvatar = await loadImage(first.avatar)
@@ -122,7 +121,7 @@ async function createLeaderboardImage(type: LeaderboardType, [first, second, thi
 	ctx.drawImage(bronzeAvatar, 762, 208, 85, 85)
 	ctx.drawImage(background, 0, 0)
 
-	drawText(ctx, first.value, font, {
+	drawText(ctx, first.value, fonts.montserratSemiBold, {
 		x: 405,
 		y: 448,
 		width: 190,
@@ -135,7 +134,7 @@ async function createLeaderboardImage(type: LeaderboardType, [first, second, thi
 		granularity: 3
 	})
 
-	drawText(ctx, first.name, font, {
+	drawText(ctx, first.name, fonts.montserratBold, {
 		x: 405,
 		y: 213,
 		width: 190,
@@ -148,7 +147,7 @@ async function createLeaderboardImage(type: LeaderboardType, [first, second, thi
 		granularity: 3
 	})
 
-	drawText(ctx, second.value, font, {
+	drawText(ctx, second.value, fonts.montserratSemiBold, {
 		x: 99,
 		y: 448,
 		width: 190,
@@ -161,7 +160,7 @@ async function createLeaderboardImage(type: LeaderboardType, [first, second, thi
 		granularity: 3
 	})
 
-	drawText(ctx, second.name, font, {
+	drawText(ctx, second.name, fonts.montserratBold, {
 		x: 99,
 		y: 263,
 		width: 190,
@@ -174,7 +173,7 @@ async function createLeaderboardImage(type: LeaderboardType, [first, second, thi
 		granularity: 3
 	})
 
-	drawText(ctx, third.value, font, {
+	drawText(ctx, third.value, fonts.montserratSemiBold, {
 		x: 710,
 		y: 448,
 		width: 190,
@@ -187,7 +186,7 @@ async function createLeaderboardImage(type: LeaderboardType, [first, second, thi
 		granularity: 3
 	})
 
-	drawText(ctx, third.name, font, {
+	drawText(ctx, third.name, fonts.montserratBold, {
 		x: 710,
 		y: 312,
 		width: 190,
