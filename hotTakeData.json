@@ -251,7 +251,8 @@
     "curly braces",
     "semicolons",
     "indentation",
-    "tail recursion"
+    "tail recursion",
+    "webscale"
   ],
   "problems": [
     "backward compatibility",
@@ -318,7 +319,7 @@
     "I have an irrational hatred for {thing|group}.",
     "I love {thing|group} so much!",
     "I have never used {thing} before, but I hate it purely because {group} produced it.",
-    "After just a few hours, I've optimized my {language} codebase 100x. Writing up a blog post as we speak.",
+    "After just a few hours, I've optimized my {language} codebase {percentage}x. Writing up a blog post as we speak.",
     "{thing} fans are smarter than the average programmers.",
     "{thing} fans don't deserve to be in tech.",
     "Honestly, {entity} fans are insufferable.",
@@ -348,7 +349,7 @@
     "{thing} fans are quickly taking over the tech world and that's bad.",
     "{technology} users couldn't even print Hello World in {language}.",
     "{entity} > {entity}.",
-    "{problem} this, {problem} that. How about you learn {thing} instead?",
+    "{problem}, {problem}. How about you learn {thing} instead?",
     "Did you hear what happened over at {company}? Me neither, nobody cares about them.",
     "{oneWordThing}.js is the next big JS framework.",
     "Lots of programming languages and tools have already fixed {problem} - {thing}, {thing}, {thing}, etc.",
