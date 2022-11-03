@@ -16,3 +16,6 @@ export const actualMention = (user: GuildMember | User | PartialGuildMember) => 
 
 export const mentionWithNoPingMessage = (user: GuildMember) =>
 	userShouldBePinged(user) ? `<@${user.id}> (Don't want to be pinged? **/role No Ping**)` : pseudoMention(user.user)
+
+
+export const isSpecialUser = (user: GuildMember) => user.premiumSinceTimestamp != null || user.roles.cache.has(config.roles.staff) || user.roles.cache.has(config.roles.notable ?? '')

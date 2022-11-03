@@ -1,9 +1,10 @@
 import {EventListener} from "../module.js";
 import {config} from "../../Config.js";
-import {Message} from "discord.js";
+import {Message, PartialUser, User} from "discord.js";
+import {isSpecialUser} from "../../util/users.js";
 
 export const PollListener: EventListener = {
-	async messageReactionAdd(_, reaction) {
+	async messageReactionAdd(_, reaction, user: User | PartialUser) {
 		if (reaction.partial) {
 			try {
 				await reaction.fetch();
@@ -29,6 +30,25 @@ export const PollListener: EventListener = {
 			}
 		}
 		if ((!(message instanceof Message))) {
+			return
+		}
+		if (user.partial) {
+			try {
+				await user.fetch();
+			} catch (error) {
+				console.error('Something went wrong when fetching the user:', error);
+				return;
+			}
+		}
+		if (!reaction.message.guild) {
+			return;
+		}
+		const member = await reaction.message.guild.members.fetch(user.id);
+		if (!member) {
+			return;
+		}
+
+		if (!isSpecialUser(member)) {
 			return
 		}
 		await reaction.remove();

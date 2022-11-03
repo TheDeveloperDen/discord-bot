@@ -1,7 +1,6 @@
 import {randomInt} from 'crypto'
 import {Guild} from 'discord.js'
-import {config} from '../../Config.js'
-import {actualMention} from '../../util/users.js'
+import {actualMention, isSpecialUser} from '../../util/users.js'
 import {readFileSync} from 'fs'
 
 const hotTakeData: {
@@ -48,9 +47,7 @@ function mappedPlaceholders(key: Placeholder, f: (s: string) => string): (users:
 
 async function getAdditionalUsers(guild: Guild): Promise<string[]> {
 	const users = await guild.members.fetch()
-	return users.filter(user => {
-		return user.premiumSinceTimestamp != null || user.roles.cache.has(config.roles.staff) || user.roles.cache.has(config.roles.notable ?? '')
-	}).map(user => actualMention(user))
+	return users.filter(isSpecialUser).map(user => actualMention(user))
 }
 
 
