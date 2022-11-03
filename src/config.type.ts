@@ -17,7 +17,6 @@ export type Config = {
 		admin: Snowflake,
 		notable?: Snowflake,
 		staff: Snowflake,
-		bumpNotifications: Snowflake,
 		separators: { general: Snowflake, tags: Snowflake, langs: Snowflake },
 		noPing: Snowflake,
 		usersAllowedToSet: Snowflake[]

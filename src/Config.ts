@@ -25,7 +25,6 @@ export const config: Config = {
 			tags: '932638097311666218',
 			langs: '932638149618835466'
 		},
-		bumpNotifications: '932637334103531521',
 		noPing: '932637353263128577',
 		usersAllowedToSet: []
 	},

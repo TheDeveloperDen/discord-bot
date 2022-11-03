@@ -6,7 +6,6 @@ import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-
 const allowedRoles = [
 	...config.roles.usersAllowedToSet,
 	config.roles.noPing,
-	config.roles.bumpNotifications
 ]
 
 export const RoleCommand: Command<ApplicationCommandType.ChatInput> = {
