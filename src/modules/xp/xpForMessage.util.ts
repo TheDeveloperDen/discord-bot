@@ -55,7 +55,14 @@ export async function shouldCountForStats(author: User, message: Message, channe
 		channel.id == config.channels.botCommands ||
 		message.content.length < minMessageLength) return false
 
-	for (const msg of message.channel.messages.cache.last(5)) {
+	const msgs = message.channel.messages.cache.last(3)
+	if (!msgs) {
+		return true
+	}
+	if (msgs instanceof Message<false>) {
+		return true; // this probably won't happen
+	}
+	for (const msg of msgs) {
 		if (msg.author.id !== author.id || msg.id === message.id) continue
 		if (similarityProportion(msg.content, message.content) > maxSimilarity) {
 			logger.debug(`Discarded message ${message.id} from user ${author} because it was too similar to previous messages`)
