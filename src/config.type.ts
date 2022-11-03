@@ -5,6 +5,11 @@ import {InformationMessage} from './modules/information/information.js'
 export type Config = {
 	guildId: string,
 	clientId: string,
+	poll?: {
+		emojiId: string,
+		yesEmojiId: string,
+		noEmojiId: string
+	},
 	pastebin: { url: string, threshold: number },
 	channels: { welcome: string, botCommands: string, hotTake: string, showcase: string, auditLog: string },
 	roles: {

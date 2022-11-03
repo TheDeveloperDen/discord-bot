@@ -31,6 +31,11 @@ export const config: Config = {
 	},
 	clientId: '932387188585398353',
 	guildId: '904478147351806012',
+	poll: {
+		emojiId: 'skull',
+		yesEmojiId: 'thumbsup',
+		noEmojiId: 'thumbsdown'
+	},
 	pastebin: prodConfig.pastebin,
 	branding: {
 		color: '#ffffff',

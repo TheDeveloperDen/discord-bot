@@ -1,4 +1,12 @@
-import {ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, GuildMember, Message} from 'discord.js'
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+	CommandInteraction,
+	ComponentType,
+	GuildMember,
+	Message
+} from 'discord.js'
 import {Command} from 'djs-slash-helper'
 import {DiscordColor} from '@api-typings/discord'
 import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10'
@@ -79,7 +87,7 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
 			await interaction.reply('You can\'t do this in DMs')
 			return
 		}
-		const collector = channel.createMessageComponentCollector({
+		const collector = channel.createMessageComponentCollector<ComponentType.Button>({
 			filter: i => i.isButton() && i.message?.interaction?.id == interaction.id && i.user.id == interaction.user.id,
 			time: 15000,
 			maxComponents: 1
