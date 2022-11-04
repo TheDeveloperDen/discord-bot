@@ -64,7 +64,7 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
 			// manually refresh all the dailies
 			await DDUser.update({currentDailyStreak: 0}, {
 				where: sequelize.where(sequelize.fn('datediff', sequelize.fn("NOW"), sequelize.col('lastDailyTime')), {
-					[Op.gt]: 1
+					[Op.gte]: 2
 				})
 			})
 		}
