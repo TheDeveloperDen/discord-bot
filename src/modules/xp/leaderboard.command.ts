@@ -10,13 +10,13 @@ import {createStandardEmbed} from '../../util/embeds.js'
 import {branding} from '../../util/branding.js'
 import {actualMention} from '../../util/users.js'
 import {getActualDailyStreak} from './dailyReward.command.js'
+import sequelize, {Op} from "sequelize";
 
 interface LeaderboardType extends APIApplicationCommandOptionChoice<string> {
 	calculate?: (user: DDUser) => Promise<number>,
+	value: keyof DDUser
 
 	format(value: number): string,
-
-	value: keyof DDUser
 }
 
 const info: LeaderboardType[] = [
@@ -59,6 +59,14 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
 		if (!traitInfo) {
 			await interaction.followUp('Invalid leaderboard type')
 			return
+		}
+		if (traitInfo.value == 'currentDailyStreak') {
+			// manually refresh all the dailies
+			await DDUser.update({currentDailyStreak: 0}, {
+				where: sequelize.where(sequelize.fn('datediff', sequelize.fn("NOW"), sequelize.col('lastDailyTime')), {
+					[Op.gt]: 1
+				})
+			})
 		}
 		const {format, value, name} = traitInfo
 		const calculate = traitInfo.calculate ?? ((user: DDUser) => Promise.resolve(user[value]))

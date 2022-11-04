@@ -75,6 +75,7 @@ export async function getActualDailyStreak(ddUser: DDUser): Promise<number> {
 	if (difference >= 1000 * 60 * 60 * 24 * 2) {
 		// Set streak to 0
 		ddUser.currentDailyStreak = 0
+		await ddUser.save()
 	}
 
 	return ddUser.currentDailyStreak
