@@ -46,8 +46,8 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
 						value: `${formatDayCount(await getActualDailyStreak(ddUser))} / ${formatDayCount(ddUser.highestDailyStreak)}`
 					},
 					{
-						name: '📈 XP Until Level Up',
-						value: `${ddUser.xp}/${xpForLevel(ddUser.level + 1)}`
+						name: '📈 XP Needed To Level Up',
+						value: `${xpForLevel(ddUser.level + 1) - ddUser.xp}`
 					})
 					.setImage('attachment://xp.png')
 			],
