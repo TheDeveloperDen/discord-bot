@@ -47,7 +47,7 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
 					},
 					{
 						name: '📈 XP Until Level Up',
-						value: `${ddUser.xp}/${xpForLevel(ddUser.level + 1)}`
+						value: `${ddUser.xp}/${xpForLevel(ddUser.level + 1)} ${xpForLevel.xp}-${ddUser.xp} left!`
 					})
 					.setImage('attachment://xp.png')
 			],
