@@ -2,6 +2,7 @@ import {randomInt} from 'crypto'
 import {Guild} from 'discord.js'
 import {actualMention, isSpecialUser} from '../../util/users.js'
 import {readFileSync} from 'fs'
+import ExpiryMap from "expiry-map";
 
 const hotTakeData: {
 	people: string[],
@@ -54,8 +55,19 @@ async function getAdditionalUsers(guild: Guild): Promise<string[]> {
 }
 
 
+const specialUsersCache = new ExpiryMap(1000 * 60 * 30);
+
+async function getSpecialUsers(guild: Guild) {
+	if (specialUsersCache.has(guild.id)) {
+		return specialUsersCache.get(guild.id);
+	}
+	const users = await getAdditionalUsers(guild).catch(() => []);
+	specialUsersCache.set(guild.id, users);
+	return users;
+}
+
 export default async function generateHotTake(guild: Guild) {
-	const members = await getAdditionalUsers(guild).catch(() => [])
+	const members = await getSpecialUsers(guild);
 	return hotTakeData.takes.randomElement().replace(/{[\w|]+}/g, value => value
 		.slice(1, -1)// remove the {}
 		.split('|') // split into options

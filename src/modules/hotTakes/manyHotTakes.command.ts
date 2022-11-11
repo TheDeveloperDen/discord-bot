@@ -27,12 +27,8 @@ export const ManyHotTakesCommand: Command<ApplicationCommandType.ChatInput> = {
 			.map(async () => await generateHotTake(guild)))
 			.then(x => x.join('\n'))
 
-
 		const pastebinURL = await upload({text: takes})
-		console.log(pastebinURL);
 		await interaction.followUp({content: pastebinURL})
-
-
 	}
 }
 
