@@ -28,6 +28,7 @@ export const ManyHotTakesCommand: Command<ApplicationCommandType.ChatInput> = {
 			.then(x => x.join('\n'))
 
 		const pastebinURL = await upload({text: takes})
+		console.log(pastebinURL)
 		await interaction.followUp({content: pastebinURL})
 	}
 }
