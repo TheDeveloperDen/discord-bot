@@ -48,7 +48,9 @@ function mappedPlaceholders(key: Placeholder, f: (s: string) => string): (users:
 
 async function getAdditionalUsers(guild: Guild): Promise<string[]> {
 	const users = await guild.members.fetch()
-	return users.filter(isSpecialUser).map(user => actualMention(user))
+	return users
+		.filter(isSpecialUser)
+		.map(user => actualMention(user))
 }
 
 
