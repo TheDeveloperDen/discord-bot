@@ -28,15 +28,16 @@ export const ManyHotTakesCommand: Command<ApplicationCommandType.ChatInput> = {
 			.then(x => x.join('\n'))
 
 
-		if (count > 10) {
-			const pastebinURL = await upload({text: takes})
-			await interaction.followUp({content: pastebinURL})
+		if (count <= 10) {
+			await interaction.followUp({
+				content: takes,
+				allowedMentions: {users: []}
+			})
 			return
 		}
-		await interaction.followUp({
-			content: takes,
-			allowedMentions: {users: []}
-		})
+		const pastebinURL = await upload({text: takes})
+		await interaction.followUp({content: pastebinURL})
+
 
 	}
 }
