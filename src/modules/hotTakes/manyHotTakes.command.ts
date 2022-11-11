@@ -23,7 +23,7 @@ export const ManyHotTakesCommand: Command<ApplicationCommandType.ChatInput> = {
 			return
 		}
 		await interaction.deferReply()
-		const takes = await Promise.all(range(0, count)
+		const takes = await Promise.all(range(1, count)
 			.map(async () => await generateHotTake(guild)))
 			.then(x => x.join('\n'))
 
