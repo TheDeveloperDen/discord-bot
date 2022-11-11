@@ -22,9 +22,10 @@ export const ManyHotTakesCommand: Command<ApplicationCommandType.ChatInput> = {
 			await interaction.reply('Not in a guild')
 			return
 		}
-		const takes = range(0, count)
-			.map(async () => await generateHotTake(guild))
-			.join('\n')
+		const takes = await Promise.all(range(0, count)
+			.map(async () => await generateHotTake(guild)))
+			.then(x => x.join('\n'))
+
 
 		if (count > 10) {
 			const pastebinURL = await upload({text: takes})
