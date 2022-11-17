@@ -382,6 +382,7 @@
     "I had an interviewer laugh in my face when I said I use {thing}.",
     "I just donated ${bigNumber} to {group}'s Patreon. They deserve it.",
     "One of my greatest achievements is becoming a moderator of r/{oneWordAnything}.",
-    "If {thing} had {thing} it could increase productivity by {percentage}%"
+    "If {thing} had {thing} it could increase productivity by {percentage}%",
+    "{group} does not know what a monad is."
   ]
 }
