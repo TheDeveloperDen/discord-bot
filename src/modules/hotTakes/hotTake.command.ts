@@ -9,11 +9,21 @@ export const HotTakeCommand: Command<ApplicationCommandType.ChatInput> = {
 	type: ApplicationCommandType.ChatInput,
 	options: [],
 
-	handle: async (interaction: CommandInteraction) => interaction.reply(
-		interaction.guild ? {
-			content: await generateHotTake(interaction.guild),
+	handle: async (interaction: CommandInteraction) => {
+		const guild = interaction.guild
+		if (!guild) {
+			await interaction.reply('Not in a guild')
+			return
+		}
+		await interaction.deferReply()
+
+		const take = await generateHotTake(guild)
+		await interaction.followUp({
+			content: take,
 			allowedMentions: {users: []}
-		} : 'Not in a guild')
+		})
+	}
+
 }
 
 export default HotTakeCommand
