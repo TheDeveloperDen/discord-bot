@@ -63,9 +63,9 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
 		if (traitInfo.value == 'currentDailyStreak') {
 			// manually refresh all the dailies
 			await DDUser.update({currentDailyStreak: 0}, {
-                where: sequelize.where(sequelize.fn('datediff', sequelize.fn('NOW'), sequelize.col('lastDailyTime')), {
-                    [Op.gte]: 2
-                })
+				where: sequelize.where(sequelize.fn('datediff', sequelize.fn('NOW'), sequelize.col('lastDailyTime')), {
+					[Op.gte]: 2
+				})
 			})
 		}
 		const {format, value, name} = traitInfo
