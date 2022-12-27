@@ -36,6 +36,10 @@ export const InfoCommand: Command<ApplicationCommandType.ChatInput> = {
 						value: format(process.env.npm_package_version ?? process.env.VERSION), inline: true
 					},
 					{
+						name: 'Bot Uptime',
+						value: `<t:${new Date().getTime() - (Math.floor(process.uptime()))}:R>`, inline: true
+					},
+					{
 						name: 'Total XP',
 						value: format(totalXP), inline: true
 					},
