@@ -60,8 +60,8 @@ export async function shouldCountForStats(author: User, message: Message, channe
 		return true
 	}
 	if (msgs instanceof Message<false>) {
-		return true; // this probably won't happen
-	}
+        return true // this probably won't happen
+    }
 	for (const msg of msgs) {
 		if (msg.author.id !== author.id || msg.id === message.id) continue
 		if (similarityProportion(msg.content, message.content) > maxSimilarity) {

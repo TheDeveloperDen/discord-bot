@@ -2,7 +2,7 @@ import {ApplicationCommandOptionType, CommandInteraction, range} from 'discord.j
 import {Command} from 'djs-slash-helper'
 import {ApplicationCommandType} from 'discord-api-types/v10'
 import generateHotTake from './hotTakes.util.js'
-import {upload} from "../pastify/pastify.js";
+import {upload} from '../pastify/pastify.js'
 
 export const ManyHotTakesCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: 'manyhottakes',
