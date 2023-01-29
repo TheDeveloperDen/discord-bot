@@ -12,10 +12,11 @@ const ImageForwarderModule: Module = {
 			if (!(channel instanceof TextChannel)) return
 			const attachments = message.attachments
 			if (!attachments?.size) return
+
 			return channel.send({
-				content: `Message from ${actualMention(message.author)} at <t:${message.createdTimestamp}>
-${attachments.map(it => it.url).join(' ')}`,
-				allowedMentions: {users: []}
+				content: `Message from ${actualMention(message.author)} at <t:${message.createdTimestamp}>`,
+				allowedMentions: {users: []},
+				files: attachments.map(it => it.attachment)
 			})
 		}
 	}]
