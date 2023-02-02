@@ -38,4 +38,8 @@ export default class ModuleManager {
 	async refreshCommands() {
 		await this.commandManager.setupForGuild(this.clientId, this.guildId)
 	}
+
+	getModules() {
+		return this.modules
+	}
 }

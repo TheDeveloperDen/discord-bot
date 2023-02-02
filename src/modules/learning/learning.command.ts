@@ -19,7 +19,6 @@ async function updateResources() {
 	resources.push(...result)
 }
 
-await updateResources()
 
 const extraFooter = '\n\n[Contribute to our resource collection](https://github.com/TheDeveloperDen/LearningResources)'
 

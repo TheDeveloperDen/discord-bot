@@ -8,4 +8,6 @@ export default interface Module {
 	name: string,
 	commands?: Command<ApplicationCommandType>[],
 	listeners?: EventListener[],
+
+	onInit?: (client: Client) => Awaitable<void>,
 }
