@@ -17,6 +17,7 @@ import AskToAskModule from './modules/askToAsk.module.js'
 import JoinLeaveMessageModule from './modules/joinLeaveMessage.module.js'
 import {CoreModule} from './modules/core/core.module.js'
 import {InformationModule} from './modules/information/information.module.js'
+import {LearningModule} from "./modules/learning/learning.module";
 
 const client = new Client({
     intents: [
@@ -42,7 +43,7 @@ export const moduleManager = new ModuleManager(client,
         InformationModule,
         JoinLeaveMessageModule,
         LanguageStatusModule,
-        // LearningModule, TODO re-enable
+        LearningModule,
         PastifyModule,
         RolesModule,
         ShowcaseModule,
