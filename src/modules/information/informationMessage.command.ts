@@ -4,7 +4,7 @@ import {config} from '../../Config.js'
 import {ActionRowBuilder, ButtonBuilder} from 'discord.js'
 import {createStandardEmbed} from '../../util/embeds.js'
 import {CustomButton} from './information.js'
-import {logger} from "../../logging";
+import {logger} from '../../logging.js'
 
 function loadCustomButton(customButton: CustomButton) {
     if (customButton instanceof ButtonBuilder) {
