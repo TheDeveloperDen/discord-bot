@@ -1,6 +1,6 @@
 import Module from '../module.js'
 import {LearningCommand} from './learning.command.js'
-import {updateAllResources} from "./resourcesCache.util";
+import {updateAllResources} from './resourcesCache.util.js'
 
 export const LearningModule: Module = {
     name: 'learning',

@@ -2,7 +2,7 @@ import Module from '../module.js'
 import {pastify} from './pastify.js'
 import {PastifyCommand} from './pastify.command.js'
 import {PasteCommand} from './paste.command.js'
-import {PermissionFlagsBits} from "discord-api-types/v10";
+import {PermissionFlagsBits} from 'discord-api-types/v10'
 
 export const PastifyModule: Module = {
     name: 'pastify',

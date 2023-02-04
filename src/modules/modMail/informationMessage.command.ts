@@ -10,11 +10,11 @@ function loadCustomButton(customButton: CustomButton) {
 		return customButton
 	}
 	switch (customButton.type) {
-		case 'faq':
-			return customButton.button.setCustomId(`faq-${customButton.faqId}`)
-		case 'learning':
-			return customButton.button.setCustomId('learning-resources')
-	}
+        case 'faq':
+            return customButton.button.setCustomId(`faq-${customButton.faqId}`)
+        case 'learning':
+            return customButton.button.setCustomId('learning-resources')
+    }
 }
 
 export const InformationMessageCommand: Command<ApplicationCommandType.Message> = {
