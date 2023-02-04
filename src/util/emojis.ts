@@ -1,7 +1,11 @@
 import {Client, ComponentEmojiResolvable, GuildEmoji} from 'discord.js'
 
+
+const isUnicodeEmoji = (char: string) => {
+	return /\p{Extended_Pictographic}/u.test(char)
+}
 export const getEmoji = (client: Client, name: string) => {
-	if (/\p{Extended_Pictographic}/u.test(name)) {
+	if (isUnicodeEmoji(name)) {
 		return name
 	}
 	// try parse it as an id
@@ -23,7 +27,13 @@ export const stringifyEmoji = (emoji: string | GuildEmoji) => {
 }
 
 export const toComponentEmojiResolvable: (emoji: (string | GuildEmoji)) => ComponentEmojiResolvable = emoji => {
-	return typeof emoji === 'string' ? `:${emoji}:` : {
+	if (typeof emoji === 'string') {
+		if (isUnicodeEmoji(emoji)) {
+			return emoji
+		}
+		return `:${emoji}:`
+	}
+	return {
 		id: emoji.id,
 		name: emoji.name ?? undefined,
 		animated: emoji.animated ?? undefined,

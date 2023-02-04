@@ -3,7 +3,7 @@ import {LearningCommand} from './learning.command.js'
 import {updateAllResources} from './resourcesCache.util.js'
 
 export const LearningModule: Module = {
-    name: 'learning',
-    commands: [LearningCommand],
-    onInit: updateAllResources
+	name: 'learning',
+	commands: [LearningCommand],
+	onInit: updateAllResources
 }

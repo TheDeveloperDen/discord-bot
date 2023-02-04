@@ -46,6 +46,7 @@ export function getResourceEmbed(client: Client, resource: LearningResource, use
 
 	if (resource.emoji) {
 		const emoji = getEmoji(client, resource.emoji)
+
 		if (!emoji) {
 			logger.warn(`Could not find emoji ${resource.emoji} for resource ${resource.name}`)
 		} else {
