@@ -57,7 +57,7 @@ export const config: Config = {
     informationMessage: {
         embed: new EmbedBuilder()
             .setImage('https://static.developerden.net/banner.png')
-            .setTitle('⭐About the Server⭐')
+            .setTitle('⭐ About the Server ⭐')
             .setDescription(`
 			Welcome to the **Developer Den**!
 			We're a community of programmers who love to share knowledge and ideas.
