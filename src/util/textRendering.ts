@@ -1,6 +1,6 @@
 // adjusted from https://github.com/kaivi/node-canvas-text
 import {Font} from 'opentype.js'
-import {CanvasRenderingContext2D} from "canvas";
+import {CanvasRenderingContext2D} from 'canvas'
 
 const measureText = (text: string, font: Font, fontSize: number) => {
 	const scale = 1 / font.unitsPerEm * fontSize

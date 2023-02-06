@@ -1,6 +1,6 @@
 import Module from './module.js'
 import {ActivityType} from 'discord-api-types/v10'
-import {logger} from "../logging";
+import {logger} from '../logging.js'
 
 const languages = [
 	'Solidity',
@@ -69,8 +69,8 @@ export const LanguageStatusModule: Module = {
 		ready(_, event) {
 			setInterval(
 				async () => {
-					const lang = languages.randomElement();
-					await event.user.setActivity(`Coding in ${lang}`, {type: ActivityType.Playing});
+					const lang = languages.randomElement()
+					await event.user.setActivity(`Coding in ${lang}`, {type: ActivityType.Playing})
 					logger.info(`Set language status to ${lang}`)
 				},
 				3.6e+6)
