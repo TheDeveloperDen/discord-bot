@@ -10,7 +10,7 @@ import {getResourceEmbed} from '../learning/learning.command.js'
 export const InformationButtonListener: EventListener = {
 	async interactionCreate(_, interaction) {
 
-		if (interaction.isSelectMenu() && interaction.customId == 'learningResourcePicker') {
+		if (interaction.isStringSelectMenu() && interaction.customId == 'learningResourcePicker') {
 			const resourceName = interaction.values[0]
 			const resource = await getResource(resourceName)
 			const embed = getResourceEmbed(interaction.client, resource, interaction.user, interaction.member as GuildMember ?? undefined,)
