@@ -41,7 +41,7 @@ export function getResourceEmbed(client: Client, resource: LearningResource, use
 		const requester = user ?? member?.user
 		if (!requester) {
 			logger.error('Could not get requester for resource embed. this should never happen.')
-			return
+			throw new Error()
 		}
 		embed.setFooter({
 			...standardFooter(),
