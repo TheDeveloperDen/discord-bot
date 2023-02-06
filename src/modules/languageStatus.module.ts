@@ -1,5 +1,6 @@
 import Module from './module.js'
 import {ActivityType} from 'discord-api-types/v10'
+import {logger} from "../logging";
 
 const languages = [
 	'Solidity',
@@ -7,8 +8,8 @@ const languages = [
 	'C++',
 	'Carbon',
 	'D',
-	'C',
-	'F',
+	'C#',
+	'F#',
 	'OCaml',
 	'Haskell',
 	'Prolog',
@@ -67,7 +68,11 @@ export const LanguageStatusModule: Module = {
 	listeners: [{
 		ready(_, event) {
 			setInterval(
-				() => event.user.setActivity(`Coding in ${languages.randomElement()}`, {type: ActivityType.Playing}),
+				async () => {
+					const lang = languages.randomElement();
+					await event.user.setActivity(`Coding in ${lang}`, {type: ActivityType.Playing});
+					logger.info(`Set language status to ${lang}`)
+				},
 				3.6e+6)
 		}
 	}]

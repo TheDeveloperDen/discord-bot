@@ -1,8 +1,7 @@
-import canvas, {Canvas, CanvasRenderingContext2D} from 'canvas'
+import {Canvas, CanvasRenderingContext2D, createCanvas} from 'canvas'
 import {loadSync} from 'opentype.js'
 import {branding} from './branding.js'
 
-const {createCanvas} = canvas
 
 export const font = loadSync(branding.font)
 

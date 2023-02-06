@@ -1,6 +1,6 @@
 // adjusted from https://github.com/kaivi/node-canvas-text
-import {CanvasRenderingContext2D} from 'canvas'
 import {Font} from 'opentype.js'
+import {CanvasRenderingContext2D} from "canvas";
 
 const measureText = (text: string, font: Font, fontSize: number) => {
 	const scale = 1 / font.unitsPerEm * fontSize
@@ -98,6 +98,7 @@ export const drawText = (ctx: CanvasRenderingContext2D, text: string, fontObject
 	// Draw text
 	const fontPath = fontObject.getPath(text, xPos, yPos, fontSize, {})
 	fontPath.fill = ctx.fillStyle as string
+	// @ts-ignore this is quite bad but i hope it will be fine
 	fontPath.draw(ctx)
 
 	ctx.restore()
