@@ -38,9 +38,14 @@ export function getResourceEmbed(client: Client, resource: LearningResource, use
 			+ extraFooter)
 
 	if (user || member) {
+		const requester = user ?? member?.user
+		if (!requester) {
+			logger.error('Could not get requester for resource embed. this should never happen.')
+			return
+		}
 		embed.setFooter({
 			...standardFooter(),
-			text: `Requested by ${pseudoMention((user ?? member?.user)!)} | Learning Resources`
+			text: `Requested by ${pseudoMention(requester)} | Learning Resources`
 		})
 	}
 
