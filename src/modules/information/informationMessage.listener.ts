@@ -36,7 +36,6 @@ export const InformationButtonListener: EventListener = {
 		if (!interaction.isButton()) {
 			return
 		}
-		await interaction.deferReply({ephemeral: true})
 		const id = interaction.customId
 		if (id === 'learning-resources') {
 			await sendLearningResourcesPicker(interaction)
@@ -46,7 +45,7 @@ export const InformationButtonListener: EventListener = {
 			return
 		}
 		const faqId = id.substring(4)
-
+		await interaction.deferReply({ephemeral: true})
 		const faq = await FAQ.findOne({
 			where: {
 				name: faqId
