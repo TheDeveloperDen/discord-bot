@@ -26,7 +26,7 @@ const extraFooter = '\n\n[Contribute to our resource collection](https://github.
 export function getResourceEmbed(client: Client, resource: LearningResource, user?: User, member?: GuildMember) {
 	const embed = createStandardEmbed(member)
 		.setTitle(resource.name)
-		.setDescription(`**${resource.description}**\n` +
+		.setDescription(`**${resource.description}**\n\n` +
 			resource.resources
 				.map(res => {
 					const pros = res.pros.length == 0 ? '' : '\n**Pros**\n' + res.pros.map(i => '• ' + i).join('\n')

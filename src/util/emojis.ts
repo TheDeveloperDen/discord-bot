@@ -5,7 +5,8 @@ import {APIMessageComponentEmoji} from "discord-api-types/payloads/v10/channel";
 const isUnicodeEmoji = (char: string) => {
 	return /\p{Extended_Pictographic}/u.test(char)
 }
-export const getEmoji = (client: Client, name: string) => {
+
+export function getEmoji(client: Client, name: string): GuildEmoji | null | string {
 	if (isUnicodeEmoji(name)) {
 		return name
 	}
@@ -18,6 +19,7 @@ export const getEmoji = (client: Client, name: string) => {
 	}
 
 	return client.emojis.cache.find(emoji => emoji.name === name)
+		?? `:${name}:`
 }
 
 export const stringifyEmoji = (emoji: string | GuildEmoji) => {
