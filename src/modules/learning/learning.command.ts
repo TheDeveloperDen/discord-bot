@@ -44,7 +44,7 @@ export function getResourceEmbed(client: Client, resource: LearningResource, use
 			throw new Error()
 		}
 		embed.setFooter({
-			...standardFooter(),
+			...standardFooter,
 			text: `Requested by ${pseudoMention(requester)} | Learning Resources`
 		})
 	}
@@ -114,7 +114,7 @@ const LearningListSubcommand: ExecutableSubcommand = {
 			.setTitle('Resource List')
 			.setDescription(resources + extraFooter)
 			.setFooter({
-				...standardFooter(),
+				...standardFooter,
 				text: `Requested by ${pseudoMention(interaction.user)} | Learning Resources`
 			})
 

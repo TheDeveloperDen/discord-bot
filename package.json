@@ -1,6 +1,6 @@
 {
   "name": "devdenbot",
-  "version": "3.10.0",
+  "version": "3.11.0",
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
@@ -17,10 +17,9 @@
   "author": "Developer Den",
   "license": "MIT",
   "dependencies": {
-    "@api-typings/discord": "^6.0.0",
     "@discordjs/rest": "^1.0.1",
     "canvas": "^2.9.3",
-    "discord-api-types": "^0.37.2",
+    "discord-api-types": "^0.37.35",
     "discord.js": "^14.2.0",
     "djs-slash-helper": "^2.0.0",
     "expiry-map": "^2.0.0",

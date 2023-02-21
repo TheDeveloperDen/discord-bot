@@ -1,6 +1,6 @@
 import {compose} from '../../util/functions.js'
 import {compareTwoStrings as distance} from 'string-similarity'
-import {Channel, GuildMember, Message, User} from 'discord.js'
+import {Channel, GuildMember, Message, StageChannel, User} from 'discord.js'
 import {Config} from '../../config.type.js'
 import {logger} from '../../logging.js'
 import {config} from '../../Config.js'
@@ -54,6 +54,9 @@ export async function shouldCountForStats(author: User, message: Message, channe
 	if (author.bot ||
 		channel.id == config.channels.botCommands ||
 		message.content.length < minMessageLength) return false
+	if (message.channel instanceof StageChannel) {
+		return false
+	}
 
 	const msgs = message.channel.messages.cache.last(3)
 	if (!msgs) {

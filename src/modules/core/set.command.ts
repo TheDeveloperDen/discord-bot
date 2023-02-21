@@ -2,13 +2,15 @@ import {
 	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
+	Colors,
 	CommandInteraction,
 	ComponentType,
 	GuildMember,
-	Message
+	Message,
+	StageChannel
 } from 'discord.js'
 import {Command} from 'djs-slash-helper'
-import {DiscordColor} from '@api-typings/discord'
+
 import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10'
 import {DDUser, getUserById} from '../../store/models/DDUser.js'
 import {createStandardEmbed} from '../../util/embeds.js'
@@ -83,7 +85,7 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
 		})
 
 		const channel = interaction.channel
-		if (!channel) {
+		if (!channel || channel instanceof StageChannel) {
 			await interaction.reply('You can\'t do this in DMs')
 			return
 		}
@@ -104,7 +106,7 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
 				ephemeral: true, embeds: [
 					createStandardEmbed(target)
 						.setTitle('Success')
-						.setColor(DiscordColor.Green)
+						.setColor(Colors.Green)
 						.setDescription(`Set ${mention(target)}'s ${option} to ${value}`)]
 			})
 		}
