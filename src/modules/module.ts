@@ -9,5 +9,15 @@ export default interface Module {
 	commands?: Command<ApplicationCommandType>[],
 	listeners?: EventListener[],
 
+	/**
+	 * Called *before* command registration
+	 * @param client The client that is being used.
+	 */
+	preInit?: (client: Client) => Awaitable<void>,
+
+	/**
+	 * Called when the module is initialized, after command registration
+	 * @param client The client that is being used.
+	 */
 	onInit?: (client: Client) => Awaitable<void>,
 }

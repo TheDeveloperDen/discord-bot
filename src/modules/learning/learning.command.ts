@@ -12,7 +12,7 @@ import {LearningResource} from './learningResource.model.js'
 
 const resources: { name: string, value: string }[] = []
 
-async function updateResources() {
+export async function updateResourcesForCommands() {
 	await updateAllResources()
 	const result = getAllCachedResources().map(it => ({name: it.name, value: it.name}))
 	resources.length = 0
@@ -95,7 +95,7 @@ const LearningUpdateSubcommand: ExecutableSubcommand = {
 		})
 
 		await interaction.deferReply({ephemeral: true})
-		await updateResources()
+		await updateResourcesForCommands()
 		await moduleManager.refreshCommands()
 		await interaction.followUp('Updated learning resources cache')
 		return

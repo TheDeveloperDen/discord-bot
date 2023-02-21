@@ -19,10 +19,14 @@ export const InformationButtonListener: EventListener = {
 
 		if (interaction.isStringSelectMenu() && interaction.customId == 'learningResourcePicker') {
 			const resourceName = interaction.values[0]
+			interaction.deferReply()
 			const resource = await getResource(resourceName)
+			if (!resource) {
+				return // shouldn't ever happen
+			}
 			const embed = getResourceEmbed(interaction.client, resource, interaction.user, interaction.member as GuildMember ?? undefined,)
 
-			await interaction.reply({
+			await interaction.followUp({
 				embeds: [embed],
 				ephemeral: true
 			})
@@ -32,6 +36,7 @@ export const InformationButtonListener: EventListener = {
 		if (!interaction.isButton()) {
 			return
 		}
+		interaction.deferReply()
 		const id = interaction.customId
 		if (id === 'learning-resources') {
 			await sendLearningResourcesPicker(interaction)
@@ -52,7 +57,7 @@ export const InformationButtonListener: EventListener = {
 			return
 		}
 		const embed = createFaqEmbed(faq, interaction.user, interaction.member as GuildMember ?? undefined)
-		await interaction.reply({
+		await interaction.followUp({
 			ephemeral: true,
 			embeds: [embed]
 		})
