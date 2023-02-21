@@ -19,7 +19,7 @@ export const InformationButtonListener: EventListener = {
 
 		if (interaction.isStringSelectMenu() && interaction.customId == 'learningResourcePicker') {
 			const resourceName = interaction.values[0]
-			interaction.deferReply()
+			await interaction.deferReply()
 			const resource = await getResource(resourceName)
 			if (!resource) {
 				return // shouldn't ever happen
@@ -36,7 +36,7 @@ export const InformationButtonListener: EventListener = {
 		if (!interaction.isButton()) {
 			return
 		}
-		interaction.deferReply()
+		await interaction.deferReply()
 		const id = interaction.customId
 		if (id === 'learning-resources') {
 			await sendLearningResourcesPicker(interaction)
