@@ -25,43 +25,42 @@ export const InfoCommand: Command<ApplicationCommandType.ChatInput> = {
             <t:${guild.createdAt.getTime() / 1000 | 0}>`
 		const levelUps = await DDUser.sum('level')
 		await interaction.followUp({
-			embeds: [{
-				...createStandardEmbed(interaction.member as GuildMember),
-				title: branding.name,
-				description: 'This is the bot for the Developer Den server. It\'s written in **TypeScript** using the **Discord.js** library. ' +
-                    'The source can be found [here](https://github.com/TheDeveloperDen/DevDenBot)',
-				fields: [
-					{
-						name: 'Version',
-						value: format(process.env.npm_package_version ?? process.env.VERSION), inline: true
-					},
-					{
-						name: 'Bot Uptime',
-						value: `<t:${Math.round(Date.now() / 1000) - Math.floor(process.uptime())}:R>`,
-						inline: true
-					},
-					{
-						name: 'Total XP',
-						value: format(totalXP), inline: true
-					},
-					{
-						name: 'Member Count',
-						value: format(memberCount), inline: true
-					},
-					{
-						name: 'Members Stored',
-						value: format(membersStored), inline: true
-					},
-					{
-						name: 'Level Ups',
-						value: format(levelUps), inline: true
-					},
-					{
-						name: 'Date Created',
-						value: dateCreated, inline: true
-					}
-				]
-			}]
+			embeds: [
+				createStandardEmbed(interaction.member as GuildMember)
+					.setTitle(branding.name)
+					.setDescription('This is the bot for the Developer Den server. It\'s written in **TypeScript** using the **Discord.js** library. ' +
+						'The source can be found [here](https://github.com/TheDeveloperDen/DevDenBot)')
+					.setFields([
+						{
+							name: 'Version',
+							value: format(process.env.npm_package_version ?? process.env.VERSION), inline: true
+						},
+						{
+							name: 'Bot Uptime',
+							value: `<t:${Math.round(Date.now() / 1000) - Math.floor(process.uptime())}:R>`,
+							inline: true
+						},
+						{
+							name: 'Total XP',
+							value: format(totalXP), inline: true
+						},
+						{
+							name: 'Member Count',
+							value: format(memberCount), inline: true
+						},
+						{
+							name: 'Members Stored',
+							value: format(membersStored), inline: true
+						},
+						{
+							name: 'Level Ups',
+							value: format(levelUps), inline: true
+						},
+						{
+							name: 'Date Created',
+							value: dateCreated, inline: true
+						}
+					])]
 		})
 	}
 }
