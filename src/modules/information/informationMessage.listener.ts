@@ -1,10 +1,17 @@
 import {EventListener} from '../module.js'
 import {FAQ} from '../../store/models/FAQ.js'
 import {createFaqEmbed} from '../faq/faq.util.js'
-import {ActionRowBuilder, ButtonInteraction, GuildMember, SelectMenuBuilder, SelectMenuOptionBuilder} from 'discord.js'
+import {
+	ActionRowBuilder,
+	ButtonInteraction,
+	GuildMember,
+	SelectMenuBuilder,
+	StringSelectMenuBuilder,
+	StringSelectMenuOptionBuilder
+} from 'discord.js'
 import {getAllCachedResources, getResource} from '../learning/resourcesCache.util.js'
 import {truncateTo} from '../../util/strings.js'
-import {getEmoji, toComponentEmojiResolvable} from '../../util/emojis.js'
+import {getEmoji, toAPIMessageComponentEmoji} from '../../util/emojis.js'
 import {getResourceEmbed} from '../learning/learning.command.js'
 
 export const InformationButtonListener: EventListener = {
@@ -53,20 +60,20 @@ export const InformationButtonListener: EventListener = {
 }
 
 async function sendLearningResourcesPicker(interaction: ButtonInteraction) {
-	const selectMenu = new SelectMenuBuilder()
+	const selectMenu = new StringSelectMenuBuilder()
 		.setCustomId('learningResourcePicker')
 		.setPlaceholder('Select a resource')
 		.setOptions(
 			getAllCachedResources()
 				.map(res => {
-					const builder = new SelectMenuOptionBuilder()
+					const builder = new StringSelectMenuOptionBuilder()
 						.setLabel(res.name)
 						.setValue(res.name)
 						.setDescription(truncateTo(res.description, 100))
 					if (res.emoji) {
 						const parse = getEmoji(interaction.client, res.emoji)
 						if (parse) {
-							builder.setEmoji(toComponentEmojiResolvable(parse))
+							builder.setEmoji(toAPIMessageComponentEmoji(parse))
 						}
 					}
 					return builder

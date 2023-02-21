@@ -1,4 +1,5 @@
-import {Client, ComponentEmojiResolvable, GuildEmoji} from 'discord.js'
+import {Client, GuildEmoji} from 'discord.js'
+import {APIMessageComponentEmoji} from "discord-api-types/payloads/v10/channel";
 
 
 const isUnicodeEmoji = (char: string) => {
@@ -26,12 +27,16 @@ export const stringifyEmoji = (emoji: string | GuildEmoji) => {
 	return `<:${emoji.name}:${emoji.id}>`
 }
 
-export const toComponentEmojiResolvable: (emoji: (string | GuildEmoji)) => ComponentEmojiResolvable = emoji => {
+export function toAPIMessageComponentEmoji(emoji: string | GuildEmoji): APIMessageComponentEmoji {
 	if (typeof emoji === 'string') {
 		if (isUnicodeEmoji(emoji)) {
-			return emoji
+			return {
+				name: emoji
+			}
 		}
-		return `:${emoji}:`
+		return {
+			name: emoji
+		}
 	}
 	return {
 		id: emoji.id,
