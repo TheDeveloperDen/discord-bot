@@ -9,7 +9,7 @@ export const config: Config = {
 		botCommands: '821820015917006868',
 		hotTake: '932661343520194640',
 		showcase: '847936633964724254',
-		auditLog: '833758624756138044'
+		auditLog: '1004782799955435540'
 	},
 	roles: {
 		tiers: [
