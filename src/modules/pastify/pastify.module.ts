@@ -23,7 +23,7 @@ export const PastifyModule: Module = {
 				return // Don't pastify messages from staff as they should know better
 			}
 			const pastified = await pastify(message)
-			if (pastified) return message.channel.send({...pastified, flags: 0})
+			if (pastified) return message.channel.send({...pastified, flags: undefined})
 		}
 	}]
 }

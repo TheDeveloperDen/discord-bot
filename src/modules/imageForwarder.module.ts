@@ -16,7 +16,7 @@ const ImageForwarderModule: Module = {
 			return channel.send({
 				content: `Message from ${actualMention(message.author)} at <t:${Math.round(message.createdTimestamp / 1000)}>`,
 				allowedMentions: {users: []},
-				files: attachments.map(it => it.attachment)
+				files: attachments.map(v => v)
 			})
 		}
 	}]
