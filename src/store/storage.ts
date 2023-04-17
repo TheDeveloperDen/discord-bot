@@ -24,7 +24,7 @@ export const sequelize = new Sequelize({
 function sequelizeLog(sql: string, timing?: number) {
     if (timing) {
         if (timing >= 10) {
-            logger.warning(`Slow query (${timing}ms): ${sql}`)
+            logger.warn(`Slow query (${timing}ms): ${sql}`)
         }
     } else {
         logger.debug(sql)
