@@ -17,6 +17,8 @@ export const sequelize = new Sequelize({
 	host: host,
 	dialect: 'mariadb',
 	logging: (msg) => logger.debug(msg),
+	logQueryParameters: true,
+	benchmark: true
 })
 
 let resolve: () => void
