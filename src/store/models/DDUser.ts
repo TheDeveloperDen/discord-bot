@@ -52,7 +52,8 @@ export const getUserById = async (id: bigint) => {
 			bumps: 0,
 			currentDailyStreak: 0,
 			highestDailyStreak: 0
-		}
+		},
+		benchmark: true
 	})
 	return user
 }
