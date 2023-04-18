@@ -10,7 +10,7 @@
     "build-prod": "tsc -p tsconfig.production.json && ([ -f bin/Config.prod.js ] && mv -f bin/Config.prod.js bin/Config.js) || true",
     "start": "nodemon --exec node --experimental-specifier-resolution=node --loader ts-node/esm src/index.ts",
     "dev": "node --experimental-specifier-resolution=node --loader ts-node/esm src/index.ts",
-    "start-built": "node --prof --inspect=0.0.0.0:9229 --trace-warnings bin/index.js",
+    "start-built": "node --trace-warnings bin/index.js",
     "build-and-run": "yarn lint && yarn build && yarn start-built",
     "build-and-run-prod": "yarn lint && yarn build-prod && yarn start-built"
   },
