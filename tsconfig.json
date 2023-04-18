@@ -11,7 +11,8 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "strict": true,
-    "incremental": true
+    "incremental": true,
+    "sourceMap": true
   },
   "exclude": [
     "node_modules/"

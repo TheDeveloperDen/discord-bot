@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/node'
-import {Client} from 'discord.js'
-import {ProfilingIntegration} from '@sentry/profiling-node'
+import { Client } from 'discord.js'
+import { ProfilingIntegration } from '@sentry/profiling-node'
 
 
 export function initSentry(client: Client) {
@@ -9,7 +9,7 @@ export function initSentry(client: Client) {
 		tracesSampleRate: 1.0,
 		profilesSampleRate: 1.0,
 		integrations: [
-			new Sentry.Integrations.Http({tracing: true}),
+			new Sentry.Integrations.Http({ tracing: true }),
 			new ProfilingIntegration(),
 			...Sentry.autoDiscoverNodePerformanceMonitoringIntegrations(),
 		]
@@ -25,17 +25,17 @@ export function initSentry(client: Client) {
 }
 
 
-export function inTransaction<A, T>(op: string, name: string, f: (trans: Sentry.Transaction, a: A) => T): (a: A) => T {
+export function inTransaction<A, T>(op: string, f: (a: A, trans: Sentry.Span) => T): (a: A) => T {
 	return (a: A) => {
-		const transaction = Sentry.startTransaction({
+		const span = Sentry.getCurrentHub().getScope().getTransaction()?.startChild({ op }) ?? Sentry.startTransaction({
 			op,
-			name
+			name: op
 		})
-		Sentry.getCurrentHub().configureScope(scope => scope.setSpan(transaction))
+		Sentry.getCurrentHub().configureScope(scope => scope.setSpan(span))
 		try {
-			return f(transaction, a)
+			return f(a, span)
 		} finally {
-			transaction.finish()
+			span.finish()
 		}
 	}
 }

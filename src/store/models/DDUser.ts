@@ -1,34 +1,35 @@
-import {Column, DataType, Model, Table} from 'sequelize-typescript'
+import { Column, DataType, Model, Table } from 'sequelize-typescript'
+import { inTransaction } from '../../sentry.js'
 
 @Table({
 	tableName: 'Users'
 })
 export class DDUser extends Model {
 	@Column({
-		type: new DataType.BIGINT({length: 20}),
+		type: new DataType.BIGINT({ length: 20 }),
 		primaryKey: true
 	})
 	declare public id: bigint
 	@Column({
-		type: new DataType.BIGINT({length: 20})
+		type: new DataType.BIGINT({ length: 20 })
 	})
 	declare public xp: number
 	@Column({
-		type: new DataType.INTEGER({length: 11})
+		type: new DataType.INTEGER({ length: 11 })
 	})
 	declare public level: number
 	@Column({
-		type: new DataType.INTEGER({length: 11})
+		type: new DataType.INTEGER({ length: 11 })
 	})
 	declare public bumps: number
 
 	@Column({
-		type: new DataType.INTEGER({length: 11})
+		type: new DataType.INTEGER({ length: 11 })
 	})
 	declare public currentDailyStreak: number
 
 	@Column({
-		type: new DataType.INTEGER({length: 11}),
+		type: new DataType.INTEGER({ length: 11 }),
 
 	})
 	declare public highestDailyStreak: number
@@ -40,16 +41,17 @@ export class DDUser extends Model {
 	declare public lastDailyTime?: Date
 }
 
-export const getUserById = async (id: bigint) => {
-	// if (userCache.has(id)) {
-	//     const [lastUpdated, user] = userCache.get(id)!
-	//     if (new Date().getTime() - lastUpdated.getTime() < 1000 * 60 * 5) {
-	//         return user
-	//     }
-	//     await user.reload()
-	//     userCache.set(id, [new Date(), user])
-	//     return user
-	// }
+export const getUserById = inTransaction('getUserById', async (id: bigint, transaction) => {
+	if (userCache.has(id)) {
+		const [lastUpdated, user] = userCache.get(id)!
+		if (new Date().getTime() - lastUpdated.getTime() < 1000 * 60 * 5) {
+			return user
+		}
+		await user.reload()
+		userCache.set(id, [new Date(), user])
+		return user
+	}
+	const child = transaction.startChild({ op: 'DDUser.findOrCreate' })
 	const [user] = await DDUser.findOrCreate({
 		where: {
 			id: id
@@ -65,8 +67,9 @@ export const getUserById = async (id: bigint) => {
 		benchmark: true
 	})
 	userCache.set(id, [new Date(), user])
+	child.finish()
 	return user
-}
+})
 
 
 const userCache = new Map<bigint, [Date, DDUser]>()
