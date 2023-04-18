@@ -18,7 +18,7 @@ import JoinLeaveMessageModule from './modules/joinLeaveMessage.module.js'
 import {CoreModule} from './modules/core/core.module.js'
 import {InformationModule} from './modules/information/information.module.js'
 import {LearningModule} from './modules/learning/learning.module.js'
-import {initSentry} from "./sentry";
+import {initSentry} from './sentry.js'
 
 const client = new Client({
 	intents: [

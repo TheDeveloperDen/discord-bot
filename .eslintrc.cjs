@@ -6,6 +6,7 @@ module.exports = {
     'extends': [
         'eslint:recommended',
         'plugin:@typescript-eslint/recommended',
+        'plugin:@typescript-eslint/eslint-recommended',
         'plugin:import/recommended',
         'plugin:import/typescript'
     ],
@@ -19,7 +20,7 @@ module.exports = {
     ],
     'rules': {
         "import/extensions": ["error", "ignorePackages"],
-        "import/no-unresolved": 0,
+        "import/no-unresolved": "off",
         'indent': [
             'error',
             'tab'

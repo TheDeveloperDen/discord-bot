@@ -1,6 +1,6 @@
-import * as Sentry from "@sentry/node";
-import {Client} from "discord.js";
-import {ProfilingIntegration} from "@sentry/profiling-node";
+import * as Sentry from '@sentry/node'
+import {Client} from 'discord.js'
+import {ProfilingIntegration} from '@sentry/profiling-node'
 
 
 export function initSentry(client: Client) {
@@ -31,7 +31,7 @@ export function inTransaction<A, T>(op: string, name: string, f: (trans: Sentry.
 			op,
 			name
 		})
-		Sentry.getCurrentHub().configureScope(scope => scope.setSpan(transaction));
+		Sentry.getCurrentHub().configureScope(scope => scope.setSpan(transaction))
 		try {
 			return f(transaction, a)
 		} finally {

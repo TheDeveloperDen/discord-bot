@@ -8,9 +8,9 @@ export default class ModuleManager {
 	private readonly originalEmit
 
 	constructor(private readonly client: Client,
-	            private readonly clientId: Snowflake,
-	            private readonly guildId: Snowflake,
-	            private readonly modules: Module[]) {
+				private readonly clientId: Snowflake,
+				private readonly guildId: Snowflake,
+				private readonly modules: Module[]) {
 		this.originalEmit = this.client.emit
 		client.emit = this.overrideEmit().bind(client)
 		for (const module of modules) {

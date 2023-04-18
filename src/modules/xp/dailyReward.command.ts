@@ -5,7 +5,7 @@ import {logger} from '../../logging.js'
 import {DDUser, getUserById} from '../../store/models/DDUser.js'
 import {createStandardEmbed} from '../../util/embeds.js'
 import {giveXp} from './xpForMessage.util.js'
-import {inTransaction} from "../../sentry";
+import {inTransaction} from '../../sentry.js'
 
 export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: 'daily',
