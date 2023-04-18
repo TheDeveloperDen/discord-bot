@@ -32,7 +32,7 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
 			const nextClaimTime = new Date(lastClaimTime.getTime() + 1000 * 60 * 60 * 24)
 			await interaction.followUp({
 				ephemeral: true,
-				content: `You can only claim your daily reward once every 24 hours. You can claim it again <t:${nextClaimTime.getTime() / 1000}:R>.`
+				content: `You can only claim your daily reward once every 24 hours. You can claim it again <t:${Math.floor(nextClaimTime.getTime() / 1000)}:R>.`
 			})
 			logger.info(`Daily reward attempted by ${user.user.tag} in ${new Date().getTime() - startTime}ms`)
 			return
