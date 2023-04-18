@@ -1,10 +1,9 @@
-import { Command, ExecutableSubcommand } from 'djs-slash-helper'
-import { ColorResolvable, GuildMember } from 'discord.js'
-import { ColourRoles } from '../../store/models/ColourRoles.js'
-import { config } from '../../Config.js'
-import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord-api-types/v10'
-import { inTransaction } from '../../sentry.js'
-
+import {Command, ExecutableSubcommand} from 'djs-slash-helper'
+import {ColorResolvable, GuildMember} from 'discord.js'
+import {ColourRoles} from '../../store/models/ColourRoles.js'
+import {config} from '../../Config.js'
+import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10'
+import {inTransaction} from '../../sentry.js'
 
 
 const ResetSubcommand: ExecutableSubcommand = {
@@ -21,7 +20,7 @@ const ResetSubcommand: ExecutableSubcommand = {
 			}
 		})
 		if (!roleInfo) {
-			await interaction.followUp('You do not have a colour role. Use </rolecolour set:1059214166075912222> to set one')
+			await interaction.followUp('You do not have a colour role. Use </rolecolour set:1059214166075912223> to set one')
 			return
 		}
 		const roleId = roleInfo.getDataValue('role') // no idea why normal property lookup doesnt work
@@ -30,7 +29,14 @@ const ResetSubcommand: ExecutableSubcommand = {
 		}
 		const role = member.roles.resolve(roleId.toString())
 		if (!role) {
-			throw new Error('No colour role found, database call failed?')
+			await Promise.all([
+				ColourRoles.destroy({
+					where: {
+						id: user.id
+					}
+				}),
+				interaction.followUp('You do not have a colour role. Use </rolecolour set:1059214166075912223> to set one')
+			])
 		}
 
 		await Promise.all([
