@@ -59,7 +59,7 @@ const SetSubcommand: ExecutableSubcommand = {
 		{
 			type: ApplicationCommandOptionType.String,
 			name: 'colour',
-			description: 'The colour to set as a hex string',
+			description: 'The colour to set as a hex string (format: `#RRGGBB`)',
 			required: true
 		}
 	],
