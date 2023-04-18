@@ -73,7 +73,7 @@
       "image": "./img/mark zuckerberg.jpg"
     },
     {
-      "take": "@elonmusk",
+      "take": "Elon Musk",
       "image": "./img/elon musk.webp"
     },
     {
@@ -81,11 +81,11 @@
       "image": "./img/don syme.webp"
     },
     {
-      "take": "@jeffbezos",
+      "take": "Jeff Bezos",
       "image": "./img/jeff bezos.jpg"
     },
     {
-      "take": "@tim_cook",
+      "take": "Tim Cook",
       "image": "./img/tim cook.jpg"
     },
     {
@@ -93,7 +93,7 @@
       "image": "./img/ajit pai.jpg"
     },
     {
-      "take": "@jack",
+      "take": "Jack Dorsey",
       "image": "./img/jack dorsey.webp"
     },
     {
@@ -101,7 +101,7 @@
       "image": "./img/susan wojcicki.jpg"
     },
     {
-      "take": "@BillGates",
+      "take": "Bill Gates",
       "image": "./img/bill gates.jpg"
     },
     {
@@ -151,7 +151,7 @@
   ],
   "companies": [
     {
-      "take": "@Jetbrains",
+      "take": "Jetbrains",
       "image": "./img/jetbrains.webp"
     },
     {
@@ -159,51 +159,51 @@
       "image": "./img/apache.png"
     },
     {
-      "take": "@google",
+      "take": "Google",
       "image": "./img/google.png"
     },
     {
-      "take": "@microsoft",
+      "take": "Microsoft",
       "image": "./img/microsoft.png"
     },
     {
-      "take": "@apple",
+      "take": "Apple",
       "image": "./img/apple.png"
     },
     {
-      "take": "@Oracle",
+      "take": "Oracle",
       "image": "./img/oracle.png"
     },
     {
-      "take": "@IBM",
+      "take": "IBM",
       "image": "./img/ibm.png"
     },
     {
-      "take": "@Meta",
+      "take": "Meta",
       "image": "./img/meta.png"
     },
     {
-      "take": "@Amazon",
+      "take": "Amazon",
       "image": "./img/amazon.png"
     },
     {
-      "take": "@Intel",
+      "take": "Intel",
       "image": "./img/intel.png"
     },
     {
-      "take": "@Adobe",
+      "take": "Adobe",
       "image": "./img/adobe.png"
     },
     {
-      "take": "@AMD",
+      "take": "AMD",
       "image": "./img/amd.png"
     },
     {
-      "take": "@Nvidia",
+      "take": "Nvidia",
       "image": "./img/nvidia.png"
     },
     {
-      "take": "@Mozilla",
+      "take": "Mozilla",
       "image": "./img/mozilla.jpg"
     },
     {
@@ -227,55 +227,55 @@
       "image": "./img/baidu.png"
     },
     {
-      "take": "@Samsung",
+      "take": "Samsung",
       "image": "./img/samsung.png"
     },
     {
-      "take": "@Sony",
+      "take": "Sony",
       "image": "./img/sony.png"
     },
     {
-      "take": "@Cisco",
+      "take": "Cisco",
       "image": "./img/cisco.png"
     },
     {
-      "take": "@OVH",
+      "take": "OVH",
       "image": "./img/ovh.png"
     },
     {
-      "take": "@Scaleway",
+      "take": "Scaleway",
       "image": "./img/scaleway.webp"
     },
     {
-      "take": "@Vultr",
+      "take": "Vultr",
       "image": "./img/vultr.webp"
     },
     {
-      "take": "@Hetzner",
+      "take": "Hetzner",
       "image": "./img/hetzner.png"
     },
     {
-      "take": "@Linode",
+      "take": "Linode",
       "image": "./img/linode.png"
     },
     {
-      "take": "@Cloudflare",
+      "take": "Cloudflare",
       "image": "./img/cloudflare.png"
     },
     {
-      "take": "@ARM",
+      "take": "ARM",
       "image": "./img/arm.png"
     },
     {
-      "take": "@Tesla",
+      "take": "Tesla",
       "image": "./img/tesla.png"
     },
     {
-      "take": "@SpaceX",
+      "take": "SpaceX",
       "image": "./img/spacex.jpg"
     },
     {
-      "take": "@NASA",
+      "take": "NASA",
       "image": "./img/nasa.png"
     },
     {
@@ -291,25 +291,25 @@
       "image": "./img/bukkit.png"
     },
     {
-      "take": "@Patreon",
+      "take": "Patreon",
       "image": "./img/patreon.png"
     },
     {
-      "take": "@PayPal",
+      "take": "PayPal",
       "image": "./img/paypal.png"
     },
     {
-      "take": "@OpenAI",
+      "take": "OpenAI",
       "image": "./img/openai.png"
     }
   ],
   "languages": [
     {
-      "take": "#Solidity",
+      "take": "Solidity",
       "image": "./img/solidity.png"
     },
     {
-      "take": "#C",
+      "take": "C",
       "image": "./img/c.png"
     },
     {
@@ -325,103 +325,103 @@
       "image": "./img/d.png"
     },
     {
-      "take": "C#",
+      "take": "C",
       "image": "./img/csharp.png"
     },
     {
-      "take": "F#",
+      "take": "F",
       "image": "./img/fsharp.png"
     },
     {
-      "take": "#OCaml",
+      "take": "OCaml",
       "image": "./img/ocaml.png"
     },
     {
-      "take": "#Haskell",
+      "take": "Haskell",
       "image": "./img/haskell.png"
     },
     {
-      "take": "#Prolog",
+      "take": "Prolog",
       "image": "./img/prolog.png"
     },
     {
-      "take": "#Elm",
+      "take": "Elm",
       "image": "./img/elm.png"
     },
     {
-      "take": "#Elixir",
+      "take": "Elixir",
       "image": "./img/elixir.png"
     },
     {
-      "take": "#Erlang",
+      "take": "Erlang",
       "image": "./img/erlang.png"
     },
     {
-      "take": "#Clojure",
+      "take": "Clojure",
       "image": "./img/clojure.png"
     },
     {
-      "take": "#Java",
+      "take": "Java",
       "image": "./img/java.png"
     },
     {
-      "take": "#Scala",
+      "take": "Scala",
       "image": "./img/scala.png"
     },
     {
-      "take": "#Groovy",
+      "take": "Groovy",
       "image": "./img/groovy.png"
     },
     {
-      "take": "#Kotlin",
+      "take": "Kotlin",
       "image": "./img/kotlin.png"
     },
     {
-      "take": "#Swift",
+      "take": "Swift",
       "image": "./img/swift.png"
     },
     {
-      "take": "#JavaScript",
+      "take": "JavaScript",
       "image": "./img/javascript.png"
     },
     {
-      "take": "#CoffeeScript",
+      "take": "CoffeeScript",
       "image": "./img/coffeescript.png"
     },
     {
-      "take": "#TypeScript",
+      "take": "TypeScript",
       "image": "./img/typescript.png"
     },
     {
-      "take": "#PHP",
+      "take": "PHP",
       "image": "./img/php.png"
     },
     {
-      "take": "#Python",
+      "take": "Python",
       "image": "./img/python.png"
     },
     {
-      "take": "#Go",
+      "take": "Go",
       "image": "./img/go.png"
     },
     {
-      "take": "#Rust",
+      "take": "Rust",
       "image": "./img/rust.png"
     },
     {
-      "take": "#VLang",
+      "take": "VLang",
       "image": "./img/v.png"
     },
     {
-      "take": "#Ruby",
+      "take": "Ruby",
       "image": "./img/ruby.png"
     },
     {
-      "take": "#Crystal",
+      "take": "Crystal",
       "image": "./img/crystal.png"
     },
     {
-      "take": "#Lua",
+      "take": "Lua",
       "image": "./img/lua.png"
     },
     {
@@ -429,23 +429,23 @@
       "image": "./img/r.jpeg"
     },
     {
-      "take": "#MATLAB",
+      "take": "MATLAB",
       "image": "./img/matlab.png"
     },
     {
-      "take": "#Wolfram",
+      "take": "Wolfram",
       "image": "./img/wolfram.png"
     },
     {
-      "take": "#Dart",
+      "take": "Dart",
       "image": "./img/dart.png"
     },
     {
-      "take": "#Julia",
+      "take": "Julia",
       "image": "./img/julia.png"
     },
     {
-      "take": "#Perl",
+      "take": "Perl",
       "image": "./img/perl.png"
     },
     {
@@ -461,11 +461,11 @@
       "image": "./img/brainfuck.png"
     },
     {
-      "take": "#COBOL",
+      "take": "COBOL",
       "image": "./img/cobol.webp"
     },
     {
-      "take": "#Fortran",
+      "take": "Fortran",
       "image": "./img/fortran.png"
     },
     {
@@ -485,15 +485,15 @@
       "image": "./img/assembly.png"
     },
     {
-      "take": "#ZSH",
+      "take": "ZSH",
       "image": "./img/zsh.png"
     },
     {
-      "take": "#Bash",
+      "take": "Bash",
       "image": "./img/bash.png"
     },
     {
-      "take": "#PowerShell",
+      "take": "PowerShell",
       "image": "./img/powershell.png"
     },
     {
@@ -501,31 +501,31 @@
       "image": "./img/scratch.png"
     },
     {
-      "take": "#HTML",
+      "take": "HTML",
       "image": "./img/html.png"
     },
     {
-      "take": "#CSS",
+      "take": "CSS",
       "image": "./img/css.png"
     },
     {
-      "take": "#SASS",
+      "take": "SASS",
       "image": "./img/sass.png"
     },
     {
-      "take": "#LESS",
+      "take": "LESS",
       "image": "./img/less.png"
     },
     {
-      "take": "#Angular",
+      "take": "Angular",
       "image": "./img/angular.png"
     },
     {
-      "take": "#React",
+      "take": "React",
       "image": "./img/react.png"
     },
     {
-      "take": "#Vue",
+      "take": "Vue",
       "image": "./img/vue.png"
     },
     "Malbolge",
@@ -536,39 +536,39 @@
   ],
   "technologies": [
     {
-      "take": "#web3",
+      "take": "web3",
       "image": "./img/web3.webp"
     },
     {
-      "take": "#Blockchain",
+      "take": "Blockchain",
       "image": "./img/blockchain.png"
     },
     {
-      "take": "#Bitcoin",
+      "take": "Bitcoin",
       "image": "./img/bitcoin.png"
     },
     {
-      "take": "#Ethereum",
+      "take": "Ethereum",
       "image": "./img/ethereum.png"
     },
     {
-      "take": "#VSCode",
+      "take": "VSCode",
       "image": "./img/visual studio code.png"
     },
     {
-      "take": "#Atom",
+      "take": "Atom",
       "image": "./img/atom.png"
     },
     {
-      "take": "#VisualStudio",
+      "take": "Visual Studio",
       "image": "./img/visual studio.png"
     },
     {
-      "take": "#IntelliJ",
+      "take": "IntelliJ",
       "image": "./img/intellij.png"
     },
     {
-      "take": "#Eclipse",
+      "take": "Eclipse",
       "image": "./img/eclipse.png"
     },
     {
@@ -576,55 +576,55 @@
       "image": "./img/sublime text.png"
     },
     {
-      "take": "#PyCharm",
+      "take": "PyCharm",
       "image": "./img/pycharm.png"
     },
     {
-      "take": "#WebStorm",
+      "take": "WebStorm",
       "image": "./img/webstorm.png"
     },
     {
-      "take": "#PHPStorm",
+      "take": "PHPStorm",
       "image": "./img/phpstorm.png"
     },
     {
-      "take": "#Fleet",
+      "take": "Fleet",
       "image": "./img/fleet.png"
     },
     {
-      "take": "#Vim",
+      "take": "Vim",
       "image": "./img/vim.png"
     },
     {
-      "take": "#Emacs",
+      "take": "Emacs",
       "image": "./img/emacs.png"
     },
     {
-      "take": "#Nano",
+      "take": "Nano",
       "image": "./img/nano.png"
     },
     {
-      "take": "#NPM",
+      "take": "NPM",
       "image": "./img/npm.png"
     },
     {
-      "take": "#Yarn",
+      "take": "Yarn",
       "image": "./img/yarn.png"
     },
     {
-      "take": "#Webpack",
+      "take": "Webpack",
       "image": "./img/webpack.png"
     },
     {
-      "take": "#WebAssembly",
+      "take": "WebAssembly",
       "image": "./img/webassembly.png"
     },
     {
-      "take": "#NodeJS",
+      "take": "NodeJS",
       "image": "./img/nodejs.png"
     },
     {
-      "take": "#Deno",
+      "take": "Deno",
       "image": "./img/deno.png"
     },
     {
@@ -636,15 +636,15 @@
       "image": "./img/dotnet.png"
     },
     {
-      "take": "#Electron",
+      "take": "Electron",
       "image": "./img/electron.png"
     },
     {
-      "take": "#Docker",
+      "take": "Docker",
       "image": "./img/r.jpeg"
     },
     {
-      "take": "#Kubernetes",
+      "take": "Kubernetes",
       "image": "./img/kubernetes.png"
     },
     {
@@ -652,23 +652,23 @@
       "image": "./img/dockercompose.jpg"
     },
     {
-      "take": "#DigitalOcean",
+      "take": "DigitalOcean",
       "image": "./img/digitalocean.png"
     },
     {
-      "take": "#Heroku",
+      "take": "Heroku",
       "image": "./img/heroku.png"
     },
     {
-      "take": "#Linode",
+      "take": "Linode",
       "image": "./img/linode.png"
     },
     {
-      "take": "#Azure",
+      "take": "Azure",
       "image": "./img/azure.png"
     },
     {
-      "take": "#AWS",
+      "take": "AWS",
       "image": "./img/aws.png"
     },
     {
@@ -676,47 +676,47 @@
       "image": "./img/googlecloud.png"
     },
     {
-      "take": "#DevOps",
+      "take": "DevOps",
       "image": "./img/devops.png"
     },
     {
-      "take": "#Git",
+      "take": "Git",
       "image": "./img/git.png"
     },
     {
-      "take": "#GitHub",
+      "take": "GitHub",
       "image": "./img/github.png"
     },
     {
-      "take": "#GitLab",
+      "take": "GitLab",
       "image": "./img/gitlab.png"
     },
     {
-      "take": "#GitKraken",
+      "take": "GitKraken",
       "image": "./img/gitkraken.png"
     },
     {
-      "take": "#HackerRank",
+      "take": "HackerRank",
       "image": "./img/hackerrank.png"
     },
     {
-      "take": "#LeetCode",
+      "take": "LeetCode",
       "image": "./img/leetcode.png"
     },
     {
-      "take": "#Jira",
+      "take": "Jira",
       "image": "./img/jira.jpeg"
     },
     {
-      "take": "#Reddit",
+      "take": "Reddit",
       "image": "./img/reddit.png"
     },
     {
-      "take": "#StackOverflow",
+      "take": "StackOverflow",
       "image": "./img/stackoverflow.png"
     },
     {
-      "take": "#Cloudflare",
+      "take": "Cloudflare",
       "image": "./img/cloudflare.png"
     },
     "Cloudflare Workers",
@@ -725,11 +725,11 @@
       "image": "./img/github pages.png"
     },
     {
-      "take": "#Cargo",
+      "take": "Cargo",
       "image": "./img/cargo.png"
     },
     {
-      "take": "#Rustup",
+      "take": "Rustup",
       "image": "./img/rust.png"
     },
     {
@@ -752,11 +752,11 @@
     "FizzBuzz",
     "Generics",
     {
-      "take": "#HTTPS",
+      "take": "HTTPS",
       "image": "./img/https.png"
     },
     {
-      "take": "#HTTP",
+      "take": "HTTP",
       "image": "./img/http.png"
     },
     "Syntax Highlighting",
@@ -765,22 +765,22 @@
       "image": "./img/zip files.png"
     },
     {
-      "take": "#DVORAK",
+      "take": "DVORAK",
       "image": "./img/dvorak.png"
     },
     {
-      "take": "#QWERTY",
+      "take": "QWERTY",
       "image": "./img/qwerty.png"
     },
     "Abstraction",
     "Encapsulation",
     "ISO 8601",
     {
-      "take": "#Lombok",
+      "take": "Lombok",
       "image": "./img/lombok.png"
     },
     {
-      "take": "#JUnit",
+      "take": "JUnit",
       "image": "./img/junit.png"
     },
     {
@@ -788,11 +788,11 @@
       "image": "./img/windows 11.webp"
     },
     {
-      "take": "#Linux",
+      "take": "Linux",
       "image": "./img/linux.jpeg"
     },
     {
-      "take": "#MacOS",
+      "take": "MacOS",
       "image": "./img/macos.png"
     },
     {
