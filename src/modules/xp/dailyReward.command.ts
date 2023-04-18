@@ -13,6 +13,7 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
     options: [],
 
     async handle(interaction: CommandInteraction) {
+        const startTime = new Date().getTime()
         const user = interaction.member as GuildMember
         if (!user) {
             await interaction.reply('You must be in a guild to use this command')
@@ -32,6 +33,7 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
                 ephemeral: true,
                 content: `You can only claim your daily reward once every 24 hours. You can claim it again <t:${nextClaimTime.getTime() / 1000}:R>.`
             })
+            logger.info(`Daily reward attempted by ${user.user.tag} in ${new Date().getTime() - startTime}ms`)
             return
         }
 
@@ -60,6 +62,7 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
                 , ddUser.save()
             ]
         )
+        logger.info(`Daily reward claimed by ${user.user.tag} in ${new Date().getTime() - startTime}ms`)
     }
 }
 
