@@ -13,7 +13,7 @@ export default class ModuleManager {
 	            private readonly modules: Module[]) {
 		this.originalEmit = this.client.emit
 		client.emit = this.overrideEmit().bind(client)
-		for (let module of modules) {
+		for (const module of modules) {
 			module.preInit?.(client)
 		}
 		this.commandManager = new CommandManager(modules.flatMap(it => it.commands ?? []), client)

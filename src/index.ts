@@ -18,7 +18,7 @@ import JoinLeaveMessageModule from './modules/joinLeaveMessage.module.js'
 import {CoreModule} from './modules/core/core.module.js'
 import {InformationModule} from './modules/information/information.module.js'
 import {LearningModule} from './modules/learning/learning.module.js'
-import * as Sentry from '@sentry/node';
+import * as Sentry from '@sentry/node'
 
 const client = new Client({
 	intents: [
@@ -55,7 +55,7 @@ async function logIn() {
 	Sentry.init({
 		dsn: process.env.SENTRY_DSN,
 		tracesSampleRate: 1.0,
-	});
+	})
 
 	const token = process.env.BOT_TOKEN
 	if (!token) {
@@ -74,7 +74,7 @@ process.on('unhandledRejection', (error) => {
 })
 client.on('shardError', error => {
 	Sentry.captureException(error)
-});
+})
 
 async function main() {
 	await logIn()

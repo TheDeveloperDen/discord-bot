@@ -23,9 +23,9 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
 
 
 	async handle(interaction: CommandInteraction) {
+		await interaction.deferReply()
 		const user = interaction.options.getUser('member') ?? interaction.user as User
 		const member = (interaction.options.getMember('member') ?? interaction.member) as GuildMember
-		await interaction.deferReply()
 		const ddUser = await getUserById(BigInt(user.id))
 		const xp = ddUser.xp
 		const image = createXpImage(xp, member)
