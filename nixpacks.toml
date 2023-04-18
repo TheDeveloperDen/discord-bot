@@ -26,4 +26,5 @@ nixLibs = ['...', 'libjpeg', 'giflib', 'fontconfig', 'cairo', 'pango', 'pixman']
 cmds = ["yarn run build-prod"]
 
 [start]
+nixLibs = ['...', 'libjpeg', 'giflib', 'fontconfig', 'cairo', 'pango', 'pixman']
 cmd = "yarn run start-built"
