@@ -9,7 +9,7 @@ RUN yarn install
 COPY tsconfig.json tsconfig.production.json ./
 COPY src/ ./src/
 RUN /bin/bash -c 'cd node_modules/djs-slash-helper; tsc'
-RUN yarn build
+RUN yarn build-prod
 
 FROM node:17-alpine
 WORKDIR /usr/src/bot/
@@ -20,6 +20,6 @@ COPY --from=build /usr/src/bot/node_modules ./node_modules/
 COPY --from=build /usr/src/bot/bin ./bin/
 COPY --from=build /usr/src/bot/package.json ./package.json
 RUN apk add cairo-dev pango-dev jpeg-dev giflib-dev # these are needed by canvas at runtime
-#ENV NODE_ENV production
+ENV NODE_ENV production
 EXPOSE 3300 9229
 CMD ["yarn", "start-built"]
