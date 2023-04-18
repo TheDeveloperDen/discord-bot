@@ -4,3 +4,5 @@ node_modules/**
 .idea/
 bin/
 logs/
+.vscode/
+.DS_Store
