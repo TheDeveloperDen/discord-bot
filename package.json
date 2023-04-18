@@ -19,7 +19,8 @@
   "license": "MIT",
   "dependencies": {
     "@discordjs/rest": "^1.0.1",
-    "@sentry/node": "^7.38.0",
+    "@sentry/node": "^7.48.0",
+    "@sentry/profiling-node": "^0.3.0",
     "@sentry/tracing": "^7.38.0",
     "@types/validator": "^13.7.14",
     "bufferutil": "^4.0.7",
