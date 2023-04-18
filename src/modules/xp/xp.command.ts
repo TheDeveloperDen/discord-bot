@@ -1,13 +1,14 @@
-import {CommandInteraction, GuildMember, User} from 'discord.js'
-import {getUserById} from '../../store/models/DDUser.js'
-import {createStandardEmbed} from '../../util/embeds.js'
-import {xpForLevel} from './xpForMessage.util.js'
-import {createImage, font, getCanvasContext} from '../../util/imageUtils.js'
-import {branding} from '../../util/branding.js'
-import {drawText} from '../../util/textRendering.js'
-import {Command} from 'djs-slash-helper'
-import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10'
-import {formatDayCount, getActualDailyStreak} from './dailyReward.command.js'
+import { CommandInteraction, GuildMember, User } from 'discord.js'
+import { getUserById } from '../../store/models/DDUser.js'
+import { createStandardEmbed } from '../../util/embeds.js'
+import { xpForLevel } from './xpForMessage.util.js'
+import { createImage, font, getCanvasContext } from '../../util/imageUtils.js'
+import { branding } from '../../util/branding.js'
+import { drawText } from '../../util/textRendering.js'
+import { Command } from 'djs-slash-helper'
+import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord-api-types/v10'
+import { formatDayCount, getActualDailyStreak } from './dailyReward.command.js'
+import { inTransaction } from '../../sentry.js'
 
 
 export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
@@ -22,7 +23,7 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
 	}],
 
 
-	async handle(interaction: CommandInteraction) {
+	handle: inTransaction('xp', async (interaction) => {
 		await interaction.deferReply()
 		const user = interaction.options.getUser('member') ?? interaction.user as User
 		const member = (interaction.options.getMember('member') ?? interaction.member) as GuildMember
@@ -37,28 +38,28 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
 						name: '🔮 Level',
 						value: `${ddUser.level}`
 					},
-					{
-						name: '📝 Tier',
-						value: `${ddUser.level == 0 ? 0 : Math.floor(ddUser.level / 10) + 1}`
-					},
-					{
-						name: '❗ Daily Streak (Current / Highest)',
-						value: `${formatDayCount(await getActualDailyStreak(ddUser))} / ${formatDayCount(ddUser.highestDailyStreak)}`
-					},
-					{
-						name: '📈 XP Difference (Current Level / Next Level)',
-						value: `${ddUser.xp}/${xpForLevel(ddUser.level + 1)}`
-					},
-					{
-						name: '⬆️ XP Needed Until Level Up',
-						value: `${xpForLevel(ddUser.level + 1) - ddUser.xp}`
-					},
+						{
+							name: '📝 Tier',
+							value: `${ddUser.level == 0 ? 0 : Math.floor(ddUser.level / 10) + 1}`
+						},
+						{
+							name: '❗ Daily Streak (Current / Highest)',
+							value: `${formatDayCount(await getActualDailyStreak(ddUser))} / ${formatDayCount(ddUser.highestDailyStreak)}`
+						},
+						{
+							name: '📈 XP Difference (Current Level / Next Level)',
+							value: `${ddUser.xp}/${xpForLevel(ddUser.level + 1)}`
+						},
+						{
+							name: '⬆️ XP Needed Until Level Up',
+							value: `${xpForLevel(ddUser.level + 1) - ddUser.xp}`
+						},
 					)
 					.setImage('attachment://xp.png')
 			],
-			files: [{attachment: image.toBuffer(), name: 'xp.png'}]
+			files: [{ attachment: image.toBuffer(), name: 'xp.png' }]
 		})
-	}
+	})
 
 }
 

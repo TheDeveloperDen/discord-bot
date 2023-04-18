@@ -2,6 +2,7 @@ import {config} from '../../Config.js'
 import {Command} from 'djs-slash-helper'
 import {GuildMember, Role} from 'discord.js'
 import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10'
+import { inTransaction } from '../../sentry.js'
 
 const allowedRoles = [
 	...config.roles.usersAllowedToSet,
@@ -19,7 +20,7 @@ export const RoleCommand: Command<ApplicationCommandType.ChatInput> = {
 		required: true,
 	}],
 
-	async handle(interaction) {
+	handle: inTransaction('role', async (interaction) => {
 		const role = interaction.options.get('role', true).role as Role
 		if (!allowedRoles.includes(role.id)) {
 			return interaction.reply(`You cannot get or remove this Role. Options: ${allowedRoles.map(r => `<@&${r}>`).join(', ')}`)
@@ -36,6 +37,6 @@ export const RoleCommand: Command<ApplicationCommandType.ChatInput> = {
 			await user.roles.add(role.id)
 			await interaction.reply(`Added role <@&${role.id}>`)
 		}
-	}
+	})
 
 }

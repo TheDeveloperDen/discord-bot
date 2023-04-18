@@ -1,208 +1,749 @@
 {
   "people": [
-    "Linus Torvalds",
-    "Simon Peyton-Jones",
-    "James Gosling",
-    "Anders Hejlsberg",
-    "Bjarne Stroustrup",
-    "Ken Thompson",
-    "Grace Hopper",
-    "Robert C. Martin",
-    "Guido van Rossum",
-    "Alan Turing",
-    "Alonzo Church",
-    "Graydon Hoare",
-    "Dennis Ritchie",
-    "Rich Hickey",
-    "Rasmus Lerdorf",
-    "Richard Stallman",
-    "Mark Zuckerberg",
-    "Elon Musk",
-    "Don Syme",
-    "Jeff Bezos",
-    "Tim Cook",
-    "Ajit Pai",
-    "Jack Dorsey",
-    "Aiden",
-    "NotAiden",
-    "Arthur",
-    "Susan Wojcicki",
-    "Bill Gates",
-    "Steve Jobs",
-    "Kevin Mitnick",
-    "Troy Hunt",
-    "Euclid of Alexandria",
-    "Mark",
-    "Ada Lovelace",
-    "Charles Babbage",
-    "Tom Scott",
-    "Barbara Liskov",
-    "John von Neumann",
-    "Kathleen Booth",
-    "Edsger Dijkstra"
+    {
+      "take": "Linus Torvalds",
+      "image": "./img/linus torvalds.webp"
+    },
+    {
+      "take": "Terry Davis",
+      "image": "./img/terry davis.jpg"
+    },
+    {
+      "take": "Simon Peyton-Jones",
+      "image": "./img/simon peyton-jones.jpg"
+    },
+    {
+      "take": "James Gosling",
+      "image": "./img/james gosling.jpg"
+    },
+    {
+      "take": "Anders Hejlsberg",
+      "image": "./img/anders hejlsberg.jpg"
+    },
+    {
+      "take": "Bjarne Stroustrup",
+      "image": "./img/bjarne stroustrup.jpg"
+    },
+    {
+      "take": "Ken Thompson",
+      "image": "./img/ken thompson.jpg"
+    },
+    {
+      "take": "Grace Hopper",
+      "image": "./img/grace hopper.webp"
+    },
+    {
+      "take": "Robert C. Martin",
+      "image": "./img/robert c martin.jpg"
+    },
+    {
+      "take": "Guido van Rossum",
+      "image": "./img/guido van rossum.jpg"
+    },
+    {
+      "take": "Alan Turing",
+      "image": "./img/alan turing.jpg"
+    },
+    {
+      "take": "Alonzo Church",
+      "image": "./img/alonzo church.jpeg"
+    },
+    {
+      "take": "Graydon Hoare",
+      "image": "./img/graydon hoare.webp"
+    },
+    {
+      "take": "Dennis Ritchie",
+      "image": "./img/dennis ritchie.webp"
+    },
+    {
+      "take": "Rich Hickey",
+      "image": "./img/rich hickey.jpeg"
+    },
+    {
+      "take": "Rasmus Lerdorf",
+      "image": "./img/rasmus lerdorf.jpg"
+    },
+    {
+      "take": "Richard Stallman",
+      "image": "./img/richard stallman.jpg"
+    },
+    {
+      "take": "Mark Zuckerberg",
+      "image": "./img/mark zuckerberg.jpg"
+    },
+    {
+      "take": "@elonmusk",
+      "image": "./img/elon musk.webp"
+    },
+    {
+      "take": "Don Syme",
+      "image": "./img/don syme.webp"
+    },
+    {
+      "take": "@jeffbezos",
+      "image": "./img/jeff bezos.jpg"
+    },
+    {
+      "take": "@tim_cook",
+      "image": "./img/tim cook.jpg"
+    },
+    {
+      "take": "Ajit Pai",
+      "image": "./img/ajit pai.jpg"
+    },
+    {
+      "take": "@jack",
+      "image": "./img/jack dorsey.webp"
+    },
+    {
+      "take": "Susan Wojcicki",
+      "image": "./img/susan wojcicki.jpg"
+    },
+    {
+      "take": "@BillGates",
+      "image": "./img/bill gates.jpg"
+    },
+    {
+      "take": "Steve Jobs",
+      "image": "./img/steve jobs.jpg"
+    },
+    {
+      "take": "Kevin Mitnick",
+      "image": "./img/kevin mitnick.webp"
+    },
+    {
+      "take": "Troy Hunt",
+      "image": "./img/troy hunt.jpg"
+    },
+    {
+      "take": "Euclid of Alexandria",
+      "image": "./img/euclid.webp"
+    },
+    {
+      "take": "Ada Lovelace",
+      "image": "./img/ada lovelace.webp"
+    },
+    {
+      "take": "Charles Babbage",
+      "image": "./img/charles babbage.webp"
+    },
+    {
+      "take": "Tom Scott",
+      "image": "./img/tom scott.jpg"
+    },
+    {
+      "take": "Barbara Liskov",
+      "image": "./img/barbara liskov.jpg"
+    },
+    {
+      "take": "John von Neumann",
+      "image": "./img/john von neumann.gif"
+    },
+    {
+      "take": "Kathleen Booth",
+      "image": "./img/kathleen booth.jpg"
+    },
+    {
+      "take": "Edsger Dijkstra",
+      "image": "./img/edsger dijkstra.jpg"
+    }
   ],
   "companies": [
-    "JetBrains",
-    "Apache",
-    "Google",
-    "Microsoft",
-    "Apple",
-    "Oracle",
-    "IBM",
-    "Meta",
-    "Amazon",
-    "Intel",
-    "Adobe",
-    "AMD",
-    "Nvidia",
-    "Mozilla",
-    "Free Software Foundation",
-    "GNU",
-    "Tencent",
-    "Alibaba",
-    "Baidu",
-    "Samsung",
-    "Sony",
-    "Cisco",
-    "OVH",
-    "Scaleway",
-    "Vultr",
-    "Hetzner",
-    "Linode",
-    "Cloudflare",
-    "ARM",
-    "Tesla",
-    "SpaceX",
-    "NASA",
-    "Mojang",
-    "GNU",
-    "Spigot",
-    "Bukkit",
-    "PaperMC",
-    "Patreon",
-    "PayPal"
+    {
+      "take": "@Jetbrains",
+      "image": "./img/jetbrains.webp"
+    },
+    {
+      "take": "Apache",
+      "image": "./img/apache.png"
+    },
+    {
+      "take": "@google",
+      "image": "./img/google.png"
+    },
+    {
+      "take": "@microsoft",
+      "image": "./img/microsoft.png"
+    },
+    {
+      "take": "@apple",
+      "image": "./img/apple.png"
+    },
+    {
+      "take": "@Oracle",
+      "image": "./img/oracle.png"
+    },
+    {
+      "take": "@IBM",
+      "image": "./img/ibm.png"
+    },
+    {
+      "take": "@Meta",
+      "image": "./img/meta.png"
+    },
+    {
+      "take": "@Amazon",
+      "image": "./img/amazon.png"
+    },
+    {
+      "take": "@Intel",
+      "image": "./img/intel.png"
+    },
+    {
+      "take": "@Adobe",
+      "image": "./img/adobe.png"
+    },
+    {
+      "take": "@AMD",
+      "image": "./img/amd.png"
+    },
+    {
+      "take": "@Nvidia",
+      "image": "./img/nvidia.png"
+    },
+    {
+      "take": "@Mozilla",
+      "image": "./img/mozilla.jpg"
+    },
+    {
+      "take": "Free Software Foundation",
+      "image": "./img/free software foundation.png"
+    },
+    {
+      "take": "GNU",
+      "image": "./img/gnu.png"
+    },
+    {
+      "take": "Tencent",
+      "image": "./img/tencent.png"
+    },
+    {
+      "take": "Alibaba",
+      "image": "./img/alibaba.png"
+    },
+    {
+      "take": "Baidu",
+      "image": "./img/baidu.png"
+    },
+    {
+      "take": "@Samsung",
+      "image": "./img/samsung.png"
+    },
+    {
+      "take": "@Sony",
+      "image": "./img/sony.png"
+    },
+    {
+      "take": "@Cisco",
+      "image": "./img/cisco.png"
+    },
+    {
+      "take": "@OVH",
+      "image": "./img/ovh.png"
+    },
+    {
+      "take": "@Scaleway",
+      "image": "./img/scaleway.webp"
+    },
+    {
+      "take": "@Vultr",
+      "image": "./img/vultr.webp"
+    },
+    {
+      "take": "@Hetzner",
+      "image": "./img/hetzner.png"
+    },
+    {
+      "take": "@Linode",
+      "image": "./img/linode.png"
+    },
+    {
+      "take": "@Cloudflare",
+      "image": "./img/cloudflare.png"
+    },
+    {
+      "take": "@ARM",
+      "image": "./img/arm.png"
+    },
+    {
+      "take": "@Tesla",
+      "image": "./img/tesla.png"
+    },
+    {
+      "take": "@SpaceX",
+      "image": "./img/spacex.jpg"
+    },
+    {
+      "take": "@NASA",
+      "image": "./img/nasa.png"
+    },
+    {
+      "take": "Mojang",
+      "image": "./img/mojang.png"
+    },
+    {
+      "take": "Spigot",
+      "image": "./img/spigot.png"
+    },
+    {
+      "take": "Bukkit",
+      "image": "./img/bukkit.png"
+    },
+    {
+      "take": "@Patreon",
+      "image": "./img/patreon.png"
+    },
+    {
+      "take": "@PayPal",
+      "image": "./img/paypal.png"
+    },
+    {
+      "take": "@OpenAI",
+      "image": "./img/openai.png"
+    }
   ],
   "languages": [
-    "Solidity",
-    "C",
-    "C++",
-    "Carbon",
-    "D",
-    "C#",
-    "F#",
-    "OCaml",
-    "Haskell",
-    "Prolog",
-    "Elm",
-    "Elixir",
-    "Erlang",
-    "Clojure",
-    "Java",
-    "Scala",
-    "Groovy",
-    "Kotlin",
-    "Swift",
-    "JavaScript",
-    "CoffeeScript",
-    "TypeScript",
-    "PHP",
-    "Python",
-    "Go",
-    "Rust",
-    "VLang",
-    "Ruby",
-    "Crystal",
-    "Lua",
-    "R",
-    "MATLAB",
-    "Wolfram",
-    "Dart",
-    "Julia",
-    "Perl",
-    "APL",
-    "BQN",
-    "Brainf**k",
-    "COBOL",
-    "Fortran",
-    "ALGOL 55",
-    "ALGOL 60",
-    "ALGOL 68",
-    "Assembly",
-    "ZSH",
-    "Bash",
-    "PowerShell",
-    "Scratch",
-    "HTML",
-    "CSS",
-    "SASS",
-    "LESS",
-    "Angular",
-    "React",
-    "Vue",
+    {
+      "take": "#Solidity",
+      "image": "./img/solidity.png"
+    },
+    {
+      "take": "#C",
+      "image": "./img/c.png"
+    },
+    {
+      "take": "C++",
+      "image": "./img/c++.png"
+    },
+    {
+      "take": "Carbon",
+      "image": "./img/carbon.png"
+    },
+    {
+      "take": "D",
+      "image": "./img/d.png"
+    },
+    {
+      "take": "C#",
+      "image": "./img/csharp.png"
+    },
+    {
+      "take": "F#",
+      "image": "./img/fsharp.png"
+    },
+    {
+      "take": "#OCaml",
+      "image": "./img/ocaml.png"
+    },
+    {
+      "take": "#Haskell",
+      "image": "./img/haskell.png"
+    },
+    {
+      "take": "#Prolog",
+      "image": "./img/prolog.png"
+    },
+    {
+      "take": "#Elm",
+      "image": "./img/elm.png"
+    },
+    {
+      "take": "#Elixir",
+      "image": "./img/elixir.png"
+    },
+    {
+      "take": "#Erlang",
+      "image": "./img/erlang.png"
+    },
+    {
+      "take": "#Clojure",
+      "image": "./img/clojure.png"
+    },
+    {
+      "take": "#Java",
+      "image": "./img/java.png"
+    },
+    {
+      "take": "#Scala",
+      "image": "./img/scala.png"
+    },
+    {
+      "take": "#Groovy",
+      "image": "./img/groovy.png"
+    },
+    {
+      "take": "#Kotlin",
+      "image": "./img/kotlin.png"
+    },
+    {
+      "take": "#Swift",
+      "image": "./img/swift.png"
+    },
+    {
+      "take": "#JavaScript",
+      "image": "./img/javascript.png"
+    },
+    {
+      "take": "#CoffeeScript",
+      "image": "./img/coffeescript.png"
+    },
+    {
+      "take": "#TypeScript",
+      "image": "./img/typescript.png"
+    },
+    {
+      "take": "#PHP",
+      "image": "./img/php.png"
+    },
+    {
+      "take": "#Python",
+      "image": "./img/python.png"
+    },
+    {
+      "take": "#Go",
+      "image": "./img/go.png"
+    },
+    {
+      "take": "#Rust",
+      "image": "./img/rust.png"
+    },
+    {
+      "take": "#VLang",
+      "image": "./img/v.png"
+    },
+    {
+      "take": "#Ruby",
+      "image": "./img/ruby.png"
+    },
+    {
+      "take": "#Crystal",
+      "image": "./img/crystal.png"
+    },
+    {
+      "take": "#Lua",
+      "image": "./img/lua.png"
+    },
+    {
+      "take": "R",
+      "image": "./img/r.jpeg"
+    },
+    {
+      "take": "#MATLAB",
+      "image": "./img/matlab.png"
+    },
+    {
+      "take": "#Wolfram",
+      "image": "./img/wolfram.png"
+    },
+    {
+      "take": "#Dart",
+      "image": "./img/dart.png"
+    },
+    {
+      "take": "#Julia",
+      "image": "./img/julia.png"
+    },
+    {
+      "take": "#Perl",
+      "image": "./img/perl.png"
+    },
+    {
+      "take": "APL",
+      "image": "./img/apl.png"
+    },
+    {
+      "take": "BQN",
+      "image": "./img/bqn.png"
+    },
+    {
+      "take": "Brainf**k",
+      "image": "./img/brainfuck.png"
+    },
+    {
+      "take": "#COBOL",
+      "image": "./img/cobol.webp"
+    },
+    {
+      "take": "#Fortran",
+      "image": "./img/fortran.png"
+    },
+    {
+      "take": "ALGOL 55",
+      "image": "./img/algol.webp"
+    },
+    {
+      "take": "ALGOL 60",
+      "image": "./img/algol.webp"
+    },
+    {
+      "take": "ALGOL 68",
+      "image": "./img/algol.webp"
+    },
+    {
+      "take": "Assembly",
+      "image": "./img/assembly.png"
+    },
+    {
+      "take": "#ZSH",
+      "image": "./img/zsh.png"
+    },
+    {
+      "take": "#Bash",
+      "image": "./img/bash.png"
+    },
+    {
+      "take": "#PowerShell",
+      "image": "./img/powershell.png"
+    },
+    {
+      "take": "Scratch",
+      "image": "./img/scratch.png"
+    },
+    {
+      "take": "#HTML",
+      "image": "./img/html.png"
+    },
+    {
+      "take": "#CSS",
+      "image": "./img/css.png"
+    },
+    {
+      "take": "#SASS",
+      "image": "./img/sass.png"
+    },
+    {
+      "take": "#LESS",
+      "image": "./img/less.png"
+    },
+    {
+      "take": "#Angular",
+      "image": "./img/angular.png"
+    },
+    {
+      "take": "#React",
+      "image": "./img/react.png"
+    },
+    {
+      "take": "#Vue",
+      "image": "./img/vue.png"
+    },
     "Malbolge",
-    "Zaskroniec",
-    "Verilog"
+    {
+      "take": "Verilog",
+      "image": "./img/verilog.png"
+    }
   ],
   "technologies": [
-    "web3",
-    "Blockchain",
-    "Bitcoin",
-    "Ethereum",
-    "VSCode",
-    "Atom",
-    "Visual Studio",
-    "Visual Studio Code",
-    "IntelliJ",
-    "Eclipse",
-    "Sublime Text",
-    "PyCharm",
-    "WebStorm",
-    "PHPStorm",
-    "Fleet",
-    "Vim",
-    "Emacs",
-    "Nano",
-    "NPM",
-    "Yarn",
-    "Webpack",
-    "WebAssembly",
-    "Node.js",
-    "Deno",
-    ".NET",
-    "ASP.NET",
-    "Electron",
-    "Docker",
-    "Kubernetes",
-    "Docker Compose",
-    "DigitalOcean",
-    "Heroku",
-    "Linode",
-    "Azure",
-    "AWS",
-    "Google Cloud",
-    "DevOps",
-    "Git",
-    "GitHub",
-    "GitLab",
-    "GitKraken",
-    "HackerRank",
-    "LeetCode",
-    "Jira",
-    "Reddit",
-    "Stack Overflow",
-    "Cloudflare",
-    "GitHub Pages",
-    "Cargo",
-    "Rustup",
-    "TCP/IP",
+    {
+      "take": "#web3",
+      "image": "./img/web3.webp"
+    },
+    {
+      "take": "#Blockchain",
+      "image": "./img/blockchain.png"
+    },
+    {
+      "take": "#Bitcoin",
+      "image": "./img/bitcoin.png"
+    },
+    {
+      "take": "#Ethereum",
+      "image": "./img/ethereum.png"
+    },
+    {
+      "take": "#VSCode",
+      "image": "./img/visual studio code.png"
+    },
+    {
+      "take": "#Atom",
+      "image": "./img/atom.png"
+    },
+    {
+      "take": "#VisualStudio",
+      "image": "./img/visual studio.png"
+    },
+    {
+      "take": "#IntelliJ",
+      "image": "./img/intellij.png"
+    },
+    {
+      "take": "#Eclipse",
+      "image": "./img/eclipse.png"
+    },
+    {
+      "take": "Sublime Text",
+      "image": "./img/sublime text.png"
+    },
+    {
+      "take": "#PyCharm",
+      "image": "./img/pycharm.png"
+    },
+    {
+      "take": "#WebStorm",
+      "image": "./img/webstorm.png"
+    },
+    {
+      "take": "#PHPStorm",
+      "image": "./img/phpstorm.png"
+    },
+    {
+      "take": "#Fleet",
+      "image": "./img/fleet.png"
+    },
+    {
+      "take": "#Vim",
+      "image": "./img/vim.png"
+    },
+    {
+      "take": "#Emacs",
+      "image": "./img/emacs.png"
+    },
+    {
+      "take": "#Nano",
+      "image": "./img/nano.png"
+    },
+    {
+      "take": "#NPM",
+      "image": "./img/npm.png"
+    },
+    {
+      "take": "#Yarn",
+      "image": "./img/yarn.png"
+    },
+    {
+      "take": "#Webpack",
+      "image": "./img/webpack.png"
+    },
+    {
+      "take": "#WebAssembly",
+      "image": "./img/webassembly.png"
+    },
+    {
+      "take": "#NodeJS",
+      "image": "./img/nodejs.png"
+    },
+    {
+      "take": "#Deno",
+      "image": "./img/deno.png"
+    },
+    {
+      "take": ".NET",
+      "image": "./img/dotnet.png"
+    },
+    {
+      "take": "ASP.NET",
+      "image": "./img/dotnet.png"
+    },
+    {
+      "take": "#Electron",
+      "image": "./img/electron.png"
+    },
+    {
+      "take": "#Docker",
+      "image": "./img/r.jpeg"
+    },
+    {
+      "take": "#Kubernetes",
+      "image": "./img/kubernetes.png"
+    },
+    {
+      "take": "Docker Compose",
+      "image": "./img/dockercompose.jpg"
+    },
+    {
+      "take": "#DigitalOcean",
+      "image": "./img/digitalocean.png"
+    },
+    {
+      "take": "#Heroku",
+      "image": "./img/heroku.png"
+    },
+    {
+      "take": "#Linode",
+      "image": "./img/linode.png"
+    },
+    {
+      "take": "#Azure",
+      "image": "./img/azure.png"
+    },
+    {
+      "take": "#AWS",
+      "image": "./img/aws.png"
+    },
+    {
+      "take": "Google Cloud",
+      "image": "./img/googlecloud.png"
+    },
+    {
+      "take": "#DevOps",
+      "image": "./img/devops.png"
+    },
+    {
+      "take": "#Git",
+      "image": "./img/git.png"
+    },
+    {
+      "take": "#GitHub",
+      "image": "./img/github.png"
+    },
+    {
+      "take": "#GitLab",
+      "image": "./img/gitlab.png"
+    },
+    {
+      "take": "#GitKraken",
+      "image": "./img/gitkraken.png"
+    },
+    {
+      "take": "#HackerRank",
+      "image": "./img/hackerrank.png"
+    },
+    {
+      "take": "#LeetCode",
+      "image": "./img/leetcode.png"
+    },
+    {
+      "take": "#Jira",
+      "image": "./img/jira.jpeg"
+    },
+    {
+      "take": "#Reddit",
+      "image": "./img/reddit.png"
+    },
+    {
+      "take": "#StackOverflow",
+      "image": "./img/stackoverflow.png"
+    },
+    {
+      "take": "#Cloudflare",
+      "image": "./img/cloudflare.png"
+    },
+    "Cloudflare Workers",
+    {
+      "take": "GitHub Pages",
+      "image": "./img/github pages.png"
+    },
+    {
+      "take": "#Cargo",
+      "image": "./img/cargo.png"
+    },
+    {
+      "take": "#Rustup",
+      "image": "./img/rust.png"
+    },
+    {
+      "take": "TCP/IP",
+      "image": "./img/tcpip.webp"
+    },
     "Big O Notation",
     "Binary Search",
     "Bubble Sort",
     "Merge Sort",
     "Quick Sort",
     "Heap Sort",
-    "Selection Sort",
     "Insertion Sort",
+    "Selection Sort",
     "Shell Sort",
     "Binary Tree",
     "Hash Tables",
@@ -210,54 +751,140 @@
     "Dijkstra's Algorithm",
     "FizzBuzz",
     "Generics",
-    "HTTPS",
-    "HTTP",
+    {
+      "take": "#HTTPS",
+      "image": "./img/https.png"
+    },
+    {
+      "take": "#HTTP",
+      "image": "./img/http.png"
+    },
     "Syntax Highlighting",
-    "ZIP files",
-    "DVORAK",
-    "QWERTY",
+    {
+      "take": "ZIP files",
+      "image": "./img/zip files.png"
+    },
+    {
+      "take": "#DVORAK",
+      "image": "./img/dvorak.png"
+    },
+    {
+      "take": "#QWERTY",
+      "image": "./img/qwerty.png"
+    },
     "Abstraction",
+    "Encapsulation",
     "ISO 8601",
-    "Lombok",
-    "JUnit",
-    "Windows 11",
-    "Linux",
-    "MacOS",
+    {
+      "take": "#Lombok",
+      "image": "./img/lombok.png"
+    },
+    {
+      "take": "#JUnit",
+      "image": "./img/junit.png"
+    },
+    {
+      "take": "Windows 11",
+      "image": "./img/windows 11.webp"
+    },
+    {
+      "take": "#Linux",
+      "image": "./img/linux.jpeg"
+    },
+    {
+      "take": "#MacOS",
+      "image": "./img/macos.png"
+    },
+    {
+      "take": "TempleOS",
+      "image": "./img/templeos.jpg"
+    },
     "OOP",
-    "iteration",
     "Functional Programming",
+    "Higher Kinded Types",
+    "Test Driven Development",
+    "iteration",
     "recursion",
     "Monads",
+    "Currying",
+    "Monad Transformers",
     "Monoids",
     "Endofunctors",
+    "Cofunctors",
+    "Functors",
+    "Profunctors",
+    "Applicative Functors",
     "Procedural Programming",
     "static typing",
     "dynamic typing",
     "Lambda Calculus",
+    {
+      "take": "Category Theory",
+      "image": "./img/category theory.png"
+    },
     "Turing Machines",
-    "IPoAC",
+    {
+      "take": "IPoAC",
+      "image": "./img/ipoac.jpeg"
+    },
     "Sieve of Eratosthenes",
     "Riemann zeta function",
-    "Windows 98",
-    "Copilot",
-    "machine learning",
+    {
+      "take": "Windows 98",
+      "image": "./img/windows 98.png"
+    },
+    {
+      "take": "GitHub Copilot",
+      "image": "./img/github copilot.png"
+    },
+    {
+      "take": "machine learning",
+      "image": "./img/machine learning.png"
+    },
     "Fast Inverse Square Root algorithm",
     "Wave function collapse",
-    "Spigot",
-    "Paper",
-    "Bukkit",
-    "Fabric",
-    "Forge",
-    "EssentialsX",
-    "LuckPerms",
-    "Apple Silicon",
-    "M1",
+    {
+      "take": "Spigot",
+      "image": "./img/spigot.png"
+    },
+    {
+      "take": "Paper",
+      "image": "./img/papermc.png"
+    },
+    {
+      "take": "Bukkit",
+      "image": "./img/bukkit.png"
+    },
+    {
+      "take": "Fabric",
+      "image": "./img/fabricmc.png"
+    },
+    {
+      "take": "MinecraftForge",
+      "image": "./img/minecraftforge.png"
+    },
+    {
+      "take": "Apple M1",
+      "image": "./img/m1.webp"
+    },
+    {
+      "take": "Apple M2",
+      "image": "./img/m2.jpg"
+    },
     "Garbage Collection",
     "curly braces",
     "semicolons",
     "indentation",
     "tail recursion",
-    "webscale"
+    "tail call optimization",
+    "webscale",
+    "ChatGPT",
+    "GPT-3",
+    {
+      "take": "TensorFlow",
+      "image": "./img/tensorflow.png"
+    },
+    "Markov Chains"
   ],
   "problems": [
     "backward compatibility",
@@ -306,15 +933,21 @@
     "{language} is heavily influenced by {thing|group}.",
     "We should really stop listening to {group}. They told us to use {thing}, after all.",
     "{thing} is a {problem} disaster waiting to happen.",
-    "My latest project is a lightweight Electron wrapper for {technology}.",
+    {
+      "take": "My latest project is a lightweight Electron wrapper for {technology}.",
+      "image": "./img/electron.png"
+    },
     "{technology} doesn't need {technology}, it's perfect already.",
     "Could {technology} be the solution to the {problem|technology|person|company} problem?",
     "imo, {group} needs to start looking at {technology}.",
     "{technology} was pioneered by {group}.",
-    "{person} should be made the CTO of {company}!",
+    "{person} should be made the CEO of {company}!",
     "I just started a new job at {company}. My boss, {person} just told me to refactor {bigNumber} lines of {language}. Kill me.",
-    "Coding in {language} is like walking over hot coals.",
-    "Well written {language} is what heaven looks like.",
+    "Coding in {language} is mental torture.",
+    {
+      "take": "Well written {language} is what heaven looks like.",
+      "image": "./img/heaven.webp"
+    },
     "As someone comfortable with {language}, learning {thing} took me over {age} years.",
     "{language} is not a programming language, change my mind.",
     "{thing} is so easy. In fact, I've started teaching it to my {age} year old.",
@@ -327,7 +960,7 @@
     "After just a few hours, I've optimized my {language} codebase {percentage}x. Writing up a blog post as we speak.",
     "{thing} fans are smarter than the average programmers.",
     "{thing} fans don't deserve to be in tech.",
-    "Honestly, {entity} fans are insufferable.",
+    "Honestly, {anything} fans are insufferable.",
     "If you don't understand {thing}, you're not a real programmer",
     "I'm not a {thing} fan, but I'm a {thing} fan.",
     "Gen Z kids don't understand {thing}.",
@@ -340,7 +973,10 @@
     "The fact that we're still using {thing} in 2022 is a problem.",
     "I prefer simple languages, like {language}. Clear, understandable, and easy to learn.",
     "It's been many years since I've had a problem with {problem} in {language}. People need to stop complaining and just write better code.",
-    "I just rickrolled {group}",
+    {
+      "take": "I just rickrolled {group}",
+      "image": "./img/rickroll.jpg"
+    },
     "Where are the {language} jobs? Are people really looking for {thing}?",
     "The perfect programming language is {language} mixed with {language}.",
     "I'm genuinely surprised to hear that there are programmers who don't use {thing}.",
@@ -348,13 +984,13 @@
     "Every day when I wake up, I spend 30 minutes just reading the documentation for {language}. It sounds odd, but it always gets me excited to start working",
     "Why are {language} developers paid so much even though they don't understand {thing}?",
     "The {problem} issue is just a thinly veiled advertisement for {thing}.",
-    "{group} debunked {entity} a long time ago.",
+    "{group} debunked {anything} a long time ago.",
     "{person} was the first true computer scientist.",
     "{thing} fans are quickly taking over the tech world and that's good.",
     "{thing} fans are quickly taking over the tech world and that's bad.",
     "{technology} users couldn't even print Hello World in {language}.",
-    "{entity} > {entity}.",
-    "{problem}, {problem}. How about you learn {thing} instead?",
+    "{anything} > {anything}.",
+    "People keep complaining about {problem} and {problem}. Either learn {thing} or suck it up.",
     "Did you hear what happened over at {company}? Me neither, nobody cares about them.",
     "{oneWordThing}.js is the next big JS framework.",
     "Lots of programming languages and tools have already fixed {problem} - {thing}, {thing}, {thing}, etc.",
@@ -370,19 +1006,55 @@
     "I think I'm addicted to working with {thing}. Does anyone else feel the same?",
     "{thing} is toxic for humanity. This is not an opinion, it's an absolute truth.",
     "People may disagree with the things I say, but I'd like to remind the haters that I have worked on a one-billion line {language} codebase.",
-    "{thing} users should be sent to prison for life.",
+    {
+      "take": "{thing} users should be sent to prison for life.",
+      "image": "./img/prison.jpg"
+    },
     "I have a PhD in Computer Science and I'm still not sure how {thing} works.",
     "If someone can explain to me how {thing} works, I'll give them ${bigNumber}.",
     "I just purchased the domain name {oneWordAnything}.{tld}. I'm going to make a fortune.",
     "AITA for banning my GF from using {thing}?",
     "If {thing} was rewritten in {language} all its problems would go away.",
-    "If Jesus was alive today, he would use {thing}.",
+    {
+      "take": "If Jesus was alive today, he would use {thing}.",
+      "image": "./img/jesus.jpeg"
+    },
     "{language} is almost close to the bare metal now thanks to the stunningly optimized JIT.",
     "Most programmers are not like {person}. I'm one of the few that is.",
     "I had an interviewer laugh in my face when I said I use {thing}.",
-    "I just donated ${bigNumber} to {group}'s Patreon. They deserve it.",
+    {
+      "take": "I just donated ${bigNumber} to {group}'s Patreon. They deserve it.",
+      "image": "./img/patreon.png"
+    },
     "One of my greatest achievements is becoming a moderator of r/{oneWordAnything}.",
     "If {thing} had {thing} it could increase productivity by {percentage}%",
-    "{group} does not know what a monad is."
+    "{group} does not know what a monad is.",
+    {
+      "take": "{person} has launched an OnlyFans!",
+      "image": "./img/onlyfans.png"
+    },
+    "Who would win in a fight? {group} or {group}?",
+    "{anything} is underrated, change my mind.",
+    "{anything} is overrated, change my mind.",
+    {
+      "take": "The world if {anything} was mainstream",
+      "image": "./img/utopia.jpg"
+    },
+    "{anything} and {anything} should partner up!",
+    "{anything} should make a replacement for {thing}!",
+    "I just bought ${bigNumber} worth of {company} stocks and it's gone up {percentage}% already! I'm a genius!",
+    "I just bought ${bigNumber} worth of {company} stocks and it's gone down {percentage}% already! How could this happen?",
+    {
+      "take": "Average {thing} user vs average {thing} enjoyer",
+      "image": [
+        "./img/virgin.png",
+        "./img/chad.png"
+      ]
+    },
+    {
+      "take": "Elon Musk has bought {company}!",
+      "image": "./img/elon musk.webp"
+    },
+    "{thing}'s documentation is so bad that I had to write my own."
   ]
 }
