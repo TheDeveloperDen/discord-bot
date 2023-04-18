@@ -12,6 +12,7 @@ export function initSentry(client: Client) {
 			new Sentry.Integrations.Http({ tracing: true }),
 			new ProfilingIntegration(),
 			...Sentry.autoDiscoverNodePerformanceMonitoringIntegrations(),
+			new Sentry.Integrations.Mysql()
 		]
 	})
 
