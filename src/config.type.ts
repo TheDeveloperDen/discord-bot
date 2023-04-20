@@ -12,6 +12,9 @@ export type Config = {
 	},
 	pastebin: { url: string, threshold: number },
 	channels: { welcome: string, botCommands: string, hotTake: string, showcase: string, auditLog: string },
+	commands: {
+		daily: Snowflake
+	}
 	roles: {
 		tiers: Snowflake[],
 		admin: Snowflake,

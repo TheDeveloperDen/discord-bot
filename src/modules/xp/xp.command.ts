@@ -1,14 +1,14 @@
-import { CommandInteraction, GuildMember, User } from 'discord.js'
-import { getUserById } from '../../store/models/DDUser.js'
-import { createStandardEmbed } from '../../util/embeds.js'
-import { xpForLevel } from './xpForMessage.util.js'
-import { createImage, font, getCanvasContext } from '../../util/imageUtils.js'
-import { branding } from '../../util/branding.js'
-import { drawText } from '../../util/textRendering.js'
-import { Command } from 'djs-slash-helper'
-import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord-api-types/v10'
-import { formatDayCount, getActualDailyStreak } from './dailyReward.command.js'
-import { inTransaction } from '../../sentry.js'
+import {GuildMember, User} from 'discord.js'
+import {getUserById} from '../../store/models/DDUser.js'
+import {createStandardEmbed} from '../../util/embeds.js'
+import {xpForLevel} from './xpForMessage.util.js'
+import {createImage, font, getCanvasContext} from '../../util/imageUtils.js'
+import {branding} from '../../util/branding.js'
+import {drawText} from '../../util/textRendering.js'
+import {Command} from 'djs-slash-helper'
+import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10'
+import {formatDayCount, getActualDailyStreak} from './dailyReward.command.js'
+import {inTransaction} from '../../sentry.js'
 
 
 export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
@@ -35,9 +35,9 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
 				createStandardEmbed(member)
 					.setTitle(`Profile of ${user.username}#${user.discriminator}`)
 					.setFields({
-						name: '🔮 Level',
-						value: `${ddUser.level}`
-					},
+							name: '🔮 Level',
+							value: `${ddUser.level}`
+						},
 						{
 							name: '📝 Tier',
 							value: `${ddUser.level == 0 ? 0 : Math.floor(ddUser.level / 10) + 1}`

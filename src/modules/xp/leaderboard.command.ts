@@ -1,17 +1,17 @@
-import { CommandInteraction, GuildMember } from 'discord.js'
+import {GuildMember} from 'discord.js'
 
 import {
 	APIApplicationCommandOptionChoice
 } from 'discord-api-types/payloads/v10/_interactions/_applicationCommands/_chatInput/shared'
-import { DDUser } from '../../store/models/DDUser.js'
-import { Command } from 'djs-slash-helper'
-import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord-api-types/v10'
-import { createStandardEmbed } from '../../util/embeds.js'
-import { branding } from '../../util/branding.js'
-import { actualMention } from '../../util/users.js'
-import { getActualDailyStreak } from './dailyReward.command.js'
-import sequelize, { Op } from 'sequelize'
-import { inTransaction } from '../../sentry.js'
+import {DDUser} from '../../store/models/DDUser.js'
+import {Command} from 'djs-slash-helper'
+import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10'
+import {createStandardEmbed} from '../../util/embeds.js'
+import {branding} from '../../util/branding.js'
+import {actualMention} from '../../util/users.js'
+import {getActualDailyStreak} from './dailyReward.command.js'
+import sequelize, {Op} from 'sequelize'
+import {inTransaction} from '../../sentry.js'
 
 interface LeaderboardType extends APIApplicationCommandOptionChoice<string> {
 	calculate?: (user: DDUser) => Promise<number>,
@@ -21,8 +21,8 @@ interface LeaderboardType extends APIApplicationCommandOptionChoice<string> {
 }
 
 const info: LeaderboardType[] = [
-	{ value: 'xp', name: 'XP', format: value => `${value} XP` },
-	{ value: 'level', name: 'Level', format: value => `Level ${value}` },
+	{value: 'xp', name: 'XP', format: value => `${value} XP`},
+	{value: 'level', name: 'Level', format: value => `Level ${value}`},
 	{
 		value: 'currentDailyStreak',
 		calculate: user => getActualDailyStreak(user),

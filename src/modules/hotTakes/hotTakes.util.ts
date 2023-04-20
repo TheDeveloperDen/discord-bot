@@ -1,7 +1,7 @@
-import { randomInt } from 'crypto'
-import { Guild } from 'discord.js'
-import { actualMention, isSpecialUser } from '../../util/users.js'
-import { readFileSync } from 'fs'
+import {randomInt} from 'crypto'
+import {Guild} from 'discord.js'
+import {actualMention, isSpecialUser} from '../../util/users.js'
+import {readFileSync} from 'fs'
 import ExpiryMap from 'expiry-map'
 
 type HotTakeThing = string | {
@@ -97,7 +97,7 @@ export default async function generateHotTake(guild: Guild) {
 	const randomTake = hotTakeData.takes.randomElement()
 
 	const takeValue = hotTakeValue(randomTake)
-	const take = takeValue.replace(/{[\w|]+}/g, value => {
+	return takeValue.replace(/{[\w|]+}/g, value => {
 		const randomReplacement = value
 			.slice(1, -1)// remove the {}
 			.split('|') // split into options
@@ -105,9 +105,8 @@ export default async function generateHotTake(guild: Guild) {
 			.flatMap(it => {
 				return placeholders[it](members)
 			})   // get the values for each placeholder
-			.randomElement(); // pick a random value
+			.randomElement() // pick a random value
 
 		return hotTakeValue(randomReplacement)
 	})
-	return take
 }
