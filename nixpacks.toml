@@ -1,49 +1,9 @@
-[phases.install]
-aptPkgs = [
-    '...',
-    'build-essential',
-    'libpixman-1-dev',
-    'librsvg2-dev',
-    'libcairo2-dev',
-    'libpango1.0-dev',
-    'libgif-dev',
-    'librsvg2-dev',
-]
-nixPkgs = [
-    '...',
-    'python38',
-    'gcc9',
-    'giflib',
-    'fontconfig',
-    'cairo',
-    'pango',
-    'pixman',
-]
-nixLibs = ['...', 'libjpeg', 'giflib', 'fontconfig', 'cairo', 'pango', 'pixman']
+[phases.setup]
+nixPkgs = ['...', 'python39', 'gccStdenv']
+aptPkgs = ['build-essential', 'libcairo2-dev', 'libpango1.0-dev', 'libjpeg-dev', 'libgif-dev', 'librsvg2-dev']
 
 [phases.build]
 cmds = ["yarn run build-prod"]
 
 [start]
-aptPkgs = [
-    '...',
-    'build-essential',
-    'libpixman-1-dev',
-    'librsvg2-dev',
-    'libcairo2-dev',
-    'libpango1.0-dev',
-    'libgif-dev',
-    'librsvg2-dev',
-]
-nixPkgs = [
-    '...',
-    'python38',
-    'gcc9',
-    'giflib',
-    'fontconfig',
-    'cairo',
-    'pango',
-    'pixman',
-]
-nixLibs = ['...', 'libjpeg', 'giflib', 'fontconfig', 'cairo', 'pango', 'pixman']
 cmd = "yarn run start-built"
