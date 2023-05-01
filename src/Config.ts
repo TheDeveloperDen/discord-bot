@@ -12,6 +12,9 @@ export const config: Config = {
 		showcase: '952536628533030942',
 		auditLog: '994623474557538415'
 	},
+	commands: {
+		daily: '1029850807794937949'
+	},
 	roles: {
 		tiers: [
 			'904478147351806012', //@everyone (tier 0)
