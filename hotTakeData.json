@@ -325,11 +325,11 @@
       "image": "./img/d.png"
     },
     {
-      "take": "C",
+      "take": "C#",
       "image": "./img/csharp.png"
     },
     {
-      "take": "F",
+      "take": "F#",
       "image": "./img/fsharp.png"
     },
     {
