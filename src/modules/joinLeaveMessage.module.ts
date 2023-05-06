@@ -9,7 +9,7 @@ import {
 import { logger } from '../logging.js'
 import { createStandardEmbed } from '../util/embeds.js'
 import { branding } from '../util/branding.js'
-import { mention, pseudoMention } from '../util/users.js'
+import { pseudoMention } from '../util/users.js'
 import { awaitTimeout } from '../util/timeouts'
 
 const handler = (isAdding: boolean) => async function (
@@ -28,9 +28,7 @@ const handler = (isAdding: boolean) => async function (
         .setTitle(`members${isAdding ? '++' : '--'};`)
         .setDescription(isAdding
           ? branding.welcomeMessage(member)
-          // FIXME - extract this to branding?
-          : `${mention(
-            member)} has left! :(\nCurrent Member Count: ${member.guild.memberCount}`)
+          : branding.goodbyeMessage(member))
         .setColor(isAdding ? '#77dd77' : '#aa4344')
         .setThumbnail(member.user.avatarURL() ??
           'https://cdn.discordapp.com/embed/avatars/0.png')

@@ -43,7 +43,10 @@ export const config: Config = {
     font: 'CascadiaCode.ttf',
     welcomeMessage: member =>
       `Welcome ${mention(
-        member)} to the Developer Den test server!\nCurrent Member Count: ${member.guild.memberCount}`
+        member)} to the Developer Den test server!\nCurrent Member Count: ${member.guild.memberCount}`,
+    goodbyeMessage: member =>
+      `Goodbye ${mention(
+        member)} from the Developer Den test server!\nCurrent Member Count: ${member.guild.memberCount}`
   },
 
   informationMessage: prodConfig.informationMessage

@@ -5,6 +5,7 @@ export interface BrandingConfig {
   name?: string
   iconUrl?: string
   welcomeMessage: (member: GuildMember | PartialGuildMember) => string
+  goodbyeMessage: (member: GuildMember | PartialGuildMember) => string
   font: string
   color: string
 }

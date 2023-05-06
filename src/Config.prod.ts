@@ -55,7 +55,9 @@ export const config: Config = {
     font: 'CascadiaCode.ttf',
     welcomeMessage: member =>
       `Welcome ${mention(
-        member)} to the Developer Den!\nCurrent Member Count: ${member.guild.memberCount}`
+        member)} to the Developer Den!\nCurrent Member Count: ${member.guild.memberCount}`,
+    goodbyeMessage: member => `${mention(
+      member)} has left! :(\nCurrent Member Count: ${member.guild.memberCount}`
   },
 
   informationMessage: {
