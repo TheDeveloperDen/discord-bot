@@ -1,6 +1,6 @@
 {
   "name": "devdenbot",
-  "version": "3.20.0",
+  "version": "4.0.0",
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
