@@ -884,19 +884,25 @@
       "take": "TensorFlow",
       "image": "./img/tensorflow.png"
     },
-    "Markov Chains"
+    "Markov Chains",
+    "Nix",
+    "NixOS",
+    "Nixpkgs"
   ],
   "problems": [
     "backward compatibility",
     "forward compatibility",
+    "cross-platform compatibility",
     "memory safety",
     "thread safety",
     "race condition",
+    "deadlock",
     "buffer overflow",
     "mutability",
     "log4j",
     "technical debt",
     "undefined behavior",
+    "null pointer",
     "unit testing",
     "memory usage",
     "memory leak",
@@ -904,13 +910,20 @@
     "IPv4 address exhaustion",
     "Y2038",
     "syntax error",
+    "type error",
     "bloat",
+    "feature creep",
     "circular import",
     "performance issues",
     "goto statement",
+    "floating point precision",
     "infinite loops",
     "anti-patterns",
-    "software licensing"
+    "code smells",
+    "software licensing",
+    "software patents",
+    "dependency hell",
+    "web minimization"
   ],
   "tlds": [
     "com",
@@ -1055,6 +1068,9 @@
       "take": "Elon Musk has bought {company}!",
       "image": "./img/elon musk.webp"
     },
-    "{thing}'s documentation is so bad that I had to write my own."
+    "{thing}'s documentation is so bad that I had to write my own.",
+    "A lot of {thing}'s success can be attributed to its similarity to {thing}.",
+    "There are 2 types of modern programmers: {thing} users and {thing} users.",
+    "People like {language} because it is opinionated, predictable, and simple."
   ]
 }
