@@ -16,60 +16,60 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
 	options: [],
 
 	handle: inTransaction('daily', async (interaction) => {
-			const startTime = new Date().getTime()
-			const user = interaction.member as GuildMember
-			if (!user) {
-				await interaction.reply('You must be in a guild to use this command')
+		const startTime = new Date().getTime()
+		const user = interaction.member as GuildMember
+		if (!user) {
+			await interaction.reply('You must be in a guild to use this command')
+			return
+		}
+		await interaction.deferReply()
+		const ddUser = await getUserById(BigInt(user.id))
+		const difference = new Date().getTime() - (ddUser.lastDailyTime?.getTime() ?? 0)
+		if (difference < 1000 * 60 * 60 * 24) {
+			const lastClaimTime = ddUser.lastDailyTime
+			if (!lastClaimTime) {
+				logger.error('lastClaimTime is null')
 				return
 			}
-			await interaction.deferReply()
-			const ddUser = await getUserById(BigInt(user.id))
-			const difference = new Date().getTime() - (ddUser.lastDailyTime?.getTime() ?? 0)
-			if (difference < 1000 * 60 * 60 * 24) {
-				const lastClaimTime = ddUser.lastDailyTime
-				if (!lastClaimTime) {
-					logger.error('lastClaimTime is null')
-					return
-				}
-				const nextClaimTime = new Date(lastClaimTime.getTime() + 1000 * 60 * 60 * 24)
-				await interaction.followUp({
-					ephemeral: true,
-					content: `You can only claim your daily reward once every 24 hours. You can claim it again <t:${Math.floor(nextClaimTime.getTime() / 1000)}:R>.`
-				})
-				logger.info(`Daily reward attempted by ${user.user.tag} in ${new Date().getTime() - startTime}ms`)
-				return
-			}
+			const nextClaimTime = new Date(lastClaimTime.getTime() + 1000 * 60 * 60 * 24)
+			await interaction.followUp({
+				ephemeral: true,
+				content: `You can only claim your daily reward once every 24 hours. You can claim it again <t:${Math.floor(nextClaimTime.getTime() / 1000)}:R>.`
+			})
+			logger.info(`Daily reward attempted by ${user.user.tag} in ${new Date().getTime() - startTime}ms`)
+			return
+		}
 
-			const [, streak] = getActualDailyStreakWithoutSaving(ddUser)
-			ddUser.currentDailyStreak = streak + 1
+		const [, streak] = getActualDailyStreakWithoutSaving(ddUser)
+		ddUser.currentDailyStreak = streak + 1
 
-			if (ddUser.currentDailyStreak > ddUser.highestDailyStreak) {
-				ddUser.highestDailyStreak = ddUser.currentDailyStreak
-			}
+		if (ddUser.currentDailyStreak > ddUser.highestDailyStreak) {
+			ddUser.highestDailyStreak = ddUser.currentDailyStreak
+		}
 
-			const xpToGive = Math.min(50 + 20 * (ddUser.currentDailyStreak - 1), 1000)
-			const {xpGiven, multiplier} = await giveXp(user, xpToGive)
-			ddUser.lastDailyTime = new Date()
-			await Promise.all(
-				[
-					interaction.followUp({
-						ephemeral: false,
-						embeds: [
-							createStandardEmbed(user)
-								.setTitle('Daily Reward Claimed!')
-								.setDescription(`📆 Current Streak = ${formatDayCount(ddUser.currentDailyStreak)}
+		const xpToGive = Math.min(50 + 20 * (ddUser.currentDailyStreak - 1), 1000)
+		const {xpGiven, multiplier} = await giveXp(user, xpToGive)
+		ddUser.lastDailyTime = new Date()
+		await Promise.all(
+			[
+				interaction.followUp({
+					ephemeral: false,
+					embeds: [
+						createStandardEmbed(user)
+							.setTitle('Daily Reward Claimed!')
+							.setDescription(`📆 Current Streak = ${formatDayCount(ddUser.currentDailyStreak)}
 ⭐️ + ${xpGiven} XP  ${multiplier ? `(x${multiplier})` : ''}
 ⏰ Come back in 24 hours for a new reward!`)
-						]
-					})
-					, ddUser.save()
-				]
-			)
-			logger.info(`Daily reward claimed by ${user.user.tag} in ${new Date().getTime() - startTime}ms`)
-			if (isSpecialUser(user)) {
-				await scheduleReminder(user.client, user, ddUser)
-			}
+					]
+				})
+				, ddUser.save()
+			]
+		)
+		logger.info(`Daily reward claimed by ${user.user.tag} in ${new Date().getTime() - startTime}ms`)
+		if (isSpecialUser(user)) {
+			await scheduleReminder(user.client, user, ddUser)
 		}
+	}
 	)
 }
 

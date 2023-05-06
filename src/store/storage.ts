@@ -28,7 +28,7 @@ export const sequelize = process.env.HOST ? new Sequelize({
 		dialect: dialect as Dialect,
 		...commonSequelizeSettings
 	})
-	: new Sequelize("sqlite::memory:", commonSequelizeSettings)
+	: new Sequelize('sqlite::memory:', commonSequelizeSettings)
 
 
 function sequelizeLog(sql: string, timing?: number) {
