@@ -55,7 +55,7 @@ async function logIn() {
 	initSentry(client)
 	const token = process.env.BOT_TOKEN
 	if (!token) {
-		logger.crit('No token found')
+		logger.error('No token found')
 		process.exit(1)
 		return client
 	}
@@ -76,4 +76,9 @@ async function main() {
 	setupBranding(guild)
 }
 
-main()
+try {
+	await main()
+} catch (e) {
+	logger.error('Error starting bot', e)
+	process.exit(1)
+}
