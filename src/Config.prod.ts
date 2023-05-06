@@ -47,7 +47,7 @@ export const config: Config = {
 		noEmojiId: '1012427085798723666'
 	},
 	pastebin: {
-		url: 'https://paste.developerden.net',
+		url: 'https://paste.developerden.org',
 		threshold: 20
 	},
 	branding: {
@@ -59,7 +59,7 @@ export const config: Config = {
 
 	informationMessage: {
 		embed: new EmbedBuilder()
-			.setImage('https://static.developerden.net/banner.png')
+			.setImage('https://static.developerden.org/banner.png')
 			.setTitle('⭐ About the Server ⭐')
 			.setDescription(`
 			Welcome to the **Developer Den**!
@@ -76,14 +76,14 @@ export const config: Config = {
 			
 			
 			To invite other people to this server, you can use either of these links:
-			https://developerden.net/discord
+			https://developerden.org/discord
 			https://discord.gg/devden`),
 
 		buttonRows: [
 			[
 				new ButtonBuilder()
 					.setLabel('Permanent Invite Link')
-					.setURL('https://developerden.net/discord')
+					.setURL('https://developerden.org/discord')
 					.setEmoji({
 						id: '1007753088003747910'
 					})
@@ -98,7 +98,7 @@ export const config: Config = {
 					.setStyle(ButtonStyle.Link),
 				new ButtonBuilder()
 					.setLabel('Our Website')
-					.setURL('https://developerden.net')
+					.setURL('https://developerden.org')
 					.setEmoji('🌐')
 					.setStyle(ButtonStyle.Link)
 			],

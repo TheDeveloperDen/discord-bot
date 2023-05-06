@@ -32,7 +32,7 @@ export function getAllCachedResources() {
 	return Array.from(cache.values())
 }
 
-const baseUrl = 'https://learningresources.developerden.net'
+const baseUrl = 'https://learningresources.developerden.org'
 
 async function queryResource(name: string): Promise<LearningResource | null> {
 	const resource = await fetch(`${baseUrl}/${name}`)
