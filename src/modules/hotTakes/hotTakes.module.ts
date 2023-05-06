@@ -4,7 +4,7 @@ import HotTakeListener from './hotTakes.listener.js'
 import ManyHotTakesCommand from './manyHotTakes.command.js'
 
 export const HotTakesModule: Module = {
-	name: 'hotTakes',
-	commands: [HotTakeCommand, ManyHotTakesCommand],
-	listeners: [HotTakeListener]
+  name: 'hotTakes',
+  commands: [HotTakeCommand, ManyHotTakesCommand],
+  listeners: [HotTakeListener]
 }

@@ -34,6 +34,11 @@ you want to test in production.
 We use [Nixpacks](https://nixpacks.com/docs/getting-started) to manage creation of a Docker image. To build a docker
 image, run `nixpacks build .`
 
+### Nix
+
+This project also has a Nix file to set up a reproducible development environment.
+To access this, run `nix-shell`.
+
 ## Running
 
 The bot requires 2 things to run:

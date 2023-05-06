@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "scripts": {
     "version": "echo $npm_package_version",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "lint": "npx eslint 'src/**/*.ts' --fix",
     "build": "tsc --build --clean tsconfig.json && tsc --build tsconfig.json",
     "build-prod": "tsc -p tsconfig.production.json && ([ -f bin/Config.prod.js ] && mv -f bin/Config.prod.js bin/Config.js) || true",
     "watch-dev": "nodemon --exec node --experimental-specifier-resolution=node --loader ts-node/esm src/index.ts",
@@ -46,7 +46,6 @@
     "zlib-sync": "^0.1.8"
   },
   "repository": "https://github.com/TheDeveloperDen/DevDenBot.git",
-  "private": false,
   "devDependencies": {
     "@types/node": "^18.7.1",
     "@types/node-schedule": "^2.1.0",
@@ -54,12 +53,10 @@
     "@types/sequelize": "^4.28.14",
     "@types/sqlite3": "^3.1.8",
     "@types/string-similarity": "^4.0.0",
-    "@typescript-eslint/eslint-plugin": "^5.33.0",
-    "@typescript-eslint/parser": "^5.33.0",
-    "eslint": "^8.21.0",
-    "eslint-plugin-import": "^2.26.0",
     "nodemon": "^2.0.19",
     "ts-node": "^10.9.1",
+    "ts-standard": "^12.0.2",
     "typescript": "^5.0.2"
-  }
+  },
+  "packageManager": "yarn@3.5.1"
 }
