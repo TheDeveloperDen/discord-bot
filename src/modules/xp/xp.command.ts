@@ -57,7 +57,7 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
 					)
 					.setImage('attachment://xp.png')
 			],
-			files: [{ attachment: image.toBuffer(), name: 'xp.png' }]
+			files: [{attachment: image.toBuffer(), name: 'xp.png'}]
 		})
 	})
 

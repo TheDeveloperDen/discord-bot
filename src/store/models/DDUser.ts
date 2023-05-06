@@ -1,35 +1,35 @@
-import { Column, DataType, Model, Table } from 'sequelize-typescript'
-import { inTransaction } from '../../sentry.js'
+import {Column, DataType, Model, Table} from 'sequelize-typescript'
+import {inTransaction} from '../../sentry.js'
 
 @Table({
 	tableName: 'Users'
 })
 export class DDUser extends Model {
 	@Column({
-		type: new DataType.BIGINT({ length: 20 }),
+		type: new DataType.BIGINT({length: 20}),
 		primaryKey: true
 	})
 	declare public id: bigint
 	@Column({
-		type: new DataType.BIGINT({ length: 20 })
+		type: new DataType.BIGINT({length: 20})
 	})
 	declare public xp: number
 	@Column({
-		type: new DataType.INTEGER({ length: 11 })
+		type: new DataType.INTEGER({length: 11})
 	})
 	declare public level: number
 	@Column({
-		type: new DataType.INTEGER({ length: 11 })
+		type: new DataType.INTEGER({length: 11})
 	})
 	declare public bumps: number
 
 	@Column({
-		type: new DataType.INTEGER({ length: 11 })
+		type: new DataType.INTEGER({length: 11})
 	})
 	declare public currentDailyStreak: number
 
 	@Column({
-		type: new DataType.INTEGER({ length: 11 }),
+		type: new DataType.INTEGER({length: 11}),
 
 	})
 	declare public highestDailyStreak: number
@@ -42,8 +42,9 @@ export class DDUser extends Model {
 }
 
 export const getUserById = inTransaction('getUserById', async (id: bigint, transaction) => {
-	if (userCache.has(id)) {
-		const [lastUpdated, user] = userCache.get(id)!
+	const inCache = userCache.get(id)
+	if (inCache) {
+		const [lastUpdated, user] = inCache
 		if (new Date().getTime() - lastUpdated.getTime() < 1000 * 60 * 5) {
 			return user
 		}
@@ -51,7 +52,7 @@ export const getUserById = inTransaction('getUserById', async (id: bigint, trans
 		userCache.set(id, [new Date(), user])
 		return user
 	}
-	const child = transaction.startChild({ op: 'DDUser.findOrCreate' })
+	const child = transaction.startChild({op: 'DDUser.findOrCreate'})
 	const [user] = await DDUser.findOrCreate({
 		where: {
 			id: id
