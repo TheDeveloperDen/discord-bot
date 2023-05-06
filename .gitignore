@@ -6,3 +6,4 @@ bin/
 logs/
 .vscode/
 .DS_Store
+eslint-results.sarif
