@@ -41,7 +41,8 @@ export const scheduleReminder = async (client: Client, user: GuildMember, ddUser
     await sendReminder(client, user)
   })
   scheduledReminders.set(ddUser.id, job)
-  logger.info(`Scheduled reminder for ${user.user.tag}`)
+  logger.info(`Scheduled reminder for ${user.user.tag} at ${job.nextInvocation()
+    .toUTCString()}`)
 }
 
 export const scheduleAllReminders = async (client: Client) => {
