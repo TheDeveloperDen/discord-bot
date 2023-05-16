@@ -1,7 +1,7 @@
 import Module from './module.js'
 import { ActivityType } from 'discord-api-types/v10'
 import { logger } from '../logging.js'
-import { awaitTimeout } from '../util/timeouts'
+import { awaitTimeout } from '../util/timeouts.js'
 
 const languages = [
   'Solidity',

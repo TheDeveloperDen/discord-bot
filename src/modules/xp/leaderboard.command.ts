@@ -2,13 +2,10 @@ import { GuildMember } from 'discord.js'
 
 import {
   APIApplicationCommandOptionChoice
-} from 'discord-api-types/payloads/v10/_interactions/_applicationCommands/_chatInput/shared'
+} from 'discord-api-types/payloads/v10/_interactions/_applicationCommands/_chatInput/shared.js'
 import { DDUser } from '../../store/models/DDUser.js'
 import { Command } from 'djs-slash-helper'
-import {
-  ApplicationCommandOptionType,
-  ApplicationCommandType
-} from 'discord-api-types/v10'
+import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord-api-types/v10'
 import { createStandardEmbed } from '../../util/embeds.js'
 import { branding } from '../../util/branding.js'
 import { actualMention } from '../../util/users.js'
