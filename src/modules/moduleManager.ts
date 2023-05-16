@@ -1,7 +1,7 @@
 import { Client, ClientEvents, Snowflake } from 'discord.js'
 import Module from './module.js'
 import { CommandManager } from 'djs-slash-helper'
-import { logger } from '../logging'
+import { logger } from '../logging.js'
 import * as Sentry from '@sentry/node'
 
 export default class ModuleManager {
