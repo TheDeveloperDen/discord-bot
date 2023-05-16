@@ -1,16 +1,11 @@
 import Module from './module.js'
 import { config } from '../Config.js'
-import {
-  Client,
-  GuildMember,
-  PartialGuildMember,
-  TextChannel
-} from 'discord.js'
+import { Client, GuildMember, PartialGuildMember, TextChannel } from 'discord.js'
 import { logger } from '../logging.js'
 import { createStandardEmbed } from '../util/embeds.js'
 import { branding } from '../util/branding.js'
 import { pseudoMention } from '../util/users.js'
-import { awaitTimeout } from '../util/timeouts'
+import { awaitTimeout } from '../util/timeouts.js'
 
 const handler = (isAdding: boolean) => async function (
   client: Client, member: PartialGuildMember | GuildMember) {

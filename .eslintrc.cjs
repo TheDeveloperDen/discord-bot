@@ -7,7 +7,9 @@ module.exports = {
     '@typescript-eslint/strict-boolean-expressions': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     'import/extensions': [
-      'error', {
+      'error',
+      'ignorePackages',
+      {
         'js': 'always',
         'ts': 'always'
       }

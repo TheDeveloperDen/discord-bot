@@ -2,7 +2,7 @@ import { Client, TextChannel } from 'discord.js'
 import { config } from '../../Config.js'
 import { EventListener } from '../module.js'
 import generateHotTake from './hotTakes.util.js'
-import { awaitTimeout } from '../../util/timeouts'
+import { awaitTimeout } from '../../util/timeouts.js'
 
 async function sendHotTake (client: Client) {
   const channel = await client.channels.fetch(

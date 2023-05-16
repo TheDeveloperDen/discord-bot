@@ -1,7 +1,7 @@
 import { FAQ } from '../../store/models/FAQ.js'
 import { EventListener } from '../module.js'
 import { createFaqEmbed } from './faq.util.js'
-import { awaitTimeout } from '../../util/timeouts'
+import { awaitTimeout } from '../../util/timeouts.js'
 
 export const FaqCommandListener: EventListener = {
   async messageCreate (_, message) {

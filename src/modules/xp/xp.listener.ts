@@ -1,13 +1,9 @@
 import { EventListener } from '../module.js'
 import { Channel } from 'discord.js'
 import { config } from '../../Config.js'
-import {
-  giveXp,
-  shouldCountForStats,
-  xpForMessage
-} from './xpForMessage.util.js'
+import { giveXp, shouldCountForStats, xpForMessage } from './xpForMessage.util.js'
 import { modifyRoles } from '../../util/roles.js'
-import { awaitTimeout } from '../../util/timeouts'
+import { awaitTimeout } from '../../util/timeouts.js'
 
 const editing = new Set<string>()
 
