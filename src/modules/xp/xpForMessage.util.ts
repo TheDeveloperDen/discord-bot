@@ -6,7 +6,7 @@ import { logger } from '../../logging.js'
 import { config } from '../../Config.js'
 import { getOrCreateUserById } from '../../store/models/DDUser.js'
 import { levelUp } from './xpRoles.util.js'
-import { wrapInTransaction } from '../../sentry'
+import { wrapInTransaction } from '../../sentry.js'
 
 const pingRegex = /<[a-zA-Z0-9@:&!#]+?[0-9]+>/g
 
