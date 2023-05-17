@@ -358,7 +358,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/node@npm:^7.44.1, @sentry/node@npm:^7.48.0":
+"@sentry/node@npm:^7.44.1, @sentry/node@npm:^7.52.1":
   version: 7.52.1
   resolution: "@sentry/node@npm:7.52.1"
   dependencies:
@@ -1374,7 +1374,7 @@ __metadata:
   dependencies:
     "@discordjs/rest": ^1.0.1
     "@microsoft/eslint-formatter-sarif": 3.0.0
-    "@sentry/node": ^7.48.0
+    "@sentry/node": ^7.52.1
     "@sentry/profiling-node": ^0.3.0
     "@sentry/tracing": ^7.38.0
     "@types/node": ^20.1.5
@@ -1389,6 +1389,7 @@ __metadata:
     discord-api-types: ^0.37.35
     discord.js: ^14.8.0
     djs-slash-helper: ^2.0.0
+    dotenv: ^16.0.3
     erlpack: discord/erlpack
     expiry-map: ^2.0.0
     mariadb: ^3.0.1
@@ -1483,6 +1484,13 @@ __metadata:
   dependencies:
     esutils: ^2.0.2
   checksum: fd7673ca77fe26cd5cba38d816bc72d641f500f1f9b25b83e8ce28827fe2da7ad583a8da26ab6af85f834138cf8dae9f69b0cd6ab925f52ddab1754db44d99ce
+  languageName: node
+  linkType: hard
+
+"dotenv@npm:^16.0.3":
+  version: 16.0.3
+  resolution: "dotenv@npm:16.0.3"
+  checksum: afcf03f373d7a6d62c7e9afea6328e62851d627a4e73f2e12d0a8deae1cd375892004f3021883f8aec85932cd2834b091f568ced92b4774625b321db83b827f8
   languageName: node
   linkType: hard
 

@@ -1,4 +1,5 @@
 import { config } from './Config.js'
+import * as dotenv from 'dotenv'
 import { Client, GatewayIntentBits, Partials } from 'discord.js'
 import { logger } from './logging.js'
 import { setupBranding } from './util/branding.js'
@@ -67,6 +68,7 @@ async function logIn () {
 }
 
 async function main () {
+  dotenv.config()
   await logIn()
   await moduleManager.refreshCommands()
   for (const module of moduleManager.getModules()) {
