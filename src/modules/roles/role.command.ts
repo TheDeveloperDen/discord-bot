@@ -1,11 +1,8 @@
 import { config } from '../../Config.js'
 import { Command } from 'djs-slash-helper'
 import { GuildMember, Role } from 'discord.js'
-import {
-  ApplicationCommandOptionType,
-  ApplicationCommandType
-} from 'discord-api-types/v10'
-import { inTransaction } from '../../sentry.js'
+import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord-api-types/v10'
+import { wrapInTransaction } from '../../sentry.js'
 
 const allowedRoles = [
   ...config.roles.usersAllowedToSet,
@@ -24,7 +21,7 @@ export const RoleCommand: Command<ApplicationCommandType.ChatInput> = {
       required: true
     }],
 
-  handle: inTransaction('role', async (interaction) => {
+  handle: wrapInTransaction('role', async (span, interaction) => {
     const role = interaction.options.get('role', true).role as Role
     if (!allowedRoles.includes(role.id)) {
       return await interaction.reply(

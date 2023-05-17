@@ -2,11 +2,8 @@ import { Command, ExecutableSubcommand } from 'djs-slash-helper'
 import { ColorResolvable, GuildMember } from 'discord.js'
 import { ColourRoles } from '../../store/models/ColourRoles.js'
 import { config } from '../../Config.js'
-import {
-  ApplicationCommandOptionType,
-  ApplicationCommandType
-} from 'discord-api-types/v10'
-import { inTransaction } from '../../sentry.js'
+import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord-api-types/v10'
+import { wrapInTransaction } from '../../sentry.js'
 
 const ResetSubcommand: ExecutableSubcommand = {
   type: ApplicationCommandOptionType.Subcommand,
@@ -67,7 +64,7 @@ const SetSubcommand: ExecutableSubcommand = {
       required: true
     }
   ],
-  handle: inTransaction('rolecolour/set', async (interaction) => {
+  handle: wrapInTransaction('rolecolour/set', async (span, interaction) => {
     const colour = interaction.options.get('colour', true).value as string
     if (!colour.startsWith('#') || colour.length !== 7) {
       await interaction.reply({

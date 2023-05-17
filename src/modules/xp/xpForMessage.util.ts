@@ -4,8 +4,9 @@ import { Channel, GuildMember, Message, StageChannel, User } from 'discord.js'
 import { Config } from '../../config.type.js'
 import { logger } from '../../logging.js'
 import { config } from '../../Config.js'
-import { getUserById } from '../../store/models/DDUser.js'
+import { getOrCreateUserById } from '../../store/models/DDUser.js'
 import { levelUp } from './xpRoles.util.js'
+import { wrapInTransaction } from '../../sentry'
 
 const pingRegex = /<[a-zA-Z0-9@:&!#]+?[0-9]+>/g
 
@@ -109,22 +110,22 @@ export interface XPResult {
  * @param xp the amount of XP to give
  * @returns How much XP was given. This may be affected by perks such as boosting. If something went wrong, -1 will be returned.
  */
-export async function giveXp (
-  user: GuildMember, xp: number): Promise<XPResult> {
-  const client = user.client
-  const ddUser = await getUserById(BigInt(user.id))
-  if (!ddUser) {
-    logger.error(`Could not find or create user with id ${user.id}`)
-    return { xpGiven: -1 }
-  }
+export const giveXp = wrapInTransaction('giveXP',
+  async (_, user: GuildMember, xp: number): Promise<XPResult> => {
+    const client = user.client
+    const ddUser = await getOrCreateUserById(BigInt(user.id))
+    if (!ddUser) {
+      logger.error(`Could not find or create user with id ${user.id}`)
+      return { xpGiven: -1 }
+    }
 
-  const multiplier = (user.premiumSince != null) ? 2 : 1
-  ddUser.xp += xp * multiplier
-  await levelUp(client, user, ddUser)
-  await ddUser.save()
-  logger.info(`Gave ${xp} XP to user ${user.id}`)
-  return {
-    xpGiven: xp,
-    multiplier: multiplier === 1 ? undefined : multiplier
-  } // A multiplier of 1 means no multiplier was used
-}
+    const multiplier = (user.premiumSince != null) ? 2 : 1
+    ddUser.xp += xp * multiplier
+    await levelUp(client, user, ddUser)
+    await ddUser.save()
+    logger.info(`Gave ${xp} XP to user ${user.id}`)
+    return {
+      xpGiven: xp,
+      multiplier: multiplier === 1 ? undefined : multiplier
+    } // A multiplier of 1 means no multiplier was used
+  })

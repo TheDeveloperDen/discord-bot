@@ -11,7 +11,7 @@ import { branding } from '../../util/branding.js'
 import { actualMention } from '../../util/users.js'
 import { getActualDailyStreak } from './dailyReward.command.js'
 import sequelize, { Op } from 'sequelize'
-import { inTransaction } from '../../sentry.js'
+import { wrapInTransaction } from '../../sentry.js'
 
 interface LeaderboardType extends APIApplicationCommandOptionChoice<string> {
   calculate?: (user: DDUser) => Promise<number>
@@ -57,7 +57,7 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
       choices: info
     }],
 
-  handle: inTransaction('leaderboard', async (interaction) => {
+  handle: wrapInTransaction('leaderboard', async (span, interaction) => {
     await interaction.deferReply()
     const guild = interaction.guild
     if (guild == null) {

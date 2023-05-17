@@ -2,10 +2,10 @@ import { GuildMember } from 'discord.js'
 import { Command } from 'djs-slash-helper'
 import { ApplicationCommandType } from 'discord-api-types/v10'
 import { logger } from '../../logging.js'
-import { DDUser, getUserById } from '../../store/models/DDUser.js'
+import { DDUser, getOrCreateUserById } from '../../store/models/DDUser.js'
 import { createStandardEmbed } from '../../util/embeds.js'
 import { giveXp } from './xpForMessage.util.js'
-import { inTransaction } from '../../sentry.js'
+import { wrapInTransaction } from '../../sentry.js'
 import { scheduleReminder } from './dailyReward.reminder.js'
 import { isSpecialUser } from '../../util/users.js'
 
@@ -15,7 +15,7 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
   type: ApplicationCommandType.ChatInput,
   options: [],
 
-  handle: inTransaction('daily', async (interaction) => {
+  handle: wrapInTransaction('daily', async (_, interaction) => {
     const startTime = new Date().getTime()
     const user = interaction.member as GuildMember
     if (!user) {
@@ -23,7 +23,7 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
       return
     }
     await interaction.deferReply()
-    const ddUser = await getUserById(BigInt(user.id))
+    const ddUser = await getOrCreateUserById(BigInt(user.id))
     const difference = new Date().getTime() -
         (ddUser.lastDailyTime?.getTime() ?? 0)
     if (difference < 1000 * 60 * 60 * 24) {

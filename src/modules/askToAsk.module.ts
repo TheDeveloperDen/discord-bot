@@ -1,5 +1,5 @@
 import Module from './module.js'
-import { getUserById } from '../store/models/DDUser.js'
+import { getOrCreateUserById } from '../store/models/DDUser.js'
 import stringSimilarity from 'string-similarity'
 import { logger } from '../logging.js'
 import { FAQ } from '../store/models/FAQ.js'
@@ -21,7 +21,7 @@ export const AskToAskModule: Module = {
     {
       async messageCreate (_, message) {
         if (message.author.bot) return
-        const ddUser = await getUserById(BigInt(message.author.id))
+        const ddUser = await getOrCreateUserById(BigInt(message.author.id))
         if (tierOf(ddUser.level) >= 2) return // Hopefully they will have learned by now
         const c = message.content.toLowerCase().trim().replace(/[^a-z\d ]/g, '')
         if (!c) return

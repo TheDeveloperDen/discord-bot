@@ -10,11 +10,8 @@ import {
 } from 'discord.js'
 import { Command } from 'djs-slash-helper'
 
-import {
-  ApplicationCommandOptionType,
-  ApplicationCommandType
-} from 'discord-api-types/v10'
-import { DDUser, getUserById } from '../../store/models/DDUser.js'
+import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord-api-types/v10'
+import { DDUser, getOrCreateUserById } from '../../store/models/DDUser.js'
 import { createStandardEmbed } from '../../util/embeds.js'
 import { mention } from '../../util/users.js'
 
@@ -51,7 +48,7 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
       await interaction.reply('Could not find user')
       return
     }
-    const user = await getUserById(BigInt(target.id))
+    const user = await getOrCreateUserById(BigInt(target.id))
 
     const option = interaction.options.get('field', true).value as string
     const getter = getters.get(option)

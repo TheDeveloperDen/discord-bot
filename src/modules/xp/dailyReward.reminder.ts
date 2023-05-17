@@ -1,6 +1,6 @@
 import { Client, GuildMember, TextChannel } from 'discord.js'
 import { logger } from '../../logging.js'
-import { DDUser, getUserById } from '../../store/models/DDUser.js'
+import { DDUser, getOrCreateUserById } from '../../store/models/DDUser.js'
 import { config } from '../../Config.js'
 import { isSpecialUser, mention } from '../../util/users.js'
 import { Job, scheduleJob } from 'node-schedule'
@@ -41,8 +41,7 @@ export const scheduleReminder = async (client: Client, user: GuildMember, ddUser
     await sendReminder(client, user)
   })
   scheduledReminders.set(ddUser.id, job)
-  logger.info(`Scheduled reminder for ${user.user.tag} at ${job.nextInvocation()
-    .toUTCString()}`)
+  logger.info(`Scheduled reminder for ${user.user.tag} at ${job.nextInvocation().toLocaleString()}`)
 }
 
 export const scheduleAllReminders = async (client: Client) => {
@@ -52,7 +51,7 @@ export const scheduleAllReminders = async (client: Client) => {
     Array.from(list.values())
       .filter(isSpecialUser)
       .map(async (member) => {
-        const ddUser = await getUserById(BigInt(member.id))
+        const ddUser = await getOrCreateUserById(BigInt(member.id))
         await scheduleReminder(client, member, ddUser)
       }
       ))

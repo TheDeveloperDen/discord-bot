@@ -1,17 +1,14 @@
 import { GuildMember } from 'discord.js'
-import { getUserById } from '../../store/models/DDUser.js'
+import { getOrCreateUserById } from '../../store/models/DDUser.js'
 import { createStandardEmbed } from '../../util/embeds.js'
 import { xpForLevel } from './xpForMessage.util.js'
 import { createImage, font, getCanvasContext } from '../../util/imageUtils.js'
 import { branding } from '../../util/branding.js'
 import { drawText } from '../../util/textRendering.js'
 import { Command } from 'djs-slash-helper'
-import {
-  ApplicationCommandOptionType,
-  ApplicationCommandType
-} from 'discord-api-types/v10'
+import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord-api-types/v10'
 import { formatDayCount, getActualDailyStreak } from './dailyReward.command.js'
-import { inTransaction } from '../../sentry.js'
+import { wrapInTransaction } from '../../sentry.js'
 
 export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
   name: 'xp',
@@ -25,12 +22,12 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
       required: false
     }],
 
-  handle: inTransaction('xp', async (interaction) => {
+  handle: wrapInTransaction('xp', async (span, interaction) => {
     await interaction.deferReply()
     const user = interaction.options.getUser('member') ?? interaction.user
     const member = (interaction.options.getMember('member') ??
       interaction.member) as GuildMember
-    const ddUser = await getUserById(BigInt(user.id))
+    const ddUser = await getOrCreateUserById(BigInt(user.id))
     const xp = ddUser.xp
     const image = createXpImage(xp, member)
     await interaction.followUp({
