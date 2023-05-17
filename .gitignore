@@ -3,6 +3,8 @@
 node_modules/**
 .idea/
 bin/
+# nixpacks
+out/
 logs/
 .vscode/
 .DS_Store
