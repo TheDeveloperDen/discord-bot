@@ -18,3 +18,8 @@ eslint-results.sarif
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+.env*
+.flaskenv*
+!.env.project
+!.env.vault
