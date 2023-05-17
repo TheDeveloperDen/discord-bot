@@ -21,6 +21,7 @@ import { InformationModule } from './modules/information/information.module.js'
 import { LearningModule } from './modules/learning/learning.module.js'
 import { initSentry } from './sentry.js'
 import * as Sentry from '@sentry/node'
+import { initStorage } from './store/storage.js'
 
 const client = new Client({
   intents: [
@@ -69,6 +70,7 @@ async function logIn () {
 
 async function main () {
   dotenv.config()
+  await initStorage()
   await logIn()
   await moduleManager.refreshCommands()
   for (const module of moduleManager.getModules()) {
@@ -81,9 +83,5 @@ async function main () {
   setupBranding(guild)
 }
 
-try {
-  await main()
-} catch (e) {
-  logger.error('Error starting bot', e)
-  process.exit(1)
-}
+console.log('Starting bot')
+// await main()

@@ -1167,7 +1167,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"canvas@npm:^2.9.3":
+"canvas@npm:^2.11.2":
   version: 2.11.2
   resolution: "canvas@npm:2.11.2"
   dependencies:
@@ -1478,7 +1478,7 @@ __metadata:
     "@types/string-similarity": ^4.0.0
     "@types/validator": ^13.7.14
     bufferutil: ^4.0.7
-    canvas: ^2.9.3
+    canvas: ^2.11.2
     discord-api-types: ^0.37.35
     discord.js: ^14.8.0
     djs-slash-helper: ^2.0.0
@@ -1486,6 +1486,7 @@ __metadata:
     erlpack: discord/erlpack
     expiry-map: ^2.0.0
     mariadb: ^3.0.1
+    node-canvas: ^2.9.0
     node-fetch: ^3.2.10
     node-gyp: ^9.3.1
     node-schedule: ^2.1.1
@@ -3450,6 +3451,15 @@ jschardet@latest:
   dependencies:
     node-gyp: latest
   checksum: 3de396e23cc209f539c704583e8e99c148850226f6e389a641b92e8967953713228109f919765abc1f4355e801e8f41842f96210b8d61c7dcc10a477002dcf00
+  languageName: node
+  linkType: hard
+
+"node-canvas@npm:^2.9.0":
+  version: 2.9.0
+  resolution: "node-canvas@npm:2.9.0"
+  dependencies:
+    node-gyp: latest
+  checksum: 2dd3503cb9cf8dc24704993ca49c09305a1dbf96c0b9eba9f3890c211995f0801a0817e3a5148202eed1a5e8fa9f4898d6d761ed25427a15e79a55aa4d7af472
   languageName: node
   linkType: hard
 
