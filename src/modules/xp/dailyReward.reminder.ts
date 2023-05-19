@@ -57,7 +57,7 @@ export const scheduleReminder = async (
 
 export const scheduleAllReminders = async (client: Client) => {
   const guild = await client.guilds.fetch(config.guildId)
-  const list = await guild.members.list()
+  const list = await guild.members.fetch()
   logger.debug(`Scheduling reminders for ${list.size} members`)
   await Promise.all(
     Array.from(list.values())
