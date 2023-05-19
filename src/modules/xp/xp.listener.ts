@@ -11,7 +11,7 @@ const editing = new Set<string>()
 export const XpListener: EventListener = {
   async messageCreate (client, msg) {
     if (msg.guild == null) return
-    const author = msg.member ?? await msg.guild.members.fetch(msg.author.id)
+    const author = msg.member
     if (!author) return
 
     const shouldCount = await shouldCountForStats(msg.author, msg, msg.channel as Channel, config)
