@@ -6,7 +6,6 @@ import { ModelCtor, Sequelize, SequelizeOptions } from 'sequelize-typescript'
 import { Dialect, Options } from 'sequelize'
 
 function sequelizeLog (sql: string, timing?: number) {
-  logger.info(sql)
   if (timing) {
     if (timing >= 100) {
       logger.warn(`Slow query (${timing}ms): ${sql}`)
