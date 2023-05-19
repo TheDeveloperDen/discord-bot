@@ -1,0 +1,46 @@
+name: Sentry Deploy Artifact Bundle
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  push-to-sentry:
+    name: Deploy to Sentry
+    runs-on: ubuntu-latest
+
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - name: Set Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+
+      - name: Check out the repo
+        uses: actions/checkout@v2
+
+      - name: Set up Sentry CLI
+        uses: mathieu-bour/setup-sentry-cli@v1.3.0
+        with:
+          organization: ${{ secrets.SENTRY_ORG }}
+          project: ${{ secrets.SENTRY_PROJECT }}
+          token: ${{ secrets.SENTRY_AUTH_TOKEN }}
+
+      - name: Run install
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
+
+      - name: Build production bundle
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: build-prod
+
+      - name: Upload Sentry Sourcemaps
+        run: |
+          sentry-cli sourcemaps inject bin/
+          sentry-cli sourcemaps upload bin/

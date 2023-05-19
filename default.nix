@@ -7,6 +7,7 @@ stdenv.mkDerivation {
 
   buildInputs = [
     nodejs-18_x
+    sentry-cli
     gccStdenv
     python39
     deno
