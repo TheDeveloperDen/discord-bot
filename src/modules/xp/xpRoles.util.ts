@@ -7,6 +7,15 @@ import { actualMention, mentionWithNoPingMessage, pseudoMention } from '../../ut
 import { tierRoleId, xpForLevel } from './xpForMessage.util.js'
 import { logger } from '../../logging.js'
 
+/**
+ * Level up a user as many times as they necessary,
+ * sending a message if they level up at least once, and applying roles.
+ *
+ * Note that this function will not save the user to the database.
+ * @param client discord client
+ * @param user guild member
+ * @param ddUser DDUser for the guild member
+ */
 export async function levelUp (
   client: Client,
   user: GuildMember,

@@ -7,7 +7,6 @@ import { config } from '../../Config.js'
 import { getOrCreateUserById } from '../../store/models/DDUser.js'
 import { levelUp } from './xpRoles.util.js'
 import { wrapInTransactionWith } from '../../sentry.js'
-import { toJson } from '../../json.js'
 
 const pingRegex = /<[a-zA-Z0-9@:&!#]+?[0-9]+>/g
 
@@ -138,15 +137,15 @@ export const giveXp = wrapInTransactionWith(
       logger.error(`Could not find or create user with id ${user.id}`)
       return { xpGiven: -1 }
     }
-    if (typeof ddUser.xp === 'string') {
-      console.log(toJson(ddUser))
-      throw new Error(`XP for user ${user.id} is a string. wtf??`)
-    }
 
     const multiplier = (user.premiumSince != null) ? 2 : 1
     ddUser.xp += BigInt(xp * multiplier)
-    await levelUp(client, user, ddUser)
-    await ddUser.save()
+    await Promise.all(
+      [
+        levelUp(client, user, ddUser),
+        ddUser.save()
+      ]
+    )
     logger.info(`Gave ${xp} XP to user ${user.id}`)
     return {
       xpGiven: xp,

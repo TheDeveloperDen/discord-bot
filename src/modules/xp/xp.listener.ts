@@ -4,18 +4,20 @@ import { config } from '../../Config.js'
 import { giveXp, shouldCountForStats, xpForMessage } from './xpForMessage.util.js'
 import { modifyRoles } from '../../util/roles.js'
 import { awaitTimeout } from '../../util/timeouts.js'
+import { logger } from '../../logging.js'
 
 const editing = new Set<string>()
 
 export const XpListener: EventListener = {
   async messageCreate (client, msg) {
     if (msg.guild == null) return
-    if (
-      await shouldCountForStats(msg.author, msg, msg.channel as Channel, config)
-    ) {
+    const author = msg.member ?? await msg.guild.members.fetch(msg.author.id)
+    if (!author) return
+
+    const shouldCount = await shouldCountForStats(msg.author, msg, msg.channel as Channel, config)
+    if (shouldCount) {
+      logger.debug(`counting message ${msg.id} for XP for ${msg.author.id}`)
       const xp = xpForMessage(msg.content)
-      const author = msg.member ?? await msg.guild.members.fetch(msg.author.id)
-      if (!author) return
       await giveXp(author, xp)
     }
   },
