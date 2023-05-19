@@ -4,6 +4,7 @@ import { DDUser, getOrCreateUserById } from '../../store/models/DDUser.js'
 import { config } from '../../Config.js'
 import { isSpecialUser, mention } from '../../util/users.js'
 import { Job, scheduleJob } from 'node-schedule'
+import { getActualDailyStreak } from './dailyReward.command'
 
 const sendReminder = async (client: Client, user: GuildMember) => {
   const botCommands = await client.channels.fetch(config.channels.botCommands)
@@ -36,6 +37,12 @@ export const scheduleReminder = async (
   if (time == null) {
     logger.info(`User ${user.user.tag} hasn't claimed their first daily yet`)
     return // don't wanna harass people who haven't claimed their first daily yet
+  }
+
+  const actual = await getActualDailyStreak(ddUser)
+  if (actual <= 0) {
+    logger.info(`User ${user.user.tag} has no streak, not scheduling reminder`)
+    return
   }
 
   const job = scheduleJob({
