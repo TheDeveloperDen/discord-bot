@@ -3,6 +3,8 @@
   "compilerOptions": {
     "sourceMap": true,
     "inlineSources": true,
-    "sourceRoot": "/"
+    "sourceRoot": "/",
+    "noEmitOnError": true,
+    "importHelpers": true
   }
 }

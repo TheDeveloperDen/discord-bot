@@ -1,6 +1,6 @@
 {
   "name": "devdenbot",
-  "version": "5.1.1",
+  "version": "5.1.2",
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
@@ -20,6 +20,7 @@
     "@discordjs/builders": "^1.6.3",
     "@discordjs/rest": "^1.0.1",
     "@microsoft/eslint-formatter-sarif": "3.0.0",
+    "@sentry/integrations": "^7.52.1",
     "@sentry/node": "^7.52.1",
     "@sentry/profiling-node": "^0.3.0",
     "@sentry/tracing": "^7.38.0",
@@ -45,6 +46,7 @@
     "sequelize-typescript": "^2.1.5",
     "sqlite3": "^5.1.6",
     "string-similarity": "^4.0.4",
+    "tslib": "^2.5.2",
     "utf-8-validate": "^6.0.3",
     "winston": "^3.8.2",
     "yaml": "^2.2.2",

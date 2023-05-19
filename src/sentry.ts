@@ -1,9 +1,11 @@
 import * as Sentry from '@sentry/node'
+import { RewriteFrames } from '@sentry/integrations'
 import { SpanContext } from '@sentry/types'
 import { Client } from 'discord.js'
 import { ProfilingIntegration } from '@sentry/profiling-node'
 import { logger } from './logging.js'
 import { toJson } from './json.js'
+import './sentry-hack.js'
 
 export function initSentry (client: Client) {
   Sentry.init({
@@ -14,7 +16,10 @@ export function initSentry (client: Client) {
       new Sentry.Integrations.Http({ tracing: true }),
       new ProfilingIntegration(),
       ...Sentry.autoDiscoverNodePerformanceMonitoringIntegrations(),
-      new Sentry.Integrations.Postgres()
+      new Sentry.Integrations.Postgres(),
+      new RewriteFrames({
+        root: global.__rootdir__
+      })
     ]
   })
 
