@@ -427,7 +427,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/types@npm:7.52.1, @sentry/types@npm:^7.44.1":
+"@sentry/types@npm:7.52.1, @sentry/types@npm:^7.44.1, @sentry/types@npm:^7.52.1":
   version: 7.52.1
   resolution: "@sentry/types@npm:7.52.1"
   checksum: 9afbba9239107024207418755d189972887c2cd5c3948157531c520be202b5efcd1542b1864120b3d1a535e7f61ebbef802b64ad0cd7ad02d2d8d669454f5abb
@@ -1490,11 +1490,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "devdenbot@workspace:."
   dependencies:
+    "@discordjs/builders": ^1.6.3
     "@discordjs/rest": ^1.0.1
     "@microsoft/eslint-formatter-sarif": 3.0.0
     "@sentry/node": ^7.52.1
     "@sentry/profiling-node": ^0.3.0
     "@sentry/tracing": ^7.38.0
+    "@sentry/types": ^7.52.1
     "@types/node": ^20.2.1
     "@types/node-schedule": ^2.1.0
     "@types/opentype.js": ^1.3.3
