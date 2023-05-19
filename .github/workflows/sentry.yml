@@ -30,6 +30,9 @@ jobs:
           project: ${{ secrets.SENTRY_PROJECT }}
           token: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
+      - name: Add gyp dependencies
+        run: sudo apt install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev'
+
       - name: Run install
         uses: borales/actions-yarn@v4
         with:
