@@ -27,14 +27,10 @@ export const scheduleReminder = async (
   user: GuildMember,
   ddUser: DDUser
 ) => {
-  logger.info(`Scheduling reminder for ${user.user.tag}`)
   if (scheduledReminders.has(ddUser.id)) {
-    logger.info(
-      `Reminder already scheduled for ${user.user.tag}, replacing...`
-    )
+    logger.info(`Reminder already scheduled for ${user.user.tag}, replacing...`)
     scheduledReminders.get(ddUser.id)?.cancel()
     scheduledReminders.delete(ddUser.id)
-    return
   }
   const time = ddUser.lastDailyTime
   if (time == null) {
