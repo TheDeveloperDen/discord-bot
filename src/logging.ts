@@ -1,10 +1,5 @@
-import w from 'winston'
+import { createLogger, format, transports } from 'winston'
 
-const {
-  createLogger,
-  format,
-  transports
-} = w
 const baseFormat = format.combine(
   format.timestamp({
     format: 'YYYY-MM-DD HH:mm:ss'

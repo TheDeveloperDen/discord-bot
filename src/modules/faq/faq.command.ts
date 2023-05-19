@@ -1,27 +1,20 @@
 import { Command, ExecutableSubcommand } from 'djs-slash-helper'
-import {
-  ApplicationCommandOptionType,
-  ApplicationCommandType
-} from 'discord-api-types/v10'
+import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord-api-types/v10'
 import { FAQ } from '../../store/models/FAQ.js'
 import { createFaqEmbed } from './faq.util.js'
 import createFaqModal from './faq.modal.js'
 import { moduleManager } from '../../index.js'
-import { databaseInit } from '../../store/storage.js'
 
 const choices: Array<{ name: string, value: string }> = []
 
-async function updateChoices () {
-  await databaseInit
+export async function updateChoices () {
   const result = await FAQ.findAll()
   choices.length = 0
-  choices.push(...result.map(it => ({
+  choices.push(...result.map((it) => ({
     name: it.name,
     value: it.name
   })))
 }
-
-await updateChoices()
 
 const GetSubcommand: ExecutableSubcommand = {
   type: ApplicationCommandOptionType.Subcommand,
@@ -34,7 +27,8 @@ const GetSubcommand: ExecutableSubcommand = {
       description: 'The name of the FAQ',
       required: true,
       choices
-    }],
+    }
+  ],
   async handle (interaction) {
     const name = interaction.options.get('name')?.value as string | null
     const faq = await FAQ.findOne({ where: { name } })
@@ -58,7 +52,8 @@ const EditSubcommand: ExecutableSubcommand = {
       name: 'name',
       description: 'The name of the FAQ',
       required: true
-    }],
+    }
+  ],
   async handle (interaction) {
     const name = interaction.options.get('name')?.value as string | null
     if (name == null) {
@@ -104,7 +99,8 @@ const DeleteSubcommand: ExecutableSubcommand = {
       description: 'The name of the FAQ',
       required: true,
       choices
-    }],
+    }
+  ],
   async handle (interaction) {
     const name = interaction.options.get('name')?.value as string | null
     if (name == null) {

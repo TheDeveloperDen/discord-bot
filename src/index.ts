@@ -1,7 +1,7 @@
 import { config } from './Config.js'
 import * as dotenv from 'dotenv'
 import { Client, GatewayIntentBits, Partials } from 'discord.js'
-import { logger } from './logging.js'
+// import { logger } from './logging.js'
 import { setupBranding } from './util/branding.js'
 import './util/random.js'
 import ModuleManager from './modules/moduleManager.js'
@@ -19,9 +19,10 @@ import JoinLeaveMessageModule from './modules/joinLeaveMessage.module.js'
 import { CoreModule } from './modules/core/core.module.js'
 import { InformationModule } from './modules/information/information.module.js'
 import { LearningModule } from './modules/learning/learning.module.js'
-import { initSentry } from './sentry.js'
 import * as Sentry from '@sentry/node'
 import { initStorage } from './store/storage.js'
+import { initSentry } from './sentry.js'
+import { logger } from './logging.js'
 
 const client = new Client({
   intents: [
@@ -35,7 +36,8 @@ const client = new Client({
   partials: [Partials.Message, Partials.Channel, Partials.Reaction]
 })
 
-export const moduleManager = new ModuleManager(client,
+export const moduleManager = new ModuleManager(
+  client,
   config.clientId,
   config.guildId,
   [
@@ -52,7 +54,9 @@ export const moduleManager = new ModuleManager(client,
     RolesModule,
     ShowcaseModule,
     TokenScannerModule,
-    XpModule])
+    XpModule
+  ]
+)
 
 async function logIn () {
   initSentry(client)
@@ -74,14 +78,18 @@ async function main () {
   await logIn()
   await moduleManager.refreshCommands()
   for (const module of moduleManager.getModules()) {
-    module.onInit?.(client)?.catch(e => {
+    module.onInit?.(client)?.catch((e) => {
       Sentry.captureException(e)
-      logger.error(`Error initializing module ${module.name}`, e)
+      // logger.error(`Error initializing module ${module.name}`, e)
     })
   }
   const guild = await client.guilds.fetch(config.guildId)
   setupBranding(guild)
 }
 
-console.log('Starting bot')
-// await main()
+try {
+  await main()
+} catch (e) {
+  Sentry.captureException(e)
+  throw e
+}

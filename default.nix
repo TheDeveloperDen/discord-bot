@@ -7,21 +7,28 @@ stdenv.mkDerivation {
 
   buildInputs = [
     nodejs-18_x
+    gccStdenv
+    python39
+    deno
     yarn
     cairo
     pango
     pkg-config
     nodePackages.node-gyp
     libpng
-    llvm
     librsvg
     pixman
-    giflib
-    libjpeg
+  #  giflib
+ #   libjpeg
     pkgs.darwin.apple_sdk.frameworks.CoreText
   ];
 
-  shellHook = ''
-    export NIX_LDFLAGS="-F${pkgs.darwin.apple_sdk.frameworks.CoreText}/Library/Frameworks -framework CoreText $NIX_LDFLAGS";
-  '';
+ # shellHook = ''
+  #  export NIX_LDFLAGS="-F${pkgs.darwin.apple_sdk.frameworks.CoreText}/Library/Frameworks -framework CoreText $NIX_LDFLAGS";
+  #'';
+
+   postPhases = ''
+      corepack enable
+      corepack prepare yarn@3.2.2 --activate
+    '';
 }

@@ -53,11 +53,18 @@ export const config: Config = {
   branding: {
     color: '#C6BFF7',
     font: 'CascadiaCode.ttf',
-    welcomeMessage: member =>
-      `Welcome ${mention(
-        member)} to the Developer Den!\nCurrent Member Count: ${member.guild.memberCount}`,
-    goodbyeMessage: member => `${mention(
-      member)} has left! :(\nCurrent Member Count: ${member.guild.memberCount}`
+    welcomeMessage: (member) =>
+      `Welcome ${
+        mention(
+          member
+        )
+      } to the Developer Den!\nCurrent Member Count: ${member.guild.memberCount}`,
+    goodbyeMessage: (member) =>
+      `${
+        mention(
+          member
+        )
+      } has left! :(\nCurrent Member Count: ${member.guild.memberCount}`
   },
 
   informationMessage: {
@@ -123,7 +130,8 @@ https://discord.gg/devden`),
           button: new ButtonBuilder().setLabel('Learn a new Language')
             .setStyle(ButtonStyle.Success)
             .setEmoji('📚')
-        }],
+        }
+      ],
       [
         {
           type: 'faq',

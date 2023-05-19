@@ -19,20 +19,26 @@ export const RoleCommand: Command<ApplicationCommandType.ChatInput> = {
       name: 'role',
       description: 'The role to get',
       required: true
-    }],
+    }
+  ],
 
   handle: wrapInTransaction('role', async (span, interaction) => {
     const role = interaction.options.get('role', true).role as Role
     if (!allowedRoles.includes(role.id)) {
       return await interaction.reply(
-        `You cannot get or remove this Role. Options: ${allowedRoles.map(
-          r => `<@&${r}>`).join(', ')}`)
+        `You cannot get or remove this Role. Options: ${
+          allowedRoles.map(
+            (r) => `<@&${r}>`
+          ).join(', ')
+        }`
+      )
     }
 
     const user = interaction.member as GuildMember
     if (user == null) {
       return await interaction.reply(
-        'You must be a member of this server to use this command.')
+        'You must be a member of this server to use this command.'
+      )
     }
     if (user.roles.cache.has(role.id)) {
       await user.roles.remove(role.id)
@@ -42,5 +48,4 @@ export const RoleCommand: Command<ApplicationCommandType.ChatInput> = {
       await interaction.reply(`Added role <@&${role.id}>`)
     }
   })
-
 }

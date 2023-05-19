@@ -18,12 +18,17 @@ export const TokenScannerModule: Module = {
             {
               ...createStandardEmbed(message.member),
               title: ':exclamation: TOKENS DETECTED :exclamation:',
-              description: `We found Discord tokens in a message you sent!\n\n${matches.map(
-                x => `\`${x}\``).join('\n')}\n
+              description: `We found Discord tokens in a message you sent!\n\n${
+                matches.map(
+                  (x) => `\`${x}\``
+                ).join('\n')
+              }\n
 We've deleted the message, but we can't reset the token for you - make sure to do this yourself.
 Be careful when handling tokens in the future - **they're secrets, keep them that way!**`
-            }]
+            }
+          ]
         })
       }
-    }]
+    }
+  ]
 }

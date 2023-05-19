@@ -5,14 +5,17 @@ import { createStandardEmbed } from '../../util/embeds.js'
 import { mention } from '../../util/users.js'
 import { InteractionReplyOptions, Message } from 'discord.js'
 
-const codeBlockPattern = /```(?:(?<lang>[a-zA-Z]+)?\n)?(?<content>(?:.|\n)*?)```|(?:(?:.|\n)(?!```))+/g
+const codeBlockPattern =
+  /```(?:(?<lang>[a-zA-Z]+)?\n)?(?<content>(?:.|\n)*?)```|(?:(?:.|\n)(?!```))+/g
 type SplitMessageComponent = { text: string } | {
   content: string
   language?: string
 }
 
 export function splitMessage (
-  message: string, threshold: number = config.pastebin.threshold) {
+  message: string,
+  threshold: number = config.pastebin.threshold
+) {
   const matches = message.matchAll(codeBlockPattern)
 
   const out: SplitMessageComponent[] = []
@@ -56,13 +59,12 @@ export async function upload (component: SplitMessageComponent) {
     return ''
   }
 
-  return `${config.pastebin.url}/${key}${component.language
-    ? '.' + component.language
-    : ''}`
+  return `${config.pastebin.url}/${key}${
+    component.language ? '.' + component.language : ''
+  }`
 }
 
-type PastifyReturn<T extends boolean> = T extends true
-  ? InteractionReplyOptions
+type PastifyReturn<T extends boolean> = T extends true ? InteractionReplyOptions
   : InteractionReplyOptions | null
 
 /**
@@ -72,15 +74,18 @@ type PastifyReturn<T extends boolean> = T extends true
  * @param threshold the point at which a message should be uploaded to the pastebin
  * @return an embed containing a pastified message, or null if the message is empty
  */
-export async function pastify<force extends boolean = false>
-(
-  message: Message, forcePaste?: force,
-  threshold?: number): Promise<PastifyReturn<force>> {
+export async function pastify<force extends boolean = false> (
+  message: Message,
+  forcePaste?: force,
+  threshold?: number
+): Promise<PastifyReturn<force>> {
   const split = splitMessage(message.content, threshold)
 
   // if it's just a string, do nothing
-  if (!forcePaste &&
-    !split.some(part => 'content' in part)) {
+  if (
+    !forcePaste &&
+    !split.some((part) => 'content' in part)
+  ) {
     return null as PastifyReturn<force>
   }
 
@@ -91,11 +96,16 @@ export async function pastify<force extends boolean = false>
     embeds: [
       {
         ...createStandardEmbed(message.member ?? undefined),
-        description: `${mention(
-          message.member ?? message.author)} \n${lines.join('\n')}`,
+        description: `${
+          mention(
+            message.member ?? message.author
+          )
+        } \n${lines.join('\n')}`,
         footer: {
-          text: 'This message was converted automatically to keep the channels clean from large code blocks.'
+          text:
+            'This message was converted automatically to keep the channels clean from large code blocks.'
         }
-      }]
+      }
+    ]
   }
 }

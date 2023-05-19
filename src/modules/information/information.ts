@@ -6,7 +6,7 @@ export interface InformationMessage {
   buttonRows: CustomButton[][]
 }
 
-export type CustomButton = (FAQButton | LearningButton | PlainButton)
+export type CustomButton = FAQButton | LearningButton | PlainButton
 
 export type FAQButton = { type: 'faq' } & {
   faqId: string

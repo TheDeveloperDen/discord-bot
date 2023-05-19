@@ -5,7 +5,9 @@ import { parse } from 'yaml'
 
 const cache = new Map<string, LearningResource>()
 
-export async function getResource (name: string): Promise<LearningResource | null> {
+export async function getResource (
+  name: string
+): Promise<LearningResource | null> {
   name = name.toLowerCase()
   const get = cache.get(name)
   if (get != null) {
@@ -22,7 +24,7 @@ export async function getResource (name: string): Promise<LearningResource | nul
 
 export async function updateAllResources () {
   cache.clear();
-  (await queryAll()).forEach(resource => {
+  (await queryAll()).forEach((resource) => {
     cache.set(resource.name.toLowerCase(), resource)
     logger.info(`Updated cache for ${resource.name}`)
   })
@@ -36,8 +38,8 @@ const baseUrl = 'https://learningresources.developerden.org'
 
 async function queryResource (name: string): Promise<LearningResource | null> {
   const resource = await fetch(`${baseUrl}/${name}`)
-    .then(async r => await r.text())
-    .then(r => parse(r))
+    .then(async (r) => await r.text())
+    .then((r) => parse(r))
     .catch(() => null)
 
   return resource as LearningResource
@@ -45,12 +47,12 @@ async function queryResource (name: string): Promise<LearningResource | null> {
 
 async function queryAll (): Promise<LearningResource[]> {
   const resources = await fetch(`${baseUrl}`)
-    .then(async r => await r.json()) as ResourceIndex[]
+    .then(async (r) => await r.json()) as ResourceIndex[]
   const promises = resources
-    .filter(r => !r.name.endsWith('schema.json')) // ignore schema
-    .map(async r => await queryResource(r.name))
+    .filter((r) => !r.name.endsWith('schema.json')) // ignore schema
+    .map(async (r) => await queryResource(r.name))
   return await Promise.all(promises)
-    .then(r => r.filter(it => it != null) as LearningResource[])
+    .then((r) => r.filter((it) => it != null) as LearningResource[])
 }
 
 interface ResourceIndex {

@@ -1,8 +1,4 @@
-import {
-  ApplicationCommandOptionType,
-  CommandInteraction,
-  range
-} from 'discord.js'
+import { ApplicationCommandOptionType, CommandInteraction, range } from 'discord.js'
 import { Command } from 'djs-slash-helper'
 import { ApplicationCommandType } from 'discord-api-types/v10'
 import generateHotTake from './hotTakes.util.js'
@@ -18,7 +14,8 @@ export const ManyHotTakesCommand: Command<ApplicationCommandType.ChatInput> = {
       name: 'count',
       description: 'The number of hot takes to summon.',
       required: true
-    }],
+    }
+  ],
 
   handle: async (interaction: CommandInteraction) => {
     const count = interaction.options.get('count', true).value as number
@@ -31,7 +28,7 @@ export const ManyHotTakesCommand: Command<ApplicationCommandType.ChatInput> = {
     const takes = await Promise.all(
       Array.from(range(count))
         .map(async () => await generateHotTake(guild))
-    ).then(x => x.join('\n'))
+    ).then((x) => x.join('\n'))
 
     if (count > 10 || takes.length > 2000) {
       const pastebinURL = await upload({ content: takes })

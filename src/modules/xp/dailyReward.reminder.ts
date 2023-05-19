@@ -12,17 +12,26 @@ const sendReminder = async (client: Client, user: GuildMember) => {
     return
   }
   await botCommands.send({
-    content: `${mention(
-      user)}, your daily reward is ready to be claimed! </daily:${config.commands.daily}>`
+    content: `${
+      mention(
+        user
+      )
+    }, your daily reward is ready to be claimed! </daily:${config.commands.daily}>`
   })
 }
 
 // Schedules a daily reminder, assuming they have permission to get reminders
 // If they already have a reminder set, this will replace it to keep the time up to date
-export const scheduleReminder = async (client: Client, user: GuildMember, ddUser: DDUser) => {
+export const scheduleReminder = async (
+  client: Client,
+  user: GuildMember,
+  ddUser: DDUser
+) => {
   logger.info(`Scheduling reminder for ${user.user.tag}`)
   if (scheduledReminders.has(ddUser.id)) {
-    logger.info(`Reminder already scheduled for ${user.user.tag}, replacing...`)
+    logger.info(
+      `Reminder already scheduled for ${user.user.tag}, replacing...`
+    )
     scheduledReminders.get(ddUser.id)?.cancel()
     scheduledReminders.delete(ddUser.id)
     return
@@ -41,7 +50,9 @@ export const scheduleReminder = async (client: Client, user: GuildMember, ddUser
     await sendReminder(client, user)
   })
   scheduledReminders.set(ddUser.id, job)
-  logger.info(`Scheduled reminder for ${user.user.tag} at ${job.nextInvocation().toLocaleString()}`)
+  logger.info(
+    `Scheduled reminder for ${user.user.tag} at ${job.nextInvocation().toLocaleString()}`
+  )
 }
 
 export const scheduleAllReminders = async (client: Client) => {
@@ -53,8 +64,8 @@ export const scheduleAllReminders = async (client: Client) => {
       .map(async (member) => {
         const ddUser = await getOrCreateUserById(BigInt(member.id))
         await scheduleReminder(client, member, ddUser)
-      }
-      ))
+      })
+  )
 }
 
 const scheduledReminders = new Map<bigint, Job>()

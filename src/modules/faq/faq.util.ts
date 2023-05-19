@@ -4,7 +4,10 @@ import { createStandardEmbed, standardFooter } from '../../util/embeds.js'
 import { pseudoMention } from '../../util/users.js'
 
 export function createFaqEmbed (
-  faq: FAQ, requester?: User, user?: GuildMember): EmbedBuilder {
+  faq: FAQ,
+  requester?: User,
+  user?: GuildMember
+): EmbedBuilder {
   return createStandardEmbed(user)
     .setTitle(faq.title)
     .setDescription(faq.content)
@@ -12,8 +15,11 @@ export function createFaqEmbed (
       {
         ...standardFooter,
         text: (requester != null)
-          ? `Requested by ${pseudoMention(
-            requester)} | ${faq.name}`
+          ? `Requested by ${
+            pseudoMention(
+              requester
+            )
+          } | ${faq.name}`
           : faq.name
       }
     )

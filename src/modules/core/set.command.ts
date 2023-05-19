@@ -26,21 +26,24 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
       name: 'target',
       description: 'The user to edit',
       required: true
-    }, {
+    },
+    {
       type: ApplicationCommandOptionType.String,
       name: 'field',
       description: 'The field to edit',
       required: true,
-      choices: ['xp', 'bumps'].map(it => ({
+      choices: ['xp', 'bumps'].map((it) => ({
         name: it,
         value: it
       }))
-    }, {
+    },
+    {
       type: ApplicationCommandOptionType.Integer,
       name: 'value',
       description: 'The value to set',
       required: true
-    }],
+    }
+  ],
 
   async handle (interaction: CommandInteraction) {
     const target = interaction.options.getMember('target')
@@ -58,8 +61,9 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
 
     const embed = createStandardEmbed(target)
       .setTitle('Confirm')
-      .setDescription(`Are you sure you want to set ${mention(
-        target)}'s ${option} to ${value}?`)
+      .setDescription(`Are you sure you want to set ${
+        mention(target)
+      }'s ${option} to ${value}?`)
       .setFields([
         {
           name: 'Current Value',
@@ -81,7 +85,8 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
         new ButtonBuilder()
           .setCustomId('cancel')
           .setStyle(ButtonStyle.Danger)
-          .setLabel('Cancel'))
+          .setLabel('Cancel')
+      )
     const reply = await interaction.reply({
       embeds: [embed],
       components: [buttons],
@@ -93,13 +98,18 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
       await interaction.reply('You can\'t do this in DMs')
       return
     }
-    const collector = channel.createMessageComponentCollector<ComponentType.Button>(
+    const collector = channel.createMessageComponentCollector<
+    ComponentType.Button
+    >(
       {
-        filter: i => i.isButton() && i.message?.interaction?.id ===
-          interaction.id && i.user.id === interaction.user.id,
+        filter: (i) =>
+          i.isButton() && i.message?.interaction?.id ===
+          interaction.id &&
+          i.user.id === interaction.user.id,
         time: 15000,
         maxComponents: 1
-      })
+      }
+    )
 
     const event = await collector.next
     if (event.customId === 'cancel') {
@@ -117,7 +127,8 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
           createStandardEmbed(target)
             .setTitle('Success')
             .setColor(Colors.Green)
-            .setDescription(`Set ${mention(target)}'s ${option} to ${value}`)]
+            .setDescription(`Set ${mention(target)}'s ${option} to ${value}`)
+        ]
       })
     }
     await (reply).delete()
@@ -126,10 +137,18 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
 
 const getters = new Map([
   ['xp', (user: DDUser) => user.xp],
-  ['bumps', (user: DDUser) => user.bumps]])
+  ['bumps', (user: DDUser) => BigInt(user.bumps)]
+])
 
 const setters = new Map([
-  ['xp', (user: DDUser, value: number) => { user.xp = value }],
-  ['bumps', (user: DDUser, value: number) => { user.bumps = value }]])
+  [
+    'xp', (user: DDUser, value: number) => {
+      user.xp = BigInt(value)
+    }],
+  [
+    'bumps', (user: DDUser, value: number) => {
+      user.bumps = value
+    }]
+])
 
 export default SetCommand

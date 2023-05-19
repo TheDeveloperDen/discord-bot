@@ -20,8 +20,11 @@ export const PastifyModule: Module = {
         if (message.author.bot) {
           return // Don't pastify messages from bots, it makes things like /run behave weirdly
         }
-        if (message.member?.permissions.has(
-          PermissionFlagsBits.ManageMessages)) {
+        if (
+          message.member?.permissions.has(
+            PermissionFlagsBits.ManageMessages
+          )
+        ) {
           return // Don't pastify messages from staff as they should know better
         }
         const pastified = await pastify(message)
@@ -32,7 +35,8 @@ export const PastifyModule: Module = {
           })
         }
       }
-    }]
+    }
+  ]
 }
 
 export default PastifyModule

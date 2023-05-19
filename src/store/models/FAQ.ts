@@ -1,18 +1,19 @@
 import { Column, DataType, Model, Table } from 'sequelize-typescript'
+import { REAL_BIGINT } from '../RealBigInt.js'
 
 @Table({
   tableName: 'FAQs'
 })
 export class FAQ extends Model {
   @Column({
-    type: new DataType.BIGINT({ length: 20 }),
+    type: REAL_BIGINT,
     primaryKey: true,
     autoIncrement: true
   })
   declare public id: bigint
 
   @Column({
-    type: new DataType.BIGINT({ length: 20 })
+    type: REAL_BIGINT
   })
   declare public author: bigint
 

@@ -9,6 +9,8 @@ export const PasteCommand: Command<ApplicationCommandType.ChatInput> = {
   type: ApplicationCommandType.ChatInput,
   options: [],
 
-  handle: async (interaction: CommandInteraction) => await interaction.reply(
-    config.pastebin.url)
+  handle: async (interaction: CommandInteraction) =>
+    await interaction.reply(
+      config.pastebin.url
+    )
 }

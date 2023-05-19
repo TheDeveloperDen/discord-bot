@@ -24,23 +24,23 @@ const info: LeaderboardType[] = [
   {
     value: 'xp',
     name: 'XP',
-    format: value => `${value} XP`
+    format: (value) => `${value} XP`
   },
   {
     value: 'level',
     name: 'Level',
-    format: value => `Level ${value}`
+    format: (value) => `Level ${value}`
   },
   {
     value: 'currentDailyStreak',
-    calculate: async user => await getActualDailyStreak(user),
+    calculate: async (user) => await getActualDailyStreak(user),
     name: 'Current Daily Streak',
-    format: s => `${formatDays(s)}`
+    format: (s) => `${formatDays(s)}`
   },
   {
     value: 'highestDailyStreak',
     name: 'Highest Daily Streak',
-    format: s => `${formatDays(s)}`
+    format: (s) => `${formatDays(s)}`
   }
 ]
 
@@ -55,7 +55,8 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
       description: 'The type of leaderboard to show',
       required: true,
       choices: info
-    }],
+    }
+  ],
 
   handle: wrapInTransaction('leaderboard', async (span, interaction) => {
     await interaction.deferReply()
@@ -65,7 +66,7 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
       return
     }
     const option = interaction.options.get('type', true).value as string
-    const traitInfo = info.find(it => it.value === option)
+    const traitInfo = info.find((it) => it.value === option)
     if (traitInfo == null) {
       await interaction.followUp('Invalid leaderboard type')
       return
@@ -73,10 +74,16 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
     if (traitInfo.value === 'currentDailyStreak') {
       // manually refresh all the dailies
       await DDUser.update({ currentDailyStreak: 0 }, {
-        where: sequelize.where(sequelize.fn('datediff', sequelize.fn('NOW'),
-          sequelize.col('lastDailyTime')), {
-          [Op.gte]: 2
-        })
+        where: sequelize.where(
+          sequelize.fn(
+            'datediff',
+            sequelize.fn('NOW'),
+            sequelize.col('lastDailyTime')
+          ),
+          {
+            [Op.gte]: 2
+          }
+        )
       })
     }
     const {
@@ -89,7 +96,7 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
     const users = await DDUser.findAll({
       order: [[value, 'DESC']],
       limit: 10
-    }).then(users => users.filter(async it => await calculate(it) > 0))
+    }).then((users) => users.filter(async (it) => await calculate(it) > 0))
     if (users.length === 0) {
       await interaction.followUp('No applicable users')
       return
@@ -106,7 +113,8 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
           value: discordUser == null
             ? 'Unknown User'
             : actualMention(
-              discordUser)
+              discordUser
+            )
         }
       }))
     }

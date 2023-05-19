@@ -7,7 +7,10 @@ export interface RoleChanges {
 }
 
 export async function modifyRoles (
-  client: Client, user: GuildMember, roleChanges: RoleChanges) {
+  client: Client,
+  user: GuildMember,
+  roleChanges: RoleChanges
+) {
   const currentRoles = user.roles.cache.clone()
   const guild = user.guild
   currentRoles.delete(guild.roles.everyone.id)
@@ -23,7 +26,7 @@ export async function modifyRoles (
 
   const addRole = (roleId: string) => currentRoles.set(roleId, getRole(roleId))
   roleChanges.toAdd.forEach(addRole)
-  roleChanges.toRemove.forEach(role => currentRoles.delete(role))
+  roleChanges.toRemove.forEach((role) => currentRoles.delete(role))
 
   const langsSeparator = hasRolesBetween(roles.langs, null)(currentRoles)
   if (langsSeparator) {
@@ -49,17 +52,21 @@ export async function modifyRoles (
   await user.roles.set(currentRoles)
 }
 
-const hasRolesBetween = (upperBound: string | null, lowerBound: string | null) => (roles: Collection<string, Role>) => {
-  let match = true
-  if (upperBound && lowerBound) {
-    match &&= roles.some(role => role.comparePositionTo(upperBound) < 0 &&
-      role.comparePositionTo(lowerBound) > 0)
-  }
-  if (upperBound) {
-    match &&= roles.some(role => role.comparePositionTo(upperBound) < 0)
-  }
-  if (lowerBound) {
-    match &&= roles.some(role => role.comparePositionTo(lowerBound) > 0)
-  }
-  return match
-}
+const hasRolesBetween =
+  (upperBound: string | null, lowerBound: string | null) =>
+    (roles: Collection<string, Role>) => {
+      let match = true
+      if (upperBound && lowerBound) {
+        match &&= roles.some((role) =>
+          role.comparePositionTo(upperBound) < 0 &&
+          role.comparePositionTo(lowerBound) > 0
+        )
+      }
+      if (upperBound) {
+        match &&= roles.some((role) => role.comparePositionTo(upperBound) < 0)
+      }
+      if (lowerBound) {
+        match &&= roles.some((role) => role.comparePositionTo(lowerBound) > 0)
+      }
+      return match
+    }

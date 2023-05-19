@@ -23,7 +23,6 @@ export const HotTakeCommand: Command<ApplicationCommandType.ChatInput> = {
       allowedMentions: { users: [] }
     })
   }
-
 }
 
 export default HotTakeCommand

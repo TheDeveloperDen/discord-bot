@@ -6,7 +6,9 @@ const isUnicodeEmoji = (char: string): boolean => {
 }
 
 export function getEmoji (
-  client: Client, name: string): GuildEmoji | null | string {
+  client: Client,
+  name: string
+): GuildEmoji | null | string {
   if (isUnicodeEmoji(name)) {
     return name
   }
@@ -18,7 +20,7 @@ export function getEmoji (
     // ignore bigint parse errors
   }
 
-  return client.emojis.cache.find(emoji => emoji.name === name) ??
+  return client.emojis.cache.find((emoji) => emoji.name === name) ??
     `:${name}:`
 }
 
@@ -33,7 +35,9 @@ export const stringifyEmoji = (emoji: string | GuildEmoji) => {
   return `<:${emoji.name}:${emoji.id}>`
 }
 
-export function toAPIMessageComponentEmoji (emoji: string | GuildEmoji): APIMessageComponentEmoji {
+export function toAPIMessageComponentEmoji (
+  emoji: string | GuildEmoji
+): APIMessageComponentEmoji {
   if (typeof emoji === 'string') {
     if (isUnicodeEmoji(emoji)) {
       return {

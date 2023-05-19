@@ -1,31 +1,20 @@
-import { Sequelize } from 'sequelize-typescript'
 import { logger } from '../logging.js'
 import { DDUser } from './models/DDUser.js'
 import { ColourRoles } from './models/ColourRoles.js'
 import { FAQ } from './models/FAQ.js'
-import { Dialect } from 'sequelize/types'
+import { ModelCtor, Sequelize, SequelizeOptions } from 'sequelize-typescript'
+import { Dialect, Options } from 'sequelize'
 
-const commonSequelizeSettings = {
-  logging: sequelizeLog,
-  logQueryParameters: true,
-  benchmark: true,
-  models: []
-}
-
-export function sequelizeLog (sql: string, timing?: number) {
+function sequelizeLog (sql: string, timing?: number) {
+  logger.info(sql)
   if (timing) {
-    if (timing >= 50) {
+    if (timing >= 100) {
       logger.warn(`Slow query (${timing}ms): ${sql}`)
     }
   } else {
     logger.debug(sql)
   }
 }
-
-let resolveDBInit: () => void
-export const databaseInit = new Promise<void>(resolve => {
-  resolveDBInit = resolve
-})
 
 export async function initStorage () {
   const database = process.env.DATABASE ?? 'database'
@@ -35,24 +24,36 @@ export async function initStorage () {
   const port = process.env.PORT ?? '3306'
   const dialect = process.env.DIALECT ?? 'mariadb'
 
-  console.log(process.env.HOST)
-  const sequelize = process.env.HOST
-    ? new Sequelize({
+  const commonSequelizeSettings: SequelizeOptions = {
+    logging: sequelizeLog,
+    logQueryParameters: true,
+    benchmark: true,
+    models: []
+  }
+
+  let sequelize: Sequelize
+
+  if (process.env.HOST) {
+    const sequelizeOptions: Options = {
       database,
       username,
       password,
       host,
-      port: parseInt(port),
       dialect: dialect as Dialect,
+      port: parseInt(port),
       ...commonSequelizeSettings
-    })
-    : new Sequelize('sqlite::memory:', commonSequelizeSettings)
+    }
+    sequelize = new Sequelize(sequelizeOptions)
+  } else {
+    sequelize = new Sequelize('sqlite::memory:', commonSequelizeSettings)
+  }
 
-  const models = [DDUser, ColourRoles, FAQ]
+  const models: ModelCtor[] = [DDUser, ColourRoles, FAQ]
+
   sequelize.addModels(models)
+
   for (const model of models) {
     await model.sync()
   }
-  resolveDBInit()
   logger.info('Initialised database')
 }

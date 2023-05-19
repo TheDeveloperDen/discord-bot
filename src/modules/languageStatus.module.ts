@@ -71,11 +71,13 @@ export const LanguageStatusModule: Module = {
       async ready (client, event) {
         while (client.isReady()) {
           const lang = languages.randomElement()
-          await event.user.setActivity(`Coding in ${lang}`,
-            { type: ActivityType.Playing })
+          await event.user.setActivity(`Coding in ${lang}`, {
+            type: ActivityType.Playing
+          })
           logger.info(`Set language status to ${lang}`)
           await awaitTimeout(3.6e+6)
         }
       }
-    }]
+    }
+  ]
 }

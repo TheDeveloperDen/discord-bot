@@ -20,7 +20,8 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
       name: 'member',
       description: 'The member to show XP for',
       required: false
-    }],
+    }
+  ],
 
   handle: wrapInTransaction('xp', async (span, interaction) => {
     await interaction.deferReply()
@@ -37,44 +38,47 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
           .setFields({
             name: '🔮 Level',
             value: `${ddUser.level}`
-          },
-          {
+          }, {
             name: '📝 Tier',
-            value: `${ddUser.level === 0
+            value: `${
+              ddUser.level === 0
                 ? 0
                 : Math.floor(ddUser.level / 10) +
-                1}`
-          },
-          {
+                1
+            }`
+          }, {
             name: '❗ Daily Streak (Current / Highest)',
-            value: `${formatDayCount(
-                await getActualDailyStreak(ddUser))} / ${formatDayCount(
-                ddUser.highestDailyStreak)}`
-          },
-          {
+            value: `${
+              formatDayCount(
+                await getActualDailyStreak(ddUser)
+              )
+            } / ${
+              formatDayCount(
+                ddUser.highestDailyStreak
+              )
+            }`
+          }, {
             name: '📈 XP Difference (Current Level / Next Level)',
             value: `${ddUser.xp}/${xpForLevel(ddUser.level + 1)}`
-          },
-          {
+          }, {
             name: '⬆️ XP Needed Until Level Up',
             value: `${xpForLevel(ddUser.level + 1) - ddUser.xp}`
-          }
-          )
+          })
           .setImage('attachment://xp.png')
       ],
       files: [
         {
-          attachment: image.toBuffer(),
+          attachment: image.createPNGStream(),
           name: 'xp.png'
-        }]
+        }
+      ]
     })
   })
-
 }
 
 const xpBackground = createImage(1000, 500, '#171834')
 
-function createXpImage (xp: number, user: GuildMember) {
+function createXpImage (xp: bigint, user: GuildMember) {
   const [canvas, ctx] = getCanvasContext(1000, 500)
   ctx.drawImage(xpBackground, 0, 0)
 

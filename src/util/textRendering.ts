@@ -59,11 +59,16 @@ interface Options {
 }
 
 export function drawText (
-  ctx: CanvasRenderingContext2D, text: string, fontObject: Font,
-  rectangle: Rectangle, options: Options): void {
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  fontObject: Font,
+  rectangle: Rectangle,
+  options: Options
+): void {
   if (options.minSize > options.maxSize) {
     throw new Error(
-      'Min font size can not be larger than max font size')
+      'Min font size can not be larger than max font size'
+    )
   }
 
   ctx.save()
@@ -73,8 +78,10 @@ export function drawText (
   let textWidth = textMetrics.width
   let textHeight = textMetrics.height
 
-  while ((textWidth > rectangle.width || textHeight > rectangle.height) &&
-  fontSize >= options.minSize) {
+  while (
+    (textWidth > rectangle.width || textHeight > rectangle.height) &&
+    fontSize >= options.minSize
+  ) {
     fontSize = fontSize - options.granularity
     textMetrics = measureText(text, fontObject, fontSize)
     textWidth = textMetrics.width

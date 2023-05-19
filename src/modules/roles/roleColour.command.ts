@@ -20,7 +20,8 @@ const ResetSubcommand: ExecutableSubcommand = {
     })
     if (roleInfo == null) {
       await interaction.followUp(
-        'You do not have a colour role. Use </rolecolour set:1059214166075912223> to set one')
+        'You do not have a colour role. Use </rolecolour set:1059214166075912223> to set one'
+      )
       return
     }
     const roleId = roleInfo.getDataValue('role') // no idea why normal property lookup doesnt work
@@ -36,7 +37,8 @@ const ResetSubcommand: ExecutableSubcommand = {
           }
         }),
         interaction.followUp(
-          'You do not have a colour role. Use </rolecolour set:1059214166075912223> to set one')
+          'You do not have a colour role. Use </rolecolour set:1059214166075912223> to set one'
+        )
       ])
     }
 
@@ -94,7 +96,8 @@ const SetSubcommand: ExecutableSubcommand = {
 
     if (role == null) {
       const position = interaction.guild?.roles.resolve(
-        config.roles.separators.general)?.position ?? 0
+        config.roles.separators.general
+      )?.position ?? 0
       role = await member.guild.roles.create({
         color: colour as ColorResolvable,
         permissions: [],

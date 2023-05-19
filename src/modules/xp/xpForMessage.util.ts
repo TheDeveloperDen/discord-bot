@@ -6,19 +6,22 @@ import { logger } from '../../logging.js'
 import { config } from '../../Config.js'
 import { getOrCreateUserById } from '../../store/models/DDUser.js'
 import { levelUp } from './xpRoles.util.js'
-import { wrapInTransaction } from '../../sentry.js'
+import { wrapInTransactionWith } from '../../sentry.js'
+import { toJson } from '../../json.js'
 
 const pingRegex = /<[a-zA-Z0-9@:&!#]+?[0-9]+>/g
 
 const punctuationRegex = /[.?,!\-'"` ]/g
-const stripPunctuation = (message: string) => message.replace(punctuationRegex,
-  '')
+const stripPunctuation = (message: string) =>
+  message.replace(punctuationRegex, '')
 
 const stripPings = (message: string) => message.replace(pingRegex, '')
 const strip = compose(stripPunctuation, stripPings)
 
-export const xpForLevel = (level: number) => Math.floor(
-  level ** 3 + 27 * level ** 2 + 125 * level)
+export const xpForLevel = (level: number): bigint =>
+  BigInt(Math.floor(
+    level ** 3 + 27 * level ** 2 + 125 * level
+  ))
 
 function findForward (input: string, index: number, set: Set<string>): number {
   let current = ''
@@ -46,8 +49,10 @@ function compressibility (input: string): number {
 
 export function xpForMessage (message: string) {
   const length = strip(message).length
-  return Math.round((1 - compressibility(message)) * Math.tanh(length / 3) +
-    Math.pow(length, 0.75))
+  return Math.round(
+    (1 - compressibility(message)) * Math.tanh(length / 3) +
+    Math.pow(length, 0.75)
+  )
 }
 
 const similarityProportion = (a: string, b: string) => distance(a, b)
@@ -55,10 +60,16 @@ const minMessageLength = 6
 const maxSimilarity = 0.6
 
 export async function shouldCountForStats (
-  author: User, message: Message, channel: Channel, config: Config) {
-  if (author.bot ||
+  author: User,
+  message: Message,
+  channel: Channel,
+  config: Config
+) {
+  if (
+    author.bot ||
     channel.id === config.channels.botCommands ||
-    message.content.length < minMessageLength) {
+    message.content.length < minMessageLength
+  ) {
     return false
   }
   if (message.channel instanceof StageChannel) {
@@ -76,17 +87,17 @@ export async function shouldCountForStats (
     if (msg.author.id !== author.id || msg.id === message.id) continue
     if (similarityProportion(msg.content, message.content) > maxSimilarity) {
       logger.debug(
-        `Discarded message ${message.id} from user ${author.id} because it was too similar to previous messages`)
+        `Discarded message ${message.id} from user ${author.id} because it was too similar to previous messages`
+      )
       return false
     }
   }
   const asArray = message.content.split('')
-  return asArray.some(it => it.match(/[a-z ]/i))
+  return asArray.some((it) => it.match(/[a-z ]/i))
 }
 
-export const tierOf = (level: number) => level <= 0
-  ? 0
-  : 1 + Math.floor(level / 10)
+export const tierOf = (level: number) =>
+  level <= 0 ? 0 : 1 + Math.floor(level / 10)
 
 export function tierRoleId (level: number) {
   const tier = tierOf(level)
@@ -110,7 +121,16 @@ export interface XPResult {
  * @param xp the amount of XP to give
  * @returns How much XP was given. This may be affected by perks such as boosting. If something went wrong, -1 will be returned.
  */
-export const giveXp = wrapInTransaction('giveXP',
+export const giveXp = wrapInTransactionWith(
+  'giveXP',
+  (user, xp) => {
+    return {
+      data: {
+        user: user.id,
+        xp
+      }
+    }
+  },
   async (_, user: GuildMember, xp: number): Promise<XPResult> => {
     const client = user.client
     const ddUser = await getOrCreateUserById(BigInt(user.id))
@@ -118,9 +138,13 @@ export const giveXp = wrapInTransaction('giveXP',
       logger.error(`Could not find or create user with id ${user.id}`)
       return { xpGiven: -1 }
     }
+    if (typeof ddUser.xp === 'string') {
+      console.log(toJson(ddUser))
+      throw new Error(`XP for user ${user.id} is a string. wtf??`)
+    }
 
     const multiplier = (user.premiumSince != null) ? 2 : 1
-    ddUser.xp += xp * multiplier
+    ddUser.xp += BigInt(xp * multiplier)
     await levelUp(client, user, ddUser)
     await ddUser.save()
     logger.info(`Gave ${xp} XP to user ${user.id}`)
@@ -128,4 +152,5 @@ export const giveXp = wrapInTransaction('giveXP',
       xpGiven: xp,
       multiplier: multiplier === 1 ? undefined : multiplier
     } // A multiplier of 1 means no multiplier was used
-  })
+  }
+)

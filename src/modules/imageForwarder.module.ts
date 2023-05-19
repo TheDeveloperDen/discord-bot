@@ -15,14 +15,21 @@ const ImageForwarderModule: Module = {
         if (!attachments?.size) return
 
         return await channel.send({
-          content: `Message from ${actualMention(
-            message.author)} at <t:${Math.round(
-            message.createdTimestamp / 1000)}>`,
+          content: `Message from ${
+            actualMention(
+              message.author
+            )
+          } at <t:${
+            Math.round(
+              message.createdTimestamp / 1000
+            )
+          }>`,
           allowedMentions: { users: [] },
-          files: attachments.map(v => v)
+          files: attachments.map((v) => v)
         })
       }
-    }]
+    }
+  ]
 }
 
 export default ImageForwarderModule

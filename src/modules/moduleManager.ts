@@ -12,17 +12,20 @@ export default class ModuleManager {
     private readonly client: Client,
     private readonly clientId: Snowflake,
     private readonly guildId: Snowflake,
-    private readonly modules: Module[]) {
+    private readonly modules: Module[]
+  ) {
     this.originalEmit = this.client.emit
     client.emit = this.overrideEmit().bind(client)
     for (const module of modules) {
-      (module.preInit?.(client))?.catch(e => {
+      (module.preInit?.(client))?.catch((e) => {
         Sentry.captureException(e)
         logger.error(`Error in preInit for module ${module.name}`, e)
       })
     }
     this.commandManager = new CommandManager(
-      modules.flatMap(it => it.commands ?? []), client)
+      modules.flatMap((it) => it.commands ?? []),
+      client
+    )
   }
 
   /**
@@ -34,7 +37,10 @@ export default class ModuleManager {
     const previousEmit = this.originalEmit
 
     return function emit<K extends keyof ClientEvents> (
-      this: Client, event: K, ...args: ClientEvents[K]) {
+      this: Client,
+      event: K,
+      ...args: ClientEvents[K]
+    ) {
       for (const module of modules) {
         if (module.listeners == null) continue
         for (const listener of module.listeners) {

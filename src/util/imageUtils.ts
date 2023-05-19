@@ -5,7 +5,10 @@ import { branding } from './branding.js'
 export const font = loadSync(branding.font)
 
 export function createImage (
-  width: number, height: number, color: string): Canvas {
+  width: number,
+  height: number,
+  color: string
+): Canvas {
   const canvas = createCanvas(width, height)
   const ctx = canvas.getContext('2d', { alpha: false })
   ctx.fillStyle = color
@@ -14,7 +17,9 @@ export function createImage (
 }
 
 export function getCanvasContext (
-  width: number, height: number): [Canvas, CanvasRenderingContext2D] {
+  width: number,
+  height: number
+): [Canvas, CanvasRenderingContext2D] {
   const canvas = createCanvas(width, height)
   const ctx = canvas.getContext('2d', { alpha: false })
   return [canvas, ctx]

@@ -18,8 +18,11 @@ export const FaqCommandListener: EventListener = {
       return
     }
 
-    const embed = createFaqEmbed(faq, message.author,
-      message.member ?? undefined)
+    const embed = createFaqEmbed(
+      faq,
+      message.author,
+      message.member ?? undefined
+    )
     await message.reply({ embeds: [embed] })
   }
 }

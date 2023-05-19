@@ -30,19 +30,23 @@ export const InfoCommand: Command<ApplicationCommandType.ChatInput> = {
           .setTitle(branding.name)
           .setDescription(
             'This is the bot for the Developer Den server. It\'s written in **TypeScript** using the **Discord.js** library. ' +
-            'The source can be found [here](https://github.com/TheDeveloperDen/DevDenBot)')
+            'The source can be found [here](https://github.com/TheDeveloperDen/DevDenBot)'
+          )
           .setFields([
             {
               name: 'Version',
               value: format(
                 process.env.npm_package_version ?? process.env.VERSION ??
-                'Unknown'),
+                'Unknown'
+              ),
               inline: true
             },
             {
               name: 'Bot Uptime',
-              value: `<t:${Math.round(Date.now() / 1000) -
-              Math.floor(process.uptime())}:R>`,
+              value: `<t:${
+                Math.round(Date.now() / 1000) -
+                Math.floor(process.uptime())
+              }:R>`,
               inline: true
             },
             {
@@ -70,7 +74,8 @@ export const InfoCommand: Command<ApplicationCommandType.ChatInput> = {
               value: dateCreated,
               inline: true
             }
-          ])]
+          ])
+      ]
     })
   }
 }

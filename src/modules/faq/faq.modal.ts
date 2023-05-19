@@ -1,10 +1,5 @@
 import { FAQ } from '../../store/models/FAQ.js'
-import {
-  ActionRowBuilder,
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle
-} from 'discord.js'
+import { ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js'
 
 export const createFaqModal = (faq?: FAQ) => {
   const modal = new ModalBuilder()
@@ -31,9 +26,11 @@ export const createFaqModal = (faq?: FAQ) => {
   }
 
   modal.addComponents(
-    new ActionRowBuilder<TextInputBuilder>().addComponents(titleField))
+    new ActionRowBuilder<TextInputBuilder>().addComponents(titleField)
+  )
   modal.addComponents(
-    new ActionRowBuilder<TextInputBuilder>().addComponents(contentField))
+    new ActionRowBuilder<TextInputBuilder>().addComponents(contentField)
+  )
 
   return modal
 }

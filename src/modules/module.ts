@@ -4,7 +4,9 @@ import { ApplicationCommandType } from 'discord-api-types/v10'
 
 export type EventListener = {
   [k in keyof ClientEvents]?: (
-    client: Client, ...args: ClientEvents[k]) => Awaitable<unknown>
+    client: Client,
+    ...args: ClientEvents[k]
+  ) => Awaitable<unknown>;
 }
 
 export default interface Module {

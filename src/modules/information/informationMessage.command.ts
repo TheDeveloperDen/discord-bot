@@ -5,6 +5,7 @@ import { ActionRowBuilder, ButtonBuilder } from 'discord.js'
 import { createStandardEmbed } from '../../util/embeds.js'
 import { CustomButton } from './information.js'
 import { logger } from '../../logging.js'
+import { toJson } from '../../json.js'
 
 function loadCustomButton (customButton: CustomButton) {
   if (customButton instanceof ButtonBuilder) {
@@ -18,7 +19,9 @@ function loadCustomButton (customButton: CustomButton) {
   }
 }
 
-export const InformationMessageCommand: Command<ApplicationCommandType.Message> = {
+export const InformationMessageCommand: Command<
+ApplicationCommandType.Message
+> = {
   name: 'Set Information Message',
   default_permission: false,
   type: ApplicationCommandType.Message,
@@ -48,16 +51,21 @@ export const InformationMessageCommand: Command<ApplicationCommandType.Message> 
     const newMessage = await interaction.targetMessage.edit({
       content: informationMessage.content ?? null,
       embeds: [embed],
-      components: rows.map(row => {
+      components: rows.map((row) => {
         const rowEntries = row.map(loadCustomButton)
         return new ActionRowBuilder<ButtonBuilder>().addComponents(
-          ...rowEntries)
+          ...rowEntries
+        )
       })
     })
 
     logger.info(
-      `Information message set for ${newMessage.id} with content ${newMessage.content} and embed ${JSON.stringify(
-        newMessage.embeds[0])}`)
+      `Information message set for ${newMessage.id} with content ${newMessage.content} and embed ${
+        toJson(
+          newMessage.embeds[0]
+        )
+      }`
+    )
     await interaction.reply({
       ephemeral: true,
       content: 'Information message set.'

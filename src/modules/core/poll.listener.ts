@@ -9,7 +9,10 @@ export const PollListener: EventListener = {
       try {
         await reaction.fetch()
       } catch (error) {
-        console.error('Something went wrong when fetching the reaction:', error)
+        console.error(
+          'Something went wrong when fetching the reaction:',
+          error
+        )
         return
       }
     }
@@ -17,8 +20,10 @@ export const PollListener: EventListener = {
     if (pollConfig == null) {
       return
     }
-    if (reaction.emoji.id !== pollConfig.emojiId && reaction.emoji.name !==
-      pollConfig.emojiId) {
+    if (
+      reaction.emoji.id !== pollConfig.emojiId && reaction.emoji.name !==
+      pollConfig.emojiId
+    ) {
       return
     }
     const message = reaction.message

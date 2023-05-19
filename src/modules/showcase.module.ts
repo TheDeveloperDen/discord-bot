@@ -27,10 +27,13 @@ export const ShowcaseModule: Module = {
           return
         }
 
-        const userHasReacted = async (emoji: string): Promise<Collection<Snowflake | string, MessageReaction>> => {
+        const userHasReacted = async (
+          emoji: string
+        ): Promise<Collection<Snowflake | string, MessageReaction>> => {
           const rs = await reaction.message.awaitReactions(
-            { filter: r => r.emoji.name === emoji })
-          return rs.filter(r => r.users.resolve(user.id) != null)
+            { filter: (r) => r.emoji.name === emoji }
+          )
+          return rs.filter((r) => r.users.resolve(user.id) != null)
         }
         if (reaction.emoji.name === '👍' && await userHasReacted('👎')) {
           await reaction.users.remove(user)
@@ -40,5 +43,6 @@ export const ShowcaseModule: Module = {
           await reaction.users.remove(user)
         }
       }
-    }]
+    }
+  ]
 }

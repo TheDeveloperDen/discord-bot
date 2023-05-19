@@ -9,26 +9,29 @@ import {
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder
 } from 'discord.js'
-import {
-  getAllCachedResources,
-  getResource
-} from '../learning/resourcesCache.util.js'
+import { getAllCachedResources, getResource } from '../learning/resourcesCache.util.js'
 import { truncateTo } from '../../util/strings.js'
 import { getEmoji, toAPIMessageComponentEmoji } from '../../util/emojis.js'
 import { getResourceEmbed } from '../learning/learning.command.js'
 
 export const InformationButtonListener: EventListener = {
   async interactionCreate (_, interaction) {
-    if (interaction.isStringSelectMenu() && interaction.customId ===
-      'learningResourcePicker') {
+    if (
+      interaction.isStringSelectMenu() && interaction.customId ===
+      'learningResourcePicker'
+    ) {
       const resourceName = interaction.values[0]
       await interaction.deferReply({ ephemeral: true })
       const resource = await getResource(resourceName)
       if (resource == null) {
         return // shouldn't ever happen
       }
-      const embed = getResourceEmbed(interaction.client, resource,
-        interaction.user, interaction.member as GuildMember ?? undefined)
+      const embed = getResourceEmbed(
+        interaction.client,
+        resource,
+        interaction.user,
+        interaction.member as GuildMember ?? undefined
+      )
 
       await interaction.followUp({
         embeds: [embed],
@@ -59,8 +62,11 @@ export const InformationButtonListener: EventListener = {
     if (faq == null) {
       return
     }
-    const embed = createFaqEmbed(faq, interaction.user,
-      interaction.member as GuildMember ?? undefined)
+    const embed = createFaqEmbed(
+      faq,
+      interaction.user,
+      interaction.member as GuildMember ?? undefined
+    )
     await interaction.followUp({
       ephemeral: true,
       embeds: [embed]
@@ -74,7 +80,7 @@ async function sendLearningResourcesPicker (interaction: ButtonInteraction) {
     .setPlaceholder('Select a resource')
     .setOptions(
       getAllCachedResources()
-        .map(res => {
+        .map((res) => {
           const builder = new StringSelectMenuOptionBuilder()
             .setLabel(res.name)
             .setValue(res.name)
@@ -91,7 +97,8 @@ async function sendLearningResourcesPicker (interaction: ButtonInteraction) {
 
   await interaction.reply({
     components: [
-      new ActionRowBuilder<SelectMenuBuilder>().addComponents(selectMenu)],
+      new ActionRowBuilder<SelectMenuBuilder>().addComponents(selectMenu)
+    ],
     ephemeral: true,
     fetchReply: true
   })
