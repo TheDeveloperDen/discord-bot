@@ -63,7 +63,7 @@ following environment variables:
   defaults to `root`
 - `PASSWORD` - The password to use when connecting to the database. Optional,
   defaults to `password`
-- `DIALECT` - The SQL dialect to use. Optional, defaults to `mariadb`. Must be a
+- `DIALECT` - The SQL dialect to use. Optional, defaults to `postgres`. Must be a
   valid [Sequelize](https://sequelize.org/) dialect. You may need to install
   additional dependencies to use some dialects.
 
