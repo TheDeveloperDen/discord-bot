@@ -4,7 +4,7 @@ import { DDUser, getOrCreateUserById } from '../../store/models/DDUser.js'
 import { config } from '../../Config.js'
 import { isSpecialUser, mention } from '../../util/users.js'
 import { Job, scheduleJob } from 'node-schedule'
-import { getActualDailyStreak } from './dailyReward.command'
+import { getActualDailyStreak } from './dailyReward.command.js'
 
 const sendReminder = async (client: Client, user: GuildMember) => {
   const botCommands = await client.channels.fetch(config.channels.botCommands)
