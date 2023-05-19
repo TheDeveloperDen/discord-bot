@@ -5,6 +5,7 @@ import { logger } from '../logging.js'
 import { FAQ } from '../store/models/FAQ.js'
 import { createFaqEmbed } from './faq/faq.util.js'
 import { tierOf } from './xp/xpRoles.util.js'
+import { isSpecialUser } from '../util/users.js'
 
 const targets = [
   'i need help',
@@ -22,6 +23,7 @@ export const AskToAskModule: Module = {
     {
       async messageCreate (_, message) {
         if (message.author.bot) return
+        if (message.member && isSpecialUser(message.member)) return
         const ddUser = await getOrCreateUserById(BigInt(message.author.id))
         if (tierOf(ddUser.level) >= 2) return // Hopefully they will have learned by now
         const c = message.content.toLowerCase().trim().replace(
