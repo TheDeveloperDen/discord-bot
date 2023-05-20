@@ -7,6 +7,7 @@ import { InteractionReplyOptions, Message } from 'discord.js'
 
 const codeBlockPattern =
   /```(?:(?<lang>[a-zA-Z]+)?\n)?(?<content>(?:.|\n)*?)```|(?:(?:.|\n)(?!```))+/g
+
 type SplitMessageComponent = { text: string } | {
   content: string
   language?: string
@@ -48,15 +49,15 @@ export async function upload (component: SplitMessageComponent) {
   })
 
   if (!response.ok) {
-    logger.warn(`Failed to upload message to pastebin: ${response.statusText}`)
-    return ''
+    logger.error(`Failed to upload message to pastebin: ${response.statusText}`)
+    return 'Pasting failed'
   }
 
   const key = (await response.json() as { key: string }).key
 
   if (!key) {
     logger.warn('Key was missing from pastebin response')
-    return ''
+    return 'Pasting failed'
   }
 
   return `${config.pastebin.url}/${key}${
