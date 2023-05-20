@@ -6,11 +6,10 @@ import { awaitTimeout } from '../../util/timeouts.js'
 import { logger } from '../../logging.js'
 
 async function sendHotTake (client: Client) {
-  const channel = await client.channels.fetch(
-    config.channels.hotTake
-  ) as TextChannel
-  const lastMessage = await channel.messages.fetch({ limit: 1 })
-    .then((m) => m.first())
+  logger.debug('Sending hot take maybe')
+  const channel = await client.channels.fetch(config.channels.hotTake) as TextChannel
+  const lastMessage = (await channel.messages.fetch({ limit: 1 })).first()
+  if (lastMessage) logger.debug(`Last message: ${lastMessage?.id?.toString()}`)
   const lastMessageSentAt = lastMessage?.createdAt ?? new Date(0)
 
   // time since last message in seconds
