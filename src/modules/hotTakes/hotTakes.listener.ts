@@ -8,14 +8,17 @@ import { logger } from '../../logging.js'
 async function sendHotTake (client: Client) {
   logger.debug('Sending hot take maybe')
   const channel = await client.channels.fetch(config.channels.hotTake) as TextChannel
-  const lastMessage = (await channel.messages.fetch({ limit: 1 })).first()
-  if (lastMessage) logger.debug(`Last message: ${lastMessage?.id?.toString()}`)
-  const lastMessageSentAt = lastMessage?.createdAt ?? new Date(0)
+  const lastMessage = (await channel.messages.fetch({ limit: 1 }))
+    .first()
+
+  if (!lastMessage) { return }
+
+  logger.debug(`Last message: ${lastMessage.id}`)
+  const lastMessageSentAt = lastMessage.createdAt
 
   // time since last message in seconds
   const timeSinceLastMessage = (Date.now() - lastMessageSentAt.getTime()) / 1000
-  const isBot = lastMessage?.author?.bot ?? false
-  if (isBot || timeSinceLastMessage < 60 * 60 * 2) {
+  if (lastMessage.author.bot || timeSinceLastMessage < 60 * 60 * 2) {
     return
   }
   logger.debug(`Time since last message: ${timeSinceLastMessage}, met threshold`)
