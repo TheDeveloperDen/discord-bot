@@ -14,7 +14,8 @@ async function sendHotTake (client: Client) {
 
   // time since last message in seconds
   const timeSinceLastMessage = (Date.now() - lastMessageSentAt.getTime()) / 1000
-  if (lastMessage?.author?.bot ?? timeSinceLastMessage < 60 * 60 * 2) {
+  const isBot = lastMessage?.author?.bot ?? false
+  if (isBot || timeSinceLastMessage < 60 * 60 * 2) {
     return
   }
   logger.debug(`Time since last message: ${timeSinceLastMessage}, met threshold`)
