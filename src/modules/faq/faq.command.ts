@@ -31,7 +31,9 @@ const GetSubcommand: ExecutableSubcommand = {
   ],
   async handle (interaction) {
     const name = interaction.options.get('name')?.value as string | null
-    const faq = await FAQ.findOne({ where: { name } })
+    const faq = await FAQ.findOne({
+      where: { name: name ?? undefined }
+    })
     if (faq == null) {
       return await interaction.reply({
         ephemeral: true,
@@ -76,7 +78,7 @@ const EditSubcommand: ExecutableSubcommand = {
       name,
       title,
       content,
-      author: interaction.user.id
+      author: BigInt(interaction.user.id)
     })
     await response.reply({
       ephemeral: true,
