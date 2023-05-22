@@ -6,7 +6,7 @@ export const FaqModule: Module = {
   name: 'faq',
   commands: [FaqCommand],
   listeners: [FaqCommandListener],
-  onInit: updateChoices
+  preInit: updateChoices
 }
 
 export default FaqModule
