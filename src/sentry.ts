@@ -11,13 +11,21 @@ export function initSentry (client: Client) {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
     release: process.env.npm_package_version ?? process.env.VERSION ?? 'unknown',
-    tracesSampleRate: 1.0,
+    tracesSampleRate: 0.2,
     profilesSampleRate: 1.0,
     integrations: [
-      new Sentry.Integrations.Http({ tracing: true }),
       new ProfilingIntegration(),
       ...Sentry.autoDiscoverNodePerformanceMonitoringIntegrations(),
+      new Sentry.Integrations.Http({ tracing: true }),
       new Sentry.Integrations.Postgres(),
+      new Sentry.Integrations.FunctionToString(),
+      new Sentry.Integrations.RequestData(),
+      new Sentry.Integrations.Context(),
+      new Sentry.Integrations.ContextLines(),
+      new Sentry.Integrations.LinkedErrors(),
+      new Sentry.Integrations.OnUncaughtException(),
+      new Sentry.Integrations.OnUnhandledRejection(),
+      new Sentry.Integrations.LocalVariables(),
       new RewriteFrames({
         root: global.__rootdir__
       })
