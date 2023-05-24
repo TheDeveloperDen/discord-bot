@@ -52,3 +52,4 @@ jobs:
           environment: production
           sourcemaps: './bin'
           version: ${{ steps.package-version.outputs.current-version }}
+          url_prefix: 'app:///bin/'
