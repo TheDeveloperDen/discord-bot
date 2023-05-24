@@ -983,7 +983,7 @@
     "I have been coding in {language} for {age} years and I still do not understand {thing}",
     "{language} is not even Turing Complete.",
     "{group} invented {thing} in {year}.",
-    "The fact that we're still using {thing} in 2022 is a problem.",
+    "The fact that we're still using {thing} in {currentYear} is a problem.",
     "I prefer simple languages, like {language}. Clear, understandable, and easy to learn.",
     "It's been many years since I've had a problem with {problem} in {language}. People need to stop complaining and just write better code.",
     {
@@ -1071,6 +1071,7 @@
     "{thing}'s documentation is so bad that I had to write my own.",
     "A lot of {thing}'s success can be attributed to its similarity to {thing}.",
     "There are 2 types of modern programmers: {thing} users and {thing} users.",
-    "People like {language} because it is opinionated, predictable, and simple."
+    "People like {language} because it is opinionated, predictable, and simple.",
+    "My new project is going to be attempting to mod {thing} using {technology}, wish me luck!"
   ]
 }

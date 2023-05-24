@@ -58,7 +58,8 @@ const placeholders = {
     mapPlaceholder(
       'thing',
       (it) => replaceHotTakeThing((s) => s.replace(' ', ''), it)
-    )(users)
+    )(users),
+  currentYear: () => [new Date().getFullYear().toString()] as HotTakeThing[]
 }
 
 type Placeholder = keyof typeof placeholders
