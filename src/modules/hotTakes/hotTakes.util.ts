@@ -35,37 +35,40 @@ const hotTakeData: {
   takes: HotTakeThing[]
 } = JSON.parse(readFileSync(process.cwd() + '/hotTakeData.json').toString())
 
-const placeholders = {
+interface Placeholders {
+  [k: string]: (users: string[]) => HotTakeThing[]
+}
+
+const placeholders: Placeholders = {
   language: () => hotTakeData.languages,
   technology: () => hotTakeData.technologies,
   tld: () => hotTakeData.tlds,
   thing: combineSources('languages', 'technologies'),
   anything: combineSources('languages', 'technologies', 'people', 'companies'),
-  oneWordAnything: (users: string[]) =>
-    mapPlaceholder(
-      'anything',
-      (it) => replaceHotTakeThing((s) => s.replace(' ', ''), it)
-    )(users),
+  oneWordAnything: mapPlaceholder(
+    'anything',
+    (it) => replaceHotTakeThing((s) => s.replace(' ', ''), it)
+  ),
   person: () => hotTakeData.people,
   company: () => hotTakeData.companies,
   group: combineSources('people', 'companies'),
   problem: () => hotTakeData.problems,
-  year: () => [randomInt(1500, 2022).toString()] as HotTakeThing[],
-  age: () => [randomInt(1, 50).toString()] as HotTakeThing[],
-  bigNumber: () => [randomInt(2, 100000).toString()] as HotTakeThing[],
-  percentage: () => [randomInt(1, 100).toString()] as HotTakeThing[],
-  oneWordThing: (users: string[]) =>
-    mapPlaceholder(
-      'thing',
-      (it) => replaceHotTakeThing((s) => s.replace(' ', ''), it)
-    )(users),
-  currentYear: () => [new Date().getFullYear().toString()] as HotTakeThing[]
+  year: () => [randomInt(1500, 2022).toString()],
+  age: () => [randomInt(1, 50).toString()],
+  bigNumber: () => [randomInt(2, 100000).toString()],
+  percentage: () => [randomInt(1, 100).toString()],
+  oneWordThing: mapPlaceholder(
+    'thing',
+    (it) => replaceHotTakeThing((s) => s.replace(' ', ''), it)
+  ),
+  currentYear: () => [new Date().getFullYear().toString()]
 }
 
 type Placeholder = keyof typeof placeholders
 
-function isValidPlaceholder (value: string): value is Placeholder {
-  return Object.keys(placeholders).includes(value)
+function isValidPlaceholder (value: string | number): value is Placeholder {
+  const strings: string[] = Object.keys(placeholders)
+  return strings.includes(value.toString())
 }
 
 type NewOmit<T, K extends PropertyKey> = {
