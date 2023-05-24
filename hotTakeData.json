@@ -220,6 +220,7 @@
       "take": "Tencent",
       "image": "./img/tencent.png"
     },
+    "Twitter",
     {
       "take": "Alibaba",
       "image": "./img/alibaba.png"
@@ -306,7 +307,8 @@
     },
     "Slack",
     "Shopify",
-    "LinkedIn"
+    "LinkedIn",
+    "BlueSky"
   ],
   "languages": [
     {
@@ -742,6 +744,8 @@
       "take": "TCP/IP",
       "image": "./img/tcpip.webp"
     },
+    "Mastodon",
+    "ActivityPub",
     "Big O Notation",
     "Binary Search",
     "Bubble Sort",
@@ -807,6 +811,7 @@
     },
     "OOP",
     "Functional Programming",
+    "Array Programming",
     "Higher Kinded Types",
     "Test Driven Development",
     "iteration",
@@ -932,6 +937,7 @@
     "anti-patterns",
     "code smells",
     "software licensing",
+    "thread starvation",
     "software patents",
     "dependency hell",
     "web minimization",
