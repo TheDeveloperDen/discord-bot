@@ -25,7 +25,6 @@ jobs:
         with:
           fetch-depth: 0
 
-
       - name: Add gyp dependencies
         run: sudo apt install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
 
@@ -39,6 +38,9 @@ jobs:
         with:
           cmd: build-prod
 
+      - name: Get version from NPM
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@v1.3.1
 
       - name: Create Sentry release
         uses: getsentry/action-release@v1
@@ -49,3 +51,4 @@ jobs:
         with:
           environment: production
           sourcemaps: './bin'
+          version: ${{ steps.package-version.outputs.current-version }}
