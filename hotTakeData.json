@@ -147,7 +147,9 @@
     {
       "take": "Edsger Dijkstra",
       "image": "./img/edsger dijkstra.jpg"
-    }
+    },
+    "Brendan Eich",
+    "John Resig"
   ],
   "companies": [
     {
@@ -301,7 +303,10 @@
     {
       "take": "OpenAI",
       "image": "./img/openai.png"
-    }
+    },
+    "Slack",
+    "Shopify",
+    "LinkedIn"
   ],
   "languages": [
     {
@@ -532,7 +537,8 @@
     {
       "take": "Verilog",
       "image": "./img/verilog.png"
-    }
+    },
+    "Objective-C"
   ],
   "technologies": [
     {
@@ -887,7 +893,12 @@
     "Markov Chains",
     "Nix",
     "NixOS",
-    "Nixpkgs"
+    "Nixpkgs",
+    "Internet of Things",
+    "Big Data",
+    "Virtual Reality",
+    "Augmented Reality",
+    "Artificial Intelligence"
   ],
   "problems": [
     "backward compatibility",
@@ -923,7 +934,11 @@
     "software licensing",
     "software patents",
     "dependency hell",
-    "web minimization"
+    "web minimization",
+    "merge conflicts",
+    "dependency hell",
+    "spaghetti code",
+    "halting problem"
   ],
   "tlds": [
     "com",
@@ -939,7 +954,8 @@
     "app",
     "info",
     "gov",
-    "edu"
+    "edu",
+    "zip"
   ],
   "takes": [
     "{thing} is just {thing} mixed with {thing}.",
@@ -1004,6 +1020,8 @@
     "{technology} users couldn't even print Hello World in {language}.",
     "{anything} > {anything}.",
     "People keep complaining about {problem} and {problem}. Either learn {thing} or suck it up.",
+    "#RewriteItIn{language}",
+    "Oh, your code is written in {language}? I'm sorry, I don't speak stupid.",
     "Did you hear what happened over at {company}? Me neither, nobody cares about them.",
     "{oneWordThing}.js is the next big JS framework.",
     "Lots of programming languages and tools have already fixed {problem} - {thing}, {thing}, {thing}, etc.",
@@ -1013,8 +1031,8 @@
     "The {thing} community is toxic.",
     "The {thing} community are the nicest people I've ever met.",
     "{thing} needs to support {thing} if it wants to be taken seriously.",
-    "I'm looking for a new job. I'm not sure if I should apply to {company}. I've heard they're {thing} haters.",
-    "I'm looking for a new job. I'm not sure if I should apply to {company}. I've heard they're {thing} fans.",
+    "I'm looking for a new job. I'm not sure if I should apply to {company}, I've heard they're {thing} haters.",
+    "I'm looking for a new job. I'm not sure if I should apply to {company}, I've heard they're {thing} fans.",
     "Every tech stack should include {thing}.",
     "I think I'm addicted to working with {thing}. Does anyone else feel the same?",
     "{thing} is toxic for humanity. This is not an opinion, it's an absolute truth.",
@@ -1072,6 +1090,20 @@
     "A lot of {thing}'s success can be attributed to its similarity to {thing}.",
     "There are 2 types of modern programmers: {thing} users and {thing} users.",
     "People like {language} because it is opinionated, predictable, and simple.",
-    "My new project is going to be attempting to mod {thing} using {technology}, wish me luck!"
+    "My new project is going to be attempting to mod {thing} using {technology}, wish me luck!",
+    "{language} NEEDS to be interoperable with {language} if it wants to succeed.",
+    "Rate this stack out of 10: {thing}, {thing}, with {thing} for the backend and {thing} for the frontend",
+    "It's been {number} years since {thing} was released and it still doesn't have {thing}.",
+    "I'm going to make a {thing} clone in {language} and it's going to be infinitely better than the original.",
+    "I'm sick of these pseudo-intellectual {thing} users, sitting in their ivory towers, looking down on the rest of us.",
+    "The {thing} community is so toxic that I'm considering leaving the industry.",
+    "I have been working with {thing} for {number} years, AMA.",
+    "Forget about {group}. The real programming genius is {group}. They code like no one else",
+    "You call {bigNumber} lines of code a large project? That's cute.",
+    "Started learning {language} yesterday. Already built an AI that can solve {problem}. Should I drop out of school?",
+    "Just found out that {company} is built entirely on {technology}. No wonder their website crashes every five minutes.",
+    "Just discovered a groundbreaking new programming paradigm called {oneWordThing}-driven development. This is going to change everything.",
+    "So called \"entry-level\" role looking for {number} years of experience in {thing}. The industry is a joke.",
+    "As {person} once said, \"{thing} is mid\"."
   ]
 }
