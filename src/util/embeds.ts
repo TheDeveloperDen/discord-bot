@@ -14,7 +14,7 @@ export function createStandardEmbed (
   return builder
 }
 
-export const standardFooter: () => EmbedFooterOptions = () => (
+export const standardFooter = (): EmbedFooterOptions => (
   {
     text: branding.name,
     iconURL: branding.iconUrl

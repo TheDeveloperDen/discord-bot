@@ -13,7 +13,7 @@ export function createFaqEmbed (
     .setDescription(faq.content)
     .setFooter(
       {
-        ...standardFooter,
+        ...standardFooter(),
         text: (requester != null)
           ? `Requested by ${
             pseudoMention(

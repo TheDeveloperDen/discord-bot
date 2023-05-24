@@ -5,6 +5,7 @@ import { createFaqEmbed } from './faq.util.js'
 import createFaqModal from './faq.modal.js'
 import { moduleManager } from '../../index.js'
 import { logger } from '../../logging.js'
+import { toJson } from '../../json.js'
 
 const choices: Array<{ name: string, value: string }> = []
 
@@ -15,7 +16,7 @@ export async function updateChoices () {
     name: it.name,
     value: it.name
   })))
-  logger.info(`Updated FAQ choices to ${choices.toString()}`)
+  logger.info(`Updated FAQ choices to ${toJson(choices)}`)
 }
 
 const GetSubcommand: ExecutableSubcommand = {
