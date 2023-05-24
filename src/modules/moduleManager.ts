@@ -52,6 +52,13 @@ export default class ModuleManager {
   }
 
   async refreshCommands () {
+    for (const module of this.modules) {
+      (module.onCommandInit?.(this.client))?.catch((e) => {
+        Sentry.captureException(e)
+        logger.error(`Error in preInit for module ${module.name}`, e)
+      })
+    }
+
     await this.commandManager.setupForGuild(this.clientId, this.guildId)
   }
 

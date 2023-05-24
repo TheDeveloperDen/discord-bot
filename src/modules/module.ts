@@ -21,6 +21,12 @@ export default interface Module {
   preInit?: (client: Client) => Promise<void>
 
   /**
+   * Called immediately *after* command registration
+   * @param client
+   */
+  onCommandInit?: (client: Client) => Promise<void>
+
+  /**
    * Called when the module is initialized, after command registration
    * @param client The client that is being used.
    */

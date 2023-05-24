@@ -77,10 +77,11 @@ async function main () {
   await initStorage()
   await logIn()
   await moduleManager.refreshCommands()
+
   for (const module of moduleManager.getModules()) {
     module.onInit?.(client)?.catch((e) => {
       Sentry.captureException(e)
-      // logger.error(`Error initializing module ${module.name}`, e)
+      logger.error(`Error initializing module ${module.name}`, e)
     })
   }
   const guild = await client.guilds.fetch(config.guildId)
