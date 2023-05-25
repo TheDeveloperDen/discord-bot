@@ -28,7 +28,7 @@ export const ManyHotTakesCommand: Command<ApplicationCommandType.ChatInput> = {
     const takes = await Promise.all(
       Array.from(range(count))
         .map(async () => await generateHotTake(guild))
-    ).then((x) => x.join('\n'))
+    ).then((x) => x.join('\n\n'))
 
     if (count > 10 || takes.length > 2000) {
       const pastebinURL = await upload({ content: takes })
