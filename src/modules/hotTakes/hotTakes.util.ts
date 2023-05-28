@@ -3,6 +3,7 @@ import { Guild } from 'discord.js'
 import { actualMention, isSpecialUser } from '../../util/users.js'
 import { readFileSync } from 'fs'
 import ExpiryMap from 'expiry-map'
+import { logger } from '../../logging.js'
 
 type HotTakeThing = string | {
   take: string
@@ -111,19 +112,26 @@ async function getSpecialUsers (guild: Guild) {
 
 export default async function generateHotTake (guild: Guild) {
   const members = await getSpecialUsers(guild)
-  const randomTake = hotTakeData.takes.randomElement()
 
+  const randomTake = hotTakeData.takes.randomElement()
+  logger.debug(randomTake)
   const takeValue = hotTakeValue(randomTake)
+  logger.debug(takeValue)
   return takeValue.replace(/{[\w|]+}/g, (value) => {
+    logger.debug(value)
     const randomReplacement = value
       .slice(1, -1) // remove the {}
       .split('|') // split into options
       .filter(isValidPlaceholder) // filter out invalid placeholders
       .flatMap((it) => {
-        return placeholders[it](members)
+        logger.debug(it)
+        const rep = placeholders[it](members)
+        logger.debug(rep)
+        return rep
       }) // get the values for each placeholder
       .randomElement() // pick a random value
 
+    logger.debug(randomReplacement)
     return hotTakeValue(randomReplacement)
   })
 }
