@@ -119,9 +119,12 @@ export default async function generateHotTake (guild: Guild) {
     const randomReplacement = value
       .slice(1, -1) // remove the {}
       .split('|') // split into options
-      .map(p => {
-        if (isValidPlaceholder(p)) return p
-        throw new Error(`Invalid placeholder: ${p}`)
+      .map((p: string) => {
+        if (isValidPlaceholder(p)) {
+          return p
+        } else {
+          throw new Error(`Invalid placeholder: ${p as string}`)
+        }
       })
       .flatMap((it) => {
         return placeholders[it](members)
