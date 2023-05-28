@@ -1099,17 +1099,17 @@
     "My new project is going to be attempting to mod {thing} using {technology}, wish me luck!",
     "{language} NEEDS to be interoperable with {language} if it wants to succeed.",
     "Rate this stack out of 10: {thing}, {thing}, with {thing} for the backend and {thing} for the frontend",
-    "It's been {number} years since {thing} was released and it still doesn't have {thing}.",
+    "It's been {age} years since {thing} was released and it still doesn't have {thing}.",
     "I'm going to make a {thing} clone in {language} and it's going to be infinitely better than the original.",
     "I'm sick of these pseudo-intellectual {thing} users, sitting in their ivory towers, looking down on the rest of us.",
     "The {thing} community is so toxic that I'm considering leaving the industry.",
-    "I have been working with {thing} for {number} years, AMA.",
+    "I have been working with {thing} for {age} years, AMA.",
     "Forget about {group}. The real programming genius is {group}. They code like no one else",
     "You call {bigNumber} lines of code a large project? That's cute.",
     "Started learning {language} yesterday. Already built an AI that can solve {problem}. Should I drop out of school?",
     "Just found out that {company} is built entirely on {technology}. No wonder their website crashes every five minutes.",
     "Just discovered a groundbreaking new programming paradigm called {oneWordThing}-driven development. This is going to change everything.",
-    "So called \"entry-level\" role looking for {number} years of experience in {thing}. The industry is a joke.",
+    "So called \"entry-level\" role looking for {age} years of experience in {thing}. The industry is a joke.",
     "As {person} once said, \"{thing} is mid\"."
   ]
 }
