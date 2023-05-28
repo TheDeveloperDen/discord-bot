@@ -4,6 +4,7 @@ import { actualMention, isSpecialUser } from '../../util/users.js'
 import { readFileSync } from 'fs'
 import ExpiryMap from 'expiry-map'
 import { logger } from '../../logging.js'
+import { toJson } from '../../json.js'
 
 type HotTakeThing = string | {
   take: string
@@ -126,12 +127,12 @@ export default async function generateHotTake (guild: Guild) {
       .flatMap((it) => {
         logger.debug(it)
         const rep = placeholders[it](members)
-        logger.debug(rep)
+        logger.debug(toJson(rep))
         return rep
       }) // get the values for each placeholder
       .randomElement() // pick a random value
 
-    logger.debug(randomReplacement)
+    logger.debug(toJson(randomReplacement))
     return hotTakeValue(randomReplacement)
   })
 }
