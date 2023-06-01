@@ -5,7 +5,7 @@ interface Array<T> {
 }
 
 // eslint-disable-next-line no-extend-native
-Array.prototype.randomElement = function randomElement () {
+Array.prototype.randomElement = function randomElement<T> (this: T[]): T {
   if (this.length === 1) {
     return this[0]
   }
