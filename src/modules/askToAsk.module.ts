@@ -13,7 +13,8 @@ const targets = [
   'help me please',
   'can anyone help me',
   'someone help me',
-  'i have a question'
+  'i have a question',
+  'any java experts here'
 ]
   .map((it) => it.toLowerCase())
 
