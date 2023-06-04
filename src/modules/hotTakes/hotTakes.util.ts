@@ -25,7 +25,7 @@ function replaceHotTakeThing (
   }
 }
 
-const hotTakeData: {
+export const hotTakeData: {
   people: HotTakeThing[]
   companies: HotTakeThing[]
   languages: HotTakeThing[]
