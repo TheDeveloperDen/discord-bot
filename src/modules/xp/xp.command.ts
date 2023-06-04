@@ -37,7 +37,8 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
           .setTitle(`Profile of ${user.username}#${user.discriminator}`)
           .setFields({
             name: '🔮 Level',
-            value: `${ddUser.level}`
+            value: `${ddUser.level}`,
+            inline: true
           }, {
             name: '📝 Tier',
             value: `${
@@ -45,7 +46,8 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
                 ? 0
                 : Math.floor(ddUser.level / 10) +
                 1
-            }`
+            }`,
+            inline: true
           }, {
             name: '❗ Daily Streak (Current / Highest)',
             value: `${
@@ -56,13 +58,16 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
               formatDayCount(
                 ddUser.highestDailyStreak
               )
-            }`
+            }`,
+            inline: true
           }, {
             name: '📈 XP Difference (Current Level / Next Level)',
-            value: `${ddUser.xp}/${xpForLevel(ddUser.level + 1)}`
+            value: `${ddUser.xp}/${xpForLevel(ddUser.level + 1)}`,
+            inline: true
           }, {
             name: '⬆️ XP Needed Until Level Up',
-            value: `${xpForLevel(ddUser.level + 1) - ddUser.xp}`
+            value: `${xpForLevel(ddUser.level + 1) - ddUser.xp}`,
+            inline: true
           })
           .setImage('attachment://xp.png')
       ],

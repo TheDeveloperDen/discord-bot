@@ -9,7 +9,7 @@ type HotTakeThing = string | {
   image: string | string[]
 }
 
-function hotTakeValue (thing: HotTakeThing): string {
+export function hotTakeValue (thing: HotTakeThing): string {
   if (typeof thing === 'string') return thing
   return thing.take
 }
