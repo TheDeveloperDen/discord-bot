@@ -1,9 +1,10 @@
 import { createLogger, format, transports } from 'winston'
 
+const timestamp = format.timestamp({
+  format: 'YYYY-MM-DD HH:mm:ss'
+})
 const baseFormat = format.combine(
-  format.timestamp({
-    format: 'YYYY-MM-DD HH:mm:ss'
-  }),
+  timestamp,
   format.errors({ stack: true }),
   format.splat(),
   format.json()
@@ -15,7 +16,7 @@ export const logger = createLogger({
   defaultMeta: { service: 'DevDenBot' },
   transports: [
     // something slightly more readable for the cli
-    new transports.Console({ format: format.cli() }),
+    new transports.Console({ format: format.combine(timestamp, format.cli()) }),
     //
     // - Write all logs with level `error` and below to `error.log`
     // - Write all logs with level `info` and below to `combined.log`
