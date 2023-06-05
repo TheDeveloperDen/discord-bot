@@ -12,7 +12,7 @@ export function initSentry (client: Client) {
     dsn: process.env.SENTRY_DSN,
     release: process.env.npm_package_version ?? process.env.VERSION ?? 'unknown',
     tracesSampleRate: 0.2,
-    profilesSampleRate: 1.0,
+    profilesSampleRate: 0.2,
     integrations: [
       new ProfilingIntegration(),
       ...Sentry.autoDiscoverNodePerformanceMonitoringIntegrations(),
