@@ -3,14 +3,16 @@ import fetch from 'node-fetch'
 import { LearningResource } from './learningResource.model.js'
 import { parse } from 'yaml'
 
-const cache = new Map<string, LearningResource>()
+type FileName = string
+
+const cache = new Map<FileName, LearningResource>()
 
 export async function getResource (
-  name: string
+  name: FileName
 ): Promise<LearningResource | null> {
   name = name.toLowerCase()
   const get = cache.get(name)
-  if (get != null) {
+  if (get) {
     return get
   }
 
@@ -24,39 +26,44 @@ export async function getResource (
 
 export async function updateAllResources () {
   cache.clear();
-  (await queryAll()).forEach((resource) => {
-    cache.set(resource.name.toLowerCase(), resource)
+  (await queryAll()).forEach(([fileName, resource]) => {
+    cache.set(fileName, resource)
     logger.info(`Updated cache for ${resource.name}`)
   })
 }
 
-export function getAllCachedResources () {
-  return Array.from(cache.values())
+export function getAllCachedResources (): Array<[FileName, LearningResource]> {
+  return Array.from(cache)
 }
 
 const baseUrl = 'https://learningresources.developerden.org'
 
-async function queryResource (name: string): Promise<LearningResource | null> {
-  const resource = await fetch(`${baseUrl}/${name}`)
-    .then(async (r) => await r.text())
+async function queryResource (fileName: FileName): Promise<LearningResource | null> {
+  const resource = (await fetch(`${baseUrl}/${fileName}`))
+    .text()
     .then((r) => parse(r))
     .catch(() => null)
 
-  return resource as LearningResource
+  return await resource as LearningResource
 }
 
-async function queryAll (): Promise<LearningResource[]> {
-  const resources = await fetch(`${baseUrl}`)
-    .then(async (r) => await r.json()) as ResourceIndex[]
-  const promises = resources
+async function queryAll (): Promise<Array<Awaited<[string, LearningResource]>>> {
+  const resources: ResourceIndex[] = await (await fetch(baseUrl)).json() as ResourceIndex[]
+
+  const hm: Array<Promise<[FileName, LearningResource]>> = resources
     .filter((r) => !r.name.endsWith('schema.json')) // ignore schema
-    .map(async (r) => await queryResource(r.name))
-  return await Promise.all(promises)
-    .then((r) => r.filter((it) => it != null) as LearningResource[])
+    .map(async (r): Promise<[FileName, LearningResource]> => {
+      const res = await queryResource(r.name)
+      if (res == null) {
+        throw new Error(`Could not get resource ${r.name}`)
+      }
+      return [r.name, res]
+    })
+  return await Promise.all(hm)
 }
 
 interface ResourceIndex {
-  name: string
+  name: FileName
   type: string
   mtime: string
   size: number

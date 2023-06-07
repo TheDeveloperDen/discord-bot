@@ -18,9 +18,9 @@ const resources: Array<{ name: string, value: string }> = []
 export async function updateResourcesForCommands () {
   await updateAllResources()
   const result = getAllCachedResources()
-    .map((it) => ({
-      name: it.name,
-      value: it.name
+    .map(([fileName, res]) => ({
+      name: res.name,
+      value: fileName
     }))
   resources.length = 0
   resources.push(...result)
@@ -31,15 +31,15 @@ const extraFooter =
 
 export function getResourceEmbed (
   client: Client,
-  resource: LearningResource,
+  resourceSet: LearningResource,
   user?: User,
   member?: GuildMember
 ) {
   const embed = createStandardEmbed(member)
-    .setTitle(resource.name)
+    .setTitle(resourceSet.name)
     .setDescription(
-      `**${resource.description}**\n\n` +
-      resource.resources
+      `**${resourceSet.description}**\n\n` +
+      resourceSet.resources
         .map((res) => {
           const pros = res.pros.length === 0
             ? ''
@@ -56,9 +56,9 @@ export function getResourceEmbed (
       extraFooter
     )
 
-  if ((user != null) || (member != null)) {
+  if (!user || !member) {
     const requester = user ?? member?.user
-    if (requester == null) {
+    if (!requester) {
       logger.error(
         'Could not get requester for resource embed. this should never happen.'
       )
@@ -70,15 +70,15 @@ export function getResourceEmbed (
     })
   }
 
-  if (resource.emoji) {
-    const emoji = getEmoji(client, resource.emoji)
+  if (resourceSet.emoji) {
+    const emoji = getEmoji(client, resourceSet.emoji)
 
     if (!emoji) {
       logger.warn(
-        `Could not find emoji ${resource.emoji} for resource ${resource.name}`
+        `Could not find emoji ${resourceSet.emoji} for resource ${resourceSet.name}`
       )
     } else {
-      embed.setTitle(`${stringifyEmoji(emoji)} ${resource.name}`)
+      embed.setTitle(`${stringifyEmoji(emoji)} ${resourceSet.name}`)
     }
   }
   return embed
@@ -144,7 +144,7 @@ const LearningListSubcommand: ExecutableSubcommand = {
   options: [],
 
   async handle (interaction) {
-    const resources = getAllCachedResources().map((i) => i.name).join(', ')
+    const resources = getAllCachedResources().map(([_, res]) => res.name).join(', ')
     const embed = createStandardEmbed(
       interaction.member as GuildMember ?? undefined
     )

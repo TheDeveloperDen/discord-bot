@@ -5,6 +5,7 @@ import {
   ActionRowBuilder,
   ButtonInteraction,
   GuildMember,
+  Interaction,
   SelectMenuBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder
@@ -15,11 +16,8 @@ import { getEmoji, toAPIMessageComponentEmoji } from '../../util/emojis.js'
 import { getResourceEmbed } from '../learning/learning.command.js'
 
 export const InformationButtonListener: EventListener = {
-  async interactionCreate (_, interaction) {
-    if (
-      interaction.isStringSelectMenu() && interaction.customId ===
-      'learningResourcePicker'
-    ) {
+  async interactionCreate (client, interaction: Interaction) {
+    if (interaction.isStringSelectMenu() && interaction.customId === 'learningResourcePicker') {
       const resourceName = interaction.values[0]
       await interaction.deferReply({ ephemeral: true })
       const resource = await getResource(resourceName)
@@ -80,7 +78,7 @@ async function sendLearningResourcesPicker (interaction: ButtonInteraction) {
     .setPlaceholder('Select a resource')
     .setOptions(
       getAllCachedResources()
-        .map((res) => {
+        .map(([_, res]) => {
           const builder = new StringSelectMenuOptionBuilder()
             .setLabel(res.name)
             .setValue(res.name)
