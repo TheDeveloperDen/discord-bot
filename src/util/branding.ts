@@ -11,9 +11,9 @@ export interface BrandingConfig {
 }
 
 export let branding: Required<BrandingConfig> = {
-  ...config.branding,
   name: '',
-  iconUrl: ''
+  iconUrl: 'https://developerden.net/logo.png',
+  ...config.branding
 }
 
 export function setupBranding (guild: Guild) {
