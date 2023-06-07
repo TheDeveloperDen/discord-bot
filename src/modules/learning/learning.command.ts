@@ -27,7 +27,7 @@ export async function updateResourcesForCommands () {
 }
 
 const extraFooter =
-  '\n\n[Contribute to our resource collection](https://github.com/TheDeveloperDen/LearningResources)'
+  '\n[*Contribute to our resource collection!*](https://github.com/TheDeveloperDen/LearningResources)'
 
 function createBulletList (title: string, entries: string[]) {
   if (entries.length === 0) return ''
