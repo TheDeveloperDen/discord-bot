@@ -48,7 +48,7 @@ export function getResourceEmbed (
         .map((res) => {
           const pros = createBulletList('**Pros**\n', res.pros)
           const cons = createBulletList('**Cons**\n', res.cons)
-          const description = (res.description ?? '') + '\n'
+          const description = (res.description ? res.description + '\n' : '')
           const linkedName = `[${res.name}](${res.url})`
           const price = res.price ? `${res.price}` : 'Free!'
           return `${linkedName} - ${price}\n${description}${pros}${cons}\n`
