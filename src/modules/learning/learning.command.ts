@@ -27,11 +27,11 @@ export async function updateResourcesForCommands () {
 }
 
 const extraFooter =
-  '\n[*Contribute to our resource collection!*](https://github.com/TheDeveloperDen/LearningResources)'
+  '\n\n[**Contribute to our resource collection!**](https://github.com/TheDeveloperDen/LearningResources)'
 
 function createBulletList (title: string, entries: string[]) {
   if (entries.length === 0) return ''
-  return `${title}\n${entries.map((i) => '• ' + i).join('\n')}`
+  return `**${title}**\n${entries.map((i) => '• ' + i).join('\n')}`
 }
 
 export function getResourceEmbed (
@@ -46,13 +46,13 @@ export function getResourceEmbed (
       `**${resourceSet.description}**\n\n` +
       resourceSet.resources
         .map((res) => {
-          const pros = createBulletList('**Pros**\n', res.pros)
-          const cons = createBulletList('**Cons**\n', res.cons)
-          const description = (res.description ? res.description + '\n' : '')
+          const pros = createBulletList('Pros', res.pros)
+          const cons = createBulletList('Cons', res.cons)
+          const description = res.description ? `${res.description}\n` : ''
           const linkedName = `[${res.name}](${res.url})`
           const price = res.price ? `${res.price}` : 'Free!'
-          return `${linkedName} - ${price}\n${description}${pros}${cons}\n`
-        }).join('\n') +
+          return `${linkedName} - ${price}${description}\n${pros}\n${cons}`.trim()
+        }).join('\n\n') +
       extraFooter
     )
 
