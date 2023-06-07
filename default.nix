@@ -19,14 +19,8 @@ stdenv.mkDerivation {
     libpng
     librsvg
     pixman
-  #  giflib
- #   libjpeg
     pkgs.darwin.apple_sdk.frameworks.CoreText
   ];
-
- # shellHook = ''
-  #  export NIX_LDFLAGS="-F${pkgs.darwin.apple_sdk.frameworks.CoreText}/Library/Frameworks -framework CoreText $NIX_LDFLAGS";
-  #'';
 
    postPhases = ''
       corepack enable
