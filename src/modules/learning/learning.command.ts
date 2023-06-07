@@ -29,6 +29,11 @@ export async function updateResourcesForCommands () {
 const extraFooter =
   '\n\n[Contribute to our resource collection](https://github.com/TheDeveloperDen/LearningResources)'
 
+function createBulletList (title: string, entries: string[]) {
+  if (entries.length === 0) return ''
+  return `**${title}**\n${entries.map((i) => '• ' + i).join('\n')}`
+}
+
 export function getResourceEmbed (
   client: Client,
   resourceSet: LearningResource,
@@ -41,17 +46,12 @@ export function getResourceEmbed (
       `**${resourceSet.description}**\n\n` +
       resourceSet.resources
         .map((res) => {
-          const pros = res.pros.length === 0
-            ? ''
-            : '\n**Pros**\n' +
-            res.pros.map((i) => '• ' + i).join('\n')
-          const cons = res.cons.length === 0
-            ? ''
-            : '\n**Cons**\n' +
-            res.cons.map((i) => '• ' + i).join('\n')
+          const pros = createBulletList('**Pros**\n', res.pros)
+          const cons = createBulletList('**Cons**\n', res.cons)
+          const description = (res.description ?? '') + '\n'
           const linkedName = `[${res.name}](${res.url})`
           const price = res.price ? `${res.price}` : 'Free!'
-          return `${linkedName} - ${price}${pros}${cons}\n`
+          return `${linkedName} - ${price}\n${description}${pros}${cons}\n`
         }).join('\n') +
       extraFooter
     )
