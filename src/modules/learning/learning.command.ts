@@ -31,7 +31,7 @@ const extraFooter =
 
 function createBulletList (title: string, entries: string[]) {
   if (entries.length === 0) return ''
-  return `**${title}**\n${entries.map((i) => '• ' + i).join('\n')}`
+  return `${title}\n${entries.map((i) => '• ' + i).join('\n')}`
 }
 
 export function getResourceEmbed (
