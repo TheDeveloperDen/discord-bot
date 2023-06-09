@@ -903,7 +903,15 @@
     "Big Data",
     "Virtual Reality",
     "Augmented Reality",
-    "Artificial Intelligence"
+    "Artificial Intelligence",
+    "singleton pattern",
+    "factory method pattern",
+    "observer pattern",
+    "reactive programming",
+    "visitor pattern",
+    "metaprogramming",
+    "decorator pattern",
+    "builder pattern"
   ],
   "problems": [
     "backward compatibility",
@@ -942,7 +950,6 @@
     "dependency hell",
     "web minimization",
     "merge conflicts",
-    "dependency hell",
     "spaghetti code",
     "halting problem"
   ],
