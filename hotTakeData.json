@@ -1117,6 +1117,7 @@
     "Just found out that {company} is built entirely on {technology}. No wonder their website crashes every five minutes.",
     "Just discovered a groundbreaking new programming paradigm called {oneWordThing}-driven development. This is going to change everything.",
     "So called \"entry-level\" role looking for {age} years of experience in {thing}. The industry is a joke.",
-    "As {person} once said, \"{thing} is mid\"."
+    "As {person} once said, \"{thing} is mid\".",
+    "{language}'s syntax protects it from being pretty."
   ]
 }
