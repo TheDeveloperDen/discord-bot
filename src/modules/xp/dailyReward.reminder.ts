@@ -34,7 +34,7 @@ export const scheduleReminder = async (
     scheduledReminders.delete(ddUser.id)
   }
   const time = ddUser.lastDailyTime
-  if (time == undefined) {
+  if (time === undefined) {
     logger.info(`User ${user.user.tag} hasn't claimed their first daily yet`)
     return // don't wanna harass people who haven't claimed their first daily yet
   }

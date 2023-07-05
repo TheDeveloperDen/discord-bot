@@ -81,10 +81,10 @@ export const InfoCommand: Command<ApplicationCommandType.ChatInput> = {
 }
 
 export const format = (val: string | BigInt | number) => {
-  if (typeof val === 'bigint' || typeof val === 'number') {
-    return `\`${val.toLocaleString()}\``
-  } else {
+  if (typeof val === 'string') {
     return `\`${val}\``
+  } else {
+    return `\`${val.toLocaleString()}\``
   }
 }
 

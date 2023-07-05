@@ -9,7 +9,7 @@ import { Command } from 'djs-slash-helper'
 import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord-api-types/v10'
 import { formatDayCount, getActualDailyStreak } from './dailyReward.command.js'
 import { wrapInTransaction } from '../../sentry.js'
-import { format } from '../core/info.command'
+import { format } from '../core/info.command.js'
 
 export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
   name: 'xp',
