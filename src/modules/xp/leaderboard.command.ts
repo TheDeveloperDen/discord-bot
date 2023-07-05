@@ -23,7 +23,7 @@ const info: LeaderboardType[] = [
   {
     value: 'xp',
     name: 'XP',
-    format: (value) => `${value} XP`
+    format: (value) => `${value.toLocaleString()} XP`
   },
   {
     value: 'level',
