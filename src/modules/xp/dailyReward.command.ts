@@ -32,9 +32,7 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
         logger.error('lastClaimTime is null')
         return
       }
-      const nextClaimTime = new Date(
-        lastClaimTime.getTime() + 1000 * 60 * 60 * 24
-      )
+      const nextClaimTime = getNextDailyTimeFrom(lastClaimTime)
       await interaction.followUp({
         ephemeral: true,
         content:
@@ -117,7 +115,7 @@ export async function getActualDailyStreak (ddUser: DDUser): Promise<number> {
 }
 
 /**
- * Gets a user's current daily streak, resetting it to 0 if they haven't used it in 24 hours.
+ * Gets a user's current daily streak, resetting it to 0 if they haven't used it in 48 hours.
  * This function will not save the model
  * @param ddUser The user to get the streak for
  */
@@ -133,4 +131,22 @@ export function getActualDailyStreakWithoutSaving (
   }
 
   return [false, ddUser.currentDailyStreak]
+}
+
+/**
+ * Gets the next time a user can claim their daily reward, or undefined if they have never claimed it before
+ * @param user The user to get the next time for or the last time they claimed it
+ */
+export function getNextDailyTime (user: DDUser): Date | undefined {
+  const lastClaimTime = user.lastDailyTime
+  if (lastClaimTime == undefined) {
+    return
+  }
+  return getNextDailyTimeFrom(lastClaimTime)
+}
+
+export function getNextDailyTimeFrom (date: Date): Date {
+  return new Date(
+    date.getTime() + 1000 * 60 * 60 * 24 // 24 hours after last claim
+  )
 }

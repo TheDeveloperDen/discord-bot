@@ -10,7 +10,6 @@ import { createStandardEmbed } from '../../util/embeds.js'
 import { branding } from '../../util/branding.js'
 import { actualMention } from '../../util/users.js'
 import { getActualDailyStreak } from './dailyReward.command.js'
-import sequelize, { Op } from 'sequelize'
 import { wrapInTransaction } from '../../sentry.js'
 
 interface LeaderboardType extends APIApplicationCommandOptionChoice<string> {
@@ -72,19 +71,9 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
       return
     }
     if (traitInfo.value === 'currentDailyStreak') {
-      // manually refresh all the dailies
-      await DDUser.update({ currentDailyStreak: 0 }, {
-        where: sequelize.where(
-          sequelize.fn(
-            'datediff',
-            sequelize.fn('NOW'),
-            sequelize.col('lastDailyTime')
-          ),
-          {
-            [Op.gte]: 2
-          }
-        )
-      })
+      // manually refresh all the dailies. this is not very efficient
+      const all = await DDUser.findAll()
+      await Promise.all(all.map(getActualDailyStreak))
     }
     const {
       format,
