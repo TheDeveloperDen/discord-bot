@@ -80,12 +80,15 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
       value,
       name
     } = traitInfo
+
     const calculate = traitInfo.calculate ??
       (async (user: DDUser) => await Promise.resolve(user[value]))
+
     const users = await DDUser.findAll({
       order: [[value, 'DESC']],
       limit: 10
     }).then((users) => users.filter(async (it) => await calculate(it) > 0))
+
     if (users.length === 0) {
       await interaction.followUp('No applicable users')
       return
@@ -98,7 +101,7 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
         const discordUser = await guild.client.users.fetch(user.id.toString())
           .catch(() => null)
         return {
-          name: `#${index + 1} - ${format(await calculate(user))}`,
+          name: `${medal(index)} #${index + 1} - ${format(await calculate(user))}`.trimStart(),
           value: discordUser == null
             ? 'Unknown User'
             : actualMention(
@@ -109,6 +112,19 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
     }
     await interaction.followUp({ embeds: [embed] })
   })
+}
+
+function medal (index: number): string {
+  switch (index) {
+    case 0:
+      return '🥇'
+    case 1:
+      return '🥈'
+    case 2:
+      return '🥉'
+    default:
+      return ''
+  }
 }
 
 function formatDays (days: number) {
