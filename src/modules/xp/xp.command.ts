@@ -9,6 +9,7 @@ import { Command } from 'djs-slash-helper'
 import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord-api-types/v10'
 import { formatDayCount, getActualDailyStreak } from './dailyReward.command.js'
 import { wrapInTransaction } from '../../sentry.js'
+import { format } from '../core/info.command'
 
 export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
   name: 'xp',
@@ -62,11 +63,11 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
             inline: true
           }, {
             name: '📈 XP Difference (Current Level / Next Level)',
-            value: `${ddUser.xp}/${xpForLevel(ddUser.level + 1)}`,
+            value: `${format(ddUser.xp)}/${format(xpForLevel(ddUser.level + 1))}`,
             inline: true
           }, {
             name: '⬆️ XP Needed Until Level Up',
-            value: `${xpForLevel(ddUser.level + 1) - ddUser.xp}`,
+            value: `${format(xpForLevel(ddUser.level + 1) - ddUser.xp)}`,
             inline: true
           })
           .setImage('attachment://xp.png')

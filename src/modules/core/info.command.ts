@@ -80,8 +80,8 @@ export const InfoCommand: Command<ApplicationCommandType.ChatInput> = {
   }
 }
 
-const format = (val: string | number) => {
-  if (typeof val === 'number') {
+export const format = (val: string | number) => {
+  if (val instanceof Number) {
     return `\`${val.toLocaleString()}\``
   } else {
     return `\`${val}\``
