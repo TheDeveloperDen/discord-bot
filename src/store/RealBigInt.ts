@@ -15,9 +15,9 @@ class REAL_BIGINT_CLASS extends (Sequelize as any).DataTypes.ABSTRACT {
 
   toSql () { return 'BIGINT(20) UNSIGNED' }
 
-  _stringify = (value: bigint) => String(value)
+  _stringify = (value: bigint | null) => value ? String(value) : null
 
-  _sanitize = (value: string) => BigInt(value)
+  _sanitize = (value: string | null) => value ? BigInt(value) : null
 }
 
 export const REAL_BIGINT = (Utils.classToInvokable(
