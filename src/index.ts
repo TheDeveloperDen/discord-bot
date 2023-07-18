@@ -59,14 +59,14 @@ export const moduleManager = new ModuleManager(
 
 async function logIn () {
   initSentry(client)
-  const token = process.env.BOT_TOKEN
+  const token = process.env.DDB_BOT_TOKEN
   if (!token) {
     logger.error('No token found')
     process.exit(1)
     return client
   }
   logger.info('Logging in')
-  await client.login(process.env.BOT_TOKEN)
+  await client.login(token)
   logger.info('Logged in')
   return client
 }
