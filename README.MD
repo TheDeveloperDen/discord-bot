@@ -56,14 +56,14 @@ The bot requires 2 things to run:
 To configure the bot to use a real SQL database (recommended), define the
 following environment variables:
 
-- `HOST` - The hostname of the database. Mandatory, probably `localhost`
-- `PORT` - The port of the database. Optional, defaults to `3306`
-- `DATABASE` - The name of the database. Optional, defaults to `database`
-- `USERNAME` - The username to use when connecting to the database. Optional,
+- `DDB_HOST` - The hostname of the database. Mandatory, probably `localhost`
+- `DDB_PORT` - The port of the database. Optional, defaults to `3306`
+- `DDB_DATABASE` - The name of the database. Optional, defaults to `database`
+- `DDB_USERNAME` - The username to use when connecting to the database. Optional,
   defaults to `root`
-- `PASSWORD` - The password to use when connecting to the database. Optional,
+- `DDB_PASSWORD` - The password to use when connecting to the database. Optional,
   defaults to `password`
-- `DIALECT` - The SQL dialect to use. Optional, defaults to `postgres`. Must be a
+- `DDB_DIALECT` - The SQL dialect to use. Optional, defaults to `postgres`. Must be a
   valid [Sequelize](https://sequelize.org/) dialect. You may need to install
   additional dependencies to use some dialects.
 

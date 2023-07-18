@@ -9,7 +9,7 @@ import './sentry-hack.js'
 
 export function initSentry (client: Client) {
   Sentry.init({
-    dsn: process.env.SENTRY_DSN,
+    dsn: process.env.DDB_SENTRY_DSN,
     release: process.env.npm_package_version ?? process.env.VERSION ?? 'unknown',
     tracesSampleRate: 0.2,
     profilesSampleRate: 0.2,

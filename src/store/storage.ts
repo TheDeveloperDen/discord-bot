@@ -15,12 +15,12 @@ function sequelizeLog (sql: string, timing?: number) {
 }
 
 export async function initStorage () {
-  const database = process.env.DATABASE ?? 'database'
-  const username = process.env.USERNAME ?? 'root'
-  const password = process.env.PASSWORD ?? 'password'
-  const host = process.env.HOST ?? 'localhost'
-  const port = process.env.PORT ?? '3306'
-  const dialect = process.env.DIALECT ?? 'mariadb'
+  const database = process.env.DDB_DATABASE ?? 'database'
+  const username = process.env.DDB_USERNAME ?? 'root'
+  const password = process.env.DDB_PASSWORD ?? 'password'
+  const host = process.env.DDB_HOST ?? 'localhost'
+  const port = process.env.DDB_PORT ?? '3306'
+  const dialect = process.env.DDB_DIALECT ?? 'postgres'
 
   const commonSequelizeSettings: Options = {
     logging: sequelizeLog,
@@ -31,7 +31,7 @@ export async function initStorage () {
 
   let sequelize: Sequelize
 
-  if (process.env.HOST) {
+  if (process.env.DDB_HOST) {
     const sequelizeOptions: Options = {
       database,
       username,
