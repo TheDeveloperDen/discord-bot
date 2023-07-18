@@ -40,8 +40,10 @@ of a Docker image. To build a docker image, run `nixpacks build .`
 
 ### Nix
 
-This project also has a Nix file to set up a reproducible development
-environment. To access this, run `nix-shell`.
+This project also has a Nix Flake to set up a reproducible development
+environment. To access this, run `nix develop`.
+This is recommended for development, as it will automatically install all the dependencies you need in an isolated
+environment.
 
 ## Running
 
