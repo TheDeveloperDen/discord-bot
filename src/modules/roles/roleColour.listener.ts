@@ -21,7 +21,7 @@ export const RoleColourListener: EventListener = {
     if (!roleId) {
       throw new Error('No colour role found, database call failed?')
     }
-    await newMember.guild.roles.delete(roleId)
+    await newMember.guild.roles.delete(roleId.toString())
     await roleInfo.destroy()
   }
 }

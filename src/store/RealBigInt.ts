@@ -1,29 +1,38 @@
-import { DataType, Utils } from 'sequelize'
-import { Sequelize } from 'sequelize-typescript'
+import { DataTypes, ValidationErrorItem } from '@sequelize/core'
 
-class REAL_BIGINT_CLASS extends (Sequelize as any).DataTypes.ABSTRACT {
-  static key = 'REAL_BIGINT'
-  key = 'REAL_BIGINT'
-
-  static parse (value: string) {
-    return BigInt(value)
+export class RealBigInt extends DataTypes.ABSTRACT<BigInt> {
+  toSql () {
+    return 'BIGINT'
   }
 
-  static validate (value: unknown) {
-    return typeof value === 'bigint'
+  sanitize (value: unknown): unknown {
+    if (value instanceof BigInt || typeof value === 'bigint') {
+      return value
+    }
+
+    if (typeof value === 'string') {
+      return BigInt(value)
+    }
+
+    // @ts-expect-error
+    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+    throw new ValidationErrorItem('Invalid BigInt: ' + value.toString())
   }
 
-  toSql () { return 'BIGINT(20) UNSIGNED' }
+  validate (value: unknown): void {
+    if (!(value instanceof BigInt || typeof value === 'bigint')) {
+      ValidationErrorItem.throwDataTypeValidationError('Value must be a BigInt object')
+    }
+  }
 
-  _stringify = (value: bigint | null) => value ? String(value) : null
+  parseDatabaseValue (value: unknown) {
+    if (typeof value === 'bigint') return value
+    if (typeof value === 'string') return BigInt(value)
+    if (typeof value === 'number') return BigInt(value)
+    if (typeof value === 'boolean') return BigInt(value)
 
-  _sanitize = (value: string | null) => value ? BigInt(value) : null
+    // @ts-expect-error
+    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+    throw new Error('Invalid BigInt: ' + value.toString() + ' (' + typeof value + ')')
+  }
 }
-
-export const REAL_BIGINT = (Utils.classToInvokable(
-  REAL_BIGINT_CLASS
-) as any) as DataType;
-
-(Sequelize as any).DataTypes.REAL_BIGINT = Utils.classToInvokable(
-  REAL_BIGINT_CLASS
-)

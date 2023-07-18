@@ -79,7 +79,7 @@ export async function shouldCountForStats (
   if (msgs == null) {
     return true
   }
-  if (msgs instanceof Message<false>) {
+  if (msgs instanceof Message) {
     return true // this probably won't happen
   }
   for (const msg of msgs) {
@@ -133,10 +133,6 @@ export const giveXp = wrapInTransactionWith(
   async (_, user: GuildMember, xp: number): Promise<XPResult> => {
     const client = user.client
     const ddUser = await getOrCreateUserById(BigInt(user.id))
-    if (!ddUser) {
-      logger.error(`Could not find or create user with id ${user.id}`)
-      return { xpGiven: -1 }
-    }
 
     const multiplier = (user.premiumSince != null) ? 2 : 1
     ddUser.xp += BigInt(xp * multiplier)

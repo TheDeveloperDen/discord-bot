@@ -1,12 +1,12 @@
-import { Transaction } from 'sequelize'
+import { Transaction } from '@sequelize/core'
 // @ts-expect-error: Unreachable code error
 // eslint-disable-next-line no-extend-native
 BigInt.prototype.toJSON = function (): string {
   return this.toString()
 }
 
-// @ts-expect-error: Unreachable code error
 // eslint-disable-next-line no-extend-native
+// @ts-expect-error
 Transaction.prototype.toJSON = function (): string {
   return '<Transaction>' // fixes circular reference
 }

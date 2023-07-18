@@ -1,20 +1,24 @@
-import { Column, Model, Table } from 'sequelize-typescript'
-import { REAL_BIGINT } from '../RealBigInt.js'
+import { InferAttributes, InferCreationAttributes, Model } from '@sequelize/core'
+import {
+  Attribute,
+  ColumnName,
+  NotNull,
+  PrimaryKey,
+  Table
+} from '@sequelize/core/decorators-legacy'
+import { RealBigInt } from '../RealBigInt.js'
 
 @Table({
   tableName: 'RoleColours'
 })
-export class ColourRoles extends Model {
-  @Column({
-    type: REAL_BIGINT,
-    primaryKey: true
-  })
+export class ColourRoles extends Model<InferAttributes<ColourRoles>, InferCreationAttributes<ColourRoles>> {
+  @Attribute(RealBigInt)
+  @PrimaryKey
+  @NotNull
   declare public id: bigint
 
-  @Column({
-    type: REAL_BIGINT,
-    allowNull: false,
-    field: 'colourRole'
-  })
+  @Attribute(RealBigInt)
+  @NotNull
+  @ColumnName('colourRole')
   public role!: bigint
 }

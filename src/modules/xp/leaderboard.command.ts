@@ -1,8 +1,5 @@
-import { GuildMember } from 'discord.js'
+import { APIApplicationCommandOptionChoice, GuildMember } from 'discord.js'
 
-import {
-  APIApplicationCommandOptionChoice
-} from 'discord-api-types/payloads/v10/_interactions/_applicationCommands/_chatInput/shared.js'
 import { DDUser } from '../../store/models/DDUser.js'
 import { Command } from 'djs-slash-helper'
 import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord-api-types/v10'
@@ -12,11 +9,13 @@ import { actualMention } from '../../util/users.js'
 import { getActualDailyStreak } from './dailyReward.command.js'
 import { wrapInTransaction } from '../../sentry.js'
 
+type KeysMatching<T, V> = { [K in keyof T]-?: T[K] extends V ? K : never }[keyof T]
+
 interface LeaderboardType extends APIApplicationCommandOptionChoice<string> {
   calculate?: (user: DDUser) => Promise<number>
-  value: keyof DDUser
+  value: KeysMatching<DDUser, number | bigint>
 
-  format: (value: number) => string
+  format: (value: number | bigint) => string
 }
 
 const info: LeaderboardType[] = [
@@ -81,8 +80,8 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
       name
     } = traitInfo
 
-    const calculate = traitInfo.calculate ??
-      (async (user: DDUser) => await Promise.resolve(user[value]))
+    const calculate: (user: DDUser) => Promise<number | bigint> = traitInfo.calculate ??
+      (async (user: DDUser) => user[value])
 
     const users = await DDUser.findAll({
       order: [[value, 'DESC']],
@@ -100,6 +99,7 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
       fields: await Promise.all(users.map(async (user, index) => {
         const discordUser = await guild.client.users.fetch(user.id.toString())
           .catch(() => null)
+
         return {
           name: `${medal(index)} #${index + 1} - ${format(await calculate(user))}`.trimStart(),
           value: discordUser == null
@@ -127,7 +127,7 @@ function medal (index: number): string {
   }
 }
 
-function formatDays (days: number) {
+function formatDays (days: number | bigint) {
   if (days === 1) {
     return '1 day'
   }

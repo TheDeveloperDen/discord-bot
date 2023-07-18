@@ -1,46 +1,40 @@
 import { inChildOf, inTransactionWith, wrapInTransactionWith } from '../../sentry.js'
 import { logger } from '../../logging.js'
-import { AllowNull, Column, DataType, Model, PrimaryKey, Table } from 'sequelize-typescript'
-import { REAL_BIGINT } from '../RealBigInt.js'
-import { Optional, SaveOptions } from 'sequelize'
+import {
+  DataTypes,
+  InferAttributes,
+  InferCreationAttributes,
+  Model,
+  SaveOptions
+} from '@sequelize/core'
+import { AllowNull, Attribute, NotNull, PrimaryKey, Table } from '@sequelize/core/decorators-legacy'
+import { RealBigInt } from '../RealBigInt.js'
 
-interface DDUserAttributes {
-  id: bigint
-  xp: bigint
-  level: number
-  bumps: number
-  currentDailyStreak: number
-  highestDailyStreak: number
-  lastDailyTime?: Date
-}
-
-interface DDUserCreationAttributes extends Optional<DDUserAttributes, 'id'> {}
-
-@Table({
-  tableName: 'Users'
-})
-export class DDUser extends Model<DDUserAttributes, DDUserCreationAttributes> {
+@Table({ tableName: 'Users' })
+export class DDUser extends Model<InferAttributes<DDUser>, InferCreationAttributes<DDUser>> {
+  @Attribute(RealBigInt)
   @PrimaryKey
-  @Column({ type: REAL_BIGINT })
+  @NotNull
   declare public id: bigint
 
-  @Column(REAL_BIGINT)
+  @Attribute(RealBigInt)
+  @NotNull
   declare public xp: bigint
 
-  @Column(new DataType.INTEGER({ length: 11 }))
+  @Attribute(DataTypes.INTEGER({ length: 11 }))
   declare public level: number
 
-  @Column(new DataType.INTEGER({ length: 11 }))
+  @Attribute(DataTypes.INTEGER({ length: 11 }))
   declare public bumps: number
 
-  @Column(new DataType.INTEGER())
+  @Attribute(DataTypes.INTEGER)
   declare public currentDailyStreak: number
 
-  @Column(new DataType.INTEGER())
+  @Attribute(DataTypes.INTEGER)
   declare public highestDailyStreak: number
 
   @AllowNull
-  @Column(new DataType.DATE())
+  @Attribute(DataTypes.DATE)
   declare public lastDailyTime?: Date
 
   async save (options?: SaveOptions): Promise<this> {
@@ -68,7 +62,7 @@ export class DDUser extends Model<DDUserAttributes, DDUserCreationAttributes> {
 
 export const getOrCreateUserById = wrapInTransactionWith(
   'getOrCreateUserById',
-  (id) => {
+  (id: bigint) => {
     return { data: { id: id.toString() } }
   },
   async (transaction, id: bigint) => {
@@ -95,8 +89,8 @@ export const getOrCreateUserById = wrapInTransactionWith(
           id
         },
         defaults: {
-          id: BigInt(id),
-          xp: BigInt(0),
+          id,
+          xp: 0n,
           level: 0,
           bumps: 0,
           currentDailyStreak: 0,

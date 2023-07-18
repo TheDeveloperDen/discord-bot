@@ -69,14 +69,11 @@ export const scheduleAllReminders = async (client: Client) => {
   const guild = await client.guilds.fetch(config.guildId)
   const list = await guild.members.fetch()
   logger.debug(`Scheduling reminders for ${list.size} members`)
-  await Promise.all(
-    Array.from(list.values())
-      .filter(isSpecialUser)
-      .map(async (member) => {
-        const ddUser = await getOrCreateUserById(BigInt(member.id))
-        await scheduleReminder(client, member, ddUser)
-      })
-  )
+
+  for (const member of Array.from(list.values()).filter(isSpecialUser)) {
+    const ddUser = await getOrCreateUserById(BigInt(member.id))
+    await scheduleReminder(client, member, ddUser)
+  }
 }
 
 const scheduledReminders = new Map<bigint, Job>()

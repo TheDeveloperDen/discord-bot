@@ -1,7 +1,6 @@
 import { config } from './Config.js'
 import * as dotenv from 'dotenv'
 import { Client, GatewayIntentBits, Partials } from 'discord.js'
-// import { logger } from './logging.js'
 import { setupBranding } from './util/branding.js'
 import './util/random.js'
 import ModuleManager from './modules/moduleManager.js'

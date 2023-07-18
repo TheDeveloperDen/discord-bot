@@ -50,7 +50,6 @@ export function parseTimespan (span: string): number {
   const inputSplit = span.matchAll(/(\d+)(\D+)/g)
   let out = 0
   for (const element of inputSplit) {
-    console.log(element)
     const number = parseInt(element[1])
     if (isNaN(number)) continue
     out += number * getDuration(element[2])

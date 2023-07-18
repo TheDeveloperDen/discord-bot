@@ -1,45 +1,40 @@
-import { Column, DataType, Model, Table } from 'sequelize-typescript'
-import { REAL_BIGINT } from '../RealBigInt.js'
-import { Optional } from 'sequelize'
+import {
+  CreationOptional,
+  DataTypes,
+  InferAttributes,
+  InferCreationAttributes,
+  Model
+} from '@sequelize/core'
 
-interface FAQAttributes {
-  id: bigint
-  author: bigint
-  name: string
-  title: string
-  content: string
-}
+import {
+  Attribute,
+  AutoIncrement,
+  NotNull,
+  PrimaryKey,
+  Table
+} from '@sequelize/core/decorators-legacy'
+import { RealBigInt } from '../RealBigInt.js'
 
-interface FAQCreationAttributes extends Optional<FAQAttributes, 'id'> {}
+@Table({ tableName: 'FAQs' })
+export class FAQ extends Model<InferAttributes<FAQ>, InferCreationAttributes<FAQ>> {
+  @Attribute(RealBigInt)
+  @PrimaryKey
+  @AutoIncrement
+  declare public id: CreationOptional<bigint>
 
-@Table({
-  tableName: 'FAQs'
-})
-export class FAQ extends Model<FAQAttributes, FAQCreationAttributes> {
-  @Column({
-    type: REAL_BIGINT,
-    primaryKey: true,
-    autoIncrement: true
-  })
-  declare public id: bigint
-
-  @Column({
-    type: REAL_BIGINT
-  })
+  @Attribute(RealBigInt)
+  @NotNull
   declare public author: bigint
 
-  @Column({
-    type: new DataType.STRING(36)
-  })
+  @Attribute(DataTypes.STRING(64))
+  @NotNull
   declare public name: string
 
-  @Column({
-    type: new DataType.STRING(64)
-  })
+  @Attribute(DataTypes.STRING(64))
+  @NotNull
   declare public title: string
 
-  @Column({
-    type: new DataType.TEXT('long')
-  })
+  @Attribute(DataTypes.TEXT('long'))
+  @NotNull
   declare public content: string
 }

@@ -40,6 +40,7 @@ const ResetSubcommand: ExecutableSubcommand = {
           'You do not have a colour role. Use </rolecolour set:1059214166075912223> to set one'
         )
       ])
+      return
     }
 
     await Promise.all([

@@ -1,7 +1,9 @@
 // Used to add randomElement, eslint is dumb
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-interface Array<T> {
-  randomElement: () => T
+declare global {
+  interface Array<T> {
+    randomElement: () => T
+  }
 }
 
 // eslint-disable-next-line no-extend-native

@@ -2,8 +2,7 @@ import { logger } from '../logging.js'
 import { DDUser } from './models/DDUser.js'
 import { ColourRoles } from './models/ColourRoles.js'
 import { FAQ } from './models/FAQ.js'
-import { ModelCtor, Sequelize, SequelizeOptions } from 'sequelize-typescript'
-import { Dialect, Options } from 'sequelize'
+import { Dialect, Options, Sequelize } from '@sequelize/core'
 
 function sequelizeLog (sql: string, timing?: number) {
   if (timing) {
@@ -23,7 +22,7 @@ export async function initStorage () {
   const port = process.env.PORT ?? '3306'
   const dialect = process.env.DIALECT ?? 'mariadb'
 
-  const commonSequelizeSettings: SequelizeOptions = {
+  const commonSequelizeSettings: Options = {
     logging: sequelizeLog,
     logQueryParameters: true,
     benchmark: true,
@@ -44,11 +43,16 @@ export async function initStorage () {
     }
     sequelize = new Sequelize(sequelizeOptions)
   } else {
-    sequelize = new Sequelize('sqlite::memory:', commonSequelizeSettings)
+    const sequelizeOptions: Options = {
+      dialect: 'sqlite',
+      storage: ':memory:',
+      ...commonSequelizeSettings
+    }
+    sequelize = new Sequelize(sequelizeOptions)
   }
+  await sequelize.authenticate()
 
-  const models: ModelCtor[] = [DDUser, ColourRoles, FAQ]
-
+  const models = [DDUser, ColourRoles, FAQ]
   sequelize.addModels(models)
 
   for (const model of models) {
