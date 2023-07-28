@@ -63,7 +63,6 @@ async function logIn () {
   if (!token) {
     logger.error('No token found')
     process.exit(1)
-    return client
   }
   logger.info('Logging in')
   await client.login(token)

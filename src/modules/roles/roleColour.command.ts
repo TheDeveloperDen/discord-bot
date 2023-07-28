@@ -15,7 +15,7 @@ const ResetSubcommand: ExecutableSubcommand = {
     const member = interaction.member as GuildMember
     const roleInfo = await ColourRoles.findOne({
       where: {
-        id: user.id
+        id: BigInt(user.id)
       }
     })
     if (roleInfo == null) {
