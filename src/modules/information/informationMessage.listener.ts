@@ -78,10 +78,10 @@ async function sendLearningResourcesPicker (interaction: ButtonInteraction) {
     .setPlaceholder('Select a resource')
     .setOptions(
       getAllCachedResources()
-        .map(([_, res]) => {
+        .map(([file, res]) => {
           const builder = new StringSelectMenuOptionBuilder()
             .setLabel(res.name)
-            .setValue(res.name)
+            .setValue(file)
             .setDescription(truncateTo(res.description, 100))
           if (res.emoji) {
             const parse = getEmoji(interaction.client, res.emoji)
