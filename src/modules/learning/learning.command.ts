@@ -16,6 +16,7 @@ import { LearningResource } from './learningResource.model.js'
 const resources: Array<{ name: string, value: string }> = []
 
 export async function updateResourcesForCommands () {
+  logger.debug('Updating resource for commands')
   await updateAllResources()
   const result = getAllCachedResources()
     .map(([fileName, res]) => ({
@@ -24,10 +25,11 @@ export async function updateResourcesForCommands () {
     }))
   resources.length = 0
   resources.push(...result)
+  logger.debug(`resources = ${JSON.stringify(resources)}`)
 }
 
 const extraFooter =
-  '\n\n[**Contribute to our resource collection!**](https://github.com/TheDeveloperDen/LearningResources)'
+    '\n\n[**Contribute to our resource collection!**](https://github.com/TheDeveloperDen/LearningResources)'
 
 function createBulletList (title: string, entries: string[]) {
   if (entries.length === 0) return ''
@@ -44,17 +46,17 @@ export function getResourceEmbed (
   const embed = createStandardEmbed(member)
     .setTitle(resourceSet.name)
     .setDescription(
-      `**${resourceSet.description}**\n\n` +
-      resourceSet.resources
-        .map((res) => {
-          const pros = createBulletList('Pros', res.pros)
-          const cons = createBulletList('Cons', res.cons)
-          const description = res.description ? `${res.description}\n` : ''
-          const linkedName = `[${res.name}](${res.url})`
-          const price = res.price ? `${res.price}` : 'Free!'
-          return `${linkedName} - ${price}${description}\n${pros}\n${cons}`.trim()
-        }).join('\n\n') +
-      extraFooter
+            `**${resourceSet.description}**\n\n` +
+            resourceSet.resources
+              .map((res) => {
+                const pros = createBulletList('Pros', res.pros)
+                const cons = createBulletList('Cons', res.cons)
+                const description = res.description ? `${res.description}\n` : ''
+                const linkedName = `[${res.name}](${res.url})`
+                const price = res.price ? `${res.price}` : 'Free!'
+                return `${linkedName} - ${price}${description}\n${pros}\n${cons}`.trim()
+              }).join('\n\n') +
+            extraFooter
     )
 
   if (!user || !member) {
@@ -76,7 +78,7 @@ export function getResourceEmbed (
 
     if (!emoji) {
       logger.warn(
-        `Could not find emoji ${resourceSet.emoji} for resource ${resourceSet.name}`
+                `Could not find emoji ${resourceSet.emoji} for resource ${resourceSet.name}`
       )
     } else {
       embed.setTitle(`${stringifyEmoji(emoji)} ${resourceSet.name}`)
@@ -104,7 +106,7 @@ const LearningGetSubcommand: ExecutableSubcommand = {
     const resource = await getResource(name)
     if (resource == null) {
       return await interaction.reply(
-        `Could not find resource ${name}`
+                `Could not find resource ${name}`
       )
     }
 
@@ -154,10 +156,10 @@ const LearningListSubcommand: ExecutableSubcommand = {
       .setFooter({
         ...standardFooter(),
         text: `Requested by ${
-          pseudoMention(
-            interaction.user
-          )
-        } | Learning Resources`
+                    pseudoMention(
+                        interaction.user
+                    )
+                } | Learning Resources`
       })
 
     await interaction.reply({

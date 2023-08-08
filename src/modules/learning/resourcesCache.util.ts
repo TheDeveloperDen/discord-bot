@@ -28,7 +28,7 @@ export async function updateAllResources () {
   cache.clear();
   (await queryAll()).forEach(([fileName, resource]) => {
     cache.set(fileName, resource)
-    logger.info(`Updated cache for ${resource.name}`)
+    logger.info(`Updated cache for ${resource.name} to ${JSON.stringify(resource)}`)
   })
 }
 
@@ -39,6 +39,7 @@ export function getAllCachedResources (): Array<[FileName, LearningResource]> {
 const baseUrl = 'https://learningresources.developerden.org'
 
 async function queryResource (fileName: FileName): Promise<LearningResource | null> {
+  logger.debug(`Querying resource ${fileName}...`)
   const resource = (await fetch(`${baseUrl}/${fileName}`))
     .text()
     .then((r) => parse(r))
