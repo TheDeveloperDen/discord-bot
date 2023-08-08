@@ -27,8 +27,7 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
   handle: wrapInTransaction('xp', async (span, interaction) => {
     await interaction.deferReply()
     const user = interaction.options.getUser('member') ?? interaction.user
-    const member = (interaction.options.getMember('member') ??
-      interaction.member) as GuildMember
+    const member = (interaction.options.getMember('member') ?? interaction.member) as GuildMember
     const ddUser = await getOrCreateUserById(BigInt(user.id))
     const xp = ddUser.xp
     const image = createXpImage(xp, member)

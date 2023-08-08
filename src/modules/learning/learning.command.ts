@@ -40,6 +40,7 @@ export function getResourceEmbed (
   user?: User,
   member?: GuildMember
 ) {
+  logger.debug(`Rendering ${JSON.stringify(resourceSet)} as an embed...`)
   const embed = createStandardEmbed(member)
     .setTitle(resourceSet.name)
     .setDescription(
