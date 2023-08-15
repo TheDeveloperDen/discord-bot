@@ -33,7 +33,7 @@ const ResetSubcommand: ExecutableSubcommand = {
       await Promise.all([
         ColourRoles.destroy({
           where: {
-            id: user.id
+            id: BigInt(user.id)
           }
         }),
         interaction.followUp(
@@ -47,7 +47,7 @@ const ResetSubcommand: ExecutableSubcommand = {
       role.delete(),
       ColourRoles.destroy({
         where: {
-          id: user.id
+          id: BigInt(user.id)
         }
       }),
       interaction.followUp('Your role colour has been reset')
@@ -82,7 +82,7 @@ const SetSubcommand: ExecutableSubcommand = {
     const member = interaction.member as GuildMember
     const roleInfo = await ColourRoles.findOne({
       where: {
-        id: user.id
+        id: BigInt(user.id)
       }
     })
     let role
