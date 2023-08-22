@@ -575,6 +575,11 @@
       "take": "IntelliJ",
       "image": "./img/intellij.png"
     },
+    "XCode",
+    "Android Studio",
+    "Flutter",
+    "React Native",
+    "Xamarin",
     {
       "take": "Eclipse",
       "image": "./img/eclipse.png"
