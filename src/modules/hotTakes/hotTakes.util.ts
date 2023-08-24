@@ -5,9 +5,10 @@ import { readFileSync } from 'fs'
 import ExpiryMap from 'expiry-map'
 
 import { LRUCache } from 'lru-cache'
+import { logger } from '../../logging.js'
 
 const thingCache = new LRUCache<string, {}>({
-  max: 100,
+  max: 1000,
   allowStale: false
 })
 
@@ -149,6 +150,7 @@ function weightedRandom (weights: number[]) {
 
 function getWeightedRandom (options: HotTakeThing[]): HotTakeThing {
   const weights = createWeights(options)
+  logger.debug(`Weights: ${JSON.stringify(weights)}`)
 
   const opt = weightedRandom(weights)
   const val = options[opt]
