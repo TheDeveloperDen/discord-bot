@@ -4,6 +4,13 @@ import { actualMention, isSpecialUser } from '../../util/users.js'
 import { readFileSync } from 'fs'
 import ExpiryMap from 'expiry-map'
 
+import { LRUCache } from 'lru-cache'
+
+const thingCache = new LRUCache<string, {}>({
+  max: 100,
+  allowStale: false
+})
+
 type HotTakeThing = string | {
   take: string
   image: string | string[]
@@ -109,14 +116,54 @@ async function getSpecialUsers (guild: Guild) {
   return users
 }
 
+function createWeights (options: HotTakeThing[]) {
+  const weights = options.map((it) => {
+    if (thingCache.get(hotTakeValue(it))) {
+      return 1
+    }
+    return 5
+  })
+  return weights
+}
+
+function weightedRandom (weights: number[]) {
+  let totalWeight = 0
+  let i; let random
+
+  for (i = 0; i < weights.length; i++) {
+    totalWeight += weights[i]
+  }
+
+  random = Math.random() * totalWeight
+
+  for (i = 0; i < weights.length; i++) {
+    if (random < weights[i]) {
+      return i
+    }
+
+    random -= weights[i]
+  }
+
+  return -1
+}
+
+function getWeightedRandom (options: HotTakeThing[]): HotTakeThing {
+  const weights = createWeights(options)
+
+  const opt = weightedRandom(weights)
+  const val = options[opt]
+  thingCache.set(hotTakeValue(val), {})
+  return val
+}
+
 export default async function generateHotTake (guild: Guild) {
   const members = await getSpecialUsers(guild)
 
-  const randomTake = hotTakeData.takes.randomElement()
+  const randomTake = getWeightedRandom(hotTakeData.takes)
 
   const takeValue = hotTakeValue(randomTake)
   return takeValue.replace(/{[\w|]+}/g, (value) => {
-    const randomReplacement = value
+    const randomOptions = value
       .slice(1, -1) // remove the {}
       .split('|') // split into options
       .map((p: string) => {
@@ -129,7 +176,8 @@ export default async function generateHotTake (guild: Guild) {
       .flatMap((it) => {
         return placeholders[it](members)
       }) // get the values for each placeholder
-      .randomElement() // pick a random value
+
+    const randomReplacement = getWeightedRandom(randomOptions)
 
     return hotTakeValue(randomReplacement)
   })

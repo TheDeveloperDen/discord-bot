@@ -1,6 +1,6 @@
 {
   "name": "devdenbot",
-  "version": "7.0.5",
+  "version": "7.1.0",
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
@@ -33,6 +33,7 @@
     "dotenv": "^16.3.1",
     "erlpack": "^0.1.4",
     "expiry-map": "^2.0.0",
+    "lru-cache": "^10.0.1",
     "mariadb": "^3.2.0",
     "node-canvas": "^2.9.0",
     "node-fetch": "^3.3.1",

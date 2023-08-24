@@ -1647,6 +1647,7 @@ __metadata:
     dotenv: ^16.3.1
     erlpack: ^0.1.4
     expiry-map: ^2.0.0
+    lru-cache: ^10.0.1
     mariadb: ^3.2.0
     node-canvas: ^2.9.0
     node-fetch: ^3.3.1
@@ -3341,6 +3342,13 @@ __metadata:
   bin:
     loose-envify: cli.js
   checksum: 6517e24e0cad87ec9888f500c5b5947032cdfe6ef65e1c1936a0c48a524b81e65542c9c3edc91c97d5bddc806ee2a985dbc79be89215d613b1de5db6d1cfe6f4
+  languageName: node
+  linkType: hard
+
+"lru-cache@npm:^10.0.1":
+  version: 10.0.1
+  resolution: "lru-cache@npm:10.0.1"
+  checksum: 06f8d0e1ceabd76bb6f644a26dbb0b4c471b79c7b514c13c6856113879b3bf369eb7b497dad4ff2b7e2636db202412394865b33c332100876d838ad1372f0181
   languageName: node
   linkType: hard
 
