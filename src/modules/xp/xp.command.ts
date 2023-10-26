@@ -10,6 +10,7 @@ import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord-ap
 import { formatDayCount, getActualDailyStreak } from './dailyReward.command.js'
 import { wrapInTransaction } from '../../sentry.js'
 import { format } from '../core/info.command.js'
+import {pseudoMention} from "../../util/users.js";
 
 export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
   name: 'xp',
@@ -34,7 +35,7 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
     await interaction.followUp({
       embeds: [
         createStandardEmbed(member)
-          .setTitle(`Profile of ${user.username}#${user.discriminator}`)
+          .setTitle(`Profile of ${pseudoMention(user)}`)
           .setFields({
             name: '🔮 Level',
             value: `${ddUser.level}`,
