@@ -64,6 +64,8 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
       multiplier
     } = await giveXp(user, xpToGive)
     ddUser.lastDailyTime = new Date()
+    // how many fire emojis to generate, starts at 1 when your streak is over 100 and then increases by 1 for every 50 days
+    const streakMul = ddUser.currentDailyStreak >= 100 ? Math.floor((ddUser.currentDailyStreak - 100) / 50) + 1 : 0
     await Promise.all(
       [
         interaction.followUp({
@@ -72,9 +74,9 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
             createStandardEmbed(user)
               .setTitle('Daily Reward Claimed!')
               .setDescription(
-                `📆 Current Streak = ${
-                  formatDayCount(ddUser.currentDailyStreak)
-                }
+                                `📆 Current Streak = ${
+                                    formatDayCount(ddUser.currentDailyStreak) + ' ' + '🔥'.repeat(streakMul)
+                                }
 ⭐️ + ${xpGiven} XP  ${multiplier ? `(x${multiplier})` : ''}
 ⏰ Come back in 24 hours for a new reward!`
               )
