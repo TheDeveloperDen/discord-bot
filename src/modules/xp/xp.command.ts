@@ -10,7 +10,7 @@ import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord-ap
 import { formatDayCount, getActualDailyStreak } from './dailyReward.command.js'
 import { wrapInTransaction } from '../../sentry.js'
 import { format } from '../core/info.command.js'
-import {pseudoMention} from "../../util/users.js";
+import { pseudoMention } from '../../util/users.js'
 
 export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
   name: 'xp',

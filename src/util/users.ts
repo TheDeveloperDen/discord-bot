@@ -39,4 +39,3 @@ export const isSpecialUser = (user: GuildMember): boolean =>
     user.roles.cache.has(config.roles.staff) ||
     user.roles.cache.has(config.roles.notable ?? '') ||
     user.roles.cache.has('1185946490984738938')
-

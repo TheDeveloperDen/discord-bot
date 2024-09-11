@@ -25,7 +25,7 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
     await interaction.deferReply()
     const ddUser = await getOrCreateUserById(BigInt(user.id))
     const difference = new Date().getTime() -
-      (ddUser.lastDailyTime?.getTime() ?? 0)
+            (ddUser.lastDailyTime?.getTime() ?? 0)
     if (difference < 1000 * 60 * 60 * 24) {
       const lastClaimTime = ddUser.lastDailyTime
       if (lastClaimTime == null) {
@@ -36,17 +36,17 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
       await interaction.followUp({
         ephemeral: true,
         content:
-          `You can only claim your daily reward once every 24 hours. You can claim it again <t:${
-            Math.floor(
-              nextClaimTime.getTime() / 1000
-            )
-          }:R>.`
+                    `You can only claim your daily reward once every 24 hours. You can claim it again <t:${
+                        Math.floor(
+                            nextClaimTime.getTime() / 1000
+                        )
+                    }:R>.`
       })
       logger.info(
-        `Daily reward attempted by ${user.user.tag} in ${
-          new Date().getTime() -
-          startTime
-        }ms`
+                `Daily reward attempted by ${user.user.tag} in ${
+                    new Date().getTime() -
+                    startTime
+                }ms`
       )
       return
     }
@@ -84,10 +84,10 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
       ]
     )
     logger.info(
-      `Daily reward claimed by ${user.user.tag} in ${
-        new Date().getTime() -
-        startTime
-      }ms`
+            `Daily reward claimed by ${user.user.tag} in ${
+                new Date().getTime() -
+                startTime
+            }ms`
     )
     if (isSpecialUser(user)) {
       await scheduleReminder(user.client, user, ddUser)
@@ -123,7 +123,7 @@ export function getActualDailyStreakWithoutSaving (
   ddUser: DDUser
 ): [boolean, number] {
   const difference = new Date().getTime() -
-    (ddUser.lastDailyTime?.getTime() ?? 0)
+        (ddUser.lastDailyTime?.getTime() ?? 0)
   if (difference >= 1000 * 60 * 60 * 24 * 2) {
     // Set streak to 0
     ddUser.currentDailyStreak = 0

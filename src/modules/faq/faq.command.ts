@@ -1,12 +1,12 @@
 import { Command, ExecutableSubcommand } from 'djs-slash-helper'
-import {ApplicationCommandOptionType, ApplicationCommandType, PermissionFlagsBits} from 'discord-api-types/v10'
+import { ApplicationCommandOptionType, ApplicationCommandType, PermissionFlagsBits } from 'discord-api-types/v10'
 import { FAQ } from '../../store/models/FAQ.js'
 import { createFaqEmbed } from './faq.util.js'
 import createFaqModal from './faq.modal.js'
 import { moduleManager } from '../../index.js'
 import { logger } from '../../logging.js'
 import { toJson } from '../../json.js'
-import {GuildMember} from "discord.js";
+import { GuildMember } from 'discord.js'
 
 const choices: Array<{ name: string, value: string }> = []
 
