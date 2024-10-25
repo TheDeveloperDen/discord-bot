@@ -27,6 +27,7 @@
     "@sentry/profiling-node": "^8.35.0",
     "@sentry/tracing": "^7.114.0",
     "@sequelize/core": "^7.0.0-alpha.43",
+    "@sequelize/sqlite3": "^7.0.0-alpha.43",
     "bufferutil": "^4.0.8",
     "canvas": "^2.11.2",
     "discord-api-types": "^0.37.103",
