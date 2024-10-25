@@ -35,7 +35,7 @@ export async function initStorage() {
     if (process.env.DDB_HOST) {
         sequelize = new Sequelize({
             database,
-            username,
+            user: username,
             password,
             host,
             dialect: dialect as DialectName,
