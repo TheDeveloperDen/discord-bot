@@ -24,7 +24,7 @@
         devShells.default = pkgs.mkShell {
 
           buildInputs = with pkgs; [
-            nodejs-18_x
+            nodejs_22
 
             nodePackages.yarn
 
