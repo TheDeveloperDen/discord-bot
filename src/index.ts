@@ -1,6 +1,5 @@
 import {config} from './Config.js'
 import * as dotenv from 'dotenv'
-import "./instrument";
 import {Client, GatewayIntentBits, Partials} from 'discord.js'
 import {setupBranding} from './util/branding.js'
 import './util/random.js'
