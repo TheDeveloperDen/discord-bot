@@ -47,6 +47,10 @@ export async function initStorage() {
         sequelize = new Sequelize({
             dialect: 'sqlite3',
             storage: ':memory:',
+            pool: {
+                idle: Infinity,
+                max: 1
+            },
             ...commonSequelizeSettings
         })
     }
