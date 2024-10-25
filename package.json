@@ -21,8 +21,6 @@
   "author": "Developer Den",
   "license": "MIT",
   "dependencies": {
-    "@discordjs/builders": "^1.9.0",
-    "@discordjs/rest": "^2.4.0",
     "@microsoft/eslint-formatter-sarif": "3.1.0",
     "@sentry/cli": "^2.38.0",
     "@sentry/integrations": "7.119.2",
@@ -33,7 +31,6 @@
     "@sequelize/sqlite3": "^7.0.0-alpha.43",
     "bufferutil": "^4.0.8",
     "canvas": "^3.0.0-rc2",
-    "discord-api-types": "^0.37.103",
     "discord.js": "^14.16.3",
     "djs-slash-helper": "https://github.com/bristermitten/djs-slash-helper.git#commit=1302255f21e14aa5c7bb987c11c7be53b1058f65",
     "dotenv": "^16.4.5",

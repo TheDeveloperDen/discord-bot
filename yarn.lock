@@ -2361,8 +2361,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "devdenbot@workspace:."
   dependencies:
-    "@discordjs/builders": "npm:^1.9.0"
-    "@discordjs/rest": "npm:^2.4.0"
     "@microsoft/eslint-formatter-sarif": "npm:3.1.0"
     "@sentry/cli": "npm:^2.38.0"
     "@sentry/integrations": "npm:7.119.2"
@@ -2382,7 +2380,6 @@ __metadata:
     "@types/validator": "npm:^13.12.2"
     bufferutil: "npm:^4.0.8"
     canvas: "npm:^3.0.0-rc2"
-    discord-api-types: "npm:^0.37.103"
     discord.js: "npm:^14.16.3"
     djs-slash-helper: "https://github.com/bristermitten/djs-slash-helper.git#commit=1302255f21e14aa5c7bb987c11c7be53b1058f65"
     dotenv: "npm:^16.4.5"
