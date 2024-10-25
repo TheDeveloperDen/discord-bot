@@ -25,3 +25,6 @@ eslint-results.sarif
 .flaskenv*
 !.env.project
 !.env.vault
+
+# Sentry Config File
+.sentryclirc

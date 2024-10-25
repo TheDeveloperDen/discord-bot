@@ -7,11 +7,12 @@
     "version": "echo $npm_package_version",
     "lint": "npx eslint 'src/**/*.ts' --fix",
     "build": "tsc --build --clean tsconfig.json && tsc --build tsconfig.json",
-    "build-prod": "tsc -p tsconfig.production.json && ([ -f bin/Config.prod.js ] && mv -f bin/Config.prod.js bin/Config.js) || true",
+    "build-prod": "tsc -p tsconfig.production.json && ([ -f bin/Config.prod.js ] && mv -f bin/Config.prod.js bin/Config.js) || true && yarn sentry:sourcemaps && yarn sentry:sourcemaps && yarn sentry:sourcemaps",
     "watch-dev": "nodemon --exec node --experimental-specifier-resolution=node --loader ts-node/esm src/index.ts",
     "start-built": "node --import bin/instrument.mjs --trace-warnings bin/index.js",
     "build-and-run": "yarn build && yarn start-built",
-    "build-and-run-prod": "yarn lint && yarn build-prod && yarn start-built"
+    "build-and-run-prod": "yarn lint && yarn build-prod && yarn start-built",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org developer-den-59 --project discord-bot ./bin && sentry-cli sourcemaps upload --org developer-den-59 --project discord-bot ./bin"
   },
   "keywords": [],
   "author": "Developer Den",
@@ -20,6 +21,7 @@
     "@discordjs/builders": "^1.9.0",
     "@discordjs/rest": "^2.4.0",
     "@microsoft/eslint-formatter-sarif": "3.1.0",
+    "@sentry/cli": "^2.38.0",
     "@sentry/integrations": "^7.119.2",
     "@sentry/node": "^8.35.0",
     "@sentry/profiling-node": "^8.35.0",
