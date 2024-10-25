@@ -7,7 +7,7 @@
     "version": "echo $npm_package_version",
     "lint": "npx eslint 'src/**/*.ts' --fix",
     "build": "tsc --build --clean tsconfig.json && tsc --build tsconfig.json",
-    "build-prod": "tsc -p tsconfig.production.json && ([ -f bin/Config.prod.js ] && mv -f bin/Config.prod.js bin/Config.js) || true && yarn sentry:sourcemaps && yarn sentry:sourcemaps && yarn sentry:sourcemaps",
+    "build-prod": "tsc -p tsconfig.production.json && ([ -f bin/Config.prod.js ] && mv -f bin/Config.prod.js bin/Config.js) || true && yarn sentry:sourcemaps",
     "watch-dev": "nodemon --exec node --experimental-specifier-resolution=node --loader ts-node/esm src/index.ts",
     "start-built": "node --import bin/instrument.mjs --trace-warnings bin/index.js",
     "build-and-run": "yarn build && yarn start-built",
