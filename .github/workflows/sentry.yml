@@ -37,6 +37,9 @@ jobs:
         uses: borales/actions-yarn@v4
         with:
           cmd: build-prod
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+
 
       - name: Get version from NPM
         id: package-version
