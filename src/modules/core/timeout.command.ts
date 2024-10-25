@@ -41,7 +41,11 @@ export const TimeoutCommand: Command<ApplicationCommandType.ChatInput> = {
       await interaction.reply('Invalid timespan')
     }
 
-    const user = interaction.options.getMember('target') as GuildMember
+    const user = interaction.options.get('target')?.member
+    if (!(user instanceof GuildMember)) {
+      await interaction.reply('Could not find user')
+      return
+    }
     const reason = interaction.options.get('reason', true).value as string
 
     await user.timeout(period, reason)
