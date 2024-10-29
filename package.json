@@ -33,7 +33,7 @@
     "bufferutil": "^4.0.8",
     "canvas": "^3.0.0-rc2",
     "discord.js": "^14.16.3",
-    "djs-slash-helper": "https://github.com/bristermitten/djs-slash-helper.git#1302255f21e14aa5c7bb987c11c7be53b1058f65",
+    "djs-slash-helper": "https://github.com/bristermitten/djs-slash-helper.git#42052a6ee312de1bccb7b570ee655caad56a2aee",
     "dotenv": "^16.4.5",
     "expiry-map": "^2.0.0",
     "lru-cache": "^11.0.1",
