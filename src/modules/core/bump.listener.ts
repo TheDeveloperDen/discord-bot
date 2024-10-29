@@ -16,13 +16,14 @@ export const BumpListener: EventListener = {
         if (!interaction || !(interaction.type == InteractionType.ApplicationCommand)) return
         if (message.author.id != '302050872383242240') return // /disboard user id
         // noinspection JSDeprecatedSymbols don't think there's another way of doing this
-        if (message.interaction?.commandName !== 'bump') return
+        const interactionOld = message.interaction;
+        if (interactionOld?.commandName !== 'bump') return
 
         // since the bump failed message is ephemeral, we know if we can see the message then the bump succeeded!
-        const ddUser = await getOrCreateUserById(BigInt(message.author.id))
+        const ddUser = await getOrCreateUserById(BigInt(interactionOld.user.id))
 
         ddUser.bumps += 1
-        logger.info(`User ${message.author.tag} bumped! Total bumps: ${ddUser.bumps}`)
+        logger.info(`User ${interactionOld.user.id} bumped! Total bumps: ${ddUser.bumps}`)
         await ddUser.save()
 
         lastBumpTime = new Date()
