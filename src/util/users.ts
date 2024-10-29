@@ -30,7 +30,7 @@ export const actualMention = (
 
 export const mentionWithNoPingMessage = (user: GuildMember): string =>
   userShouldBePinged(user)
-    ? `<@${user.id}> (Don't want to be pinged? </role No Ping:1059214166075912222>)`
+    ? `<@${user.id}> (Don't want to be pinged? </no-ping:1300906483403325490>)`
     : pseudoMention(user.user)
 
 export const isSpecialUser = (user: GuildMember): boolean =>
