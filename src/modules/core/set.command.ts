@@ -5,7 +5,8 @@ import {
     Colors,
     CommandInteraction,
     ComponentType,
-    GuildMember, PartialGroupDMChannel,
+    GuildMember,
+    PartialGroupDMChannel,
     StageChannel
 } from 'discord.js'
 import {Command} from 'djs-slash-helper'
@@ -14,6 +15,7 @@ import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-
 import {DDUser, getOrCreateUserById} from '../../store/models/DDUser.js'
 import {createStandardEmbed} from '../../util/embeds.js'
 import {mention} from '../../util/users.js'
+import {levelForXp} from "../xp/xpRoles.util.js";
 
 export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
     type: ApplicationCommandType.ChatInput,
@@ -148,6 +150,7 @@ const setters = new Map([
     [
         'xp', (user: DDUser, value: number) => {
         user.xp = BigInt(value)
+        user.level = levelForXp(user.xp)
     }],
     [
         'bumps', (user: DDUser, value: number) => {
