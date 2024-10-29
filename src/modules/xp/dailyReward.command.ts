@@ -69,7 +69,7 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
                 ddUser.highestDailyStreak = ddUser.currentDailyStreak
             }
 
-            const xpToGive = 50 + 20 * (ddUser.currentDailyStreak - 1)
+            const xpToGive = 50 + 10 * (ddUser.currentDailyStreak - 1)
             const {
                 xpGiven,
                 multiplier
