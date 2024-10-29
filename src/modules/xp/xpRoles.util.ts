@@ -21,7 +21,6 @@ export async function levelUp(
     user: GuildMember,
     ddUser: DDUser
 ) {
-    let level = ddUser.level
     let newLevel = levelForXp(ddUser.xp)
     logger.info(
         `${ddUser.id} xp (${ddUser.xp}) was enough to level up to ${newLevel} (${
@@ -33,8 +32,8 @@ export async function levelUp(
     if (newLevel === ddUser.level) {
         return
     }
-    ddUser.level = level
-    logger.info(`${ddUser.id} leveling up to ${level}`)
+    ddUser.level = newLevel
+    logger.info(`${ddUser.id} leveling up to ${newLevel}`)
     await applyTierRoles(client, user, ddUser)
     await sendLevelUpMessage(client, user, ddUser)
 }
