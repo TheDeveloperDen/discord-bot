@@ -28,7 +28,6 @@ export const config: Config = {
       langs: '932638149618835466'
     },
     noPing: '932637353263128577',
-    usersAllowedToSet: []
   },
   clientId: '932387188585398353',
   guildId: '904478147351806012',

@@ -1,40 +1,20 @@
 import {config} from '../../Config.js'
 import {Command} from 'djs-slash-helper'
-import {GuildMember, Role} from 'discord.js'
-import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10'
+import {GuildMember} from 'discord.js'
+import {ApplicationCommandType} from 'discord-api-types/v10'
 import * as Sentry from '@sentry/node'
 
-const allowedRoles = [
-    ...config.roles.usersAllowedToSet,
-    config.roles.noPing
-]
 
-export const RoleCommand: Command<ApplicationCommandType.ChatInput> = {
-    name: 'role',
-    description: 'Get or remove a role',
+export const NoPingCommand: Command<ApplicationCommandType.ChatInput> = {
+    name: 'no-ping',
+    description: 'Toggle whether or not the bot will ping you',
     type: ApplicationCommandType.ChatInput,
-    options: [
-        {
-            type: ApplicationCommandOptionType.Role,
-            name: 'role',
-            description: 'The role to get',
-            required: true
-        }
-    ],
+    options: [],
 
     handle: async (interaction) => await Sentry.startSpan(
-        {name: 'RoleCommand#handle'},
+        {name: 'NoPingCommand#handle'},
         async () => {
-            const role = interaction.options.get('role', true).role as Role
-            if (!allowedRoles.includes(role.id)) {
-                return await interaction.reply(
-                    `You cannot get or remove this Role. Options: ${
-                        allowedRoles.map(
-                            (r) => `<@&${r}>`
-                        ).join(', ')
-                    }`
-                )
-            }
+
 
             const user = interaction.member as GuildMember
             if (user == null) {
@@ -42,12 +22,12 @@ export const RoleCommand: Command<ApplicationCommandType.ChatInput> = {
                     'You must be a member of this server to use this command.'
                 )
             }
-            if (user.roles.cache.has(role.id)) {
-                await user.roles.remove(role.id)
-                await interaction.reply(`Removed role <@&${role.id}>`)
+            if (user.roles.cache.has(config.roles.noPing)) {
+                await user.roles.remove(config.roles.noPing)
+                await interaction.reply(`You will be pinged now!`)
             } else {
-                await user.roles.add(role.id)
-                await interaction.reply(`Added role <@&${role.id}>`)
+                await user.roles.add(config.roles.noPing)
+                await interaction.reply(`You will no longer be pinged!`)
             }
         })
 }

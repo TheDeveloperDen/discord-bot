@@ -28,7 +28,6 @@ export interface Config {
     staff: Snowflake
     separators: { general: Snowflake, tags: Snowflake, langs: Snowflake }
     noPing: Snowflake
-    usersAllowedToSet: Snowflake[]
   }
   branding: BrandingConfig
   informationMessage?: InformationMessage
