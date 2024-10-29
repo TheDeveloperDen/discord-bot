@@ -45,39 +45,45 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
                 createStandardEmbed(member)
                     .setTitle(`Profile of ${pseudoMention(targetUser)}`)
                     .setFields({
-                        name: '🔮 Level',
-                        value: `${ddUser.level}`,
-                        inline: true
-                    }, {
-                        name: '📝 Tier',
-                        value: `${
-                            ddUser.level === 0
-                                ? 0
-                                : Math.floor(ddUser.level / 10) +
-                                1
-                        }`,
-                        inline: true
-                    }, {
-                        name: '❗ Daily Streak (Current / Highest)',
-                        value: `${
-                            formatDayCount(
-                                await getActualDailyStreak(ddUser)
-                            )
-                        } / ${
-                            formatDayCount(
-                                ddUser.highestDailyStreak
-                            )
-                        }`,
-                        inline: true
-                    }, {
-                        name: '📈 XP Difference (Current Level / Next Level)',
-                        value: `${format(ddUser.xp)}/${format(xpForLevel(ddUser.level + 1))}`,
-                        inline: true
-                    }, {
-                        name: '⬆️ XP Needed Until Level Up',
-                        value: `${format(xpForLevel(ddUser.level + 1) - ddUser.xp)}`,
-                        inline: true
-                    })
+                            name: '🔮 Level',
+                            value: `${ddUser.level}`,
+                            inline: true
+                        }, {
+                            name: '📝 Tier',
+                            value: `${
+                                ddUser.level === 0
+                                    ? 0
+                                    : Math.floor(ddUser.level / 10) +
+                                    1
+                            }`,
+                            inline: true
+                        }, {
+                            name: '❗ Daily Streak (Current / Highest)',
+                            value: `${
+                                formatDayCount(
+                                    await getActualDailyStreak(ddUser)
+                                )
+                            } / ${
+                                formatDayCount(
+                                    ddUser.highestDailyStreak
+                                )
+                            }`,
+                            inline: true
+                        }, {
+                            name: '📈 XP Difference (Current Level / Next Level)',
+                            value: `${format(ddUser.xp)}/${format(xpForLevel(ddUser.level + 1))}`,
+                            inline: true
+                        }, {
+                            name: '⬆️ XP Needed Until Level Up',
+                            value: `${format(xpForLevel(ddUser.level + 1) - ddUser.xp)}`,
+                            inline: true
+                        },
+                        {
+                            name: '❗Bumps',
+                            value: format(ddUser.bumps),
+                            inline: true
+                        }
+                    )
                     .setImage('attachment://xp.png')
             ],
             files: [
