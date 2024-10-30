@@ -2,9 +2,11 @@ import {logger} from '../logging.js'
 import {DDUser} from './models/DDUser.js'
 import {ColourRoles} from './models/ColourRoles.js'
 import {FAQ} from './models/FAQ.js'
-import {Sequelize} from '@sequelize/core'
-import type {PersistedSequelizeOptions} from "@sequelize/core/_non-semver-use-at-your-own-risk_/sequelize.internals.js";
-import {DialectName} from "@sequelize/core/_non-semver-use-at-your-own-risk_/sequelize.js";
+import {AbstractDialect, DialectName, Sequelize} from '@sequelize/core'
+
+import {SqliteDialect} from '@sequelize/sqlite3';
+import {ConnectionConfig} from "pg";
+
 
 function sequelizeLog(sql: string, timing?: number) {
     if (timing) {
@@ -24,34 +26,31 @@ export async function initStorage() {
     const port = process.env.DDB_PORT ?? '3306'
     const dialect = process.env.DDB_DIALECT ?? 'postgres'
 
-    const commonSequelizeSettings: PersistedSequelizeOptions<any> = {
-        logging: sequelizeLog,
-        logQueryParameters: true,
-        benchmark: true,
-    }
 
     let sequelize: Sequelize
 
     if (process.env.DDB_HOST) {
-        sequelize = new Sequelize({
-            database,
+        sequelize = new Sequelize<AbstractDialect<object, ConnectionConfig>>({
+            dialect: (dialect as DialectName),
+            database: database,
             user: username,
             password,
             host,
-            dialect: dialect as DialectName,
             port: parseInt(port),
-            ...commonSequelizeSettings
+            logging: sequelizeLog,
+            benchmark: true
         })
     } else {
-
         sequelize = new Sequelize({
-            dialect: 'sqlite3',
+            dialect: SqliteDialect,
+
             storage: ':memory:',
             pool: {
                 idle: Infinity,
                 max: 1
             },
-            ...commonSequelizeSettings
+            logging: sequelizeLog,
+            benchmark: true
         })
     }
     await sequelize.authenticate()

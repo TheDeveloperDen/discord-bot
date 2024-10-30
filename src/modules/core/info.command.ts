@@ -80,7 +80,7 @@ export const InfoCommand: Command<ApplicationCommandType.ChatInput> = {
   }
 }
 
-export const format = (val: string | BigInt | number) => {
+export const format = (val: string | bigint | number) => {
   if (typeof val === 'string') {
     return `\`${val}\``
   } else {

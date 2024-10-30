@@ -4,7 +4,6 @@ import {logger} from './logging.js'
 import './sentry-hack.js'
 
 export function initSentry(client: Client) {
-
     process.on('unhandledRejection', (error) => {
         logger.error(error)
         Sentry.captureException(error)
@@ -22,7 +21,7 @@ export function initSentry(client: Client) {
 }
 
 // TODO remove
-export function wrapInTransaction<A extends any[], T>(
+export function wrapInTransaction<A extends Array<Item>, Item, T>(
     name: string,
     f: (trans: Sentry.Span, ...a: A) => T
 ): (...a: A) => T {
@@ -32,6 +31,3 @@ export function wrapInTransaction<A extends any[], T>(
         })
     }
 }
-
-
-

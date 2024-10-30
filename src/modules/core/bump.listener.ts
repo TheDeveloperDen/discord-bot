@@ -1,9 +1,9 @@
-import {EventListener} from "../module.js";
-import {ChannelType, InteractionType} from "discord-api-types/v10";
-import {getOrCreateUserById} from "../../store/models/DDUser.js";
-import {logger} from "../../logging.js";
-import {config} from "../../Config.js";
-import {Client} from "discord.js";
+import {EventListener} from '../module.js'
+import {ChannelType, InteractionType} from 'discord-api-types/v10'
+import {getOrCreateUserById} from '../../store/models/DDUser.js'
+import {logger} from '../../logging.js'
+import {config} from '../../Config.js'
+import {Client} from 'discord.js'
 
 export const BumpListener: EventListener = {
     ready: async (client) => {
@@ -12,11 +12,10 @@ export const BumpListener: EventListener = {
     messageCreate: async (client, message) => {
         const interaction = message.interactionMetadata
 
-
         if (!interaction || !(interaction.type == InteractionType.ApplicationCommand)) return
         if (message.author.id != '302050872383242240') return // /disboard user id
         // noinspection JSDeprecatedSymbols don't think there's another way of doing this
-        const interactionOld = message.interaction;
+        const interactionOld = message.interaction
         if (interactionOld?.commandName !== 'bump') return
 
         // since the bump failed message is ephemeral, we know if we can see the message then the bump succeeded!
@@ -39,7 +38,6 @@ function scheduleBumpReminder(client: Client) {
     logger.info('Scheduled bump reminder for 2 hours from now')
 }
 
-
 async function sendBumpNotification(client: Client) {
     // if the last bump was less than 2 hours ago, don't send another notification
     if (new Date().getTime() - lastBumpTime.getTime() < 60 * 60 * 1000 * 2) {
@@ -57,7 +55,7 @@ async function sendBumpNotification(client: Client) {
         return
     }
 
-    const bumpNotificationsRoleId = config.roles.bumpNotifications;
+    const bumpNotificationsRoleId = config.roles.bumpNotifications
     if (!bumpNotificationsRoleId) {
         logger.error('Bump notifications role not found')
         return

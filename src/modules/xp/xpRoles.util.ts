@@ -1,11 +1,11 @@
-import {Client, GuildMember, TextChannel} from 'discord.js'
-import {DDUser} from '../../store/models/DDUser.js'
-import {modifyRoles} from '../../util/roles.js'
-import {config} from '../../Config.js'
-import {createStandardEmbed} from '../../util/embeds.js'
-import {actualMention, mentionWithNoPingMessage, pseudoMention} from '../../util/users.js'
-import {tierRoleId, xpForLevel} from './xpForMessage.util.js'
-import {logger} from '../../logging.js'
+import { Client, GuildMember, TextChannel } from 'discord.js'
+import { DDUser } from '../../store/models/DDUser.js'
+import { modifyRoles } from '../../util/roles.js'
+import { config } from '../../Config.js'
+import { createStandardEmbed } from '../../util/embeds.js'
+import { actualMention, mentionWithNoPingMessage, pseudoMention } from '../../util/users.js'
+import { tierRoleId, xpForLevel } from './xpForMessage.util.js'
+import { logger } from '../../logging.js'
 
 /**
  * Level up a user as many times as they necessary,
@@ -16,83 +16,83 @@ import {logger} from '../../logging.js'
  * @param user guild member
  * @param ddUser DDUser for the guild member
  */
-export async function levelUp(
-    client: Client,
-    user: GuildMember,
-    ddUser: DDUser
+export async function levelUp (
+  client: Client,
+  user: GuildMember,
+  ddUser: DDUser
 ) {
-    let newLevel = levelForXp(ddUser.xp)
-    logger.info(
+  const newLevel = levelForXp(ddUser.xp)
+  logger.info(
         `${ddUser.id} xp (${ddUser.xp}) was enough to level up to ${newLevel} (${
             xpForLevel(
                 newLevel
             )
         })`
-    )
-    if (newLevel === ddUser.level) {
-        return
-    }
-    ddUser.level = newLevel
-    logger.info(`${ddUser.id} leveling up to ${newLevel}`)
-    await applyTierRoles(client, user, ddUser)
-    await sendLevelUpMessage(client, user, ddUser)
+  )
+  if (newLevel === ddUser.level) {
+    return
+  }
+  ddUser.level = newLevel
+  logger.info(`${ddUser.id} leveling up to ${newLevel}`)
+  await applyTierRoles(client, user, ddUser)
+  await sendLevelUpMessage(client, user, ddUser)
 }
 
-export function levelForXp(xp: bigint) {
-    let level = 0
-    while (xp >= xpForLevel(level + 1)) {
-        level++
-    }
-    return level
+export function levelForXp (xp: bigint) {
+  let level = 0
+  while (xp >= xpForLevel(level + 1)) {
+    level++
+  }
+  return level
 }
 
-async function applyTierRoles(
-    client: Client,
-    user: GuildMember,
-    ddUser: DDUser
+async function applyTierRoles (
+  client: Client,
+  user: GuildMember,
+  ddUser: DDUser
 ) {
-    const tier = tierRoleId(ddUser.level)
-    await modifyRoles(client, user, {
-        toAdd: [tier],
-        toRemove: config.roles.tiers.filter((it) => it !== tier)
-    })
+  const tier = tierRoleId(ddUser.level)
+  await modifyRoles(client, user, {
+    toAdd: [tier],
+    toRemove: config.roles.tiers.filter((it) => it !== tier)
+  })
 }
 
-async function sendLevelUpMessage(
-    client: Client,
-    member: GuildMember,
-    ddUser: DDUser
+async function sendLevelUpMessage (
+  client: Client,
+  member: GuildMember,
+  ddUser: DDUser
 ) {
-    const user = member.user
-    const channel = await client.channels.fetch(
-        config.channels.botCommands
-    ) as TextChannel
-    if (!channel) {
-        console.error(
+  const user = member.user
+  const channel = await client.channels.fetch(
+    config.channels.botCommands
+  ) as TextChannel
+  if (!channel) {
+    console.error(
             `Could not find level up channel with id ${config.channels.botCommands}`
-        )
-        return
-    }
-    const embed = createStandardEmbed(member)
-        .setTitle('⚡ Level Up!')
-        .setAuthor({
-            name: pseudoMention(user),
-            iconURL: user.avatarURL() ?? undefined
-        })
-        .setFields({
-            name: '📈 XP',
-            value: `${ddUser.xp}/${xpForLevel(ddUser.level + 1)}`
-        })
-        .setDescription(
-            `${actualMention(member)}, you leveled up to level **${ddUser.level}**!`
-        )
-
-    const message = mentionWithNoPingMessage(member)
-    await channel.send({
-        content: message,
-        embeds: [embed]
+    )
+    return
+  }
+  const embed = createStandardEmbed(member)
+    .setTitle('⚡ Level Up!')
+    .setAuthor({
+      name: pseudoMention(user),
+      iconURL: user.avatarURL() ?? undefined
     })
+    .setFields({
+      name: '📈 XP',
+      value: `${ddUser.xp}/${xpForLevel(ddUser.level + 1)}`
+    })
+    .setDescription(
+            `${actualMention(member)}, you leveled up to level **${ddUser.level}**!`
+    )
+
+  const message = mentionWithNoPingMessage(member)
+  await channel.send({
+    content: message,
+    embeds: [embed]
+  })
 }
 
 export const tierOf = (level: number) =>
-    level <= 0 ? 0 : 1 + Math.floor(level / 10)
+  level <= 0 ? 0 : 1 + Math.floor(level / 10)
