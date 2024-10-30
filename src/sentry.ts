@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/node'
 import {Client} from 'discord.js'
 import {logger} from './logging.js'
-import './sentry-hack.js'
+
 
 export function initSentry(client: Client) {
     process.on('unhandledRejection', (error) => {
