@@ -1,25 +1,25 @@
-import { ColorResolvable, EmbedBuilder, GuildMember, PartialGuildMember } from 'discord.js'
-import { branding } from './branding.js'
-import { EmbedFooterOptions } from '@discordjs/builders'
+import {ColorResolvable, EmbedBuilder, GuildMember, PartialGuildMember} from 'discord.js'
+import {branding} from './branding.js'
+import {EmbedFooterOptions} from '@discordjs/builders'
 
-export function createStandardEmbed (user?: GuildMember | PartialGuildMember): EmbedBuilder {
-  const builder = new EmbedBuilder()
-  builder.setColor(
-    user?.roles?.color?.hexColor ?? branding.color as ColorResolvable
-  )
-  const options = standardFooter()
-  builder.setFooter(options)
-  builder.setTimestamp(new Date())
-  return builder
+export function createStandardEmbed(user?: GuildMember | PartialGuildMember): EmbedBuilder {
+    const builder = new EmbedBuilder()
+    builder.setColor(
+        user?.roles?.color?.hexColor ?? branding.color as ColorResolvable
+    )
+    const options = standardFooter()
+    builder.setFooter(options)
+    builder.setTimestamp(new Date())
+    return builder
 }
 
 export const standardFooter = (): EmbedFooterOptions => {
-  const b = branding
-  if (b.name === '') throw new Error('Branding name is empty. Have we finished initialising?')
-  return (
-    {
-      text: b.name,
-      iconURL: b.iconUrl
-    }
-  )
+    const b = branding
+    if (b.name === '') throw new Error('Branding name is empty. Have we finished initialising?')
+    return (
+        {
+            text: b.name,
+            iconURL: b.iconUrl
+        }
+    )
 }
