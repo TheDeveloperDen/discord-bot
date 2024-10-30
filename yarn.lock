@@ -2578,7 +2578,7 @@ __metadata:
     bufferutil: "npm:^4.0.8"
     canvas: "npm:^3.0.0-rc2"
     discord.js: "npm:^14.16.3"
-    djs-slash-helper: "https://github.com/bristermitten/djs-slash-helper.git#1302255f21e14aa5c7bb987c11c7be53b1058f65"
+    djs-slash-helper: "git+https://github.com/bristermitten/djs-slash-helper.git#1302255f21e14aa5c7bb987c11c7be53b1058f65"
     dotenv: "npm:^16.4.5"
     eslint: "npm:^9.13.0"
     expiry-map: "npm:^2.0.0"
@@ -2672,9 +2672,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"djs-slash-helper@https://github.com/bristermitten/djs-slash-helper.git#1302255f21e14aa5c7bb987c11c7be53b1058f65":
+"djs-slash-helper@git+https://github.com/bristermitten/djs-slash-helper.git#1302255f21e14aa5c7bb987c11c7be53b1058f65":
   version: 2.0.0
-  resolution: "djs-slash-helper@git+ssh://git@github.com/bristermitten/djs-slash-helper.git#commit=1302255f21e14aa5c7bb987c11c7be53b1058f65"
+  resolution: "djs-slash-helper@https://github.com/bristermitten/djs-slash-helper.git#commit=1302255f21e14aa5c7bb987c11c7be53b1058f65"
   dependencies:
     "@discordjs/rest": "npm:^2.4.0"
     discord-api-types: "npm:^0.37.103"
