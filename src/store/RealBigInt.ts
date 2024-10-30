@@ -3,6 +3,8 @@ import {DataTypes, ValidationErrorItem} from '@sequelize/core'
 export class RealBigInt extends DataTypes.ABSTRACT<bigint> {
     toSql() {
         return 'BIGINT'
+        // this is actually kind of bad, as it will use BIGINT on sqlite too, potentially losing data
+        // however since sqlite is only used for testing i basically don't care
     }
 
     sanitize(value: unknown): unknown {
