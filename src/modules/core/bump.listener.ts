@@ -27,6 +27,8 @@ export const BumpListener: EventListener = {
 
         lastBumpTime = new Date()
         scheduleBumpReminder(client)
+
+        await message.react('❤️')
     }
 }
 
