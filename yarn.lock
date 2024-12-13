@@ -1043,6 +1043,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@sentry/core@npm:7.120.2":
+  version: 7.120.2
+  resolution: "@sentry/core@npm:7.120.2"
+  dependencies:
+    "@sentry/types": "npm:7.120.2"
+    "@sentry/utils": "npm:7.120.2"
+  checksum: 10c0/2146fa1fb21303ee955529b64d3a82a9e4f6869479be4e6eb88ef354fcf2bd3e281179d79e1cde477a87759ba9d35e98fc323961e449dc1f01cd26dba0f424b9
+  languageName: node
+  linkType: hard
+
 "@sentry/core@npm:8.43.0":
   version: 8.43.0
   resolution: "@sentry/core@npm:8.43.0"
@@ -1050,15 +1060,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/integrations@npm:7.120.1":
-  version: 7.120.1
-  resolution: "@sentry/integrations@npm:7.120.1"
+"@sentry/integrations@npm:7.120.2":
+  version: 7.120.2
+  resolution: "@sentry/integrations@npm:7.120.2"
   dependencies:
-    "@sentry/core": "npm:7.120.1"
-    "@sentry/types": "npm:7.120.1"
-    "@sentry/utils": "npm:7.120.1"
+    "@sentry/core": "npm:7.120.2"
+    "@sentry/types": "npm:7.120.2"
+    "@sentry/utils": "npm:7.120.2"
     localforage: "npm:^1.8.1"
-  checksum: 10c0/3383b529abf57cc7f37cd6d5cce217e77a4326c262c9f063ebb45b446bcefe9999597493d5641bde1ba250ae62c53cc1536ccda24f822d8b04b878580a8e3410
+  checksum: 10c0/ef5ae36c0cd15492b69c62388775179f1d1274c99767b2870e001fdd05e67c2a92c01314f83c08b7ca47d791a619dccec2cf97ed3718ba51e56838772a1a04cc
   languageName: node
   linkType: hard
 
@@ -1151,6 +1161,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@sentry/types@npm:7.120.2":
+  version: 7.120.2
+  resolution: "@sentry/types@npm:7.120.2"
+  checksum: 10c0/1077bdbdb1d7ea8207bcb8f187b16763cdf14e5e61d45ecce3b4fb1e468fa0b59fb6a52c64252ffaab17c263fe6ccaf6c1840344accbd98aeb7c9a5963561ab8
+  languageName: node
+  linkType: hard
+
 "@sentry/types@npm:^8.43.0":
   version: 8.43.0
   resolution: "@sentry/types@npm:8.43.0"
@@ -1166,6 +1183,15 @@ __metadata:
   dependencies:
     "@sentry/types": "npm:7.120.1"
   checksum: 10c0/bff650f6019e2ec44af46e4a80faf00aa2978a278c19cec464b7a0718c19cc514c82747a6e58c7443cd12bf64263b29a25c173581484290b85ad7ececd31c76e
+  languageName: node
+  linkType: hard
+
+"@sentry/utils@npm:7.120.2":
+  version: 7.120.2
+  resolution: "@sentry/utils@npm:7.120.2"
+  dependencies:
+    "@sentry/types": "npm:7.120.2"
+  checksum: 10c0/22138d83ccbaae3d0ac86a065e7be61eba9caa7b41ee97f3f2b95376cc4c6449ffa70be2d976d27ef28cfa0b47401ab7b8d70b5fcfe25b1bf6247553918f722c
   languageName: node
   linkType: hard
 
@@ -2597,7 +2623,7 @@ __metadata:
     "@eslint/js": "npm:^9.16.0"
     "@microsoft/eslint-formatter-sarif": "npm:3.1.0"
     "@sentry/cli": "npm:^2.39.1"
-    "@sentry/integrations": "npm:7.120.1"
+    "@sentry/integrations": "npm:7.120.2"
     "@sentry/node": "npm:^8.43.0"
     "@sentry/profiling-node": "npm:^8.43.0"
     "@sentry/tracing": "npm:7.120.1"
