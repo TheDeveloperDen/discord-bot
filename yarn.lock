@@ -1110,15 +1110,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/integrations@npm:7.120.1":
-  version: 7.120.1
-  resolution: "@sentry/integrations@npm:7.120.1"
+"@sentry/integrations@npm:7.120.3":
+  version: 7.120.3
+  resolution: "@sentry/integrations@npm:7.120.3"
   dependencies:
-    "@sentry/core": "npm:7.120.1"
-    "@sentry/types": "npm:7.120.1"
-    "@sentry/utils": "npm:7.120.1"
+    "@sentry/core": "npm:7.120.3"
+    "@sentry/types": "npm:7.120.3"
+    "@sentry/utils": "npm:7.120.3"
     localforage: "npm:^1.8.1"
-  checksum: 10c0/3383b529abf57cc7f37cd6d5cce217e77a4326c262c9f063ebb45b446bcefe9999597493d5641bde1ba250ae62c53cc1536ccda24f822d8b04b878580a8e3410
+  checksum: 10c0/b539d4725ac2053db94e122a8e11aac4c36218c2e301547aa95956523d552c79a835a9a8e843617be808c565b116d822ede94ee7c806bea69dc9d9f5c1edd575
   languageName: node
   linkType: hard
 
@@ -2731,7 +2731,7 @@ __metadata:
     "@eslint/js": "npm:^9.16.0"
     "@microsoft/eslint-formatter-sarif": "npm:3.1.0"
     "@sentry/cli": "npm:^2.39.1"
-    "@sentry/integrations": "npm:7.120.1"
+    "@sentry/integrations": "npm:7.120.3"
     "@sentry/node": "npm:^8.43.0"
     "@sentry/profiling-node": "npm:^8.43.0"
     "@sentry/tracing": "npm:7.120.3"
