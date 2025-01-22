@@ -1050,6 +1050,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@sentry/core@npm:8.51.0":
+  version: 8.51.0
+  resolution: "@sentry/core@npm:8.51.0"
+  checksum: 10c0/efcdce1bee004afb6d722db38baf23f818e0eb670f2c61b7739fe42d48dd94210b58cba2e5c27b031d83fab2cec36bf27a6f61c6bc30a9397f6a0f6657dbb5fe
+  languageName: node
+  linkType: hard
+
 "@sentry/integrations@npm:7.120.1":
   version: 7.120.1
   resolution: "@sentry/integrations@npm:7.120.1"
@@ -1152,11 +1159,11 @@ __metadata:
   linkType: hard
 
 "@sentry/types@npm:^8.43.0":
-  version: 8.43.0
-  resolution: "@sentry/types@npm:8.43.0"
+  version: 8.51.0
+  resolution: "@sentry/types@npm:8.51.0"
   dependencies:
-    "@sentry/core": "npm:8.43.0"
-  checksum: 10c0/c75e1f81517aa417c8531d76ef746f1fbeebc84bdf81d02ab2ae7bc863fc8aec28264abb084bb12ce3b2e0045ea0d7e0deefce365045835d6168d30d75bbeaa4
+    "@sentry/core": "npm:8.51.0"
+  checksum: 10c0/584e9decbd5089da2716d9e0c287819c7e11b6e7274b29759087aba8003d19b5565b675bddad976343a86b7e243bf001610b6d3fd8e9e31bbe7d7943281ea8a2
   languageName: node
   linkType: hard
 
