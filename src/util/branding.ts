@@ -11,7 +11,7 @@ export interface BrandingConfig {
 }
 
 export let branding: Required<BrandingConfig> = {
-    name: '',
+    name: 'Developer Den',
     iconUrl: 'https://developerden.net/logo.png',
     ...config.branding
 }
