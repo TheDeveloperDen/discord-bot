@@ -19,7 +19,7 @@ export let branding: Required<BrandingConfig> = {
 export function setupBranding(guild: Guild) {
     branding = {
         ...{
-            name: guild.name,
+            name: guild.name ?? 'Developer Den',
             iconUrl: guild.iconURL() ??
                 'https://cdn.discordapp.com/embed/avatars/0.png'
         },
