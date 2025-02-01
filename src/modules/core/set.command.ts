@@ -12,7 +12,7 @@ import {Command} from 'djs-slash-helper'
 import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-types/v10'
 import {DDUser, getOrCreateUserById} from '../../store/models/DDUser.js'
 import {createStandardEmbed} from '../../util/embeds.js'
-import {mention} from '../../util/users.js'
+import {mentionIfPingable} from '../../util/users.js'
 import {levelForXp} from '../xp/xpRoles.util.js'
 
 export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
@@ -62,7 +62,7 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
         const embed = createStandardEmbed(target)
             .setTitle('Confirm')
             .setDescription(`Are you sure you want to set ${
-                mention(target)
+                mentionIfPingable(target)
             }'s ${option} to ${value}?`)
             .setFields([
                 {
@@ -131,7 +131,7 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
                     createStandardEmbed(target)
                         .setTitle('Success')
                         .setColor(Colors.Green)
-                        .setDescription(`Set ${mention(target)}'s ${option} to ${value}`)
+                        .setDescription(`Set ${mentionIfPingable(target)}'s ${option} to ${value}`)
                 ]
             })
         }

@@ -2,7 +2,7 @@ import {Client, GuildMember} from 'discord.js'
 import {logger} from '../../logging.js'
 import {DDUser, getOrCreateUserById} from '../../store/models/DDUser.js'
 import {config} from '../../Config.js'
-import {isSpecialUser, mention} from '../../util/users.js'
+import {actualMention, isSpecialUser, mentionIfPingable} from '../../util/users.js'
 import {Job, scheduleJob} from 'node-schedule'
 import {getActualDailyStreak, getNextDailyTime} from './dailyReward.command.js'
 
@@ -27,7 +27,7 @@ const sendReminder = async (client: Client, user: GuildMember) => {
     }
     await botCommands.send({
         content: `${
-            mention(
+            actualMention(
                 user
             )
         }, your daily reward is ready to be claimed! </daily:${config.commands.daily}>`

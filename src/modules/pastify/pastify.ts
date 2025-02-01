@@ -2,7 +2,7 @@ import fetch from 'node-fetch'
 import {config} from '../../Config.js'
 import {logger} from '../../logging.js'
 import {createStandardEmbed} from '../../util/embeds.js'
-import {mention} from '../../util/users.js'
+import {mentionIfPingable} from '../../util/users.js'
 import {InteractionReplyOptions, Message} from 'discord.js'
 
 const codeBlockPattern =
@@ -98,7 +98,7 @@ export async function pastify<force extends boolean = false>(
             {
                 ...createStandardEmbed(message.member ?? undefined),
                 description: `${
-                    mention(
+                    mentionIfPingable(
                         message.member ?? message.author
                     )
                 } \n${lines.join('\n')}`,

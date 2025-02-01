@@ -4,7 +4,7 @@ import {Client, GuildMember, PartialGuildMember, TextChannel} from 'discord.js'
 import {logger} from '../logging.js'
 import {createStandardEmbed} from '../util/embeds.js'
 import {branding} from '../util/branding.js'
-import {pseudoMention} from '../util/users.js'
+import {fakeMention} from '../util/users.js'
 import {awaitTimeout} from '../util/timeouts.js'
 
 const handler = (isAdding: boolean) =>
@@ -36,7 +36,7 @@ const handler = (isAdding: boolean) =>
                         'https://cdn.discordapp.com/embed/avatars/0.png'
                     )
                     .setAuthor({
-                        name: pseudoMention(member.user)
+                        name: fakeMention(member.user)
                     })
             ]
         })

@@ -1,4 +1,4 @@
-import {mention} from './util/users.js'
+import {actualMention, mentionIfPingable} from './util/users.js'
 import {Config} from './config.type.js'
 import {ButtonBuilder, ButtonStyle, EmbedBuilder} from 'discord.js'
 
@@ -56,13 +56,13 @@ export const config: Config = {
         font: 'CascadiaCode.ttf',
         welcomeMessage: (member) =>
             `Welcome ${
-                mention(
+                actualMention(
                     member
                 )
             } to the Developer Den!\nCurrent Member Count: ${member.guild.memberCount}`,
         goodbyeMessage: (member) =>
             `${
-                mention(
+                actualMention(
                     member
                 )
             } has left! :(\nCurrent Member Count: ${member.guild.memberCount}`

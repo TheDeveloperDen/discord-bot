@@ -3,7 +3,7 @@ import {ApplicationCommandOptionType, ApplicationCommandType, PermissionFlagsBit
 import {getAllCachedResources, getResource, updateAllResources} from './resourcesCache.util.js'
 import {Client, GuildMember, User} from 'discord.js'
 import {createStandardEmbed, standardFooter} from '../../util/embeds.js'
-import {pseudoMention} from '../../util/users.js'
+import {fakeMention} from '../../util/users.js'
 import {moduleManager} from '../../index.js'
 import {getEmoji, stringifyEmoji} from '../../util/emojis.js'
 import {logger} from '../../logging.js'
@@ -65,7 +65,7 @@ export function getResourceEmbed(
         }
         embed.setFooter({
             ...standardFooter(),
-            text: `Requested by ${pseudoMention(requester)} | Learning Resources`
+            text: `Requested by ${fakeMention(requester)} | Learning Resources`
         })
     }
 
@@ -152,7 +152,7 @@ const LearningListSubcommand: ExecutableSubcommand = {
             .setFooter({
                 ...standardFooter(),
                 text: `Requested by ${
-                    pseudoMention(
+                    fakeMention(
                         interaction.user
                     )
                 } | Learning Resources`

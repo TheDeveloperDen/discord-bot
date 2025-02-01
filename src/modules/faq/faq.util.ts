@@ -1,7 +1,7 @@
 import {FAQ} from '../../store/models/FAQ.js'
 import {EmbedBuilder, GuildMember, User} from 'discord.js'
 import {createStandardEmbed, standardFooter} from '../../util/embeds.js'
-import {pseudoMention} from '../../util/users.js'
+import {fakeMention} from '../../util/users.js'
 
 export function createFaqEmbed(
     faq: FAQ,
@@ -16,7 +16,7 @@ export function createFaqEmbed(
                 ...standardFooter(),
                 text: (requester != null)
                     ? `Requested by ${
-                        pseudoMention(
+                        fakeMention(
                             requester
                         )
                     } | ${faq.name}`

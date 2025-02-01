@@ -1,4 +1,4 @@
-import {mention} from './util/users.js'
+import {actualMention, mentionIfPingable} from './util/users.js'
 import {Config} from './config.type.js'
 import {config as prodConfig} from './Config.prod.js'
 
@@ -42,13 +42,13 @@ export const config: Config = {
         font: 'CascadiaCode.ttf',
         welcomeMessage: (member) =>
             `Welcome ${
-                mention(
+                actualMention(
                     member
                 )
             } to the Developer Den test server!\nCurrent Member Count: ${member.guild.memberCount}`,
         goodbyeMessage: (member) =>
             `Goodbye ${
-                mention(
+                actualMention(
                     member
                 )
             } from the Developer Den test server!\nCurrent Member Count: ${member.guild.memberCount}`

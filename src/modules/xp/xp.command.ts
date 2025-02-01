@@ -10,7 +10,7 @@ import {ApplicationCommandOptionType, ApplicationCommandType} from 'discord-api-
 import {formatDayCount, getActualDailyStreak} from './dailyReward.command.js'
 import {wrapInTransaction} from '../../sentry.js'
 import {format} from '../core/info.command.js'
-import {pseudoMention} from '../../util/users.js'
+import {fakeMention} from '../../util/users.js'
 import {Command} from 'djs-slash-helper'
 import {getResolvedMember} from '../../util/interactions.js'
 
@@ -43,7 +43,7 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
         await interaction.followUp({
             embeds: [
                 createStandardEmbed(member)
-                    .setTitle(`Profile of ${pseudoMention(targetUser)}`)
+                    .setTitle(`Profile of ${fakeMention(targetUser)}`)
                     .setFields({
                             name: '🔮 Level',
                             value: `${ddUser.level}`,
