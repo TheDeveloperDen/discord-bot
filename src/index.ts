@@ -75,7 +75,7 @@ async function main() {
     await initStorage()
     await logIn()
     const guild = await client.guilds.fetch(config.guildId)
-    setupBranding(guild)
+    await setupBranding(guild)
 
     await moduleManager.refreshCommands()
 

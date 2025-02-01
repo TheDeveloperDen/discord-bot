@@ -17,7 +17,8 @@ export let branding: Required<BrandingConfig> = {
     ...config.branding
 }
 
-export function setupBranding(guild: Guild) {
+export async function setupBranding(guild: Guild) {
+    guild = await guild.fetch()
     logger.debug(`Setting up branding with guild ${guild.name} and ${guild.iconURL()}`)
     branding = {
         ...{
