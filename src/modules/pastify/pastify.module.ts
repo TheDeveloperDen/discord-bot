@@ -3,7 +3,6 @@ import {pastify} from './pastify.js'
 import {PastifyCommand} from './pastify.command.js'
 import {PasteCommand} from './paste.command.js'
 import {PermissionFlagsBits} from 'discord-api-types/v10'
-import {StageChannel} from 'discord.js'
 
 export const PastifyModule: Module = {
     name: 'pastify',
