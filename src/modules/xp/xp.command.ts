@@ -13,6 +13,7 @@ import {format} from '../core/info.command.js'
 import {fakeMention} from '../../util/users.js'
 import {Command} from 'djs-slash-helper'
 import {getResolvedMember} from '../../util/interactions.js'
+import {logger} from "../../logging.js";
 
 export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
     name: 'xp',
@@ -40,51 +41,53 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
         const ddUser = await getOrCreateUserById(BigInt(targetUser.id))
         const xp = ddUser.xp
         const image = createXpImage(xp, member)
+        const embedBuilder = createStandardEmbed(member)
+            .setTitle(`Profile of ${fakeMention(targetUser)}`)
+            .setFields({
+                    name: '🔮 Level',
+                    value: `${ddUser.level}`,
+                    inline: true
+                }, {
+                    name: '📝 Tier',
+                    value: `${
+                        ddUser.level === 0
+                            ? 0
+                            : Math.floor(ddUser.level / 10) +
+                            1
+                    }`,
+                    inline: true
+                }, {
+                    name: '❗ Daily Streak (Current / Highest)',
+                    value: `${
+                        formatDayCount(
+                            await getActualDailyStreak(ddUser)
+                        )
+                    } / ${
+                        formatDayCount(
+                            ddUser.highestDailyStreak
+                        )
+                    }`,
+                    inline: true
+                }, {
+                    name: '📈 XP Difference (Current Level / Next Level)',
+                    value: `${format(ddUser.xp)}/${format(xpForLevel(ddUser.level + 1))}`,
+                    inline: true
+                }, {
+                    name: '⬆️ XP Needed Until Level Up',
+                    value: `${format(xpForLevel(ddUser.level + 1) - ddUser.xp)}`,
+                    inline: true
+                },
+                {
+                    name: '❗Bumps',
+                    value: format(ddUser.bumps),
+                    inline: true
+                }
+            )
+            .setImage('attachment://xp.png');
+        logger.debug(`Responding with XP embed: ${embedBuilder.toJSON()}`)
         await interaction.followUp({
             embeds: [
-                createStandardEmbed(member)
-                    .setTitle(`Profile of ${fakeMention(targetUser)}`)
-                    .setFields({
-                            name: '🔮 Level',
-                            value: `${ddUser.level}`,
-                            inline: true
-                        }, {
-                            name: '📝 Tier',
-                            value: `${
-                                ddUser.level === 0
-                                    ? 0
-                                    : Math.floor(ddUser.level / 10) +
-                                    1
-                            }`,
-                            inline: true
-                        }, {
-                            name: '❗ Daily Streak (Current / Highest)',
-                            value: `${
-                                formatDayCount(
-                                    await getActualDailyStreak(ddUser)
-                                )
-                            } / ${
-                                formatDayCount(
-                                    ddUser.highestDailyStreak
-                                )
-                            }`,
-                            inline: true
-                        }, {
-                            name: '📈 XP Difference (Current Level / Next Level)',
-                            value: `${format(ddUser.xp)}/${format(xpForLevel(ddUser.level + 1))}`,
-                            inline: true
-                        }, {
-                            name: '⬆️ XP Needed Until Level Up',
-                            value: `${format(xpForLevel(ddUser.level + 1) - ddUser.xp)}`,
-                            inline: true
-                        },
-                        {
-                            name: '❗Bumps',
-                            value: format(ddUser.bumps),
-                            inline: true
-                        }
-                    )
-                    .setImage('attachment://xp.png')
+                embedBuilder
             ],
             files: [
                 {
