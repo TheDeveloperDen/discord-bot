@@ -80,7 +80,7 @@ async function main() {
     await moduleManager.refreshCommands()
 
     for (const module of moduleManager.getModules()) {
-        module.onInit?.(client)?.catch((e) => {
+        module.onInit?.(moduleManager, client)?.catch((e) => {
             Sentry.captureException(e)
             logger.error(`Error initializing module ${module.name}`, e)
         })

@@ -10,7 +10,7 @@ export const XpModule: Module = {
     name: 'xp',
     commands: [XpCommand, DailyRewardCommand, LeaderboardCommand],
     listeners: [XpListener, ThreadListener],
-    onInit: async (client) => {
+    onInit: async (_, client) => {
         await scheduleAllReminders(client)
     }
 }

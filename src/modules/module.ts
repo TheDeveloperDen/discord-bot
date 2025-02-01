@@ -1,6 +1,7 @@
 import {Command} from 'djs-slash-helper'
 import {Awaitable, Client, ClientEvents} from 'discord.js'
 import {ApplicationCommandType} from 'discord-api-types/v10'
+import ModuleManager from "./moduleManager.js";
 
 export type EventListener = {
     [k in keyof ClientEvents]?: (
@@ -30,5 +31,5 @@ export default interface Module {
      * Called when the module is initialized, after command registration
      * @param client The client that is being used.
      */
-    onInit?: (client: Client) => Promise<void>
+    onInit?: (manager: ModuleManager, client: Client) => Promise<void>
 }
