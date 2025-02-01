@@ -15,11 +15,11 @@ export function createStandardEmbed(user?: GuildMember | PartialGuildMember): Em
 
 export const standardFooter = (): EmbedFooterOptions => {
     const b = branding
-    if (b.name === '') throw new Error('Branding name is empty. Have we finished initialising?')
+    if (b.name === '' || b.iconUrl === '') throw new Error('Branding name is empty. Have we finished initialising?')
     return (
         {
             text: b.name,
-            iconURL: b.iconUrl
+            iconURL: b.iconUrl,
         }
     )
 }
