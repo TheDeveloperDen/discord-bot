@@ -84,7 +84,7 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
                 }
             )
             .setImage('attachment://xp.png');
-        logger.debug(`Responding with XP embed: ${embedBuilder.toJSON()}`)
+        logger.debug(`Responding with XP embed: ${JSON.stringify(embedBuilder.toJSON())}`)
         await interaction.followUp({
             embeds: [
                 embedBuilder
