@@ -18,12 +18,12 @@ export const InfoCommand: Command<ApplicationCommandType.ChatInput> = {
             await interaction.reply('This command can only be used in a server')
             return
         }
-        const totalXP = await DDUser.sum('xp')
+        const totalXP = await DDUser.sum('xp') ?? 0
         const memberCount = guild.memberCount
         const membersStored = await DDUser.count()
         const dateCreated = `
             <t:${guild.createdAt.getTime() / 1000 | 0}>`
-        const levelUps = await DDUser.sum('level')
+        const levelUps = await DDUser.sum('level') ?? 0
         await interaction.followUp({
             embeds: [
                 createStandardEmbed(interaction.member as GuildMember)
