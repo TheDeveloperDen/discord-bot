@@ -1,5 +1,6 @@
 import {Guild, GuildMember, PartialGuildMember} from 'discord.js'
 import {config} from '../Config.js'
+import {logger} from "../logging.js";
 
 export interface BrandingConfig {
     name?: string
@@ -17,6 +18,7 @@ export let branding: Required<BrandingConfig> = {
 }
 
 export function setupBranding(guild: Guild) {
+    logger.debug('Setting up branding with guild', guild.name, 'and', guild.iconURL())
     branding = {
         ...{
             name: guild.name ?? 'Developer Den',

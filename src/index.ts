@@ -74,6 +74,9 @@ async function main() {
     dotenv.config()
     await initStorage()
     await logIn()
+    const guild = await client.guilds.fetch(config.guildId)
+    setupBranding(guild)
+
     await moduleManager.refreshCommands()
 
     for (const module of moduleManager.getModules()) {
@@ -82,8 +85,7 @@ async function main() {
             logger.error(`Error initializing module ${module.name}`, e)
         })
     }
-    const guild = await client.guilds.fetch(config.guildId)
-    setupBranding(guild)
+
 }
 
 try {
