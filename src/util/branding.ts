@@ -18,7 +18,7 @@ export let branding: Required<BrandingConfig> = {
 }
 
 export function setupBranding(guild: Guild) {
-    logger.debug('Setting up branding with guild', guild.name, 'and', guild.iconURL())
+    logger.debug(`Setting up branding with guild ${guild.name} and ${guild.iconURL()}`)
     branding = {
         ...{
             name: guild.name ?? 'Developer Den',
