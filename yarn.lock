@@ -1138,12 +1138,38 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sequelize/postgres@npm:^7.0.0-alpha.43":
-  version: 7.0.0-alpha.43
-  resolution: "@sequelize/postgres@npm:7.0.0-alpha.43"
+"@sequelize/core@npm:7.0.0-alpha.44":
+  version: 7.0.0-alpha.44
+  resolution: "@sequelize/core@npm:7.0.0-alpha.44"
   dependencies:
-    "@sequelize/core": "npm:7.0.0-alpha.43"
-    "@sequelize/utils": "npm:7.0.0-alpha.43"
+    "@sequelize/utils": "npm:7.0.0-alpha.44"
+    "@types/debug": "npm:^4.1.12"
+    "@types/validator": "npm:^13.11.9"
+    ansis: "npm:^3.2.0"
+    bnf-parser: "npm:^3.1.6"
+    dayjs: "npm:^1.11.10"
+    debug: "npm:^4.3.4"
+    dottie: "npm:^2.0.6"
+    fast-glob: "npm:^3.3.2"
+    inflection: "npm:^3.0.0"
+    lodash: "npm:^4.17.21"
+    retry-as-promised: "npm:^7.0.4"
+    semver: "npm:^7.3"
+    sequelize-pool: "npm:^8.0.0"
+    toposort-class: "npm:^1.0.1"
+    type-fest: "npm:^4.14.0"
+    uuid: "npm:^11.0.0"
+    validator: "npm:^13.11.0"
+  checksum: 10c0/b7bbe412efb4db6b3aa4cf46e8351b7e1e3dae4ced861142aa5ee8d58cfcd2798c59009555c37f0676a75bd82bcfa7d5dfcb8756fcc72d590a7318b92792f4ca
+  languageName: node
+  linkType: hard
+
+"@sequelize/postgres@npm:^7.0.0-alpha.43":
+  version: 7.0.0-alpha.44
+  resolution: "@sequelize/postgres@npm:7.0.0-alpha.44"
+  dependencies:
+    "@sequelize/core": "npm:7.0.0-alpha.44"
+    "@sequelize/utils": "npm:7.0.0-alpha.44"
     "@types/pg": "npm:^8.11.4"
     lodash: "npm:^4.17.21"
     pg: "npm:^8.11.3"
@@ -1152,7 +1178,7 @@ __metadata:
     postgres-array: "npm:^3.0.2"
     semver: "npm:^7.6.0"
     wkx: "npm:^0.5.0"
-  checksum: 10c0/7ef77c55197ac13baa58567e6e96b6369c60a8afa3c81de299c789bba2038ccc42f6dc5d41191b13e29e2e468445c0ec1fd7b66fde0cc7687e720c40a601691f
+  checksum: 10c0/801fe5b3834277631c182d3c2686bdbf713c1db2782458d6637518d80941cfbbe59ad8327f34c78095e82590cb834cb8df74ad278111b66d37305a936fc3bd7a
   languageName: node
   linkType: hard
 
@@ -1175,6 +1201,16 @@ __metadata:
     "@types/lodash": "npm:^4.17.0"
     lodash: "npm:^4.17.21"
   checksum: 10c0/88fc0f51e44d1d6502804d0387ed88f5406ed88e6c53caa55abe70e13cc973972b5debe4f3ab46089cd630513572551170d9228fcbca06680dde7836c58b9210
+  languageName: node
+  linkType: hard
+
+"@sequelize/utils@npm:7.0.0-alpha.44":
+  version: 7.0.0-alpha.44
+  resolution: "@sequelize/utils@npm:7.0.0-alpha.44"
+  dependencies:
+    "@types/lodash": "npm:^4.17.0"
+    lodash: "npm:^4.17.21"
+  checksum: 10c0/4e7c934fdf347910c0fdbf4326055c32407c89f01afff6f6a68f7f0800a164e13109855b5dbfe0f96770773a9d8696f68e43ead95323e4bb9bc8e0bff902c8f3
   languageName: node
   linkType: hard
 
@@ -6894,6 +6930,15 @@ __metadata:
   bin:
     uuid: dist/bin/uuid
   checksum: 10c0/eab18c27fe4ab9fb9709a5d5f40119b45f2ec8314f8d4cf12ce27e4c6f4ffa4a6321dc7db6c515068fa373c075b49691ba969f0010bf37f44c37ca40cd6bf7fe
+  languageName: node
+  linkType: hard
+
+"uuid@npm:^11.0.0":
+  version: 11.0.5
+  resolution: "uuid@npm:11.0.5"
+  bin:
+    uuid: dist/esm/bin/uuid
+  checksum: 10c0/6f59f0c605e02c14515401084ca124b9cb462b4dcac866916a49862bcf831874508a308588c23a7718269226ad11a92da29b39d761ad2b86e736623e3a33b6e7
   languageName: node
   linkType: hard
 
