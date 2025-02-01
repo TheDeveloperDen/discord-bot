@@ -13,7 +13,7 @@ export interface BrandingConfig {
 
 export let branding: Required<BrandingConfig> = {
     name: 'Developer Den',
-    iconUrl: 'https://developerden.net/logo.png',
+    iconUrl: 'https://developerden.org/logo.png',
     ...config.branding
 }
 
@@ -22,9 +22,8 @@ export async function setupBranding(guild: Guild) {
     logger.debug(`Setting up branding with guild ${guild.name} and ${guild.iconURL()}`)
     branding = {
         ...{
-            name: guild.name ?? 'Developer Den',
-            iconUrl: guild.iconURL() ??
-                'https://cdn.discordapp.com/embed/avatars/0.png'
+            name: guild.name ?? branding.name,
+            iconUrl: guild.iconURL() ?? branding.iconUrl
         },
         ...config.branding
     }
