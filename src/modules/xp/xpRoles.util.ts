@@ -29,7 +29,7 @@ export async function levelUp(
             )
         })`
     )
-    if (newLevel === ddUser.level) {
+    if (newLevel <= ddUser.level) {
         return
     }
     ddUser.level = newLevel
