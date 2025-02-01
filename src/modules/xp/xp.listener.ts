@@ -2,12 +2,9 @@ import {EventListener} from '../module.js'
 import {Channel} from 'discord.js'
 import {config} from '../../Config.js'
 import {giveXp, shouldCountForStats, xpForMessage} from './xpForMessage.util.js'
-import {modifyRoles} from '../../util/roles.js'
-import {awaitTimeout} from '../../util/timeouts.js'
 import {logger} from '../../logging.js'
 import {wrapInTransaction} from '../../sentry.js'
 
-const editing = new Set<string>()
 
 export const XpListener: EventListener = {
     messageCreate: wrapInTransaction('messageCreate',
@@ -22,21 +19,5 @@ export const XpListener: EventListener = {
                 const xp = xpForMessage(msg.content)
                 await giveXp(author, xp)
             }
-        }),
-    // fixme: this was copied verbatim and i have no clue what it achieves
-    async guildMemberUpdate(client, member) {
-        if (editing.has(member.user.id)) {
-            return
-        }
-        editing.add(member.user.id)
-        await awaitTimeout(800)
-        const user = member.guild.members.resolve(member.user)
-        if (user != null) {
-            await modifyRoles(client, user, {
-                toRemove: [],
-                toAdd: []
-            })
-        }
-        editing.delete(member.user.id)
-    }
+        })
 }
