@@ -28,3 +28,6 @@ eslint-results.sarif
 
 # Sentry Config File
 .sentryclirc
+
+
+.direnv
