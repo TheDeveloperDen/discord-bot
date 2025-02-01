@@ -28,4 +28,5 @@ export async function setupBranding(guild: Guild) {
         },
         ...config.branding
     }
+    logger.debug(`Branding config set to ${JSON.stringify(branding)}`)
 }
