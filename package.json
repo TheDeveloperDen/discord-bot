@@ -23,7 +23,7 @@
   "dependencies": {
     "@microsoft/eslint-formatter-sarif": "3.1.0",
     "@sentry/cli": "^2.41.1",
-    "@sentry/node": "^8.53.0",
+    "@sentry/node": "^9.0.0",
     "@sentry/profiling-node": "^8.53.0",
     "@sequelize/core": "^7.0.0-alpha.44",
     "@sequelize/postgres": "^7.0.0-alpha.44",
