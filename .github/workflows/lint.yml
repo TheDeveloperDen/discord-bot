@@ -2,12 +2,12 @@ name: Lint
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "master" ]
+    branches: ["master"]
   schedule:
-    - cron: '29 4 * * 1'
+    - cron: "29 4 * * 1"
 
 jobs:
   eslint:
@@ -25,11 +25,12 @@ jobs:
         run: sudo apt install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
 
       - name: Install ESLint
-        run: |
-          yarn install
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
 
       - name: Run ESLint
-        run: npx eslint .
+        run: bunx eslint .
           --format @microsoft/eslint-formatter-sarif
           --output-file eslint-results.sarif
         continue-on-error: true
