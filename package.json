@@ -12,7 +12,7 @@
     "build": "tsc --build --clean tsconfig.json && tsc --build tsconfig.json",
     "build-prod": "tsc -p tsconfig.production.json && ([ -f bin/Config.prod.js ] && mv -f bin/Config.prod.js bin/Config.js) || true",
     "watch-dev": "bun --watch src/index.ts",
-    "start-built": "bun --import ./instrument.js --trace-warnings bin/index.js",
+    "start-built": "bun --trace-warnings bin/index.js",
     "build-and-run": "bun run build && bun run start-built",
     "build-and-run-prod": "bun run lint && bun run build-prod && bun run start-built",
     "sentry:sourcemaps": "bunx sentry-cli sourcemaps inject --org developer-den-59 --project discord-bot ./bin && bunx sentry-cli sourcemaps upload --org developer-den-59 --project discord-bot ./bin"

@@ -4,47 +4,84 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     treefmt-nix.url = "github:numtide/treefmt-nix";
-  flake-parts.url = "github:hercules-ci/flake-parts";
+    flake-parts.url = "github:hercules-ci/flake-parts";
   };
 
-
-  outputs = inputs@{ flake-parts, ... }:
+  outputs =
+    inputs@{ self, flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         inputs.treefmt-nix.flakeModule
       ];
-      systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin" ];
-      perSystem = { config, self', inputs', pkgs, system, ... }: {
-        treefmt.config = {
-          projectRootFile = "./flake.nix";
-          package = pkgs.treefmt;
-          programs.nixpkgs-fmt.enable = true;
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "aarch64-darwin"
+        "x86_64-darwin"
+      ];
+      perSystem =
+        {
+          config,
+          self',
+          inputs',
+          pkgs,
+          system,
+          ...
+        }:
+        {
+          treefmt.config = {
+            projectRootFile = "./flake.nix";
+            package = pkgs.treefmt;
+            programs.nixpkgs-fmt.enable = true;
+          };
+
+          devShells.default = pkgs.mkShell {
+
+            buildInputs =
+              with pkgs;
+              [
+                bun
+
+                nixfmt-rfc-style
+
+                nodePackages.typescript
+                nodePackages.typescript-language-server
+
+                sentry-cli
+                gccStdenv
+                (python3.withPackages (python-pkgs: [
+                  python-pkgs.setuptools
+                ]))
+                deno
+                yarn
+                cairo
+                pango
+                pkg-config
+                nodePackages.node-gyp
+                libpng
+                librsvg
+                pixman
+
+              ]
+              ++ (if system == "aarch64-darwin" then [ pkgs.darwin.apple_sdk.frameworks.CoreText ] else [ ]);
+          };
+
+          packages.dockerImage = pkgs.dockerTools.buildImage {
+            name = "devdenbot";
+            created = "now";
+            tag = builtins.substring 0 7 (self.rev or "dev");
+            config = {
+              Cmd = [
+                "bun"
+                "run"
+                "build-and-run-prod"
+              ];
+            };
+
+            contents = [ pkgs.bash pkgs.bun ];
+
+          };
         };
-
-        devShells.default = pkgs.mkShell {
-
-          buildInputs = with pkgs; [
-            bun
-
-            nodePackages.typescript
-            nodePackages.typescript-language-server
-
-            sentry-cli
-            gccStdenv
-            python3
-            deno
-            yarn
-            cairo
-            pango
-            pkg-config
-            nodePackages.node-gyp
-            libpng
-            librsvg
-            pixman
-
-          ] ++ (if system == "aarch64-darwin" then [ pkgs.darwin.apple_sdk.frameworks.CoreText ] else [ ]);
-        };
-      };
       flake = { };
     };
 }

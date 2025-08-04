@@ -11,6 +11,7 @@ aptPkgs = [
     'libjpeg-dev',
     'libgif-dev',
     'librsvg2-dev',
+    'libstdc++6'
 ]
 
 [phases.build]
