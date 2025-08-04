@@ -72,13 +72,21 @@
             tag = builtins.substring 0 7 (self.rev or "dev");
             config = {
               Cmd = [
-                "bun"
+                "${pkgs.bun}"
                 "run"
                 "build-and-run-prod"
               ];
             };
 
-            contents = [ pkgs.bash pkgs.bun ];
+            copyToRoot = pkgs.buildEnv {
+              name = "devdenbot-root";
+              paths = [
+                pkgs.bun
+              ];
+
+              pathsToLink = [ "bin" "src" ];
+
+            };
 
           };
         };

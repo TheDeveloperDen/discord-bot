@@ -28,7 +28,7 @@
     "@sequelize/postgres": "^7.0.0-alpha.46",
     "@sequelize/sqlite3": "^7.0.0-alpha.46",
     "bufferutil": "^4.0.9",
-    "canvas": "^3.1.2",
+    "canvas": "next",
     "discord.js": "^14.21.0",
     "djs-slash-helper": "git+https://github.com/bristermitten/djs-slash-helper.git#bf71648b3232ea9c308b8ee79a3f4a885fc1e92b",
     "expiry-map": "^2.0.0",
@@ -48,6 +48,13 @@
     "winston": "^3.17.0",
     "yaml": "^2.8.0"
   },
+  "trustedDependencies": [
+    "@sentry/cli",
+    "bufferutil",
+    "canvas",
+    "sqlite3",
+    "utf-8-validate"
+  ],
   "repository": "https://github.com/TheDeveloperDen/DevDenBot.git",
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
