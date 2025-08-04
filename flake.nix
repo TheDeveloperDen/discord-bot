@@ -65,31 +65,6 @@
               ]
               ++ (if system == "aarch64-darwin" then [ pkgs.darwin.apple_sdk.frameworks.CoreText ] else [ ]);
           };
-
-          packages.dockerImage = pkgs.dockerTools.buildImage {
-            name = "devdenbot";
-            created = "now";
-            tag = builtins.substring 0 7 (self.rev or "dev");
-            config = {
-              Cmd = [
-                "${pkgs.bun}"
-                "run"
-                "build-and-run-prod"
-              ];
-            };
-
-            copyToRoot = pkgs.buildEnv {
-              name = "devdenbot-root";
-              paths = [
-                pkgs.bun
-              ];
-
-              pathsToLink = [ "bin" "src" ];
-
-            };
-
-          };
         };
-      flake = { };
     };
 }

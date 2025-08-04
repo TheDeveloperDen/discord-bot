@@ -1,7 +1,14 @@
+# Ignore files not needed in the final image or during the build.
+# This speeds up the Docker build context creation and avoids including sensitive files.
 .git
+.github
+.direnv
+.vscode
+node_modules
+dist
+logs
+flake.nix
+flake.lock
+nixpacks.toml
 Dockerfile
-node_modules/
-.env*
-.flaskenv*
-!.env.project
-!.env.vault
+.dockerignore
