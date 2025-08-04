@@ -35,11 +35,14 @@ RUN bun run build-prod
 FROM base AS release
 COPY --from=install /temp/prod/node_modules node_modules
 COPY --from=prerelease /usr/src/app/bin ./bin
-COPY --from=prerelease /usr/src/app/instrument.js ./instrument.js
+COPY --from=prerelease /usr/src/app/instrument.js .
+COPY --from=prerelease /usr/src/app/hotTakeData.json .
+COPY --from=prerelease /usr/src/app/CascadiaCode.ttf .
 COPY --from=prerelease /usr/src/app/package.json .
 
 RUN apt-get update && apt install -y libcairo2-dev libpango1.0-dev libgif7 librsvg2-2
 
 # run the app
+RUN chown -R bun:bun /usr/src/app
 USER bun
 ENTRYPOINT [ "bun", "run", "start-built" ]

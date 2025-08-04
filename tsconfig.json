@@ -10,7 +10,7 @@
     "forceConsistentCasingInFileNames": true,
 
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
+    "emitDecoratorMetadata": false,
 
     "incremental": true,
     "sourceMap": true,
