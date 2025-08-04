@@ -74,7 +74,7 @@ export const scheduleReminder = async (
     })
     scheduledReminders.set(ddUser.id, job)
     logger.info(
-        `Scheduled reminder for ${user.user.tag} at ${job.nextInvocation().toLocaleString()}`
+        `Scheduled reminder for ${user.user.tag} at ${job.nextInvocation()?.toLocaleString()}`
     )
 }
 

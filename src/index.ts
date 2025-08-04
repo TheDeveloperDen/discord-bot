@@ -1,3 +1,4 @@
+import '../instrument.mjs' // Import the instrumentation module first
 import {config} from './Config.js'
 import * as dotenv from 'dotenv'
 import {Client, GatewayIntentBits, Partials} from 'discord.js'
