@@ -37,7 +37,7 @@ export const TimeoutCommand: Command<ApplicationCommandType.ChatInput> = {
     // capped at 28 days
     const period = Math.min(
       parseTimespan(interaction.options.get("duration", true).value as string),
-      2.419e9
+      2.419e9,
     );
 
     if (period === 0) {

@@ -1,7 +1,4 @@
-import {
-  ApplicationCommandOptionType,
-  range,
-} from "discord.js";
+import { ApplicationCommandOptionType, range } from "discord.js";
 import { Command } from "djs-slash-helper";
 import { ApplicationCommandType } from "discord-api-types/v10";
 import generateHotTake from "./hotTakes.util.js";
@@ -29,7 +26,7 @@ export const ManyHotTakesCommand: Command<ApplicationCommandType.ChatInput> = {
     }
     await interaction.deferReply();
     const takes = await Promise.all(
-      Array.from(range(count)).map(async () => await generateHotTake(guild))
+      Array.from(range(count)).map(async () => await generateHotTake(guild)),
     ).then((x) => x.join("\n\n"));
 
     if (count > 10 || takes.length > 2000) {

@@ -834,7 +834,7 @@
     "Histomorphisms",
     "Zygomorphisms",
     "Paramorphisms",
-  "Chronomorphism",
+    "Chronomorphism",
     "Functors",
     "Profunctors",
     "Applicative Functors",
@@ -1110,10 +1110,7 @@
     "I just bought ${bigNumber} worth of {company} stocks and it's gone down {percentage}% already! How could this happen?",
     {
       "take": "Average {thing} user vs average {thing} enjoyer",
-      "image": [
-        "./img/virgin.png",
-        "./img/chad.png"
-      ]
+      "image": ["./img/virgin.png", "./img/chad.png"]
     },
     {
       "take": "Elon Musk has bought {company}!",

@@ -1,9 +1,9 @@
-import Module from '../module.js'
-import {InformationMessageCommand} from './informationMessage.command.js'
-import {InformationButtonListener} from './informationMessage.listener.js'
+import Module from "../module.js";
+import { InformationMessageCommand } from "./informationMessage.command.js";
+import { InformationButtonListener } from "./informationMessage.listener.js";
 
 export const InformationModule: Module = {
-    name: 'information',
-    commands: [InformationMessageCommand],
-    listeners: [InformationButtonListener]
-}
+  name: "information",
+  commands: [InformationMessageCommand],
+  listeners: [InformationButtonListener],
+};

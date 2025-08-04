@@ -38,7 +38,6 @@ jobs:
         with:
           cmd: build-prod
 
-
       - name: Get version from NPM
         id: package-version
         uses: martinbeentjes/npm-get-version-action@v1.3.1
@@ -51,8 +50,8 @@ jobs:
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         with:
           environment: production
-          sourcemaps: './bin'
+          sourcemaps: "./bin"
           inject: true
 
           version: ${{ steps.package-version.outputs.current-version }}
-          url_prefix: 'app:///bin/'
+          url_prefix: "app:///bin/"

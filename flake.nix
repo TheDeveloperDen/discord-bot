@@ -4,7 +4,7 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     treefmt-nix.url = "github:numtide/treefmt-nix";
-
+  flake-parts.url = "github:hercules-ci/flake-parts";
   };
 
 
@@ -31,7 +31,7 @@
 
             sentry-cli
             gccStdenv
-            python39
+            python3
             deno
             yarn
             cairo

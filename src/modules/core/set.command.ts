@@ -65,8 +65,8 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
       .setTitle("Confirm")
       .setDescription(
         `Are you sure you want to set ${mentionIfPingable(
-          target
-        )}'s ${option} to ${value}?`
+          target,
+        )}'s ${option} to ${value}?`,
       )
       .setFields([
         {
@@ -88,7 +88,7 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
       new ButtonBuilder()
         .setCustomId("cancel")
         .setStyle(ButtonStyle.Danger)
-        .setLabel("Cancel")
+        .setLabel("Cancel"),
     );
     const reply = await interaction.reply({
       embeds: [embed],
@@ -132,7 +132,7 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
             .setTitle("Success")
             .setColor(Colors.Green)
             .setDescription(
-              `Set ${mentionIfPingable(target)}'s ${option} to ${value}`
+              `Set ${mentionIfPingable(target)}'s ${option} to ${value}`,
             ),
         ],
       });
