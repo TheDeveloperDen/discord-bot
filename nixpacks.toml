@@ -1,9 +1,7 @@
 [phases.setup]
 nixPkgs = [
     '...',
-    'bun',
-    'python312',
-    'python312Packages.setuptools',
+    '(python3.withPackages (python-pkgs: [ python-pkgs.setuptools]))',
     'gccStdenv',
 ]
 aptPkgs = [
