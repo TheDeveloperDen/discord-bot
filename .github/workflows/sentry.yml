@@ -15,11 +15,6 @@ jobs:
       contents: read
 
     steps:
-      - name: Set Node.js 18.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18.x
-
       - name: Check out the repo
         uses: actions/checkout@v4
         with:
@@ -28,15 +23,16 @@ jobs:
       - name: Add gyp dependencies
         run: sudo apt install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
 
-      - name: Run install
-        uses: borales/actions-yarn@v5
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          cmd: install
+          bun-version: latest
+
+      - name: Run install
+        run: bun install --frozen-lockfile
 
       - name: Build production bundle
-        uses: borales/actions-yarn@v5
-        with:
-          cmd: build-prod
+        run: bun run build-prod
 
       - name: Get version from NPM
         id: package-version
