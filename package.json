@@ -24,7 +24,7 @@
     "@microsoft/eslint-formatter-sarif": "3.1.0",
     "@sentry/bun": "^10.1.0",
     "@sentry/cli": "^2.50.2",
-    "@sentry/node": "^8.55.0",
+    "@sentry/node": "^10.0.0",
     "@sentry/profiling-node": "^8.55.0",
     "@sequelize/core": "^7.0.0-alpha.46",
     "@sequelize/postgres": "^7.0.0-alpha.46",
