@@ -1,6 +1,5 @@
 import '../instrument.mjs' // Import the instrumentation module first
 import {config} from './Config.js'
-import * as dotenv from 'dotenv'
 import {Client, GatewayIntentBits, Partials} from 'discord.js'
 import {setupBranding} from './util/branding.js'
 import './util/random.js'
@@ -72,7 +71,6 @@ async function logIn() {
 }
 
 async function main() {
-    dotenv.config()
     await initStorage()
     await logIn()
     const guild = await client.guilds.fetch(config.guildId)
