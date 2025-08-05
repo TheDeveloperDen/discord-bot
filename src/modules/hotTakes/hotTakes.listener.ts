@@ -6,7 +6,7 @@ import { awaitTimeout } from "../../util/timeouts.js";
 import { logger } from "../../logging.js";
 
 async function sendHotTake(client: Client) {
-  logger.debug("Sending hot take maybe");
+  logger.info("Sending hot take maybe");
   const channel = (await client.channels.fetch(
     config.channels.hotTake,
   )) as TextChannel;
@@ -16,7 +16,7 @@ async function sendHotTake(client: Client) {
     return;
   }
 
-  logger.debug(`Last message: ${lastMessage.id}`);
+  logger.info(`Last message: ${lastMessage.id}`);
   const lastMessageSentAt = lastMessage.createdAt;
 
   // time since last message in seconds
@@ -25,7 +25,7 @@ async function sendHotTake(client: Client) {
   if (lastMessage.author.bot || timeSinceLastMessage < 60 * 60 * 2) {
     return;
   }
-  logger.debug(
+  logger.info(
     `Time since last message: ${timeSinceLastMessage}, met threshold`,
   );
   const hotTake = await generateHotTake(channel.guild);
