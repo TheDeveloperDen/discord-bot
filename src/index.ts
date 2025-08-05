@@ -22,6 +22,7 @@ import * as Sentry from "@sentry/node";
 import { initStorage } from "./store/storage.js";
 import { initSentry } from "./sentry.js";
 import { logger } from "./logging.js";
+import { startHealthCheck } from "./healthcheck.js";
 
 const client = new Client({
   intents: [
@@ -87,6 +88,7 @@ async function main() {
 }
 
 try {
+  startHealthCheck();
   await main();
 } catch (e) {
   Sentry.captureException(e);

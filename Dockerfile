@@ -18,6 +18,7 @@ RUN cd /temp/dev && bun install --frozen-lockfile --verbose
 # install with --production (exclude devDependencies)
 RUN mkdir -p /temp/prod
 COPY package.json bun.lock /temp/prod/
+ENV HUSKY=0
 RUN cd /temp/prod && bun install --frozen-lockfile --production
 
 # copy node_modules from temp directory
@@ -41,9 +42,12 @@ COPY --from=prerelease /usr/src/app/hotTakeData.json .
 COPY --from=prerelease /usr/src/app/CascadiaCode.ttf .
 COPY --from=prerelease /usr/src/app/package.json .
 
-RUN apt-get update && apt install -y libcairo2-dev libpango1.0-dev libgif7 librsvg2-2
+RUN apt-get update && apt install -y libcairo2-dev libpango1.0-dev libgif7 librsvg2-2 curl
+
 
 # run the app
 RUN chown -R bun:bun /usr/src/app
 USER bun
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s \
+    CMD curl -f http://localhost:3000/health || exit 1
 ENTRYPOINT [ "bun", "run", "start-built" ]

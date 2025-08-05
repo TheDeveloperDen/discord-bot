@@ -16,7 +16,7 @@
     "build-and-run": "bun run build && bun run start-built",
     "build-and-run-prod": "bun run lint && bun run build-prod && bun run start-built",
     "sentry:sourcemaps": "bunx sentry-cli sourcemaps inject --org developer-den-59 --project discord-bot ./bin && bunx sentry-cli sourcemaps upload --org developer-den-59 --project discord-bot ./bin",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "lint-staged": {
     "**/*": [
@@ -50,7 +50,6 @@
     "sqlite3": "^5.1.7",
     "string-similarity": "^4.0.4",
     "tslib": "^2.8.1",
-    "utf-8-validate": "^6.0.5",
     "winston": "^3.17.0",
     "yaml": "^2.8.0"
   },
