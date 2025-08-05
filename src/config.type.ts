@@ -17,6 +17,7 @@ export interface Config {
     hotTake: string;
     showcase: string;
     auditLog: string;
+    introductions?: string;
   };
   commands: {
     daily: Snowflake;
