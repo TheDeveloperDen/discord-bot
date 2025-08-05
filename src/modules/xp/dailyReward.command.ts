@@ -1,6 +1,6 @@
-import { GuildMember, Snowflake } from "discord.js";
+import { GuildMember, Snowflake, ApplicationCommandType } from "discord.js";
 import { Command } from "djs-slash-helper";
-import { ApplicationCommandType } from "discord-api-types/v10";
+
 import { logger } from "../../logging.js";
 import { DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { createStandardEmbed } from "../../util/embeds.js";

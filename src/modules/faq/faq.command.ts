@@ -3,7 +3,7 @@ import {
   ApplicationCommandOptionType,
   ApplicationCommandType,
   PermissionFlagsBits,
-} from "discord-api-types/v10";
+} from "discord.js";
 import { FAQ } from "../../store/models/FAQ.js";
 import { createFaqEmbed } from "./faq.util.js";
 import createFaqModal from "./faq.modal.js";

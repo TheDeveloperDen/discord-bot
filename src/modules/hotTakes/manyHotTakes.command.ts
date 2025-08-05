@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, range } from "discord.js";
 import { Command } from "djs-slash-helper";
-import { ApplicationCommandType } from "discord-api-types/v10";
+import { ApplicationCommandType } from "discord.js";
 import generateHotTake from "./hotTakes.util.js";
 import { upload } from "../pastify/pastify.js";
 

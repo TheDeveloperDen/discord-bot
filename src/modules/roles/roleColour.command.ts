@@ -5,7 +5,7 @@ import { config } from "../../Config.js";
 import {
   ApplicationCommandOptionType,
   ApplicationCommandType,
-} from "discord-api-types/v10";
+} from "discord.js";
 import { wrapInTransaction } from "../../sentry.js";
 
 const ResetSubcommand: ExecutableSubcommand = {

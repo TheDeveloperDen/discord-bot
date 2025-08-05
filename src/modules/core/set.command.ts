@@ -11,7 +11,7 @@ import { Command } from "djs-slash-helper";
 import {
   ApplicationCommandOptionType,
   ApplicationCommandType,
-} from "discord-api-types/v10";
+} from "discord.js";
 import { DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { mentionIfPingable } from "../../util/users.js";

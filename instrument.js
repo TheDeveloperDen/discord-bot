@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/node";
+import * as Sentry from "@sentry/bun";
 
 console.log("Starting Sentry Profiling Integration");
 // Ensure to call this before importing any other modules!

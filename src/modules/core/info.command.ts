@@ -1,6 +1,6 @@
 import { CommandInteraction, GuildMember } from "discord.js";
 import { Command } from "djs-slash-helper";
-import { ApplicationCommandType } from "discord-api-types/v10";
+import { ApplicationCommandType } from "discord.js";
 import { DDUser } from "../../store/models/DDUser.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { branding } from "../../util/branding.js";

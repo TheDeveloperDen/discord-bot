@@ -1,5 +1,5 @@
 import { Command } from "djs-slash-helper";
-import { APIEmbed, ApplicationCommandType } from "discord-api-types/v10";
+import { APIEmbed, ApplicationCommandType } from "discord.js";
 import { config } from "../../Config.js";
 import { ActionRowBuilder, ButtonBuilder } from "discord.js";
 import { createStandardEmbed } from "../../util/embeds.js";

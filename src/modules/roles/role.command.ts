@@ -1,7 +1,7 @@
 import { config } from "../../Config.js";
 import { Command } from "djs-slash-helper";
 import { GuildMember } from "discord.js";
-import { ApplicationCommandType } from "discord-api-types/v10";
+import { ApplicationCommandType } from "discord.js";
 import * as Sentry from "@sentry/node";
 
 export const NoPingCommand: Command<ApplicationCommandType.ChatInput> = {

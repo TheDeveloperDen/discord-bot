@@ -1,7 +1,7 @@
 import { CommandInteraction } from "discord.js";
 import { config } from "../../Config.js";
 import { Command } from "djs-slash-helper";
-import { ApplicationCommandType } from "discord-api-types/v10";
+import { ApplicationCommandType } from "discord.js";
 
 export const PasteCommand: Command<ApplicationCommandType.ChatInput> = {
   name: "paste",

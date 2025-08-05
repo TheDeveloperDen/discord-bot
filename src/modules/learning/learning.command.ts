@@ -3,7 +3,7 @@ import {
   ApplicationCommandOptionType,
   ApplicationCommandType,
   PermissionFlagsBits,
-} from "discord-api-types/v10";
+} from "discord.js";
 import {
   getAllCachedResources,
   getResource,

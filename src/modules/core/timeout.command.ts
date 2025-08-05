@@ -3,7 +3,7 @@ import { GuildMember } from "discord.js";
 import {
   ApplicationCommandOptionType,
   ApplicationCommandType,
-} from "discord-api-types/v10";
+} from "discord.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { parseTimespan } from "../../util/timespan.js";
 

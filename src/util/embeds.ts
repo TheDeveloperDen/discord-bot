@@ -1,11 +1,11 @@
 import {
   ColorResolvable,
   EmbedBuilder,
+  EmbedFooterOptions,
   GuildMember,
   PartialGuildMember,
 } from "discord.js";
 import { branding } from "./branding.js";
-import { EmbedFooterOptions } from "@discordjs/builders";
 
 export function createStandardEmbed(
   user?: GuildMember | PartialGuildMember,

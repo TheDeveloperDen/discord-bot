@@ -5,11 +5,10 @@ import { xpForLevel } from "./xpForMessage.util.js";
 import { createImage, font, getCanvasContext } from "../../util/imageUtils.js";
 import { branding } from "../../util/branding.js";
 import { drawText } from "../../util/textRendering.js";
-
 import {
   ApplicationCommandOptionType,
   ApplicationCommandType,
-} from "discord-api-types/v10";
+} from "discord.js";
 import { formatDayCount, getActualDailyStreak } from "./dailyReward.command.js";
 import { wrapInTransaction } from "../../sentry.js";
 import { format } from "../core/info.command.js";

@@ -1,5 +1,5 @@
 import { EventListener } from "../module.js";
-import { ChannelType, InteractionType } from "discord-api-types/v10";
+import { ChannelType, InteractionType } from "discord.js";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import { logger } from "../../logging.js";
 import { config } from "../../Config.js";
