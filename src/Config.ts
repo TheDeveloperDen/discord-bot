@@ -10,6 +10,7 @@ export const config: Config = {
     hotTake: "904478147351806015",
     showcase: "952536628533030942",
     auditLog: "994623474557538415",
+    general: "904478147351806015"
   },
   commands: {
     daily: "1029850807794937949",

@@ -7,6 +7,7 @@ export const IntroListener: EventListener = {
     if (message.channelId != config.channels.introductions) return;
     await message.startThread({
       name: `Welcome ${message.author.username}!`,
+      reason: `Welcome to the server! Use this thread to discuss your introduction if you want, or come and say hi in <#${config.channels.general}>`,
     });
   },
 };

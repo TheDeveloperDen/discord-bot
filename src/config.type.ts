@@ -18,6 +18,7 @@ export interface Config {
     showcase: string;
     auditLog: string;
     introductions?: string;
+    general: string;
   };
   commands: {
     daily: Snowflake;
