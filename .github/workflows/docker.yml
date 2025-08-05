@@ -27,5 +27,3 @@ jobs:
       - name: Set Docker tag
         id: date
         run: echo "DATE_STAMP=$(date +%s)" > "$GITHUB_ENV"
-
-    

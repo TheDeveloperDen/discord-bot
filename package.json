@@ -15,13 +15,16 @@
     "start-built": "bun --trace-warnings bin/index.js",
     "build-and-run": "bun run build && bun run start-built",
     "build-and-run-prod": "bun run lint && bun run build-prod && bun run start-built",
-    "sentry:sourcemaps": "bunx sentry-cli sourcemaps inject --org developer-den-59 --project discord-bot ./bin && bunx sentry-cli sourcemaps upload --org developer-den-59 --project discord-bot ./bin"
+    "sentry:sourcemaps": "bunx sentry-cli sourcemaps inject --org developer-den-59 --project discord-bot ./bin && bunx sentry-cli sourcemaps upload --org developer-den-59 --project discord-bot ./bin",
+    "prepare": "husky",
+    "lint-staged": {
+      "**/*": "prettier --write --ignore-unknown"
+    }
   },
   "keywords": [],
   "author": "Developer Den",
   "license": "MIT",
   "dependencies": {
-    "@microsoft/eslint-formatter-sarif": "3.1.0",
     "@sentry/bun": "^10.1.0",
     "@sentry/cli": "^2.50.2",
     "@sequelize/core": "^7.0.0-alpha.46",
@@ -57,6 +60,7 @@
   ],
   "repository": "https://github.com/TheDeveloperDen/DevDenBot.git",
   "devDependencies": {
+    "@microsoft/eslint-formatter-sarif": "3.1.0",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.32.0",
     "@sentry/types": "^8.55.0",
@@ -70,7 +74,10 @@
     "@types/string-similarity": "^4.0.2",
     "@types/validator": "^13.15.2",
     "eslint": "^9.32.0",
+    "eslint-config-prettier": "^10.1.8",
     "globals": "^15.15.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.4",
     "nodemon": "^3.1.10",
     "prettier": "3.6.2",
     "ts-node": "^10.9.2",
