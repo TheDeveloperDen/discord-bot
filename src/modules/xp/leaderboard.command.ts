@@ -16,38 +16,45 @@ type KeysMatching<T, V> = {
   [K in keyof T]-?: T[K] extends V ? K : never;
 }[keyof T];
 
-interface LeaderboardType extends APIApplicationCommandOptionChoice<string> {
-  calculate?: (user: DDUser) => Promise<number>;
-  value: KeysMatching<DDUser, number | bigint>;
+type LeaderboardSelection =
+  | ((user: DDUser) => Promise<number>)
+  | KeysMatching<DDUser, number | bigint>;
 
+interface LeaderboardType extends APIApplicationCommandOptionChoice<string> {
+  select: LeaderboardSelection;
+  value: string;
   format: (value: number | bigint) => string;
 }
 
 const info: LeaderboardType[] = [
   {
+    select: "xp",
     value: "xp",
     name: "XP",
     format: (value) => `${value.toLocaleString()} XP`,
   },
   {
+    select: "level",
     value: "level",
     name: "Level",
     format: (value) => `Level ${value}`,
   },
   {
-    value: "currentDailyStreak",
-    calculate: async (user) => await getActualDailyStreak(user),
     name: "Current Daily Streak",
+    value: "currentDailyStreak",
+    select: async (user) => await getActualDailyStreak(user),
     format: (s) => `${formatDays(s)}`,
   },
   {
-    value: "highestDailyStreak",
     name: "Highest Daily Streak",
+    value: "highestDailyStreak",
+    select: "highestDailyStreak",
     format: (s) => `${formatDays(s)}`,
   },
   {
-    value: "bumps",
     name: "Disboard Bumps",
+    value: "bumps",
+    select: async (user) => user.countBumps(),
     format: (value) =>
       value == 1 ? "1 Bump" : `${value.toLocaleString()} Bumps`,
   },
@@ -87,8 +94,11 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
     }
     const { format, value, name } = traitInfo;
 
+    const select = traitInfo.select;
     const calculate: (user: DDUser) => Promise<number | bigint> =
-      traitInfo.calculate ?? (async (user: DDUser) => user[value]);
+      select instanceof Function
+        ? select
+        : async (user: DDUser) => user[select];
 
     const users = await DDUser.findAll({
       order: [[value, "DESC"]],

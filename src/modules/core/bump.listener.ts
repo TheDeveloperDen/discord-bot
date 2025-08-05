@@ -3,7 +3,9 @@ import { ChannelType, InteractionType } from "discord-api-types/v10";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import { logger } from "../../logging.js";
 import { config } from "../../Config.js";
-import { Client } from "discord.js";
+import { Client, EmojiIdentifierResolvable } from "discord.js";
+import { Bump, getBumpStreak } from "../../store/models/Bump.js";
+import { mentionIfPingable } from "../../util/users.js";
 
 export const BumpListener: EventListener = {
   ready: async (client) => {
@@ -25,18 +27,51 @@ export const BumpListener: EventListener = {
     // since the bump failed message is ephemeral, we know if we can see the message then the bump succeeded!
     const ddUser = await getOrCreateUserById(BigInt(interactionOld.user.id));
 
-    ddUser.bumps += 1;
+    // Bump
+    await Bump.create({
+      messageId: BigInt(message.id),
+      userId: BigInt(interactionOld.user.id),
+      timestamp: new Date(),
+    });
     logger.info(
-      `User ${interactionOld.user.id} bumped! Total bumps: ${ddUser.bumps}`,
+      `User ${interactionOld.user.id} bumped! Total bumps: ${await ddUser.countBumps()}`,
     );
     await ddUser.save();
 
     lastBumpTime = new Date();
     scheduleBumpReminder(client);
 
-    await message.react("❤️");
+    const streak = await getBumpStreak(ddUser);
+    if (streak.current < 5) return;
+
+    if (streak.current == streak.highest) {
+      // new high score!
+      message.channel.send(
+        `${mentionIfPingable(interactionOld.user)}, you beat your max bump streak! Keep it up!`,
+      );
+    }
+    // cool reactions
+    for (let i = 0; i <= streak.current / 3; i++) {
+      if (i >= streakReacts.length) return;
+      message.react(streakReacts[i]!);
+    }
   },
 };
+const streakReacts: EmojiIdentifierResolvable[] = [
+  "❤️",
+  "🩷",
+  "🧡",
+  "💛",
+  "💚",
+  "💙",
+  "🩵",
+  "💜",
+  "🤎",
+  "🖤",
+  "🔥",
+  "‼️",
+  "❤️‍🔥",
+];
 
 let lastBumpTime = new Date();
 

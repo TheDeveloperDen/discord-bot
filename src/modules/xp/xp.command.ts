@@ -80,7 +80,7 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
         },
         {
           name: "❗Bumps",
-          value: format(ddUser.bumps),
+          value: format(await ddUser.countBumps()),
           inline: true,
         },
       )

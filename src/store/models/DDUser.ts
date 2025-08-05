@@ -15,6 +15,7 @@ import {
 } from "@sequelize/core/decorators-legacy";
 import { RealBigInt } from "../RealBigInt.js";
 import * as Sentry from "@sentry/node";
+import { Bump } from "./Bump.js";
 
 @Table({ tableName: "Users" })
 export class DDUser extends Model<
@@ -34,7 +35,7 @@ export class DDUser extends Model<
   declare public level: number;
 
   @Attribute(DataTypes.INTEGER({ length: 11 }))
-  declare public bumps: number;
+  declare private bumps: number;
 
   @Attribute(DataTypes.INTEGER)
   declare public currentDailyStreak: number;
@@ -73,6 +74,21 @@ export class DDUser extends Model<
       },
     );
   }
+
+  async countBumps(): Promise<number> {
+    return await Sentry.startSpan(
+      { name: "DDUser#bumps", attributes: { id: this.id.toString() } },
+      async () => {
+        logger.debug(`Getting bumps for user ${this.id}`);
+        const newBumpCount = await Bump.count({
+          where: {
+            userId: this.id,
+          },
+        });
+        return newBumpCount + this.bumps;
+      },
+    );
+  }
 }
 
 export const getOrCreateUserById = async (id: bigint) =>
@@ -106,7 +122,7 @@ export const getOrCreateUserById = async (id: bigint) =>
               id,
               xp: 0n,
               level: 0,
-              bumps: 0,
+              // bumps: 0,
               currentDailyStreak: 0,
               highestDailyStreak: 0,
             },

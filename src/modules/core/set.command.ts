@@ -143,7 +143,7 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
 
 const getters = new Map([
   ["xp", (user: DDUser) => user.xp],
-  ["bumps", (user: DDUser) => BigInt(user.bumps)],
+  ["daily", (user: DDUser) => BigInt(user.currentDailyStreak)],
 ]);
 
 const setters = new Map([
@@ -155,9 +155,12 @@ const setters = new Map([
     },
   ],
   [
-    "bumps",
+    "daily",
     (user: DDUser, value: number) => {
-      user.bumps = value;
+      user.currentDailyStreak = value;
+      if (value > user.highestDailyStreak) {
+        user.highestDailyStreak = value;
+      }
     },
   ],
 ]);

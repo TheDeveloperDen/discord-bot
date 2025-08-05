@@ -9,6 +9,7 @@ import {
   NotNull,
   PrimaryKey,
   Table,
+  Unique,
 } from "@sequelize/core/decorators-legacy";
 import { RealBigInt } from "../RealBigInt.js";
 
@@ -21,6 +22,7 @@ export class ColourRoles extends Model<
 > {
   @Attribute(RealBigInt)
   @PrimaryKey
+  @Unique
   @NotNull
   declare public id: bigint;
 

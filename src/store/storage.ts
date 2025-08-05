@@ -6,6 +6,7 @@ import { AbstractDialect, DialectName, Sequelize } from "@sequelize/core";
 
 import { SqliteDialect } from "@sequelize/sqlite3";
 import { ConnectionConfig } from "pg";
+import { Bump } from "./models/Bump.js";
 
 function sequelizeLog(sql: string, timing?: number) {
   if (timing) {
@@ -53,7 +54,7 @@ export async function initStorage() {
   }
   await sequelize.authenticate();
 
-  const models = [DDUser, ColourRoles, FAQ];
+  const models = [DDUser, ColourRoles, FAQ, Bump];
   sequelize.addModels(models);
 
   for (const model of models) {

@@ -28,7 +28,4 @@ jobs:
         id: date
         run: echo "DATE_STAMP=$(date +%s)" > "$GITHUB_ENV"
 
-      - name: Build and push Docker images
-        uses: iloveitaly/github-action-nixpacks@main
-        with:
-          push: true
+    
