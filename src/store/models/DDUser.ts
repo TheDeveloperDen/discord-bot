@@ -35,7 +35,7 @@ export class DDUser extends Model<
   declare public level: number;
 
   @Attribute(DataTypes.INTEGER({ length: 11 }))
-  declare private bumps: number;
+  declare public bumps: number;
 
   @Attribute(DataTypes.INTEGER)
   declare public currentDailyStreak: number;
@@ -122,7 +122,7 @@ export const getOrCreateUserById = async (id: bigint) =>
               id,
               xp: 0n,
               level: 0,
-              // bumps: 0,
+              bumps: 0,
               currentDailyStreak: 0,
               highestDailyStreak: 0,
             },
