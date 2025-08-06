@@ -42,11 +42,15 @@ export const BumpListener: EventListener = {
     scheduleBumpReminder(client);
 
     const streak = await getBumpStreak(ddUser);
+    logger.info(
+      `User ${interactionOld.user.id} has a bump streak of ${streak.current} (highest: ${streak.highest})`,
+    );
     // cool reactions
     for (let i = 0; i <= streak.current / 3; i++) {
       if (i >= streakReacts.length) return;
       message.react(streakReacts[i]!);
     }
+
     if (streak.current < 5) return;
 
     if (streak.current == streak.highest) {
