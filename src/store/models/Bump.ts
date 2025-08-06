@@ -9,6 +9,7 @@ import {
 import {
   Attribute,
   BelongsTo,
+  Index,
   NotNull,
   PrimaryKey,
   Table,
@@ -36,6 +37,7 @@ export class Bump extends Model<
 
   @Attribute(DataTypes.DATE)
   @NotNull
+  @Index
   declare public timestamp: Date;
 }
 
