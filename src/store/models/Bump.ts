@@ -83,6 +83,8 @@ export const getBumpStreak = async (user: DDUserType): Promise<Streak> =>
       });
       if (additionalBumps.length > 0) {
         streaks.push(additionalBumps);
+      } else {
+        break; // no more bumps found, exit the loop
       }
     }
 
