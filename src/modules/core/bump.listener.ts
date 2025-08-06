@@ -42,6 +42,11 @@ export const BumpListener: EventListener = {
     scheduleBumpReminder(client);
 
     const streak = await getBumpStreak(ddUser);
+    // cool reactions
+    for (let i = 0; i <= streak.current / 3; i++) {
+      if (i >= streakReacts.length) return;
+      message.react(streakReacts[i]!);
+    }
     if (streak.current < 5) return;
 
     if (streak.current == streak.highest) {
@@ -49,11 +54,6 @@ export const BumpListener: EventListener = {
       message.channel.send(
         `${mentionIfPingable(interactionOld.user)}, you beat your max bump streak! Keep it up!`,
       );
-    }
-    // cool reactions
-    for (let i = 0; i <= streak.current / 3; i++) {
-      if (i >= streakReacts.length) return;
-      message.react(streakReacts[i]!);
     }
   },
 };
