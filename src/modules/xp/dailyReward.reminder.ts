@@ -8,6 +8,9 @@ import {
   getActualDailyStreak,
   getNextDailyTime,
 } from "./dailyReward.command.js";
+import { Op } from "@sequelize/core";
+
+const FORTY_EIGHT_HOURS_IN_MS = 48 * 60 * 60 * 1000;
 
 const sendReminder = async (client: Client, user: GuildMember) => {
   const botCommands = await client.channels.fetch(config.channels.botCommands);
@@ -23,11 +26,15 @@ const sendReminder = async (client: Client, user: GuildMember) => {
     logger.error("lastClaimTime is null");
     return;
   }
-  if (new Date().getTime() - lastClaimTime.getTime() > 1000 * 60 * 60 * 48) {
+  if (
+    new Date().getTime() - lastClaimTime.getTime() >
+    FORTY_EIGHT_HOURS_IN_MS
+  ) {
     logger.info(
       `User ${user.user.tag} has not claimed their daily in over 48 hours, not reminding them and cancelling future reminders`,
     );
     scheduledReminders.get(ddUser.id)?.cancel();
+    scheduledReminders.delete(ddUser.id);
     return;
   }
   await botCommands.send({
@@ -70,6 +77,8 @@ export const scheduleReminder = async (
     return;
   }
 
+  // This will not be perfectly accurate, and if we ever scale to multiple instances of the bot, we'll need to
+  // use a more robust system to avoid duplicate reminders.
   const job = scheduleJob(
     {
       hour: time.getHours(),
@@ -88,13 +97,23 @@ export const scheduleReminder = async (
 
 export const scheduleAllReminders = async (client: Client) => {
   const guild = await client.guilds.fetch(config.guildId);
-  const list = await guild.members.fetch();
-  logger.debug(`Scheduling reminders for ${list.size} members`);
+  const usersWithDaily = await DDUser.findAll({
+    where: {
+      lastDailyTime: {
+        [Op.ne]: undefined,
+      },
+    },
+  });
 
-  for (const member of Array.from(list.values()).filter(isSpecialUser)) {
-    const ddUser = await getOrCreateUserById(BigInt(member.id));
+  logger.debug(`Scheduling reminders for ${usersWithDaily.length} members`);
+
+  for (const ddUser of usersWithDaily) {
+    const member = await guild.members.fetch(ddUser.id.toString());
+    if (!member || !isSpecialUser(member)) {
+      continue;
+    }
     await scheduleReminder(client, member, ddUser);
   }
 };
 
-const scheduledReminders = new Map<bigint, Job>();
+export const scheduledReminders = new Map<bigint, Job>();

@@ -76,21 +76,13 @@ export function getStreak(
   let currentStreak = 0;
   let highestStreak = 0;
   for (const streak of bumpStreaks) {
-    console.debug(`Streak for user ${userId}:`, streak);
-
     if (streak[0]!.userId === userId) {
       currentStreak += streak.length;
-      console.debug(`Current streak for user ${userId}:`, currentStreak);
     } else {
       highestStreak = Math.max(highestStreak, currentStreak);
-      console.debug(
-        `Reset current streak for user at ${userId}:`,
-        currentStreak,
-      );
       currentStreak = 0;
     }
     highestStreak = Math.max(highestStreak, currentStreak);
-    console.debug(`Highest streak for user ${userId}:`, highestStreak);
   }
   return {
     current: currentStreak,
