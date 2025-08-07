@@ -51,7 +51,7 @@ export const BumpListener: EventListener = {
       message.react(streakReacts[i]!);
     }
 
-    if (streak.current < 5) return;
+    if (streak.current < 3) return;
 
     if (streak.current == streak.highest) {
       // new high score!

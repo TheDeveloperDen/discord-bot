@@ -8,6 +8,7 @@
     "esModuleInterop": true,
     "moduleResolution": "Node16",
     "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
 
     "experimentalDecorators": true,
     "emitDecoratorMetadata": false,

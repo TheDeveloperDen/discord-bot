@@ -4,7 +4,6 @@ import {
   InferCreationAttributes,
   Model,
   NonAttribute,
-  Op,
 } from "@sequelize/core";
 import {
   Attribute,
@@ -41,10 +40,14 @@ export class Bump extends Model<
   declare public timestamp: Date;
 }
 
+/**
+
+ * @returns All bumps in ascending order of timestamp.
+ */
 export const getAllBumps = async (): Promise<Bump[]> =>
   await Sentry.startSpan({ name: "getAllBumps" }, async () => {
     return await Bump.findAll({
-      order: [["timestamp", "DESC"]],
+      order: [["timestamp", "ASC"]],
     });
   });
 
@@ -55,38 +58,12 @@ export type Streak = {
 
 export const getBumpStreak = async (user: DDUserType): Promise<Streak> =>
   await Sentry.startSpan({ name: "getBumpStreak" }, async () => {
-    // first, retrieve the 50 most recent bumps
+    // query every bump. TODO optimise
     const bumps = await Bump.findAll({
-      order: [["timestamp", "DESC"]],
-      limit: 50,
+      order: [["timestamp", "ASC"]],
     });
 
     const streaks = extractStreaks(bumps);
-
-    // if the earliest (i.e. last) streak is from the user, we need to potentially search further
-    while (
-      streaks.length > 0 &&
-      streaks[streaks.length - 1]![0]!.userId === user.id
-    ) {
-      const earliestBump = streaks[streaks.length - 1]![0]!;
-      const earliestBumpDate = earliestBump.timestamp;
-
-      const additionalBumps = await Bump.findAll({
-        where: {
-          userId: user.id,
-          timestamp: {
-            [Op.lt]: earliestBumpDate,
-          },
-        },
-        order: [["timestamp", "DESC"]],
-        limit: 50,
-      });
-      if (additionalBumps.length > 0) {
-        streaks.push(additionalBumps);
-      } else {
-        break; // no more bumps found, exit the loop
-      }
-    }
 
     return getStreak(user.id, streaks);
   });
@@ -99,13 +76,21 @@ export function getStreak(
   let currentStreak = 0;
   let highestStreak = 0;
   for (const streak of bumpStreaks) {
+    console.debug(`Streak for user ${userId}:`, streak);
+
     if (streak[0]!.userId === userId) {
       currentStreak += streak.length;
+      console.debug(`Current streak for user ${userId}:`, currentStreak);
     } else {
       highestStreak = Math.max(highestStreak, currentStreak);
+      console.debug(
+        `Reset current streak for user at ${userId}:`,
+        currentStreak,
+      );
       currentStreak = 0;
     }
     highestStreak = Math.max(highestStreak, currentStreak);
+    console.debug(`Highest streak for user ${userId}:`, highestStreak);
   }
   return {
     current: currentStreak,
@@ -113,9 +98,11 @@ export function getStreak(
   };
 }
 
-export const extractStreaks = (bumps: Bump[]): Bump[][] => {
+export function extractStreaks<T extends { userId: bigint }>(
+  bumps: T[],
+): T[][] {
   // group by same user
-  const streaks: Bump[][] = [];
+  const streaks: T[][] = [];
 
   for (const bump of bumps) {
     if (
@@ -128,6 +115,6 @@ export const extractStreaks = (bumps: Bump[]): Bump[][] => {
     }
   }
   return streaks;
-};
+}
 
 import { DDUser } from "./DDUser.js";
