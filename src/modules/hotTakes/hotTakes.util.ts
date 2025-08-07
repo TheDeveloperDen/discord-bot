@@ -5,7 +5,6 @@ import { readFileSync } from "fs";
 import ExpiryMap from "expiry-map";
 
 import { LRUCache } from "lru-cache";
-import { logger } from "../../logging.js";
 
 const thingCache = new LRUCache<string, object>({
   max: 1000,
@@ -115,7 +114,12 @@ async function getSpecialUsers(guild: Guild) {
   return users;
 }
 
-function createWeights(options: HotTakeThing[]) {
+/**
+ * weight the options based on whether they have been used before
+ * @param options - the options to weight
+ * @returns an array of weights, where 1 means the option has been used before and 5 means it has not
+ */
+function createWeights(options: HotTakeThing[]): (1 | 5)[] {
   return options.map((it) => {
     if (thingCache.get(hotTakeValue(it))) {
       return 1;
@@ -124,6 +128,13 @@ function createWeights(options: HotTakeThing[]) {
   });
 }
 
+/**
+ * Select a random index from the weights array based on their weights.
+ * Higher values in the weights array increase the chance of being selected.
+ * If all weights are 0, it will return -1.
+ * @param weights - the weights to use for the random selection
+ * @returns a random index from the weights array
+ */
 function weightedRandom(weights: number[]) {
   let totalWeight = 0;
   let i;
@@ -148,7 +159,6 @@ function weightedRandom(weights: number[]) {
 
 function getWeightedRandom(options: HotTakeThing[]): HotTakeThing {
   const weights = createWeights(options);
-  logger.debug(`Weights: ${JSON.stringify(weights)}`);
 
   const opt = weightedRandom(weights);
   const val = options[opt]!;
