@@ -8,5 +8,11 @@ Sentry.init({
   release: process.env.npm_package_version ?? process.env.VERSION ?? "unknown",
   tracesSampleRate: 1.0,
   profilesSampleRate: 0.2,
-  integrations: [],
+  integrations: [
+    Sentry.extraErrorDataIntegration(),
+    Sentry.onUncaughtExceptionIntegration(),
+    Sentry.onUnhandledRejectionIntegration(),
+    Sentry.fsIntegration(),
+    Sentry.postgresIntegration(),
+  ],
 });

@@ -3,11 +3,6 @@ import { Client } from "discord.js";
 import { logger } from "./logging.js";
 
 export function initSentry(client: Client) {
-  process.on("unhandledRejection", (error) => {
-    logger.error(error);
-    Sentry.captureException(error);
-  });
-
   client.on("shardError", (error) => {
     logger.error(error);
     Sentry.captureException(error);
