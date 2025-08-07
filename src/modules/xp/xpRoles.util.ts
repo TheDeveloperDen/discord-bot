@@ -26,14 +26,17 @@ export async function levelUp(
   ddUser: DDUser,
 ) {
   const newLevel = levelForXp(ddUser.xp);
+  logger.debug(
+    `${ddUser.id} xp (${ddUser.xp}) should put them at level ${newLevel}`,
+  );
+  if (newLevel <= ddUser.level) {
+    return;
+  }
   logger.info(
     `${ddUser.id} xp (${ddUser.xp}) was enough to level up to ${newLevel} (${xpForLevel(
       newLevel,
     )})`,
   );
-  if (newLevel <= ddUser.level) {
-    return;
-  }
   ddUser.level = newLevel;
   logger.info(`${ddUser.id} leveling up to ${newLevel}`);
   await applyTierRoles(client, user, ddUser);
