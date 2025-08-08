@@ -46,7 +46,7 @@ export const BumpListener: EventListener = {
       `User ${interactionOld.user.id} has a bump streak of ${streak.current} (highest: ${streak.highest})`,
     );
     // cool reactions
-    for (let i = 0; i <= streak.current / 3; i++) {
+    for (let i = 0; i <= streak.current; i++) {
       if (i >= streakReacts.length) return;
       message.react(streakReacts[i]!);
     }
