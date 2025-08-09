@@ -4,8 +4,14 @@ import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import { logger } from "../../logging.js";
 import { config } from "../../Config.js";
 import { Client, EmojiIdentifierResolvable } from "discord.js";
-import { Bump, getBumpStreak } from "../../store/models/Bump.js";
-import { mentionIfPingable } from "../../util/users.js";
+import {
+  Bump,
+  extractStreaks,
+  getAllBumps,
+  getBumpStreak,
+  getStreaks,
+} from "../../store/models/Bump.js";
+import { fakeMention, mentionIfPingable } from "../../util/users.js";
 
 export const BumpListener: EventListener = {
   ready: async (client) => {
@@ -56,7 +62,28 @@ export const BumpListener: EventListener = {
     if (streak.current == streak.highest) {
       // new high score!
       message.channel.send(
-        `${mentionIfPingable(interactionOld.user)}, you beat your max bump streak! Keep it up!`,
+        `${mentionIfPingable(interactionOld.user)}, you beat your max bump streak and are now on a streak of ${streak.current}! Keep it up!`,
+      );
+    }
+
+    const allStreaks = getStreaks(extractStreaks(await getAllBumps()));
+
+    const highestStreakEver = allStreaks.sort(
+      (a, b) => b.highest - a.highest,
+    )[0];
+    if (highestStreakEver) {
+      message.channel.send(
+        `🔥🔥🔥🔥🔥 ${mentionIfPingable(interactionOld.user)}, you have the highest EVER bump streak in the server of ${highestStreakEver.highest}! Keep it up!`,
+      );
+    }
+
+    // check if the user dethroned another user
+
+    const mostRecent = allStreaks[allStreaks.length - 1]!;
+    if (mostRecent.userId != ddUser.id && mostRecent.current >= 2) {
+      const user = await client.users.fetch(mostRecent.userId.toString());
+      message.channel.send(
+        `${mentionIfPingable(interactionOld.user)} ended ${fakeMention(user)}'s bump streak of ${mostRecent.current}!`,
       );
     }
   },
@@ -75,6 +102,12 @@ const streakReacts: EmojiIdentifierResolvable[] = [
   "🔥",
   "‼️",
   "❤️‍🔥",
+  "💯",
+  "💥",
+  "✨",
+  "🎉",
+  "🎊",
+  "👑",
 ];
 
 let lastBumpTime = new Date();

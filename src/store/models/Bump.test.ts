@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { extractStreaks, getStreak } from "./Bump.js";
+import { extractStreaks, getStreak, getStreaks } from "./Bump.js";
 
 test("getStreak", () => {
   const streakData: { userId: bigint }[][] = [
@@ -41,6 +41,33 @@ test("getStreak with real data", () => {
 
   const actualStreaks = getStreak(1118501031488274517n, streaks);
   expect(actualStreaks).toEqual({
+    current: 8,
+    highest: 8,
+  });
+});
+
+test("getStreaks with real data", () => {
+  const streaks = extractStreaks(
+    bumps.default.map((b) => ({
+      ...b,
+      userId: BigInt(b.userId),
+    })),
+  ).toReversed();
+
+  const actualStreaks = getStreaks(streaks);
+  expect(actualStreaks).toBeArrayOfSize(3);
+  expect(actualStreaks[0]).toEqual({
+    userId: 266973575225933824n,
+    current: 2,
+    highest: 2,
+  });
+  expect(actualStreaks[1]).toEqual({
+    userId: 245994206965792780n,
+    current: 1,
+    highest: 1,
+  });
+  expect(actualStreaks[2]).toEqual({
+    userId: 1118501031488274517n,
     current: 8,
     highest: 8,
   });

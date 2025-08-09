@@ -46,9 +46,18 @@ export class Bump extends Model<
  */
 export const getAllBumps = async (): Promise<Bump[]> =>
   await Sentry.startSpan({ name: "getAllBumps" }, async () => {
-    return await Bump.findAll({
+    if (
+      bumpsCache.bumps.length > 0 &&
+      new Date().getTime() - bumpsCache.lastUpdated.getTime() < 1000 * 60 * 60 // 1 hour to be safe
+    ) {
+      return bumpsCache.bumps;
+    }
+    const bumps = await Bump.findAll({
       order: [["timestamp", "ASC"]],
     });
+    bumpsCache.bumps = bumps;
+    bumpsCache.lastUpdated = new Date();
+    return bumps;
   });
 
 export type Streak = {
@@ -56,17 +65,48 @@ export type Streak = {
   highest: number;
 };
 
+const bumpsCache: {
+  bumps: Bump[];
+  lastUpdated: Date;
+} = {
+  bumps: [],
+  lastUpdated: new Date(),
+};
+
 export const getBumpStreak = async (user: DDUserType): Promise<Streak> =>
   await Sentry.startSpan({ name: "getBumpStreak" }, async () => {
     // query every bump. TODO optimise
-    const bumps = await Bump.findAll({
-      order: [["timestamp", "ASC"]],
-    });
+    const bumps = await getAllBumps();
 
     const streaks = extractStreaks(bumps);
 
     return getStreak(user.id, streaks);
   });
+
+/**
+ * Turns a list of bump streaks into a list of user IDs and their streaks.
+ * This will preserve the order of the streaks.
+ * @param bumpStreaks  A list of bump streaks.
+ * @returns A map of user IDs to their streaks.
+ */
+export function getStreaks(bumpStreaks: { userId: bigint }[][]): ({
+  userId: bigint;
+} & Streak)[] {
+  const streakMap = new Map<bigint, Streak>();
+  for (const streak of bumpStreaks) {
+    const userId = streak[0]!.userId;
+    const currentStreak = streak.length;
+    const highestStreak = streakMap.get(userId)?.highest ?? 0;
+    streakMap.set(userId, {
+      current: currentStreak,
+      highest: Math.max(highestStreak, currentStreak),
+    });
+  }
+  return Array.from(streakMap.entries()).map(([userId, streak]) => ({
+    userId,
+    ...streak,
+  }));
+}
 
 export function getStreak(
   userId: bigint,
