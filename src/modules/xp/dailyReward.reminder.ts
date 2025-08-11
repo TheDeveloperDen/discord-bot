@@ -96,7 +96,6 @@ export const scheduleReminder = async (
 };
 
 export const scheduleAllReminders = async (client: Client) => {
-  const guild = await client.guilds.fetch(config.guildId);
   const usersWithDaily = await DDUser.findAll({
     where: {
       lastDailyTime: {
@@ -108,6 +107,7 @@ export const scheduleAllReminders = async (client: Client) => {
   logger.debug(`Scheduling reminders for ${usersWithDaily.length} members`);
 
   for (const ddUser of usersWithDaily) {
+    const guild = await client.guilds.fetch(config.guildId);
     const member = await guild.members.fetch(ddUser.id.toString());
     if (!member || !isSpecialUser(member)) {
       continue;

@@ -34,7 +34,7 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
       name: "field",
       description: "The field to edit",
       required: true,
-      choices: ["xp", "bumps"].map((it) => ({
+      choices: ["xp", "daily"].map((it) => ({
         name: it,
         value: it,
       })),
