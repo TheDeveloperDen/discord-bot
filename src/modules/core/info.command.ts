@@ -4,6 +4,7 @@ import { ApplicationCommandType } from "discord.js";
 import { DDUser } from "../../store/models/DDUser.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { branding } from "../../util/branding.js";
+import { logger } from "../../logging.js";
 
 export const InfoCommand: Command<ApplicationCommandType.ChatInput> = {
   type: ApplicationCommandType.ChatInput,
@@ -24,6 +25,7 @@ export const InfoCommand: Command<ApplicationCommandType.ChatInput> = {
     const dateCreated = `
             <t:${(guild.createdAt.getTime() / 1000) | 0}>`;
     const levelUps = (await DDUser.sum("level")) ?? 0;
+    logger.debug(`totalXP: ${totalXP} (${typeof totalXP})`);
     await interaction.followUp({
       embeds: [
         createStandardEmbed(interaction.member as GuildMember)
