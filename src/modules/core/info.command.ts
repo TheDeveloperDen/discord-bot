@@ -84,7 +84,11 @@ export const format = (val: string | bigint | number) => {
   if (typeof val === "string") {
     return `\`${val}\``;
   } else {
-    return `\`${val.toLocaleString()}\``;
+    const format = Intl.NumberFormat("en-US", {
+      maximumFractionDigits: 2,
+      minimumFractionDigits: 0,
+    });
+    return `\`${format.format(val)}\``;
   }
 };
 
