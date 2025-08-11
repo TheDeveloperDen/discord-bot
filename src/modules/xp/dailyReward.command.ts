@@ -150,7 +150,7 @@ export function getActualDailyStreakWithoutSaving(
  */
 export function getNextDailyTime(user: DDUser): Date | undefined {
   const lastClaimTime = user.lastDailyTime;
-  if (lastClaimTime === undefined) {
+  if (!lastClaimTime) {
     return;
   }
   return getNextDailyTimeFrom(lastClaimTime);

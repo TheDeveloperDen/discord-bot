@@ -45,7 +45,7 @@ export class DDUser extends Model<
 
   @AllowNull
   @Attribute(DataTypes.DATE)
-  declare public lastDailyTime?: Date;
+  declare public lastDailyTime: Date | null;
 
   override async save(options?: SaveOptions): Promise<this> {
     return await Sentry.startSpan(

@@ -59,7 +59,7 @@ export const scheduleReminder = async (
     scheduledReminders.delete(ddUser.id);
   }
   const time = ddUser.lastDailyTime;
-  if (time === undefined) {
+  if (!time) {
     logger.info(`User ${user.user.tag} hasn't claimed their first daily yet`);
     return; // don't wanna harass people who haven't claimed their first daily yet
   }
@@ -100,7 +100,7 @@ export const scheduleAllReminders = async (client: Client) => {
   const usersWithDaily = await DDUser.findAll({
     where: {
       lastDailyTime: {
-        [Op.ne]: undefined,
+        [Op.not]: null,
       },
     },
   });
