@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { extractStreaks, getStreak, getStreaks } from "./Bump.js";
+import { extractStreaks, getStreak, getStreaks } from "./bumps.js";
 
 test("getStreak", () => {
   const streakData: { userId: bigint }[][] = [

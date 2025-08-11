@@ -4,13 +4,13 @@ import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import { logger } from "../../logging.js";
 import { config } from "../../Config.js";
 import { Client, EmojiIdentifierResolvable } from "discord.js";
+import { Bump } from "../../store/models/Bump.js";
 import {
-  Bump,
   extractStreaks,
   getAllBumps,
   getBumpStreak,
   getStreaks,
-} from "../../store/models/Bump.js";
+} from "../../store/models/bumps.js";
 import { fakeMention, mentionIfPingable } from "../../util/users.js";
 
 export const BumpListener: EventListener = {
