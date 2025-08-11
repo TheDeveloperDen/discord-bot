@@ -62,8 +62,6 @@ export async function initStorage() {
     as: "user",
   });
 
-  for (const model of models) {
-    await model.sync();
-  }
+  await sequelize.sync();
   logger.info("Initialised database");
 }
