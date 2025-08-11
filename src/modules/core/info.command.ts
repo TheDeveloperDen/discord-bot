@@ -87,6 +87,7 @@ export const format = (val: string | bigint | number) => {
     const format = Intl.NumberFormat("en-US", {
       maximumFractionDigits: 2,
       minimumFractionDigits: 0,
+      style: "decimal",
     });
     return `\`${format.format(val)}\``;
   }
