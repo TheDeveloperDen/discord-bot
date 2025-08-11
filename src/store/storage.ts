@@ -55,12 +55,12 @@ export async function initStorage() {
   await sequelize.authenticate();
 
   const models = [DDUser, ColourRoles, FAQ, Bump];
+  sequelize.addModels(models);
+
   Bump.belongsTo(DDUser, {
     foreignKey: "userId",
     as: "user",
   });
-
-  sequelize.addModels(models);
 
   for (const model of models) {
     await model.sync();
