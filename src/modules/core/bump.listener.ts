@@ -71,7 +71,11 @@ export const BumpListener: EventListener = {
     const highestStreakEver = allStreaks.sort(
       (a, b) => b.highest - a.highest,
     )[0];
-    if (highestStreakEver && highestStreakEver == streak) {
+    if (
+      highestStreakEver &&
+      highestStreakEver == streak &&
+      highestStreakEver.userId == ddUser.id
+    ) {
       // if they currently have the highest streak
       message.channel.send(
         `🔥🔥🔥🔥🔥 ${mentionIfPingable(interactionOld.user)}, you have the highest EVER bump streak in the server of ${highestStreakEver.highest}! Keep it up!`,
