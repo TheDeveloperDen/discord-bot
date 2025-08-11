@@ -108,11 +108,17 @@ export const scheduleAllReminders = async (client: Client) => {
 
   for (const ddUser of usersWithDaily) {
     const guild = await client.guilds.fetch(config.guildId);
-    const member = await guild.members.fetch(ddUser.id.toString());
-    if (!member || !isSpecialUser(member)) {
-      continue;
+    try {
+      const member = await guild.members.fetch(ddUser.id.toString());
+      if (!member || !isSpecialUser(member)) {
+        continue;
+      }
+      await scheduleReminder(client, member, ddUser);
+    } catch (error) {
+      logger.error(
+        `Failed to fetch member ${ddUser.id}: ${error}, skipping them for daily reward`,
+      );
     }
-    await scheduleReminder(client, member, ddUser);
   }
 };
 
