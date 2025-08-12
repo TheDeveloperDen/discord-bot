@@ -33,7 +33,7 @@
         "@eslint/eslintrc": "^3.3.1",
         "@eslint/js": "^9.32.0",
         "@microsoft/eslint-formatter-sarif": "3.1.0",
-        "@sentry/types": "^8.55.0",
+        "@sentry/types": "^10.0.0",
         "@sinonjs/fake-timers": "^14.0.0",
         "@types/bun": "^1.2.19",
         "@types/node": "^22.17.0",
@@ -234,7 +234,7 @@
 
     "@sentry/cli-win32-x64": ["@sentry/cli-win32-x64@2.50.2", "", { "os": "win32", "cpu": "x64" }, "sha512-tE27pu1sRRub1Jpmemykv3QHddBcyUk39Fsvv+n4NDpQyMgsyVPcboxBZyby44F0jkpI/q3bUH2tfCB1TYDNLg=="],
 
-    "@sentry/core": ["@sentry/core@8.55.0", "", {}, "sha512-6g7jpbefjHYs821Z+EBJ8r4Z7LT5h80YSWRJaylGS4nW5W5Z2KXzpdnyFarv37O7QjauzVC2E+PABmpkw5/JGA=="],
+    "@sentry/core": ["@sentry/core@10.5.0", "", {}, "sha512-jTJ8NhZSKB2yj3QTVRXfCCngQzAOLThQUxCl9A7Mv+XF10tP7xbH/88MVQ5WiOr2IzcmrB9r2nmUe36BnMlLjA=="],
 
     "@sentry/node": ["@sentry/node@10.1.0", "", { "dependencies": { "@opentelemetry/api": "^1.9.0", "@opentelemetry/context-async-hooks": "^2.0.0", "@opentelemetry/core": "^2.0.0", "@opentelemetry/instrumentation": "^0.203.0", "@opentelemetry/instrumentation-amqplib": "0.50.0", "@opentelemetry/instrumentation-connect": "0.47.0", "@opentelemetry/instrumentation-dataloader": "0.21.0", "@opentelemetry/instrumentation-express": "0.52.0", "@opentelemetry/instrumentation-fs": "0.23.0", "@opentelemetry/instrumentation-generic-pool": "0.47.0", "@opentelemetry/instrumentation-graphql": "0.51.0", "@opentelemetry/instrumentation-hapi": "0.50.0", "@opentelemetry/instrumentation-http": "0.203.0", "@opentelemetry/instrumentation-ioredis": "0.51.0", "@opentelemetry/instrumentation-kafkajs": "0.12.0", "@opentelemetry/instrumentation-knex": "0.48.0", "@opentelemetry/instrumentation-koa": "0.51.0", "@opentelemetry/instrumentation-lru-memoizer": "0.48.0", "@opentelemetry/instrumentation-mongodb": "0.56.0", "@opentelemetry/instrumentation-mongoose": "0.50.0", "@opentelemetry/instrumentation-mysql": "0.49.0", "@opentelemetry/instrumentation-mysql2": "0.49.0", "@opentelemetry/instrumentation-pg": "0.55.0", "@opentelemetry/instrumentation-redis": "0.51.0", "@opentelemetry/instrumentation-tedious": "0.22.0", "@opentelemetry/instrumentation-undici": "0.14.0", "@opentelemetry/resources": "^2.0.0", "@opentelemetry/sdk-trace-base": "^2.0.0", "@opentelemetry/semantic-conventions": "^1.34.0", "@prisma/instrumentation": "6.12.0", "@sentry/core": "10.1.0", "@sentry/node-core": "10.1.0", "@sentry/opentelemetry": "10.1.0", "import-in-the-middle": "^1.14.2", "minimatch": "^9.0.0" } }, "sha512-A+mM6Mz5aVGQkV+HWD+1xDAr+ineJ3BT3y3nXWB1ev9EMO3W+2ZeQ6BZMJjy2Yrak8FjZpeHnsvBLHppxZmEow=="],
 
@@ -242,7 +242,7 @@
 
     "@sentry/opentelemetry": ["@sentry/opentelemetry@10.1.0", "", { "dependencies": { "@sentry/core": "10.1.0" }, "peerDependencies": { "@opentelemetry/api": "^1.9.0", "@opentelemetry/context-async-hooks": "^1.30.1 || ^2.0.0", "@opentelemetry/core": "^1.30.1 || ^2.0.0", "@opentelemetry/sdk-trace-base": "^1.30.1 || ^2.0.0", "@opentelemetry/semantic-conventions": "^1.34.0" } }, "sha512-REwbS5UgNI4bQ4zovUzE2C0ppv4Fvxq48o8r/0ldvR1pmFi6P7kAmz5ixUonrXCy2XtX4Zs5wZmbZ7Am5hzmRQ=="],
 
-    "@sentry/types": ["@sentry/types@8.55.0", "", { "dependencies": { "@sentry/core": "8.55.0" } }, "sha512-6LRT0+r6NWQ+RtllrUW2yQfodST0cJnkOmdpHA75vONgBUhpKwiJ4H7AmgfoTET8w29pU6AnntaGOe0LJbOmog=="],
+    "@sentry/types": ["@sentry/types@10.5.0", "", { "dependencies": { "@sentry/core": "10.5.0" } }, "sha512-zO9eu42WvOVXigD30UCpDP7UPjzzbbCqJi//ICZ0hyViSEF/YtsOWJtct8y2DNEebvQCyUbc3jBFNZsI9GJJpA=="],
 
     "@sequelize/core": ["@sequelize/core@7.0.0-alpha.46", "", { "dependencies": { "@sequelize/utils": "7.0.0-alpha.46", "@types/debug": "^4.1.12", "@types/validator": "^13.12.2", "ansis": "^3.17.0", "bnf-parser": "^3.1.6", "dayjs": "^1.11.13", "debug": "^4.4.0", "dottie": "^2.0.6", "fast-glob": "^3.3.3", "inflection": "^3.0.2", "lodash": "^4.17.21", "retry-as-promised": "^7.1.1", "semver": "^7.7.1", "sequelize-pool": "^8.0.0", "toposort-class": "^1.0.1", "type-fest": "^4.37.0", "uuid": "^11.1.0", "validator": "^13.12.0" } }, "sha512-Gak63yRD7tm2legeV4WY0TXHUQOHiIhsSW/YpgwZUFD7jdyzLVPyZUK4zWMoaaOystOG/BiWzb0I9Q9o3EeUeg=="],
 
