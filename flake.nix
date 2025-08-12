@@ -20,21 +20,20 @@
         "x86_64-darwin"
       ];
       perSystem =
-        {
-          config,
-          self',
-          inputs',
-          pkgs,
-          system,
-          ...
+        { config
+        , self'
+        , inputs'
+        , pkgs
+        , system
+        , ...
         }:
         {
           treefmt.config = {
             projectRootFile = "./flake.nix";
             package = pkgs.treefmt;
             programs.nixpkgs-fmt.enable = true;
+            programs.prettier.enable = true;
           };
-
           devShells.default = pkgs.mkShell {
 
             buildInputs =
