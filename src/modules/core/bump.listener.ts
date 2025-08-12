@@ -85,6 +85,7 @@ export const BumpListener: EventListener = {
     // check if the user dethroned another user
 
     const mostRecent = allStreaks[allStreaks.length - 1]!;
+    logger.debug(`Most recent streak: ${JSON.stringify(mostRecent)}`);
     if (mostRecent.userId != ddUser.id && mostRecent.current >= 2) {
       const user = await client.users.fetch(mostRecent.userId.toString());
       message.channel.send(
