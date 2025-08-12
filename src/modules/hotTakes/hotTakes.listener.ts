@@ -16,13 +16,15 @@ async function sendHotTake(client: Client) {
     return;
   }
 
-  logger.info(`Last message: ${lastMessage.id}`);
   const lastMessageSentAt = lastMessage.createdAt;
 
   // time since last message in seconds
   const timeSinceLastMessage =
     (Date.now() - lastMessageSentAt.getTime()) / 1000;
   if (lastMessage.author.bot || timeSinceLastMessage < 60 * 60 * 2) {
+    logger.debug(
+      `Not sending hot take, last message was sent ${timeSinceLastMessage} seconds ago or was sent by a bot`,
+    );
     return;
   }
   logger.info(
