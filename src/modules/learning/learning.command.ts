@@ -130,7 +130,7 @@ const LearningUpdateSubcommand: ExecutableSubcommand = {
     const member = interaction.member as GuildMember;
     if (!member.permissions.has(PermissionFlagsBits.ManageMessages)) {
       return await interaction.reply({
-        ephemeral: true,
+        flags: ["Ephemeral"],
         content: "No permission",
       });
     }
@@ -165,7 +165,7 @@ const LearningListSubcommand: ExecutableSubcommand = {
       });
 
     await interaction.reply({
-      ephemeral: true,
+      flags: ["Ephemeral"],
       embeds: [embed],
     });
   },
