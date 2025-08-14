@@ -27,7 +27,7 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
     await interaction.deferReply();
     if (dailiesInProgress.has(user.id)) {
       await interaction.followUp({
-        ephemeral: true,
+        flags: ["Ephemeral"],
         content: "You are already claiming your daily reward!",
       });
       return;
@@ -45,7 +45,7 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
         }
         const nextClaimTime = getNextDailyTimeFrom(lastClaimTime);
         await interaction.followUp({
-          ephemeral: true,
+          flags: ["Ephemeral"],
           content: `You can only claim your daily reward once every 24 hours. You can claim it again <t:${Math.floor(
             nextClaimTime.getTime() / 1000,
           )}:R>.`,

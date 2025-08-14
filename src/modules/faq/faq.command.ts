@@ -2,6 +2,7 @@ import { Command, ExecutableSubcommand } from "djs-slash-helper";
 import {
   ApplicationCommandOptionType,
   ApplicationCommandType,
+  GuildMember,
   PermissionFlagsBits,
 } from "discord.js";
 import { FAQ } from "../../store/models/FAQ.js";
@@ -9,7 +10,6 @@ import { createFaqEmbed } from "./faq.util.js";
 import createFaqModal from "./faq.modal.js";
 import { moduleManager } from "../../index.js";
 import { logger } from "../../logging.js";
-import { GuildMember } from "discord.js";
 
 const choices: Array<{ name: string; value: string }> = [];
 
@@ -45,7 +45,7 @@ const GetSubcommand: ExecutableSubcommand = {
     });
     if (faq == null) {
       return await interaction.reply({
-        ephemeral: true,
+        flags: ["Ephemeral"],
         content: "No FAQ found with this name",
       });
     }
@@ -69,14 +69,14 @@ const EditSubcommand: ExecutableSubcommand = {
     const member = interaction.member as GuildMember;
     if (!member.permissions.has(PermissionFlagsBits.ManageMessages)) {
       return await interaction.reply({
-        ephemeral: true,
+        flags: ["Ephemeral"],
         content: "No permission",
       });
     }
     const name = interaction.options.get("name")?.value as string | null;
     if (name == null) {
       return await interaction.reply({
-        ephemeral: true,
+        flags: ["Ephemeral"],
         content: "No FAQ name provided",
       });
     }
@@ -97,7 +97,7 @@ const EditSubcommand: ExecutableSubcommand = {
       author: BigInt(interaction.user.id),
     });
     await response.reply({
-      ephemeral: true,
+      flags: ["Ephemeral"],
       content: `FAQ named ${name} created`,
     });
 
@@ -123,14 +123,14 @@ const DeleteSubcommand: ExecutableSubcommand = {
     const member = interaction.member as GuildMember;
     if (!member.permissions.has(PermissionFlagsBits.ManageMessages)) {
       return await interaction.reply({
-        ephemeral: true,
+        flags: ["Ephemeral"],
         content: "No permission",
       });
     }
     const name = interaction.options.get("name")?.value as string | null;
     if (name == null) {
       return await interaction.reply({
-        ephemeral: true,
+        flags: ["Ephemeral"],
         content: "No FAQ name provided",
       });
     }
@@ -138,7 +138,7 @@ const DeleteSubcommand: ExecutableSubcommand = {
     const faq = await FAQ.findOne({ where: { name } });
     if (faq == null) {
       return await interaction.reply({
-        ephemeral: true,
+        flags: ["Ephemeral"],
         content: "No FAQ found with this name",
       });
     }
@@ -146,7 +146,7 @@ const DeleteSubcommand: ExecutableSubcommand = {
     await updateChoices();
     await moduleManager.refreshCommands();
     return await interaction.reply({
-      ephemeral: true,
+      flags: ["Ephemeral"],
       content: `FAQ named ${name} deleted`,
     });
   },

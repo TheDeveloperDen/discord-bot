@@ -39,7 +39,7 @@ export const InformationButtonListener: EventListener = {
 
       await interaction.followUp({
         embeds: [embed],
-        ephemeral: true,
+        flags: ["Ephemeral"],
       });
       return;
     }
@@ -72,7 +72,7 @@ export const InformationButtonListener: EventListener = {
       (interaction.member as GuildMember) ?? undefined,
     );
     await interaction.followUp({
-      ephemeral: true,
+      flags: ["Ephemeral"],
       embeds: [embed],
     });
   },
@@ -102,7 +102,7 @@ async function sendLearningResourcesPicker(interaction: ButtonInteraction) {
     components: [
       new ActionRowBuilder<SelectMenuBuilder>().addComponents(selectMenu),
     ],
-    ephemeral: true,
-    fetchReply: true,
+    flags: ["Ephemeral"],
+    withResponse: false,
   });
 }

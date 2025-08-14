@@ -26,7 +26,7 @@ export const InformationMessageCommand: Command<ApplicationCommandType.Message> 
     async handle(interaction) {
       if (!interaction.targetMessage.editable) {
         await interaction.reply({
-          ephemeral: true,
+          flags: ["Ephemeral"],
           content: "I can't edit that message.",
         });
         return;
@@ -34,7 +34,7 @@ export const InformationMessageCommand: Command<ApplicationCommandType.Message> 
 
       if (config.informationMessage == null) {
         await interaction.reply({
-          ephemeral: true,
+          flags: ["Ephemeral"],
           content: "There is no information message configured.",
         });
         return;
@@ -63,7 +63,7 @@ export const InformationMessageCommand: Command<ApplicationCommandType.Message> 
         )}`,
       );
       await interaction.reply({
-        ephemeral: true,
+        flags: ["Ephemeral"],
         content: "Information message set.",
       });
     },
