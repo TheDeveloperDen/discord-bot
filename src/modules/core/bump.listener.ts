@@ -13,6 +13,16 @@ import {
 } from "../../store/models/bumps.js";
 import { fakeMention, mentionIfPingable } from "../../util/users.js";
 
+/**
+ * Stores the time of the most recent bump
+ */
+let lastBumpTime = new Date();
+
+/**
+ * Stores the time of when the most recent bump notification was sent
+ */
+let lastBumpNotificationTime = new Date(0);
+
 export const BumpListener: EventListener = {
   ready: async (client) => {
     scheduleBumpReminder(client);
@@ -92,6 +102,17 @@ export const BumpListener: EventListener = {
         `${mentionIfPingable(interactionOld.user)} ended ${fakeMention(user)}'s bump streak of ${mostRecent.current}!`,
       );
     }
+
+    // time since last bump
+    if (lastBumpNotificationTime.getTime() != 0) {
+      const timeSinceLastBump =
+        new Date().getTime() - lastBumpNotificationTime.getTime();
+      if (timeSinceLastBump < 5000) {
+        message.channel.send(
+          `⚡ ${fakeMention(interactionOld.user)} bumped in just **${timeSinceLastBump / 1000}s**!`,
+        );
+      }
+    }
   },
 };
 const streakReacts: EmojiIdentifierResolvable[] = [
@@ -115,8 +136,6 @@ const streakReacts: EmojiIdentifierResolvable[] = [
   "🎊",
   "👑",
 ];
-
-let lastBumpTime = new Date();
 
 function scheduleBumpReminder(client: Client) {
   // schedule a bump reminder for 2 hours from now
@@ -164,4 +183,5 @@ async function sendBumpNotification(client: Client) {
   await botCommands.send({
     content: `${bumpNotificationsRole}, The server is ready to be bumped! </bump:947088344167366698>`,
   });
+  lastBumpNotificationTime = new Date();
 }
