@@ -37,6 +37,12 @@ export const config: Config = {
     yesEmojiId: "thumbsup",
     noEmojiId: "thumbsdown",
   },
+  suggest: {
+    suggestionsChannel: "",
+    archiveChannel: "",
+    yesEmojiId: "thumbsup",
+    noEmojiId: "thumbsdown",
+  },
   pastebin: prodConfig.pastebin,
   branding: {
     color: "#ffffff",
