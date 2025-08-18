@@ -1,13 +1,27 @@
 import { EventListener } from "../module.js";
-import { GuildMember, Interaction } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  GuildMember,
+  Interaction,
+} from "discord.js";
 import {
   createSuggestionEmbedFromEntity,
+  createSuggestionManageButtons,
+  createVotesEmbed,
   getSuggestionByMessageId,
+  SUGGESTION_MANAGE_APPROVE_ID,
+  SUGGESTION_MANAGE_ID,
+  SUGGESTION_MANAGE_REJECT_ID,
   SUGGESTION_NO_ID,
+  SUGGESTION_VIEW_VOTES_ID,
   SUGGESTION_YES_ID,
   SuggestionVoteType,
   upsertVote,
 } from "./suggest.js";
+import { SuggestionStatus } from "../../store/models/Suggestion.js";
+import { config } from "../../Config.js";
 
 const SUGGESTION_BUTTON_MAP: {
   [key: string]: SuggestionVoteType;
@@ -19,10 +33,15 @@ const SUGGESTION_BUTTON_MAP: {
 export const SuggestionButtonListener: EventListener = {
   async interactionCreate(client, interaction: Interaction) {
     if (
-      interaction.isButton() &&
-      interaction.member &&
-      (interaction.customId === SUGGESTION_NO_ID ||
-        interaction.customId === SUGGESTION_YES_ID)
+      !interaction.isButton() ||
+      !interaction.member ||
+      !interaction.inGuild()
+    )
+      return;
+    const member = interaction.member as GuildMember;
+    if (
+      interaction.customId === SUGGESTION_NO_ID ||
+      interaction.customId === SUGGESTION_YES_ID
     ) {
       if (!interaction.message.editable) {
         await interaction.reply({
@@ -31,7 +50,6 @@ export const SuggestionButtonListener: EventListener = {
         });
         return;
       }
-      const member = interaction.member as GuildMember;
 
       await interaction.deferReply({ flags: ["Ephemeral"] });
 
@@ -75,6 +93,181 @@ export const SuggestionButtonListener: EventListener = {
         content: content,
         flags: ["Ephemeral"],
       });
+    } else if (interaction.customId === SUGGESTION_VIEW_VOTES_ID) {
+      await interaction.deferReply({ flags: ["Ephemeral"] });
+      const suggestion = await getSuggestionByMessageId(
+        BigInt(interaction.message.id),
+      );
+      if (!suggestion) {
+        await interaction.followUp({
+          content: "No Suggestion found for this message",
+          flags: ["Ephemeral"],
+        });
+        return;
+      }
+      const yesVotes =
+        suggestion.votes?.filter((vote) => vote.vote === 1) || [];
+      const noVotes =
+        suggestion.votes?.filter((vote) => vote.vote === -1) || [];
+
+      const embed = createVotesEmbed(member, yesVotes, noVotes);
+
+      await interaction.followUp({
+        embeds: [embed],
+        flags: ["Ephemeral"],
+      });
+    } else if (interaction.customId === SUGGESTION_MANAGE_ID) {
+      const row = createSuggestionManageButtons();
+
+      await interaction.reply({
+        content: "Manage Suggestion",
+        components: [row],
+        flags: ["Ephemeral"],
+      });
+    } else if (interaction.customId === SUGGESTION_MANAGE_APPROVE_ID) {
+      await interaction.deferReply({ flags: ["Ephemeral"] });
+      const initialMessage = await interaction.message.fetchReference();
+      const suggestion = await getSuggestionByMessageId(
+        BigInt(initialMessage.id),
+      );
+      if (!suggestion) {
+        await interaction.followUp({
+          content: "No Suggestion found for this message",
+          flags: ["Ephemeral"],
+        });
+        return;
+      }
+
+      suggestion.status = SuggestionStatus.APPROVED;
+      suggestion.moderatorId = BigInt(member.id);
+      await suggestion.save();
+
+      const suggestionArchive = await client.channels.fetch(
+        config.suggest.archiveChannel,
+      );
+      if (suggestionArchive) {
+        if (
+          !suggestionArchive.isSendable() ||
+          !suggestionArchive.isTextBased()
+        ) {
+          await interaction.followUp({
+            content:
+              "The suggestion channel is either not writeable or not a text channel!",
+            flags: ["Ephemeral"],
+          });
+          return;
+        }
+
+        try {
+          const member = await interaction.guild!.members.fetch(
+            suggestion.memberId.toString(),
+          );
+
+          const embed = await createSuggestionEmbedFromEntity(
+            suggestion,
+            member,
+          );
+
+          const newMessage = await suggestionArchive.send({
+            embeds: [embed],
+            components: [
+              new ActionRowBuilder<ButtonBuilder>().addComponents(
+                new ButtonBuilder()
+                  .setCustomId(SUGGESTION_VIEW_VOTES_ID)
+                  .setStyle(ButtonStyle.Secondary)
+                  .setEmoji("👁")
+                  .setLabel("View Votes"),
+              ),
+            ],
+          });
+          if (initialMessage.deletable) await initialMessage.delete();
+          suggestion.messageId = BigInt(newMessage.id);
+          await suggestion.save();
+          await interaction.followUp({
+            content: "Suggestion approved!",
+            flags: ["Ephemeral"],
+          });
+        } catch (e) {
+          console.error(e);
+          await interaction.followUp({
+            content:
+              "Something went wrong while archiving the suggestion! Please try again later!",
+            flags: ["Ephemeral"],
+          });
+        }
+      }
+    } else if (interaction.customId === SUGGESTION_MANAGE_REJECT_ID) {
+      const initialMessage = await interaction.message.fetchReference();
+      await interaction.deferReply({ flags: ["Ephemeral"] });
+      const suggestion = await getSuggestionByMessageId(
+        BigInt(initialMessage.id),
+      );
+      if (!suggestion) {
+        await interaction.followUp({
+          content: "No Suggestion found for this message",
+          flags: ["Ephemeral"],
+        });
+        return;
+      }
+
+      suggestion.status = SuggestionStatus.REJECTED;
+      suggestion.moderatorId = BigInt(member.id);
+      await suggestion.save();
+
+      const suggestionArchive = await client.channels.fetch(
+        config.suggest.archiveChannel,
+      );
+      if (suggestionArchive) {
+        if (
+          !suggestionArchive.isSendable() ||
+          !suggestionArchive.isTextBased()
+        ) {
+          await interaction.followUp({
+            content:
+              "The suggestion channel is either not writeable or not a text channel!",
+            flags: ["Ephemeral"],
+          });
+          return;
+        }
+
+        try {
+          const member = await interaction.guild!.members.fetch(
+            suggestion.memberId.toString(),
+          );
+
+          const embed = await createSuggestionEmbedFromEntity(
+            suggestion,
+            member,
+          );
+
+          const newMessage = await suggestionArchive.send({
+            embeds: [embed],
+            components: [
+              new ActionRowBuilder<ButtonBuilder>().addComponents(
+                new ButtonBuilder()
+                  .setCustomId(SUGGESTION_VIEW_VOTES_ID)
+                  .setStyle(ButtonStyle.Secondary)
+                  .setEmoji("👁")
+                  .setLabel("View Votes"),
+              ),
+            ],
+          });
+          if (initialMessage.deletable) await initialMessage.delete();
+          suggestion.messageId = BigInt(newMessage.id);
+          await suggestion.save();
+          await interaction.followUp({
+            content: "Suggestion rejected!",
+            flags: ["Ephemeral"],
+          });
+        } catch (e) {
+          console.error(e);
+          await interaction.followUp({
+            content:
+              "Something went wrong while archiving the suggestion! Please try again later!",
+            flags: ["Ephemeral"],
+          });
+        }
+      }
     }
   },
 };

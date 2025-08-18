@@ -13,7 +13,9 @@ import { config } from "../../Config.js";
 import {
   createSuggestion,
   createSuggestionEmbed,
+  SUGGESTION_MANAGE_ID,
   SUGGESTION_NO_ID,
+  SUGGESTION_VIEW_VOTES_ID,
   SUGGESTION_YES_ID,
 } from "./suggest.js";
 
@@ -114,6 +116,15 @@ export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
         .setCustomId(SUGGESTION_NO_ID)
         .setStyle(ButtonStyle.Danger)
         .setEmoji(config.suggest.noEmojiId),
+      new ButtonBuilder()
+        .setCustomId(SUGGESTION_VIEW_VOTES_ID)
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji("👁")
+        .setLabel("View Votes"),
+      new ButtonBuilder()
+        .setStyle(ButtonStyle.Secondary)
+        .setCustomId(SUGGESTION_MANAGE_ID)
+        .setEmoji("🎛"),
     );
     const response = await suggestionChannel.send({
       embeds: [embed],
@@ -126,7 +137,7 @@ export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
     });
 
     await interaction.followUp({
-      content: `Suggestion with the ID \`${suggestionId} successfully submitted! See [here](${response.url})`,
+      content: `Suggestion with the ID \`${suggestionId}\` successfully submitted! See [here](${response.url})`,
       flags: ["Ephemeral"],
     });
 

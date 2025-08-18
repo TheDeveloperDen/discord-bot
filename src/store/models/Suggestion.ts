@@ -8,6 +8,7 @@ import {
   AllowNull,
   Attribute,
   ColumnName,
+  Default,
   HasMany,
   NotNull,
   PrimaryKey,
@@ -16,6 +17,12 @@ import {
 } from "@sequelize/core/decorators-legacy";
 import { RealBigInt } from "../RealBigInt.js";
 import { SuggestionVote } from "./SuggestionVote.js";
+
+export enum SuggestionStatus {
+  PENDING = "PENDING",
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED",
+}
 
 @Table({
   tableName: "Suggestion",
@@ -37,8 +44,8 @@ export class Suggestion extends Model<
 
   @Attribute(RealBigInt)
   @NotNull
-  @ColumnName("userId")
-  public userId!: bigint;
+  @ColumnName("memberId")
+  public memberId!: bigint;
 
   @Attribute(DataTypes.STRING)
   @NotNull
@@ -50,7 +57,17 @@ export class Suggestion extends Model<
   @ColumnName("suggestionImageUrl")
   public suggestionImageUrl: string | undefined;
 
-  // Define the association
+  @Attribute(DataTypes.ENUM(SuggestionStatus))
+  @Default(SuggestionStatus.PENDING)
+  @NotNull
+  @ColumnName("status")
+  public status: SuggestionStatus = SuggestionStatus.PENDING;
+
+  @Attribute(RealBigInt)
+  @AllowNull
+  @ColumnName("moderatorId")
+  declare public moderatorId: bigint | undefined;
+
   @HasMany(() => SuggestionVote, "suggestionId")
   declare public votes?: SuggestionVote[];
 }

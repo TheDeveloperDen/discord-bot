@@ -1,13 +1,26 @@
-import { EmbedBuilder, GuildMember } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+  GuildMember,
+} from "discord.js";
 import { createStandardEmbed } from "../../util/embeds.js";
-import { actualMention } from "../../util/users.js";
-import { Suggestion } from "../../store/models/Suggestion.js";
+import { actualMention, actualMentionById } from "../../util/users.js";
+import { Suggestion, SuggestionStatus } from "../../store/models/Suggestion.js";
 import { SuggestionVote } from "../../store/models/SuggestionVote.js";
+import { config } from "../../Config.js";
 
 export const SUGGESTION_ID_FIELD_NAME = "Suggestion ID";
 
 export const SUGGESTION_YES_ID = "suggestion-yes";
 export const SUGGESTION_NO_ID = "suggestion-no";
+export const SUGGESTION_MANAGE_ID = "suggestion-manage";
+
+export const SUGGESTION_MANAGE_APPROVE_ID = "suggestion-manage-approve";
+export const SUGGESTION_MANAGE_REJECT_ID = "suggestion-manage-reject";
+
+export const SUGGESTION_VIEW_VOTES_ID = "suggestion-view-votes";
 
 export type SuggestionVoteType = 1 | -1;
 
@@ -18,6 +31,8 @@ export const createSuggestionEmbed: (
   suggestionImage?: string,
   upVotes?: number,
   downVotes?: number,
+  status?: SuggestionStatus,
+  moderatorId?: string,
 ) => EmbedBuilder = (
   id: string,
   member,
@@ -25,8 +40,26 @@ export const createSuggestionEmbed: (
   suggestionImage,
   upvotes = 0,
   downVotes = 0,
+  status,
+  moderatorId,
 ) => {
-  const builder = createStandardEmbed(member).addFields([
+  const builder = createStandardEmbed(member);
+
+  if (status) {
+    builder.addFields({
+      name: "Status",
+      value: `**${status}**`,
+    });
+    builder.setColor(status === SuggestionStatus.REJECTED ? "Red" : "Green");
+    if (moderatorId) {
+      builder.addFields({
+        name: `${status === SuggestionStatus.REJECTED ? "**Denied**" : "**Approved**"} By`,
+        value: actualMentionById(BigInt(moderatorId)),
+      });
+    }
+  }
+
+  builder.addFields([
     {
       name: "Submitter",
       value: actualMention(member),
@@ -41,7 +74,7 @@ export const createSuggestionEmbed: (
       value: suggestionText,
     },
     {
-      name: "Current Votes",
+      name: status === SuggestionStatus.PENDING ? "Current Votes" : "Results",
       value: `-------------
         :white_check_mark::\`${upvotes}\`
         :x::\`${downVotes}\`
@@ -70,18 +103,11 @@ export const createSuggestionEmbedFromEntity: (
     suggestion.suggestionImageUrl,
     upvotes ?? 0,
     downvotes ?? 0,
+    suggestion.status !== SuggestionStatus.PENDING
+      ? suggestion.status
+      : undefined,
+    suggestion.moderatorId ? suggestion.moderatorId.toString() : undefined,
   );
-};
-
-export const getSuggestion: (id: bigint) => Promise<Suggestion | null> = async (
-  id: bigint,
-) => {
-  return await Suggestion.findOne({
-    where: {
-      id: id,
-    },
-    include: [SuggestionVote],
-  });
 };
 
 export const getSuggestionByMessageId: (
@@ -111,9 +137,10 @@ export const createSuggestion: (
   return await Suggestion.create({
     id: id,
     suggestionImageUrl: suggestionImageUrl,
-    userId: userId,
+    memberId: userId,
     suggestionText: suggestionText,
     messageId: messageId,
+    status: SuggestionStatus.PENDING,
   });
 };
 
@@ -177,12 +204,43 @@ export const createVote: (
   });
 };
 
-export const getSuggestionVotes: (
-  suggestionId: bigint,
-) => Promise<SuggestionVote[]> = async (suggestionId: bigint) => {
-  return await SuggestionVote.findAll({
-    where: {
-      suggestionId: suggestionId,
-    },
-  });
+export const createVotesEmbed: (
+  member: GuildMember,
+  upvotes: SuggestionVote[],
+  downvotes: SuggestionVote[],
+) => EmbedBuilder = (member, upvotes, downvotes) => {
+  return createStandardEmbed(member)
+    .setTitle("Suggestion Votes")
+    .addFields([
+      {
+        name: `${config.suggest.yesEmojiId} Upvotes`,
+        value: upvotes
+          .map((vote) => actualMentionById(vote.memberId))
+          .join("\n"),
+        inline: true,
+      },
+      {
+        name: `${config.suggest.noEmojiId} Downvotes`,
+        value: downvotes
+          .map((vote) => actualMentionById(vote.memberId))
+          .join("\n"),
+        inline: true,
+      },
+    ]);
 };
+
+export const createSuggestionManageButtons: () => ActionRowBuilder<ButtonBuilder> =
+  () => {
+    return new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setStyle(ButtonStyle.Success)
+        .setCustomId(SUGGESTION_MANAGE_APPROVE_ID)
+        .setEmoji("✅")
+        .setLabel("Approve"),
+      new ButtonBuilder()
+        .setStyle(ButtonStyle.Danger)
+        .setCustomId(SUGGESTION_MANAGE_REJECT_ID)
+        .setEmoji("❌")
+        .setLabel("Reject/Close"),
+    );
+  };
