@@ -2,6 +2,7 @@ import {
   ActionRowBuilder,
   ApplicationCommandOptionType,
   ApplicationCommandType,
+  Attachment,
   ButtonBuilder,
   ButtonStyle,
   ChatInputCommandInteraction,
@@ -9,7 +10,27 @@ import {
 } from "discord.js";
 import { Command } from "djs-slash-helper";
 import { config } from "../../Config.js";
-import { createSuggestionEmbed } from "./suggest.js";
+import {
+  createSuggestion,
+  createSuggestionEmbed,
+  SUGGESTION_NO_ID,
+  SUGGESTION_YES_ID,
+} from "./suggest.js";
+
+function isEmbeddableImage(attachment: Attachment): boolean {
+  if (!attachment.contentType) return false;
+
+  // Check for standard image types and GIFs that can be embedded
+  const embeddableTypes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/gif",
+    "image/webp",
+  ];
+
+  return embeddableTypes.includes(attachment.contentType.toLowerCase());
+}
 
 export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
   name: "suggest",
@@ -37,6 +58,8 @@ export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
       });
     }
 
+    const member = interaction.member as GuildMember;
+
     await interaction.deferReply({
       flags: ["Ephemeral"],
     });
@@ -45,6 +68,13 @@ export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
       ?.value as string;
 
     const suggestionImage = interaction.options.getAttachment("image");
+
+    if (suggestionImage && !isEmbeddableImage(suggestionImage)) {
+      await interaction.followUp({
+        content: "Your upload needs to be a image!",
+      });
+      return;
+    }
 
     const suggestionChannel = await interaction.client.channels.fetch(
       config.suggest.suggestionsChannel,
@@ -70,18 +100,18 @@ export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
 
     const embed = createSuggestionEmbed(
       suggestionId,
-      interaction.member as GuildMember,
+      member,
       suggestionText,
-      suggestionImage,
+      suggestionImage?.proxyURL,
     );
-    
+
     const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
-        .setCustomId("suggest-ok")
+        .setCustomId(SUGGESTION_YES_ID)
         .setStyle(ButtonStyle.Success)
         .setEmoji(config.suggest.yesEmojiId),
       new ButtonBuilder()
-        .setCustomId("suggest-no")
+        .setCustomId(SUGGESTION_NO_ID)
         .setStyle(ButtonStyle.Danger)
         .setEmoji(config.suggest.noEmojiId),
     );
@@ -90,9 +120,22 @@ export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
       components: [buttons],
     });
 
+    await response.startThread({
+      name: "Suggestion discussion thread",
+      reason: `User ${member.displayName} created a suggestion`,
+    });
+
     await interaction.followUp({
       content: `Suggestion with the ID \`${suggestionId} successfully submitted! See [here](${response.url})`,
       flags: ["Ephemeral"],
     });
+
+    await createSuggestion(
+      BigInt(suggestionId),
+      BigInt(member.id),
+      BigInt(response.id),
+      suggestionText,
+      suggestionImage?.proxyURL,
+    );
   },
 };

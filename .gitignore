@@ -11,6 +11,7 @@ logs/
 eslint-results.sarif
 
 .env
+!.env.local.example
 
 # Yarn new stuff
 .yarn/*

@@ -11,30 +11,33 @@ import {
   ColumnName,
   NotNull,
   Table,
+  Unique,
 } from "@sequelize/core/decorators-legacy";
 import { RealBigInt } from "../RealBigInt.js";
 import { Suggestion } from "./Suggestion.js";
 
 @Table({
-  tableName: "SuggestionVotes",
+  tableName: "SuggestionVote",
 })
-export class SuggestionVotes extends Model<
-  InferAttributes<SuggestionVotes>,
-  InferCreationAttributes<SuggestionVotes>
+export class SuggestionVote extends Model<
+  InferAttributes<SuggestionVote>,
+  InferCreationAttributes<SuggestionVote>
 > {
   @Attribute(RealBigInt)
   @NotNull
   @ColumnName("suggestionId")
+  @Unique("unique_suggestion_member")
   public suggestionId!: bigint;
 
   @Attribute(RealBigInt)
   @NotNull
-  @ColumnName("messageId")
+  @ColumnName("memberId")
+  @Unique("unique_suggestion_member")
   public memberId!: bigint;
 
   @Attribute(DataTypes.TINYINT)
   @AllowNull
-  @ColumnName("suggestionImageUrl")
+  @ColumnName("vote")
   public vote!: number;
 
   @BelongsTo(() => Suggestion, "suggestionId")

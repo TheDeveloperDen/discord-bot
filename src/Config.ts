@@ -38,10 +38,10 @@ export const config: Config = {
     noEmojiId: "thumbsdown",
   },
   suggest: {
-    suggestionsChannel: "",
-    archiveChannel: "",
-    yesEmojiId: "thumbsup",
-    noEmojiId: "thumbsdown",
+    suggestionsChannel: "1407001821674868746",
+    archiveChannel: "1407001847239016550",
+    yesEmojiId: "👍",
+    noEmojiId: "👎",
   },
   pastebin: prodConfig.pastebin,
   branding: {

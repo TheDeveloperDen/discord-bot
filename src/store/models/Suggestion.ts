@@ -15,7 +15,7 @@ import {
   Unique,
 } from "@sequelize/core/decorators-legacy";
 import { RealBigInt } from "../RealBigInt.js";
-import { SuggestionVotes } from "./SuggestionVotes.js";
+import { SuggestionVote } from "./SuggestionVote.js";
 
 @Table({
   tableName: "Suggestion",
@@ -43,7 +43,7 @@ export class Suggestion extends Model<
   @Attribute(DataTypes.STRING)
   @NotNull
   @ColumnName("suggestionText")
-  public suggestiontText!: string;
+  public suggestionText!: string;
 
   @Attribute(DataTypes.STRING)
   @AllowNull
@@ -51,6 +51,6 @@ export class Suggestion extends Model<
   public suggestionImageUrl: string | undefined;
 
   // Define the association
-  @HasMany(() => SuggestionVotes, "suggestionId")
-  declare public votes?: SuggestionVotes[];
+  @HasMany(() => SuggestionVote, "suggestionId")
+  declare public votes?: SuggestionVote[];
 }

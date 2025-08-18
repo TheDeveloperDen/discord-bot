@@ -1,10 +1,11 @@
 import Module from "../module.js";
 import { SuggestCommand } from "./suggest.command.js";
+import { SuggestionButtonListener } from "./suggest.listener.js";
 
 export const SuggestModule: Module = {
   name: "suggest",
   commands: [SuggestCommand],
-  listeners: [],
+  listeners: [SuggestionButtonListener],
 };
 
 export default SuggestModule;
