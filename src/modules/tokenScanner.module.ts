@@ -5,7 +5,9 @@ const tokenPattern = /[MN][A-Za-z\d]{23}\.[\w-]{6}\.[\w-]{27}/g;
 const githubTokenPattern =
   /gh[pousr]_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{82}/g;
 
-const invalidationGuides = {
+type TokenType = "Discord" | "GitHub";
+
+const invalidationGuides: Record<TokenType, string> = {
   Discord:
     "**Discord**:\nGo to https://discord.com/developers/applications and find the application you used to create the token. Click the 'Bot' tab, and click 'Regenerate Token'.\n\n",
   GitHub:
@@ -16,7 +18,7 @@ export const TokenScannerModule: Module = {
   name: "tokenScanner",
   listeners: [
     {
-      async messageCreate(_, message) {
+      messageCreate: async function (_, message) {
         const discordMatches = message.content.match(tokenPattern);
         const githubMatches = message.content.match(githubTokenPattern);
 
@@ -29,7 +31,7 @@ export const TokenScannerModule: Module = {
 
         await message.delete();
 
-        const tokenTypes = [];
+        const tokenTypes: TokenType[] = [];
 
         if (discordMatches?.length) tokenTypes.push(`Discord`);
         if (githubMatches?.length) {
@@ -50,12 +52,8 @@ Be careful when handling tokens in the future - **they're secrets, keep them tha
                 {
                   name: "Invalidation Guides",
                   value: tokenTypes
-                    .map((x: string) => {
-                      return (
-                        invalidationGuides[
-                          x as keyof typeof invalidationGuides
-                        ] || ""
-                      );
+                    .map((x) => {
+                      return invalidationGuides[x] || "";
                     })
                     .join(""),
                 },
