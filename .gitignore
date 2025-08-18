@@ -10,9 +10,6 @@ logs/
 .DS_Store
 eslint-results.sarif
 
-.env
-!.env.local.example
-
 # Yarn new stuff
 .yarn/*
 !.yarn/cache
@@ -23,6 +20,7 @@ eslint-results.sarif
 !.yarn/versions
 
 .env*
+!.env.local.example
 .flaskenv*
 !.env.project
 !.env.vault
