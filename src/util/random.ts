@@ -1,14 +1,9 @@
-// Used to add randomElement, eslint is dumb
-
-declare global {
-  interface Array<T> {
-    randomElement: () => T;
+export default function randomElementFromArray<T>(array: T[]): T | undefined {
+  if (array.length === 0) {
+    return undefined;
   }
+  if (array.length === 1) {
+    return array[0]!;
+  }
+  return array[Math.floor(Math.random() * array.length)]!;
 }
-
-Array.prototype.randomElement = function randomElement<T>(this: T[]): T {
-  if (this.length === 1) {
-    return this[0]!;
-  }
-  return this[Math.floor(Math.random() * this.length)]!;
-};
