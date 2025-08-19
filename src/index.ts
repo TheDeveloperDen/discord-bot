@@ -23,6 +23,7 @@ import { initStorage } from "./store/storage.js";
 import { initSentry } from "./sentry.js";
 import { logger } from "./logging.js";
 import { startHealthCheck } from "./healthcheck.js";
+import { StarboardModule } from "./modules/starboard/starboard.module.js";
 
 const client = new Client({
   intents: [
@@ -55,6 +56,7 @@ export const moduleManager = new ModuleManager(
     ShowcaseModule,
     TokenScannerModule,
     XpModule,
+    StarboardModule,
   ],
 );
 
