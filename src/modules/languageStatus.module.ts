@@ -4,6 +4,7 @@ import { logger } from "../logging.js";
 import { awaitTimeout } from "../util/timeouts.js";
 import { hotTakeData, hotTakeValue } from "./hotTakes/hotTakes.util.js";
 import { ActivityType } from "discord.js";
+import randomElementFromArray from "../util/random.js";
 
 export const LanguageStatusModule: Module = {
   name: "languageStatus",
@@ -11,7 +12,11 @@ export const LanguageStatusModule: Module = {
     {
       async ready(client, event) {
         while (client.isReady()) {
-          const lang = hotTakeData.languages.randomElement();
+          const lang = randomElementFromArray(hotTakeData.languages);
+          if (lang == null) {
+            logger.error("No languages found in hot take data");
+            continue;
+          }
           event.user.setActivity(`Coding in ${hotTakeValue(lang)}`, {
             type: ActivityType.Playing,
           });
