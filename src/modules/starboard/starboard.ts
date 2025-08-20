@@ -1,17 +1,26 @@
-import { EmbedBuilder, GuildMember, Message, Snowflake } from "discord.js";
+import {
+  ColorResolvable,
+  EmbedBuilder,
+  GuildMember,
+  Message,
+  Snowflake,
+} from "discord.js";
 import { StarboardMessage } from "../../store/models/StarboardMessage.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { config } from "../../Config.js";
 
 export const createStarboardMessage: (
   originalMessageId: Snowflake,
+  originalMessageChannelId: Snowflake,
   starboardMessageId: Snowflake,
 ) => Promise<StarboardMessage> = async (
   originalMessageId,
+  originalMessageChannelId,
   starboardMessageId,
 ) => {
   return await StarboardMessage.create({
     originalMessageId: BigInt(originalMessageId),
+    originalMessageChannelId: BigInt(originalMessageChannelId),
     starboardMessageId: BigInt(starboardMessageId),
   });
 };
@@ -26,13 +35,30 @@ export const getStarboardMessageForOriginalMessageId: (
   });
 };
 
+const getColorForStars: (stars: number) => ColorResolvable = (
+  stars: number,
+) => {
+  const overthreshold = stars - config.starboard.threshold;
+  switch (overthreshold) {
+    case 2:
+      return "Red";
+    case 4:
+      return "Orange";
+    case 6:
+      return "Gold";
+
+    default:
+      return "Blue";
+  }
+};
+
 export const createStarboardEmbedFromMessage: (
   message: Message,
   member: GuildMember,
   stars: number,
 ) => EmbedBuilder = (message, member, stars) => {
   return createStandardEmbed(member)
-    .setColor("Yellow")
+    .setColor(getColorForStars(stars))
     .setAuthor({
       name: member.displayName,
       iconURL: member.user.displayAvatarURL(),
@@ -41,14 +67,8 @@ export const createStarboardEmbedFromMessage: (
     .setURL(message.url)
     .addFields([
       {
-        name: "Source:",
-        value: `[Jump](${message.url})`,
-        inline: true,
-      },
-      {
-        name: `${config.starboard.emojiId}`,
-        value: `${stars}`,
-        inline: true,
+        name: "Details:",
+        value: `${config.starboard.emojiId}: ${stars} | [Source](${message.url})`,
       },
     ])
     .setDescription(message.content);

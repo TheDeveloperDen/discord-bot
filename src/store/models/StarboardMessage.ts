@@ -24,5 +24,9 @@ export class StarboardMessage extends Model<
 
   @Attribute(RealBigInt)
   @NotNull
+  public originalMessageChannelId!: bigint;
+
+  @Attribute(RealBigInt)
+  @NotNull
   public starboardMessageId!: bigint;
 }
