@@ -5,26 +5,267 @@ import {
   createStarboardMessage,
   getStarboardMessageForOriginalMessageId,
 } from "./starboard.js";
+import { MessageFetcher } from "../../util/ratelimiting.js";
+import * as schedule from "node-schedule";
+import { StarboardMessage } from "../../store/models/StarboardMessage.js";
+import { Embed } from "discord.js";
+import { getMember } from "../../util/member.js";
+
+const messageFetcher = new MessageFetcher();
+
+const getStarsFromEmbed: (embed: Embed) => number = (embed) => {
+  const field = embed.fields.find((field) => field.name === "Details:");
+  if (!field) return 0;
+
+  const split = field.value.split("|");
+  if (split.length < 2) return 0;
+  const stars = split[0]?.split(":")[1]?.trim();
+  if (!stars) return 0;
+  return parseInt(stars, 10);
+};
 
 export const StarboardListener: EventListener = {
+  async ready(client) {
+    for (const guild of client.guilds.cache.values()) {
+      try {
+        const channels = await guild.channels.fetch();
+        for (const channel of channels.values()) {
+          if (
+            channel?.isTextBased() &&
+            channel.id !== config.starboard.channel
+          ) {
+            // Add to rate-limited queue
+            await messageFetcher.addToQueue(async () => {
+              try {
+                await channel.messages.fetch({ limit: 100 }); // 100 is the maximum allowed by Discord API
+                console.log(`Fetched recent messages from ${channel.name}`);
+              } catch (error) {
+                console.error(
+                  `Error fetching messages from ${channel.name}:`,
+                  error,
+                );
+              }
+            });
+          }
+        }
+      } catch (error) {
+        console.error(`Error processing guild ${guild.name}:`, error);
+      }
+    }
+    let isRunningStarboardCheck = false;
+    schedule.scheduleJob(
+      {
+        hour: 0,
+        minute: 0,
+        second: 0,
+      },
+      async function () {
+        if (isRunningStarboardCheck) {
+          return;
+        }
+        isRunningStarboardCheck = true;
+        try {
+          console.log("Running starboard check");
+          const starboardMessages = await StarboardMessage.findAll();
+          for (const dbStarboardMessage of starboardMessages) {
+            const guild = await client.guilds.fetch(config.guildId);
+
+            const channel = await guild.channels.fetch(
+              dbStarboardMessage.originalMessageChannelId.toString(),
+            );
+            if (!channel || !channel.isTextBased()) return; // Channel is not available? ( Either we can hope it comes back or we can delete the entry from the database )
+
+            const starboardChannel = await guild.channels.fetch(
+              config.starboard.channel,
+            );
+            if (
+              !starboardChannel ||
+              !starboardChannel.isTextBased() ||
+              !starboardChannel.isSendable()
+            ) {
+              console.error(
+                "Starboard channel not found, not a text channel or not sendable",
+              );
+              return;
+            }
+
+            const message = await channel.messages.fetch(
+              dbStarboardMessage.originalMessageId.toString(),
+            );
+            const member = await getMember(message);
+            if (!member) {
+              console.error(
+                "Member not found for message",
+                dbStarboardMessage.originalMessageId,
+              );
+              continue;
+            }
+            const starboardMessage = await starboardChannel.messages.fetch(
+              dbStarboardMessage.starboardMessageId.toString(),
+            );
+
+            if (!message) {
+              await starboardMessage.delete();
+              await dbStarboardMessage.destroy();
+              continue;
+            }
+
+            if (!starboardMessage) {
+              await dbStarboardMessage.destroy();
+              continue;
+            }
+
+            const messageStarCount =
+              message.reactions.cache.get(config.starboard.emojiId)?.count || 0;
+            const starboardStarCount = getStarsFromEmbed(
+              starboardMessage.embeds[0]!,
+            );
+            if (messageStarCount !== starboardStarCount) {
+              const starboardEmbed = createStarboardEmbedFromMessage(
+                message,
+                member,
+                messageStarCount,
+              );
+              await starboardMessage.edit({
+                embeds: [starboardEmbed],
+              });
+              console.log(
+                `Starboard message ${dbStarboardMessage.starboardMessageId} for message ${dbStarboardMessage.originalMessageId} has been updated`,
+              );
+            }
+
+            console.log(
+              `Starboard message ${dbStarboardMessage.starboardMessageId} for message ${dbStarboardMessage.originalMessageId} has been checked`,
+            );
+
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+          }
+        } finally {
+          isRunningStarboardCheck = false;
+        }
+      },
+    );
+  },
   async messageReactionAdd(_, reaction) {
     if (
       !reaction.message.inGuild() ||
-      reaction.message.channel.id === config.starboard.channel
+      reaction.message.author.bot ||
+      reaction.message.author.system ||
+      reaction.message.channel.id === config.starboard.channel ||
+      reaction.emoji.name !== config.starboard.emojiId
     )
       return;
-    if (reaction.emoji.name === config.starboard.emojiId) {
-      await reaction.fetch();
-      const count = reaction.count || 1;
-      console.log(count);
-      if (count >= config.starboard.threshold) {
+    await reaction.fetch();
+    const count = reaction.count || 1;
+    if (count >= config.starboard.threshold) {
+      const starboardChannel = await reaction.message.guild.channels.fetch(
+        config.starboard.channel,
+      );
+
+      if (!starboardChannel?.isTextBased() || !starboardChannel.isSendable()) {
+        console.error(
+          "Starboard channel not found, not a text channel or not sendable",
+        );
+        return;
+      }
+      const existingStarboardMessage =
+        await getStarboardMessageForOriginalMessageId(reaction.message.id);
+      try {
+        const member = await getMember(reaction.message);
+
+        if (!member) {
+          console.log(
+            "Member not found for reaction message id:",
+            reaction.message.id,
+          );
+          return;
+        }
+        if (existingStarboardMessage) {
+          // Already on the starboard so update it
+          try {
+            let starboardMessage;
+            try {
+              starboardMessage = await starboardChannel.messages.fetch(
+                existingStarboardMessage.starboardMessageId.toString(),
+              );
+            } catch (error) {
+              // If the message is not found, it means it was deleted, so we delete the entry from the database
+              await existingStarboardMessage.destroy();
+              console.error("Error fetching the starboard message:", error);
+            }
+            // If there is no starboardMessageFound then we create on again.
+            if (starboardMessage) {
+              const starboardEmbed = createStarboardEmbedFromMessage(
+                reaction.message,
+                member,
+                count,
+              );
+              await starboardMessage.edit({
+                embeds: [starboardEmbed],
+              });
+              return;
+            }
+          } catch (error) {
+            console.error("Error updating the starboard message:", error);
+            return;
+          }
+        }
+
+        const embed = createStarboardEmbedFromMessage(
+          reaction.message,
+          member,
+          count,
+        );
+
+        const message = await starboardChannel.send({
+          embeds: [embed],
+          allowedMentions: {
+            parse: [],
+          },
+        });
+
+        await createStarboardMessage(
+          reaction.message.id,
+          reaction.message.channelId,
+          message.id,
+        );
+      } catch (error) {
+        console.error("Error sending starboard message:", error);
+      }
+    }
+  },
+  async messageReactionRemove(_, reaction) {
+    console.log("REaction remove");
+    if (
+      !reaction.message.inGuild() ||
+      reaction.message.author.bot ||
+      reaction.message.author.system ||
+      reaction.message.channel.id === config.starboard.channel ||
+      reaction.emoji.name !== config.starboard.emojiId
+    )
+      return;
+    await reaction.fetch();
+    const count = reaction.count || 0;
+    const existingStarboardMessage =
+      await getStarboardMessageForOriginalMessageId(reaction.message.id);
+    if (!existingStarboardMessage) return;
+    try {
+      const member = await getMember(reaction.message);
+
+      if (!member) {
+        console.log(
+          "Member not found for reaction message id:",
+          reaction.message.id,
+        );
+        return;
+      }
+
+      if (existingStarboardMessage) {
         const starboardChannel = await reaction.message.guild.channels.fetch(
           config.starboard.channel,
         );
-
         if (
-          starboardChannel == null ||
-          !starboardChannel.isTextBased() ||
+          !starboardChannel?.isTextBased() ||
           !starboardChannel.isSendable()
         ) {
           console.error(
@@ -32,61 +273,36 @@ export const StarboardListener: EventListener = {
           );
           return;
         }
-        const existingStarboardMessage =
-          await getStarboardMessageForOriginalMessageId(reaction.message.id);
         try {
-          const member = await reaction.message.guild.members.fetch(
-            reaction.message.author.id,
-          );
-          if (existingStarboardMessage) {
-            // Already on the starboard so update it
-            try {
-              let starboardMessage;
-              try {
-                starboardMessage = await starboardChannel.messages.fetch(
-                  existingStarboardMessage.starboardMessageId.toString(),
-                );
-              } catch (error) {
-                // If the message is not found, it means it was deleted, so we delete the entry from the database
-                await existingStarboardMessage.destroy();
-                console.error("Error fetching the starboard message:", error);
-              }
-              // If there is no starboardMessageFound then we create on again.
-              if (starboardMessage) {
-                const starboardEmbed = createStarboardEmbedFromMessage(
-                  reaction.message,
-                  member,
-                  count,
-                );
-                await starboardMessage.edit({
-                  embeds: [starboardEmbed],
-                });
-                return;
-              }
-            } catch (error) {
-              console.error("Error updating the starboard message:", error);
-              return;
-            }
+          let starboardMessage;
+          try {
+            starboardMessage = await starboardChannel.messages.fetch(
+              existingStarboardMessage.starboardMessageId.toString(),
+            );
+          } catch (error) {
+            // If the message is not found, it means it was deleted, so we delete the entry from the database
+            await existingStarboardMessage.destroy();
+            console.error("Error fetching the starboard message:", error);
           }
-
-          const embed = createStarboardEmbedFromMessage(
-            reaction.message,
-            member,
-            count,
-          );
-
-          const message = await starboardChannel.send({
-            embeds: [embed],
-            allowedMentions: {
-              parse: [],
-            },
-          });
-
-          await createStarboardMessage(reaction.message.id, message.id);
+          // If there is no starboardMessageFound then we create on again.
+          if (starboardMessage) {
+            const starboardEmbed = createStarboardEmbedFromMessage(
+              reaction.message,
+              member,
+              count,
+            );
+            await starboardMessage.edit({
+              embeds: [starboardEmbed],
+            });
+            return;
+          }
         } catch (error) {
-          console.error("Error sending starboard message:", error);
+          console.error("Error updating the starboard message:", error);
+          return;
         }
       }
+    } catch (error) {
+      console.error("Error sending starboard message:", error);
     }
   },
 };

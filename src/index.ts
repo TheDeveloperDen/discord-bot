@@ -25,6 +25,7 @@ import { logger } from "./logging.js";
 import { startHealthCheck } from "./healthcheck.js";
 import { ModerationModule } from "./modules/moderation/moderation.module.js";
 import { StarboardModule } from "./modules/starboard/starboard.module.js";
+import * as schedule from "node-schedule";
 
 const client = new Client({
   intents: [
@@ -90,6 +91,13 @@ async function main() {
     });
   }
 }
+
+// Clean up jobs on application shutdown
+process.on("SIGINT", function () {
+  console.log("Gracefully shutting down scheduled jobs");
+  schedule.gracefulShutdown();
+  process.exit(0);
+});
 
 try {
   startHealthCheck();
