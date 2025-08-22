@@ -19,6 +19,7 @@ const isAllowedToSendDiscordInvites = async (member: GuildMember) => {
   const ddUser = await getOrCreateUserById(BigInt(member.id));
   return getTierByLevel(ddUser.level) >= 2;
 };
+
 export const DiscordInvitesMonitorModule: Module = {
   name: "discordInvitesMonitor",
   listeners: [
@@ -27,7 +28,7 @@ export const DiscordInvitesMonitorModule: Module = {
         if (message.author.bot || !message.inGuild()) return;
         const member = await getMember(message);
         if (!member || isSpecialUser(member)) return;
-        if (await isAllowedToSendDiscordInvites(member)) return;
+        if (!(await isAllowedToSendDiscordInvites(member))) return;
 
         // Check if message contains any Discord invite
         const matches = invitePatterns
@@ -81,7 +82,7 @@ Invites: \`${matches.join(", ")}\``,
         if (message.author.bot || !message.inGuild()) return;
         const member = await getMember(message);
         if (!member) return; // || isSpecialUser(member) ignore for now
-        if (await isAllowedToSendDiscordInvites(member)) return;
+        if (!(await isAllowedToSendDiscordInvites(member))) return;
 
         // Check if message contains any Discord invite
         const matches = invitePatterns
