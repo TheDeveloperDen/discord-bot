@@ -41,7 +41,6 @@ export const DiscordInvitesMonitorModule: Module = {
           );
 
         const hasInvite = matches.length > 0;
-        console.log(hasInvite, matches);
 
         if (hasInvite) {
           try {
@@ -95,7 +94,6 @@ Invites: \`${matches.join(", ")}\``,
           );
 
         const hasInvite = matches.length > 0;
-        console.log(hasInvite, matches);
 
         if (hasInvite) {
           try {
