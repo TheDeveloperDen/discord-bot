@@ -67,33 +67,9 @@ export const BumpListener: EventListener = {
       message.react(streakReacts[i]!);
     }
 
-    if (streak.current < 3) return;
-
-    if (streak.current == streak.highest) {
-      // new high score!
-      message.channel.send(
-        `${mentionIfPingable(interactionOld.user)}, you beat your max bump streak and are now on a streak of ${streak.current}! Keep it up!`,
-      );
-    }
-
-    const allStreaks = getStreaks(extractStreaks(await getAllBumps()));
-
-    const highestStreakEver = allStreaks.sort(
-      (a, b) => b.highest - a.highest,
-    )[0];
-    if (
-      highestStreakEver &&
-      highestStreakEver == streak &&
-      highestStreakEver.userId == ddUser.id
-    ) {
-      // if they currently have the highest streak
-      message.channel.send(
-        `🔥🔥🔥🔥🔥 ${mentionIfPingable(interactionOld.user)}, you have the highest EVER bump streak in the server of ${highestStreakEver.highest}! Keep it up!`,
-      );
-    }
-
     // check if the user dethroned another user
 
+    const allStreaks = getStreaks(extractStreaks(await getAllBumps()));
     const mostRecent = allStreaks[allStreaks.length - 1]!;
     logger.debug(`Most recent streak: ${JSON.stringify(mostRecent)}`);
     if (mostRecent.userId != ddUser.id && mostRecent.current >= 2) {
@@ -112,6 +88,29 @@ export const BumpListener: EventListener = {
           `⚡ ${fakeMention(interactionOld.user)} bumped in just **${timeSinceLastBump / 1000}s**!`,
         );
       }
+    }
+
+    if (streak.current < 3) return;
+
+    if (streak.current == streak.highest) {
+      // new high score!
+      message.channel.send(
+        `${mentionIfPingable(interactionOld.user)}, you beat your max bump streak and are now on a streak of ${streak.current}! Keep it up!`,
+      );
+    }
+
+    const highestStreakEver = allStreaks.sort(
+      (a, b) => b.highest - a.highest,
+    )[0];
+    if (
+      highestStreakEver &&
+      highestStreakEver == streak &&
+      highestStreakEver.userId == ddUser.id
+    ) {
+      // if they currently have the highest streak
+      message.channel.send(
+        `🔥🔥🔥🔥🔥 ${mentionIfPingable(interactionOld.user)}, you have the highest EVER bump streak in the server of ${highestStreakEver.highest}! Keep it up!`,
+      );
     }
   },
 };
