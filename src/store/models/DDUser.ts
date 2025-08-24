@@ -136,3 +136,7 @@ export const getOrCreateUserById = async (id: bigint) =>
   );
 
 const userCache = new Map<bigint, [Date, DDUser]>();
+
+export const clearUserCache = () => {
+  userCache.clear();
+};

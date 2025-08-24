@@ -1,6 +1,7 @@
 import { Bump } from "./Bump.js";
 import * as Sentry from "@sentry/node";
 import { DDUser } from "./DDUser.js";
+
 /**
 
  * @returns All bumps in ascending order of timestamp.
@@ -109,3 +110,8 @@ export function extractStreaks<T extends { userId: bigint }>(
   }
   return streaks;
 }
+
+export const clearBumpsCache = () => {
+  bumpsCache.bumps = [];
+  bumpsCache.lastUpdated = new Date(0);
+};
