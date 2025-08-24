@@ -10,6 +10,7 @@ import * as schedule from "node-schedule";
 import { StarboardMessage } from "../../store/models/StarboardMessage.js";
 import { Embed } from "discord.js";
 import { getMember } from "../../util/member.js";
+import { logger } from "../../logging.js";
 
 const messageFetcher = new MessageFetcher();
 
@@ -31,17 +32,19 @@ export const StarboardListener: EventListener = {
         const channels = await guild.channels.fetch();
         for (const channel of channels.values()) {
           if (
-            channel?.isTextBased() &&
+            channel &&
+            channel.isTextBased() &&
             channel.id !== config.starboard.channel
           ) {
             // Add to rate-limited queue
             await messageFetcher.addToQueue(async () => {
               try {
                 await channel.messages.fetch({ limit: 100 }); // 100 is the maximum allowed by Discord API
-                console.log(`Fetched recent messages from ${channel.name}`);
+                logger.info(`Fetched recent messages from #%s`, channel.name);
               } catch (error) {
-                console.error(
-                  `Error fetching messages from ${channel.name}:`,
+                logger.error(
+                  `Error fetching messages from #%s`,
+                  channel.name,
                   error,
                 );
               }
@@ -49,7 +52,7 @@ export const StarboardListener: EventListener = {
           }
         }
       } catch (error) {
-        console.error(`Error processing guild ${guild.name}:`, error);
+        logger.error(`Error processing guild %s:`, guild.name, error);
       }
     }
     let isRunningStarboardCheck = false;
@@ -65,7 +68,7 @@ export const StarboardListener: EventListener = {
         }
         isRunningStarboardCheck = true;
         try {
-          console.log("Running starboard check");
+          logger.info("Starting daily starboard check...");
           const starboardMessages = await StarboardMessage.findAll();
           for (const dbStarboardMessage of starboardMessages) {
             const guild = await client.guilds.fetch(config.guildId);
@@ -83,7 +86,7 @@ export const StarboardListener: EventListener = {
               !starboardChannel.isTextBased() ||
               !starboardChannel.isSendable()
             ) {
-              console.error(
+              logger.error(
                 "Starboard channel not found, not a text channel or not sendable",
               );
               return;
@@ -94,8 +97,8 @@ export const StarboardListener: EventListener = {
             );
             const member = await getMember(message);
             if (!member) {
-              console.error(
-                "Member not found for message",
+              logger.error(
+                "Member not found for message %s",
                 dbStarboardMessage.originalMessageId,
               );
               continue;
@@ -129,13 +132,17 @@ export const StarboardListener: EventListener = {
               await starboardMessage.edit({
                 embeds: [starboardEmbed],
               });
-              console.log(
-                `Starboard message ${dbStarboardMessage.starboardMessageId} for message ${dbStarboardMessage.originalMessageId} has been updated`,
+              logger.info(
+                `Starboard message %s for message %s has been updated`,
+                dbStarboardMessage.starboardMessageId,
+                dbStarboardMessage.originalMessageId,
               );
             }
 
-            console.log(
-              `Starboard message ${dbStarboardMessage.starboardMessageId} for message ${dbStarboardMessage.originalMessageId} has been checked`,
+            logger.info(
+              `Starboard message %s for message %s has been checked`,
+              dbStarboardMessage.starboardMessageId,
+              dbStarboardMessage.originalMessageId,
             );
 
             await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -163,7 +170,7 @@ export const StarboardListener: EventListener = {
       );
 
       if (!starboardChannel?.isTextBased() || !starboardChannel.isSendable()) {
-        console.error(
+        logger.error(
           "Starboard channel not found, not a text channel or not sendable",
         );
         return;
@@ -174,8 +181,8 @@ export const StarboardListener: EventListener = {
         const member = await getMember(reaction.message);
 
         if (!member) {
-          console.log(
-            "Member not found for reaction message id:",
+          logger.info(
+            "Member not found for reaction message id %s, skipping",
             reaction.message.id,
           );
           return;
@@ -191,7 +198,7 @@ export const StarboardListener: EventListener = {
             } catch (error) {
               // If the message is not found, it means it was deleted, so we delete the entry from the database
               await existingStarboardMessage.destroy();
-              console.error("Error fetching the starboard message:", error);
+              logger.error("Error fetching the starboard message", error);
             }
             // If there is no starboardMessageFound then we create on again.
             if (starboardMessage) {
@@ -206,7 +213,7 @@ export const StarboardListener: EventListener = {
               return;
             }
           } catch (error) {
-            console.error("Error updating the starboard message:", error);
+            logger.error("Error updating the starboard message", error);
             return;
           }
         }
@@ -230,12 +237,12 @@ export const StarboardListener: EventListener = {
           message.id,
         );
       } catch (error) {
-        console.error("Error sending starboard message:", error);
+        logger.error("Error sending starboard message", error);
       }
     }
   },
   async messageReactionRemove(_, reaction) {
-    console.log("REaction remove");
+    logger.info("REaction remove");
     if (
       !reaction.message.inGuild() ||
       reaction.message.author.bot ||
@@ -253,8 +260,8 @@ export const StarboardListener: EventListener = {
       const member = await getMember(reaction.message);
 
       if (!member) {
-        console.log(
-          "Member not found for reaction message id:",
+        logger.info(
+          "Member not found for reaction message id: %s",
           reaction.message.id,
         );
         return;
@@ -268,7 +275,7 @@ export const StarboardListener: EventListener = {
           !starboardChannel?.isTextBased() ||
           !starboardChannel.isSendable()
         ) {
-          console.error(
+          logger.error(
             "Starboard channel not found, not a text channel or not sendable",
           );
           return;
@@ -282,7 +289,7 @@ export const StarboardListener: EventListener = {
           } catch (error) {
             // If the message is not found, it means it was deleted, so we delete the entry from the database
             await existingStarboardMessage.destroy();
-            console.error("Error fetching the starboard message:", error);
+            logger.error("Error fetching the starboard message", error);
           }
           // If there is no starboardMessageFound then we create on again.
           if (starboardMessage) {
@@ -297,12 +304,12 @@ export const StarboardListener: EventListener = {
             return;
           }
         } catch (error) {
-          console.error("Error updating the starboard message:", error);
+          logger.error("Error updating the starboard message", error);
           return;
         }
       }
     } catch (error) {
-      console.error("Error sending starboard message:", error);
+      logger.error("Error sending starboard message", error);
     }
   },
 };
