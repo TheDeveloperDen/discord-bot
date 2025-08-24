@@ -75,7 +75,7 @@ const SetSubcommand: ExecutableSubcommand = {
     if (!colour.startsWith("#") || colour.length !== 7) {
       await interaction.reply({
         content: "Not a valid colour",
-        ephemeral: true,
+        flags: ["Ephemeral"],
       });
       return;
     }
