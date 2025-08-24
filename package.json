@@ -36,7 +36,7 @@
     "bufferutil": "^4.0.9",
     "canvas": "next",
     "discord.js": "^14.21.0",
-    "djs-slash-helper": "git+https://github.com/bristermitten/djs-slash-helper.git#bf71648b3232ea9c308b8ee79a3f4a885fc1e92b",
+    "djs-slash-helper": "git+https://github.com/bristermitten/djs-slash-helper.git#97726a356be094f4d187637734b116e4e1c89be5",
     "expiry-map": "^2.0.0",
     "lru-cache": "^11.1.0",
     "mariadb": "^3.4.5",
