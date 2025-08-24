@@ -119,11 +119,13 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
         content: "**Cancelled**",
       });
     } else if (event.customId === "confirm") {
-      await event.deferReply();
+      await event.deferReply({
+        flags: "Ephemeral",
+      });
       setter(user, value);
       await user.save();
-      await event.followUp({
-        flags: ["Ephemeral"],
+      reply.edit({
+        components: [],
         embeds: [
           createStandardEmbed(target)
             .setTitle("Success")
@@ -133,8 +135,11 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
             ),
         ],
       });
+      await event.followUp({
+        flags: "Ephemeral",
+        content: "Success!",
+      });
     }
-    await reply.delete();
   },
 };
 
