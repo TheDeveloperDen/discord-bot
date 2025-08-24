@@ -41,7 +41,7 @@ COPY --from=prerelease /usr/src/app/hotTakeData.json .
 COPY --from=prerelease /usr/src/app/CascadiaCode.ttf .
 COPY --from=prerelease /usr/src/app/package.json .
 
-RUN apt-get update && apt install -y libcairo2-dev libpango1.0-dev libgif7 librsvg2-2 curl
+RUN apt-get update && apt-get install -y libcairo2-dev libpango1.0-dev libgif7 librsvg2-2 curl
 
 
 # run the app
