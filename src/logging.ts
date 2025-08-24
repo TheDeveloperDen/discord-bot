@@ -56,6 +56,7 @@ export const logger = createLogger({
   level: process.env.NODE_ENV === "production" ? "info" : "debug",
   format: baseFormat,
   defaultMeta: { service: "DevDenBot" },
+  handleExceptions: true,
   transports: [
     // something slightly more readable for the cli
     new transports.Console({ format: cliFormat }),
