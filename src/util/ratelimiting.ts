@@ -1,4 +1,6 @@
 // Rate limiting utility
+import { logger } from "../logging.js";
+
 export class MessageFetcher {
   private queue: Array<() => Promise<void>> = [];
   private processing = false;
@@ -8,7 +10,7 @@ export class MessageFetcher {
     this.queue.push(fetchFunction);
     if (!this.processing) {
       this.processQueue().then(() =>
-        console.log("Message Fetcher Queue processed"),
+        logger.info("Message Fetcher Queue processed"),
       );
     }
   }
