@@ -1,4 +1,6 @@
 import { Message } from "discord.js";
+import { logger } from "../logging.js";
+import * as Sentry from "@sentry/bun";
 
 export async function getMember(message: Message) {
   if (!message.inGuild()) return null;
@@ -10,7 +12,7 @@ export async function getMember(message: Message) {
   try {
     return await message.guild.members.fetch(message.author.id);
   } catch (error) {
-    console.error("Failed to fetch member:", error);
-    return null;
+    logger.error("Failed to fetch member:", error);
+    Sentry.captureException(error);
   }
 }

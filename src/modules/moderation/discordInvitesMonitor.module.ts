@@ -1,11 +1,13 @@
-import Module from "./module.js";
-import { actualMention, isSpecialUser } from "../util/users.js";
-import { config } from "../Config.js";
-import { getMember } from "../util/member.js";
+import { EventListener } from "../module.js";
+import { actualMention, isSpecialUser } from "../../util/users.js";
+import { config } from "../../Config.js";
+import { getMember } from "../../util/member.js";
 import { GuildMember, Message } from "discord.js";
-import { getOrCreateUserById } from "../store/models/DDUser.js";
-import { getTierByLevel } from "./xp/xpForMessage.util.js";
+import { getOrCreateUserById } from "../../store/models/DDUser.js";
+import { getTierByLevel } from "../xp/xpForMessage.util.js";
+import { logger } from "../../logging.js";
 
+import * as Sentry from "@sentry/bun";
 const invitePatterns = [
   /discord\.gg\/[a-zA-Z0-9]+/gi,
   /discordapp\.com\/invite\/[a-zA-Z0-9]+/gi,
@@ -34,98 +36,78 @@ function parseInvites(message: Message<true>) {
   return { matches, hasInvite };
 }
 
+async function sendAuditMessage(
+  message: Message<true>,
+  member: GuildMember,
+  matches: string[],
+  wasEdit: boolean,
+) {
+  const auditChannel = await message.guild.channels.fetch(
+    config.channels.auditLog,
+  );
+
+  if (auditChannel?.isSendable()) {
+    await auditChannel.send({
+      content: `Message from ${actualMention(member.user)} at <t:${Math.round(
+        message.createdTimestamp / 1000,
+      )}> contained a Discord invite! ${wasEdit ? "(It was edited to contain a Discord invite)" : ""}
+Invites: \`${matches.join(", ")}\``,
+      allowedMentions: { users: [] },
+    });
+  }
+}
+
 const noInvitesAllowedMessage = (member: GuildMember) =>
   `${actualMention(member)}, only Users with Tier 2 or over are allowed to send Discord invites.\nPlease remove the invite before sending it again.\nThank you!`;
 
-export const DiscordInvitesMonitorModule: Module = {
-  name: "discordInvitesMonitor",
-  listeners: [
-    {
-      async messageCreate(_, message) {
-        if (message.author.bot || !message.inGuild()) return;
-        const member = await getMember(message);
-        if (!member || isSpecialUser(member)) return;
-        if (!(await isAllowedToSendDiscordInvites(member))) return;
+async function handleInvite(
+  message: Message<true>,
+  member: GuildMember,
+  matches: string[],
+  wasEdit: boolean,
+) {
+  try {
+    await message.delete();
 
-        const { matches, hasInvite } = parseInvites(message);
+    const warningMessage = await message.channel.send({
+      content: noInvitesAllowedMessage(member),
+    });
 
-        if (hasInvite) {
-          try {
-            await message.delete();
+    setTimeout(() => {
+      warningMessage.delete().catch(() => {});
+    }, 10000);
 
-            const warningMessage = await message.channel.send({
-              content: noInvitesAllowedMessage(member),
-            });
+    await sendAuditMessage(message, member, matches, wasEdit);
+  } catch (error) {
+    logger.error("Failed to delete message with Discord invite:", error);
+    Sentry.captureException(error);
+  }
+}
 
-            setTimeout(() => {
-              warningMessage.delete().catch(() => {});
-            }, 10000);
+export const InviteListeners: EventListener[] = [
+  {
+    async messageCreate(_, message) {
+      if (message.author.bot || !message.inGuild()) return;
+      const member = await getMember(message);
+      if (!member || isSpecialUser(member)) return;
+      if (!(await isAllowedToSendDiscordInvites(member))) return;
 
-            const auditChannel = await message.guild.channels.fetch(
-              config.channels.auditLog,
-            );
+      const { matches, hasInvite } = parseInvites(message);
 
-            if (auditChannel?.isSendable()) {
-              await auditChannel.send({
-                content: `Message from ${actualMention(
-                  member.user,
-                )} at <t:${Math.round(
-                  message.createdTimestamp / 1000,
-                )}> contained a Discord invite!
-Invites: \`${matches.join(", ")}\``,
-                allowedMentions: { users: [] },
-              });
-            }
-          } catch (error) {
-            console.error(
-              "Failed to delete message with Discord invite:",
-              error,
-            );
-          }
-        }
-      },
-      async messageUpdate(_, _oldMessage, message) {
-        if (message.author.bot || !message.inGuild()) return;
-        const member = await getMember(message);
-        if (!member) return; // || isSpecialUser(member) ignore for now
-        if (!(await isAllowedToSendDiscordInvites(member))) return;
-        const { matches, hasInvite } = parseInvites(message);
-
-        if (hasInvite) {
-          try {
-            await message.delete();
-
-            const warningMessage = await message.channel.send({
-              content: noInvitesAllowedMessage(member),
-            });
-
-            setTimeout(() => {
-              warningMessage.delete().catch(() => {});
-            }, 10000);
-
-            const auditChannel = await message.guild.channels.fetch(
-              config.channels.auditLog,
-            );
-
-            if (auditChannel?.isSendable()) {
-              await auditChannel.send({
-                content: `Message from ${actualMention(
-                  member.user,
-                )} at <t:${Math.round(
-                  message.createdTimestamp / 1000,
-                )}> contained a Discord Invite\n(It was edited to contain a Discord invite)!
-Invites: \`${matches.join(", ")}\``,
-                allowedMentions: { users: [] },
-              });
-            }
-          } catch (error) {
-            console.error(
-              "Failed to delete message with Discord invite:",
-              error,
-            );
-          }
-        }
-      },
+      if (hasInvite) {
+        await handleInvite(message, member, matches, false);
+      }
     },
-  ],
-};
+    async messageUpdate(_, _oldMessage, message) {
+      if (message.author.bot || !message.inGuild()) return;
+      const member = await getMember(message);
+      if (!member || isSpecialUser(member)) return;
+      if (!(await isAllowedToSendDiscordInvites(member))) return;
+      const { matches, hasInvite } = parseInvites(message);
+
+      if (hasInvite) {
+        await handleInvite(message, member, matches, true);
+      }
+    },
+  },
+];
