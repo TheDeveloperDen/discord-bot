@@ -9,8 +9,8 @@
   "scripts": {
     "version": "echo $npm_package_version",
     "lint": "bunx eslint 'src/**/*.ts' --fix",
-    "build": "tsc --build tsconfig.json",
-    "build-prod": "tsc -p tsconfig.production.json && ([ -f bin/Config.prod.js ] && mv -f bin/Config.prod.js bin/Config.js) || true",
+    "build": "bunx tsc --build tsconfig.json",
+    "build-prod": "bunx tsc -p tsconfig.production.json && ([ -f bin/Config.prod.js ] && mv -f bin/Config.prod.js bin/Config.js) || true",
     "watch-dev": "bun --watch src/index.ts",
     "start-built": "bun --trace-warnings bin/index.js",
     "build-and-run": "bun run build && bun run start-built",
