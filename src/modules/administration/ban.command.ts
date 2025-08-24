@@ -72,6 +72,8 @@ export const BanCommand: Command<ApplicationCommandType.ChatInput> = {
 
       if (interaction.replied) {
         await interaction.editReply("Something went wrong!");
+      } else {
+        await interaction.followUp("Something went wrong!");
       }
     }
   },
