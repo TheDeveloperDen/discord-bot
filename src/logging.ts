@@ -22,6 +22,7 @@ export const logger = createLogger({
   level: "info",
   format: baseFormat,
   defaultMeta: { service: "DevDenBot" },
+  handleExceptions: true,
   transports: [
     // something slightly more readable for the cli
     new transports.Console({ format: format.combine(format.cli(), cliFormat) }),
