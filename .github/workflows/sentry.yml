@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 0
 
       - name: Add gyp dependencies
-        run: sudo apt update && apt install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+        run: sudo apt update && sudo apt install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
 
       - name: Install Bun
         uses: oven-sh/setup-bun@v2
