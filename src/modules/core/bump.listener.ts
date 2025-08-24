@@ -71,7 +71,7 @@ export const BumpListener: EventListener = {
 
     const allStreaks = getStreaks(extractStreaks(await getAllBumps()));
     const mostRecent = allStreaks[allStreaks.length - 1]!;
-    logger.debug(`Most recent streak: ${JSON.stringify(mostRecent)}`);
+    logger.debug(`Most recent streak:`, mostRecent);
     if (mostRecent.userId != ddUser.id && mostRecent.current >= 2) {
       const user = await client.users.fetch(mostRecent.userId.toString());
       message.channel.send(
