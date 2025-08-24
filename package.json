@@ -16,7 +16,7 @@
     "build-and-run": "bun run build && bun run start-built",
     "build-and-run-prod": "bun run lint && bun run build-prod && bun run start-built",
     "sentry:sourcemaps": "bunx sentry-cli sourcemaps inject --org developer-den-59 --project discord-bot ./bin && bunx sentry-cli sourcemaps upload --org developer-den-59 --project discord-bot ./bin",
-    "prepare": "husky || true",
+    "prepare": "bunx husky || true",
     "test": "bun test",
     "test:retry": "scripts/bun-test-retry.sh"
   },
