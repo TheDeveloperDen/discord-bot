@@ -17,10 +17,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Hadolint
         uses: hadolint/hadolint-action@v3.1.0
-        with:
-          files: Dockerfile
 
   build:
     name: Build Docker image
