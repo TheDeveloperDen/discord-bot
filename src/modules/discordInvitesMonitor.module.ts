@@ -2,7 +2,7 @@ import Module from "./module.js";
 import { actualMention, isSpecialUser } from "../util/users.js";
 import { config } from "../Config.js";
 import { getMember } from "../util/member.js";
-import { GuildMember } from "discord.js";
+import { GuildMember, Message } from "discord.js";
 import { getOrCreateUserById } from "../store/models/DDUser.js";
 import { getTierByLevel } from "./xp/xpForMessage.util.js";
 
@@ -20,6 +20,23 @@ const isAllowedToSendDiscordInvites = async (member: GuildMember) => {
   return getTierByLevel(ddUser.level) >= 2;
 };
 
+function parseInvites(message: Message<true>) {
+  // Check if message contains any Discord invite
+  const matches = invitePatterns
+    .map((pattern) => message.content.match(pattern))
+    .filter((match) => match != null && match.length > 0)
+    .map((match) => match![0])
+    .filter(
+      (match) => !whitelistDomains.some((domain) => match.includes(domain)),
+    );
+
+  const hasInvite = matches.length > 0;
+  return { matches, hasInvite };
+}
+
+const noInvitesAllowedMessage = (member: GuildMember) =>
+  `${actualMention(member)}, only Users with Tier 2 or over are allowed to send Discord invites.\nPlease remove the invite before sending it again.\nThank you!`;
+
 export const DiscordInvitesMonitorModule: Module = {
   name: "discordInvitesMonitor",
   listeners: [
@@ -30,24 +47,14 @@ export const DiscordInvitesMonitorModule: Module = {
         if (!member || isSpecialUser(member)) return;
         if (!(await isAllowedToSendDiscordInvites(member))) return;
 
-        // Check if message contains any Discord invite
-        const matches = invitePatterns
-          .map((pattern) => message.content.match(pattern))
-          .filter((match) => match != null && match.length > 0)
-          .map((match) => match![0])
-          .filter(
-            (match) =>
-              !whitelistDomains.some((domain) => match.includes(domain)),
-          );
-
-        const hasInvite = matches.length > 0;
+        const { matches, hasInvite } = parseInvites(message);
 
         if (hasInvite) {
           try {
             await message.delete();
 
             const warningMessage = await message.channel.send({
-              content: `${actualMention(member)}, only Users with Tier 2 or over are allowed to send Discord invites.\nPlease remove the invite before sending it again.\nThank you!`,
+              content: noInvitesAllowedMessage(member),
             });
 
             setTimeout(() => {
@@ -77,30 +84,19 @@ Invites: \`${matches.join(", ")}\``,
           }
         }
       },
-      async messageUpdate(_, oldMessage, message) {
+      async messageUpdate(_, _oldMessage, message) {
         if (message.author.bot || !message.inGuild()) return;
         const member = await getMember(message);
         if (!member) return; // || isSpecialUser(member) ignore for now
         if (!(await isAllowedToSendDiscordInvites(member))) return;
-
-        // Check if message contains any Discord invite
-        const matches = invitePatterns
-          .map((pattern) => message.content.match(pattern))
-          .filter((match) => match != null && match.length > 0)
-          .map((match) => match![0])
-          .filter(
-            (match) =>
-              !whitelistDomains.some((domain) => match.includes(domain)),
-          );
-
-        const hasInvite = matches.length > 0;
+        const { matches, hasInvite } = parseInvites(message);
 
         if (hasInvite) {
           try {
             await message.delete();
 
             const warningMessage = await message.channel.send({
-              content: `${actualMention(member)}, only Users with Tier 2 or over are allowed to send Discord invites.\nPlease remove the invite before sending it again.\nThank you!`,
+              content: noInvitesAllowedMessage(member),
             });
 
             setTimeout(() => {
