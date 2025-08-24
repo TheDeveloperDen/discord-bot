@@ -183,9 +183,9 @@ jobs:
           name: node-modules-${{ runner.os }}-${{ hashFiles('bun.lock') }}
           path: node_modules
       - name: Run Unit Tests with coverage
-        run: bun test --coverage
+        run: bun test:retry --coverage --coverage-reporter=lcov
       - name: Upload coverage report
-        if: always()
+
         uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ runner.os }}-${{ github.run_id }}
