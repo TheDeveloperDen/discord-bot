@@ -24,5 +24,5 @@ export async function setupBranding(guild: Guild) {
   );
   branding.name = guild.name;
   branding.iconUrl = guild.iconURL() ?? branding.iconUrl;
-  logger.debug(`Branding config set to ${JSON.stringify(branding)}`);
+  logger.debug(`Branding config set to %O`, branding);
 }

@@ -2,14 +2,16 @@ import { Command, ExecutableSubcommand } from "djs-slash-helper";
 import {
   ApplicationCommandOptionType,
   ApplicationCommandType,
+  Client,
+  GuildMember,
   PermissionFlagsBits,
+  User,
 } from "discord.js";
 import {
   getAllCachedResources,
   getResource,
   updateAllResources,
 } from "./resourcesCache.util.js";
-import { Client, GuildMember, User } from "discord.js";
 import { createStandardEmbed, standardFooter } from "../../util/embeds.js";
 import { fakeMention } from "../../util/users.js";
 import { moduleManager } from "../../index.js";
@@ -28,7 +30,7 @@ export async function updateResourcesForCommands() {
   }));
   resources.length = 0;
   resources.push(...result);
-  logger.debug(`resources = ${JSON.stringify(resources)}`);
+  logger.debug("found resources: %O", resources);
 }
 
 const extraFooter =
@@ -45,7 +47,7 @@ export function getResourceEmbed(
   user?: User,
   member?: GuildMember,
 ) {
-  logger.debug(`Rendering ${JSON.stringify(resourceSet)} as an embed...`);
+  logger.debug(`Rendering %s as an embed...`, resourceSet.name);
   const embed = createStandardEmbed(member)
     .setTitle(resourceSet.name)
     .setDescription(
