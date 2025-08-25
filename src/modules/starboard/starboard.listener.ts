@@ -1,8 +1,8 @@
 import { EventListener } from "../module.js";
 import { config } from "../../Config.js";
 import {
-  createStarboardEmbedFromMessage,
   createStarboardMessage,
+  createStarboardMessageFromMessage,
   getStarboardMessageForOriginalMessageId,
 } from "./starboard.js";
 import { MessageFetcher } from "../../util/ratelimiting.js";
@@ -124,14 +124,13 @@ export const StarboardListener: EventListener = {
               starboardMessage.embeds[0]!,
             );
             if (messageStarCount !== starboardStarCount) {
-              const starboardEmbed = createStarboardEmbedFromMessage(
-                message,
-                member,
-                messageStarCount,
-              );
-              await starboardMessage.edit({
-                embeds: [starboardEmbed],
-              });
+              const starboardMessageContent =
+                await createStarboardMessageFromMessage(
+                  message,
+                  member,
+                  messageStarCount,
+                );
+              await starboardMessage.edit(starboardMessageContent);
               logger.info(
                 `Starboard message %s for message %s has been updated`,
                 dbStarboardMessage.starboardMessageId,
@@ -202,14 +201,14 @@ export const StarboardListener: EventListener = {
             }
             // If there is no starboardMessageFound then we create on again.
             if (starboardMessage) {
-              const starboardEmbed = createStarboardEmbedFromMessage(
-                reaction.message,
-                member,
-                count,
-              );
-              await starboardMessage.edit({
-                embeds: [starboardEmbed],
-              });
+              const starboardMessageFromMessage =
+                await createStarboardMessageFromMessage(
+                  reaction.message,
+                  member,
+                  count,
+                  starboardMessage,
+                );
+              await starboardMessage.edit(starboardMessageFromMessage);
               return;
             }
           } catch (error) {
@@ -218,14 +217,14 @@ export const StarboardListener: EventListener = {
           }
         }
 
-        const embed = createStarboardEmbedFromMessage(
+        const starboardMessageContent = await createStarboardMessageFromMessage(
           reaction.message,
           member,
           count,
         );
 
         const message = await starboardChannel.send({
-          embeds: [embed],
+          ...starboardMessageContent,
           allowedMentions: {
             parse: [],
           },
@@ -242,7 +241,6 @@ export const StarboardListener: EventListener = {
     }
   },
   async messageReactionRemove(_, reaction) {
-    logger.info("REaction remove");
     if (
       !reaction.message.inGuild() ||
       reaction.message.author.bot ||
@@ -293,14 +291,14 @@ export const StarboardListener: EventListener = {
           }
           // If there is no starboardMessageFound then we create on again.
           if (starboardMessage) {
-            const starboardEmbed = createStarboardEmbedFromMessage(
-              reaction.message,
-              member,
-              count,
-            );
-            await starboardMessage.edit({
-              embeds: [starboardEmbed],
-            });
+            const starboardMessageFromMessage =
+              await createStarboardMessageFromMessage(
+                reaction.message,
+                member,
+                count,
+                starboardMessage,
+              );
+            await starboardMessage.edit(starboardMessageFromMessage);
             return;
           }
         } catch (error) {
