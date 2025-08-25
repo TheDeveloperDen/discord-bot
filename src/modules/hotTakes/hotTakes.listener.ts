@@ -40,12 +40,12 @@ async function sendHotTake(client: Client) {
 async function hotTakeLoop(client: Client) {
   if (!client.isReady()) return;
   await sendHotTake(client);
-  await awaitTimeout(60 * 1000);
+  await awaitTimeout(60 * 1000 * 10);
   await hotTakeLoop(client);
 }
 
 export const HotTakeListener: EventListener = {
-  ready: hotTakeLoop,
+  clientReady: hotTakeLoop,
 };
 
 export default HotTakeListener;

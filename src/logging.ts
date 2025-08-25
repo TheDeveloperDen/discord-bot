@@ -1,4 +1,6 @@
 import { createLogger, format, transports } from "winston";
+import * as path from "path";
+import { stringify } from "safe-stable-stringify";
 
 const timestamp = format.timestamp({
   format: "YYYY-MM-DD HH:mm:ss",
@@ -10,21 +12,57 @@ const baseFormat = format.combine(
   format.json(),
 );
 
+const addSource = format((info) => {
+  const oldStackTrace = Error.prepareStackTrace;
+  Error.prepareStackTrace = (_, stack) => stack;
+  const err = new Error();
+  const stack = err.stack as unknown as NodeJS.CallSite[];
+  Error.prepareStackTrace = oldStackTrace;
+
+  // Find the first stack frame outside logging.ts
+  const caller = stack?.find((s) => {
+    const file = s.getFileName();
+    return (
+      file &&
+      !file.includes("logging.ts") &&
+      !file.includes("logging.js") &&
+      !file.includes("node_modules") &&
+      !file.startsWith("internal") &&
+      !file.startsWith("node:") &&
+      !file.includes("winston")
+    );
+  });
+  if (caller) {
+    info.source = `${path.basename(caller.getScriptNameOrSourceURL() || "")}:${caller.getLineNumber()}`;
+  }
+  return info;
+});
+
 const cliFormat = format.combine(
-  baseFormat,
+  addSource(),
+  timestamp,
+
   format.colorize({
-    level: true,
+    all: true,
   }),
-  format.printf((info) => `[${info.timestamp}] ${info.level}: ${info.message}`),
+  format.printf(({ timestamp, level, message, source, ...meta }) => {
+    const filteredMeta = { ...meta };
+    if (filteredMeta.service) delete filteredMeta.service;
+    const metaString = Object.keys(filteredMeta).length
+      ? stringify(filteredMeta, null, 2)
+      : "";
+    return `[${timestamp}] ${level}${source ? ` (${source})` : ""}: ${message}${metaString ? " " + metaString : ""}`;
+  }),
 );
 
 export const logger = createLogger({
-  level: "info",
+  level: process.env.NODE_ENV === "production" ? "info" : "debug",
   format: baseFormat,
   defaultMeta: { service: "DevDenBot" },
+  handleExceptions: true,
   transports: [
     // something slightly more readable for the cli
-    new transports.Console({ format: format.combine(format.cli(), cliFormat) }),
+    new transports.Console({ format: cliFormat }),
     //
     // - Write all logs with level `error` and below to `error.log`
     // - Write all logs with level `info` and below to `combined.log`
@@ -40,11 +78,3 @@ export const logger = createLogger({
     }),
   ],
 });
-
-//
-// If we're not in production then log to the `console` with the format:
-// `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
-//
-if (process.env.NODE_ENV !== "production") {
-  logger.level = "debug";
-}
