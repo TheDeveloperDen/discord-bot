@@ -1,6 +1,8 @@
 import { EventListener } from "../module.js";
 import {
   ChannelType,
+  Client,
+  EmojiIdentifierResolvable,
   InteractionType,
   Message,
   MessageInteraction,
@@ -9,7 +11,6 @@ import {
 import { DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { logger } from "../../logging.js";
 import { config } from "../../Config.js";
-import { Client, EmojiIdentifierResolvable } from "discord.js";
 import { Bump } from "../../store/models/Bump.js";
 import {
   extractStreaks,
@@ -65,6 +66,10 @@ export async function handleBumpStreak(
   if (allStreaks.length > 1) {
     const mostRecent = allStreaks[allStreaks.length - 2]!;
     logger.debug(`Most recent streak:`, mostRecent);
+    logger.debug(
+      "Most recent streaks:",
+      allStreaks.slice(allStreaks.length - 5),
+    );
     if (mostRecent.userId != bumper.id && mostRecent.current >= 2) {
       const user = await client.users.fetch(mostRecent.userId.toString());
       message.channel.send(
