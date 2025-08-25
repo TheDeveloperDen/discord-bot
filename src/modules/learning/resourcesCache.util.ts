@@ -28,9 +28,7 @@ export async function updateAllResources() {
   cache.clear();
   (await queryAll()).forEach(([fileName, resource]) => {
     cache.set(fileName, resource);
-    logger.info(
-      `Updated cache for ${resource.name} to ${JSON.stringify(resource)}`,
-    );
+    logger.info(`Added resource ${resource.name} to cache`);
   });
 }
 

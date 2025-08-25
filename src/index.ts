@@ -23,6 +23,7 @@ import { initStorage } from "./store/storage.js";
 import { initSentry } from "./sentry.js";
 import { logger } from "./logging.js";
 import { startHealthCheck } from "./healthcheck.js";
+import { ModerationModule } from "./modules/moderation/moderation.module.js";
 import SuggestModule from "./modules/suggest/suggest.module.js";
 
 const client = new Client({
@@ -57,6 +58,7 @@ export const moduleManager = new ModuleManager(
     TokenScannerModule,
     XpModule,
     SuggestModule,
+    ModerationModule,
   ],
 );
 

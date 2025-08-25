@@ -65,5 +65,13 @@ export async function initStorage() {
   });
 
   await sequelize.sync();
+
+  sequelizeInstance = sequelize;
   logger.info("Initialised database");
 }
+
+let sequelizeInstance: Sequelize;
+
+export const getSequelizeInstance = () => {
+  return sequelizeInstance;
+};

@@ -1,7 +1,7 @@
 import { GuildMember } from "discord.js";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import { createStandardEmbed } from "../../util/embeds.js";
-import { xpForLevel } from "./xpForMessage.util.js";
+import { getTierByLevel, xpForLevel } from "./xpForMessage.util.js";
 import { createImage, font, getCanvasContext } from "../../util/imageUtils.js";
 import { branding } from "../../util/branding.js";
 import { drawText } from "../../util/textRendering.js";
@@ -55,9 +55,7 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
         },
         {
           name: "📝 Tier",
-          value: `${
-            ddUser.level === 0 ? 0 : Math.floor(ddUser.level / 10) + 1
-          }`,
+          value: `${getTierByLevel(ddUser.level)}`,
           inline: true,
         },
         {

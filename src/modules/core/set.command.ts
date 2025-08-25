@@ -1,5 +1,7 @@
 import {
   ActionRowBuilder,
+  ApplicationCommandOptionType,
+  ApplicationCommandType,
   ButtonBuilder,
   ButtonStyle,
   Colors,
@@ -7,11 +9,6 @@ import {
   GuildMember,
 } from "discord.js";
 import { Command } from "djs-slash-helper";
-
-import {
-  ApplicationCommandOptionType,
-  ApplicationCommandType,
-} from "discord.js";
 import { DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { mentionIfPingable } from "../../util/users.js";
@@ -93,7 +90,7 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
     const reply = await interaction.reply({
       embeds: [embed],
       components: [buttons],
-      fetchReply: true,
+      withResponse: false,
     });
 
     const channel = interaction.channel;
@@ -118,15 +115,17 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
     const event = await collector.next;
     if (event.customId === "cancel") {
       await event.reply({
-        ephemeral: true,
+        flags: ["Ephemeral"],
         content: "**Cancelled**",
       });
     } else if (event.customId === "confirm") {
-      await event.deferReply();
+      await event.deferReply({
+        flags: "Ephemeral",
+      });
       setter(user, value);
       await user.save();
-      await event.followUp({
-        ephemeral: true,
+      reply.edit({
+        components: [],
         embeds: [
           createStandardEmbed(target)
             .setTitle("Success")
@@ -136,8 +135,11 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
             ),
         ],
       });
+      await event.followUp({
+        flags: "Ephemeral",
+        content: "Success!",
+      });
     }
-    await reply.delete();
   },
 };
 
