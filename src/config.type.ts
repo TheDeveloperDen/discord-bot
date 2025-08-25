@@ -20,6 +20,11 @@ export interface Config {
     introductions?: string;
     general: string;
   };
+  starboard: {
+    emojiId: string;
+    channel: string;
+    threshold: number;
+  };
   commands: {
     daily: Snowflake;
   };

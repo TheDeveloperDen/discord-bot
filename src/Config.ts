@@ -12,6 +12,11 @@ export const config: Config = {
     auditLog: "994623474557538415",
     general: "904478147351806015",
   },
+  starboard: {
+    emojiId: "⭐",
+    channel: "1407366658552631296",
+    threshold: 1,
+  },
   commands: {
     daily: "1029850807794937949",
   },

@@ -13,6 +13,11 @@ export const config: Config = {
     introductions: "888142541592076347",
     general: "821743100657270876",
   },
+  starboard: {
+    emojiId: "⭐",
+    channel: "1407366658552631296",
+    threshold: 1,
+  },
   commands: {
     daily: "1059214166075912225",
   },
