@@ -26,6 +26,8 @@ export const actualMention = (
   user: GuildMember | User | PartialGuildMember,
 ): string => `<@${user.id}>`;
 
+export const actualMentionById = (id: bigint): string => `<@${id}>`;
+
 export const mentionWithNoPingMessage = (user: GuildMember): string =>
   userShouldBePinged(user)
     ? `<@${user.id}> (Don't want to be pinged? </no-ping:1300906483403325490>)`
