@@ -2,7 +2,6 @@ import {
   ActionRowBuilder,
   ApplicationCommandOptionType,
   ApplicationCommandType,
-  Attachment,
   ButtonBuilder,
   ButtonStyle,
   ChatInputCommandInteraction,
@@ -19,21 +18,6 @@ import {
   SUGGESTION_YES_ID,
 } from "./suggest.js";
 
-function isEmbeddableImage(attachment: Attachment): boolean {
-  if (!attachment.contentType) return false;
-
-  // Check for standard image types and GIFs that can be embedded
-  const embeddableTypes = [
-    "image/jpeg",
-    "image/jpg",
-    "image/png",
-    "image/gif",
-    "image/webp",
-  ];
-
-  return embeddableTypes.includes(attachment.contentType.toLowerCase());
-}
-
 export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
   name: "suggest",
   description: "Create a suggestion",
@@ -44,12 +28,6 @@ export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
       name: "suggestion",
       description: "The suggestion",
       required: true,
-    },
-    {
-      type: ApplicationCommandOptionType.Attachment,
-      name: "image",
-      description: "Image that is relevant to the suggestion",
-      required: false,
     },
   ],
   handle: async (interaction: ChatInputCommandInteraction) => {
@@ -68,15 +46,6 @@ export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
     // Get the suggestion and optional image
     const suggestionText = interaction.options.get("suggestion")
       ?.value as string;
-
-    const suggestionImage = interaction.options.getAttachment("image");
-
-    if (suggestionImage && !isEmbeddableImage(suggestionImage)) {
-      await interaction.followUp({
-        content: "Your upload needs to be a image!",
-      });
-      return;
-    }
 
     const suggestionChannel = await interaction.client.channels.fetch(
       config.suggest.suggestionsChannel,
@@ -100,12 +69,7 @@ export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
 
     const suggestionId = interaction.id;
 
-    const embed = createSuggestionEmbed(
-      suggestionId,
-      member,
-      suggestionText,
-      suggestionImage?.proxyURL,
-    );
+    const embed = createSuggestionEmbed(suggestionId, member, suggestionText);
 
     const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
@@ -146,7 +110,6 @@ export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
       BigInt(member.id),
       BigInt(response.id),
       suggestionText,
-      suggestionImage?.proxyURL,
     );
   },
 };

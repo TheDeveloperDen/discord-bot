@@ -52,11 +52,6 @@ export class Suggestion extends Model<
   @ColumnName("suggestionText")
   public suggestionText!: string;
 
-  @Attribute(DataTypes.STRING)
-  @AllowNull
-  @ColumnName("suggestionImageUrl")
-  public suggestionImageUrl: string | undefined;
-
   @Attribute(DataTypes.ENUM(SuggestionStatus))
   @Default(SuggestionStatus.PENDING)
   @NotNull

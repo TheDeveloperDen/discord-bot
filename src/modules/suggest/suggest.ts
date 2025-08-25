@@ -28,7 +28,6 @@ export const createSuggestionEmbed: (
   id: string,
   member: GuildMember,
   suggestionText: string,
-  suggestionImage?: string,
   upVotes?: number,
   downVotes?: number,
   status?: SuggestionStatus,
@@ -37,7 +36,6 @@ export const createSuggestionEmbed: (
   id: string,
   member,
   suggestionText,
-  suggestionImage,
   upvotes = 0,
   downVotes = 0,
   status,
@@ -82,10 +80,6 @@ export const createSuggestionEmbed: (
     },
   ]);
 
-  if (suggestionImage) {
-    builder.setImage(suggestionImage);
-  }
-
   return builder;
 };
 
@@ -100,7 +94,6 @@ export const createSuggestionEmbedFromEntity: (
     suggestion.id.toString(),
     member,
     suggestion.suggestionText,
-    suggestion.suggestionImageUrl,
     upvotes ?? 0,
     downvotes ?? 0,
     suggestion.status !== SuggestionStatus.PENDING
@@ -126,17 +119,14 @@ export const createSuggestion: (
   userId: bigint,
   messageId: bigint,
   suggestionText: string,
-  suggestionImage: string | undefined,
 ) => Promise<Suggestion> = async (
   id: bigint,
   userId: bigint,
   messageId: bigint,
   suggestionText: string,
-  suggestionImageUrl: string | undefined,
 ) => {
   return await Suggestion.create({
     id: id,
-    suggestionImageUrl: suggestionImageUrl,
     memberId: userId,
     suggestionText: suggestionText,
     messageId: messageId,
