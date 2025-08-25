@@ -35,11 +35,11 @@ export const UnbanCommand: Command<ApplicationCommandType.ChatInput> = {
     try {
       await interaction.deferReply();
       const userId = interaction.options.getString("user_id", true);
-      const reason = interaction.options.getString("reason", true);
+      const reason = interaction.options.getString("reason", false);
 
       const user = await interaction.client.users.fetch(userId);
 
-      await interaction.guild.bans.remove(user.id, reason);
+      await interaction.guild.bans.remove(user.id, reason ?? undefined);
 
       const auditLogChannel = await interaction.guild.channels.fetch(
         config.channels.auditLog,

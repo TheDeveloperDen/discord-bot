@@ -26,8 +26,7 @@ export const BanCommand: Command<ApplicationCommandType.ChatInput> = {
     {
       type: ApplicationCommandOptionType.Boolean,
       name: "delete_messages",
-      description:
-        "Should the users messages be deleted too? Defaults to False",
+      description: "Should the users messages be deleted too? Defaults to True",
     },
   ],
 
@@ -41,12 +40,18 @@ export const BanCommand: Command<ApplicationCommandType.ChatInput> = {
     try {
       await interaction.deferReply();
       const deleteMessages =
-        interaction.options.getBoolean("delete_messages") ?? false;
+        interaction.options.getBoolean("delete_messages") ?? true;
       const user = interaction.options.getUser("user", true);
-      const reason = interaction.options.getString("reason", true);
-
+      const reason = interaction.options.getString("reason", false);
+      try {
+        await user.send({
+          content: `You got banned from ${interaction.guild.name} ${reason ? `with the reason: ${reason}` : ""}`,
+        });
+      } catch {
+        /* empty */
+      }
       await interaction.guild.bans.create(user, {
-        reason: reason,
+        reason: reason ?? undefined,
         deleteMessageSeconds: deleteMessages ? 604800 : undefined,
       });
 
