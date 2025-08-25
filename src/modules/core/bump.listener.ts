@@ -13,6 +13,7 @@ import { logger } from "../../logging.js";
 import { config } from "../../Config.js";
 import { Bump } from "../../store/models/Bump.js";
 import {
+  clearBumpsCache,
   extractStreaks,
   getAllBumps,
   getBumpStreak,
@@ -86,6 +87,10 @@ export async function handleBumpStreak(
       message.channel.send(
         `⚡ ${fakeMention(interactionOld.user)} bumped in just **${timeSinceLastBump / 1000}s**!`,
       );
+    } else {
+      logger.debug(
+        `Time since last bump: ${timeSinceLastBump / 1000}s, not fast enough for a lightning bolt`,
+      );
     }
   } else {
     logger.debug("No previous bump notification time");
@@ -128,6 +133,7 @@ export async function handleBump(
   },
 ) {
   lastBumpTime = new Date();
+
   scheduleBumpReminder(client);
 
   await handleBumpStreak(bumper, interactionOld, message, client);
@@ -162,6 +168,7 @@ export const BumpListener: EventListener = {
     logger.info(
       `User ${interactionOld.user.id} bumped! Total bumps: ${await ddUser.countBumps()}`,
     );
+    clearBumpsCache();
     await ddUser.save();
     await handleBump(client, ddUser, interactionOld, message);
   },
