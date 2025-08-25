@@ -106,6 +106,7 @@ export async function handleBumpStreak(
   if (
     highestStreakEver &&
     highestStreakEver.current == streak.current &&
+    streak.current == streak.highest && // has to be the current streak
     highestStreakEver.highest == streak.highest && // i think this is maybe error prone tbh
     highestStreakEver.userId == bumper.id
   ) {
