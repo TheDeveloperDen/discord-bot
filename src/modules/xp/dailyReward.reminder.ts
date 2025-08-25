@@ -106,9 +106,8 @@ export const scheduleAllReminders = async (client: Client) => {
 
   logger.debug(`Scheduling reminders for ${usersWithDaily.length} members`);
 
+  const guild = await client.guilds.fetch(config.guildId);
   for (const ddUser of usersWithDaily) {
-    const guild = await client.guilds.fetch(config.guildId);
-
     const member = await guild.members
       .fetch(ddUser.id.toString())
       .catch(() => null); // if they aren't in the server anymore

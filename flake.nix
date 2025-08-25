@@ -61,8 +61,8 @@
                 librsvg
                 pixman
 
-              ]
-              ++ (if system == "aarch64-darwin" then [ pkgs.darwin.apple_sdk.frameworks.CoreText ] else [ ]);
+              ];
+
           };
         };
     };

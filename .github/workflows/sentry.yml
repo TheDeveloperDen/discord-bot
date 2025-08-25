@@ -1,24 +1,31 @@
 name: Sentry Deploy Artifact Bundle
 
 on:
-  push:
-    branches:
-      - master
+  workflow_run:
+    workflows: ["Lint and Test"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   push-to-sentry:
+    environment: production
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'master' }}
     name: Deploy to Sentry
     runs-on: ubuntu-latest
-
-    permissions:
-      packages: write
-      contents: read
+    timeout-minutes: 20
 
     steps:
-      - name: Check out the repo
+      - name: Check out the repo at CI commit
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Add gyp dependencies
         run: sudo apt update && sudo apt install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
@@ -28,26 +35,76 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Cache Bun package downloads
+        id: bun-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-cache-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-cache-
+
+      - name: Cache node_modules
+        id: node-modules-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
+
       - name: Run install
         run: bun install --frozen-lockfile
 
-      - name: Build production bundle
-        run: bun run build-prod
+      - name: Download CI build artifact
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          run_id: ${{ github.event.workflow_run.id }}
+          name: build-bin-${{ github.event.workflow_run.head_sha }}
+          path: .
+          if_no_artifact_found: warn
+
+      - name: Adopt downloaded bin if present
+        shell: bash
+        env:
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          if [ -d "build-bin-$SHA" ]; then
+            rm -rf bin
+            mv "build-bin-$SHA" bin
+          fi
+
+      - name: Build production bundle if needed
+        run: |
+          if [ ! -d bin ] || [ ! -f bin/index.js ]; then
+            bun run build-prod
+          fi
+
+      - name: Upload build artifact (bin)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bin-${{ github.sha }}
+          path: bin
+          if-no-files-found: warn
 
       - name: Get version from NPM
         id: package-version
         uses: martinbeentjes/npm-get-version-action@v1.3.1
 
       - name: Create Sentry release
-        uses: getsentry/action-release@v1
+        uses: getsentry/action-release@v3
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         with:
           environment: production
-          sourcemaps: "./bin"
+          sourcemaps: ./bin
           inject: true
-
+          set_commits: auto
           version: ${{ steps.package-version.outputs.current-version }}
-          url_prefix: "app:///bin/"
+          dist: ${{ github.event.workflow_run.head_sha }}
+          url_prefix: app:///bin/

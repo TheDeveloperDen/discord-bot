@@ -1,5 +1,6 @@
 import { createLogger, format, transports } from "winston";
 import * as path from "path";
+import { stringify } from "safe-stable-stringify";
 
 const timestamp = format.timestamp({
   format: "YYYY-MM-DD HH:mm:ss",
@@ -24,6 +25,7 @@ const addSource = format((info) => {
     return (
       file &&
       !file.includes("logging.ts") &&
+      !file.includes("logging.js") &&
       !file.includes("node_modules") &&
       !file.startsWith("internal") &&
       !file.startsWith("node:") &&
@@ -39,6 +41,7 @@ const addSource = format((info) => {
 const cliFormat = format.combine(
   addSource(),
   timestamp,
+
   format.colorize({
     all: true,
   }),
@@ -46,7 +49,7 @@ const cliFormat = format.combine(
     const filteredMeta = { ...meta };
     if (filteredMeta.service) delete filteredMeta.service;
     const metaString = Object.keys(filteredMeta).length
-      ? JSON.stringify(filteredMeta, null, 2)
+      ? stringify(filteredMeta, null, 2)
       : "";
     return `[${timestamp}] ${level}${source ? ` (${source})` : ""}: ${message}${metaString ? " " + metaString : ""}`;
   }),

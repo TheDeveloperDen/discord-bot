@@ -196,3 +196,77 @@ test("End other user's streak", async () => {
     expect.stringContaining("ended"),
   );
 });
+test("End other user's streak with real data", async () => {
+  const { fakeUser, mockReact, mockChannel } = await setupMocks();
+
+  await getOrCreateUserById(266973575225933824n);
+  await getOrCreateUserById(1118501031488274517n);
+  const fake266 = createFakeUser(266973575225933824n);
+  const bumps = [
+    {
+      messageId: 1409196765260943511n,
+      userId: 1118501031488274517n,
+      timestamp: "2025-08-24 15:24:53.372000 +00:00",
+    },
+    {
+      messageId: 1409229323868700832n,
+      userId: 266973575225933824n,
+      timestamp: "2025-08-24 17:34:13.906000 +00:00",
+    },
+    {
+      messageId: 1409260216125489343n,
+      userId: 266973575225933824n,
+      timestamp: "2025-08-24 19:36:59.894000 +00:00",
+    },
+    {
+      messageId: 1409290444470354060n,
+      userId: 266973575225933824n,
+      timestamp: "2025-08-24 21:37:07.134000 +00:00",
+    },
+  ];
+
+  await Bump.destroy({
+    where: { userId: 1n },
+  }); // remove user 1
+  for (const bump of bumps) {
+    await Bump.create({
+      userId: BigInt(bump.userId),
+      timestamp: new Date(bump.timestamp),
+      messageId: BigInt(bump.messageId),
+    });
+  }
+
+  // until evil user 2 comes along
+  const otherUserId = 2n;
+  const otherUser = await getOrCreateUserById(otherUserId);
+  await Bump.create({
+    userId: BigInt(otherUserId),
+    timestamp: new Date(),
+    messageId: BigInt(20),
+  });
+
+  await handleBumpStreak(
+    otherUser,
+    { user: createFakeUser(otherUserId) } as unknown as MessageInteraction,
+    { channel: mockChannel, react: mockReact } as unknown as Message & {
+      channel: PartialTextBasedChannelFields;
+    },
+    {
+      users: {
+        fetch: mock(async (id: string) => {
+          if (id === otherUserId.toString())
+            return { id: otherUserId.toString() };
+          if (id === fakeUser.id) return fakeUser;
+          if (id === fake266.id) return fake266;
+          throw new Error("Unknown user");
+        }),
+      },
+    } as unknown as Client,
+  );
+
+  expect(mockReact).toHaveBeenCalledTimes(1);
+  expect(mockChannel.send).toHaveBeenCalledTimes(1);
+  expect(mockChannel.send).toHaveBeenCalledWith(
+    expect.stringContaining("ended"),
+  );
+});

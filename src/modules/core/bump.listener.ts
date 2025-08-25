@@ -1,6 +1,8 @@
 import { EventListener } from "../module.js";
 import {
   ChannelType,
+  Client,
+  EmojiIdentifierResolvable,
   InteractionType,
   Message,
   MessageInteraction,
@@ -9,9 +11,9 @@ import {
 import { DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { logger } from "../../logging.js";
 import { config } from "../../Config.js";
-import { Client, EmojiIdentifierResolvable } from "discord.js";
 import { Bump } from "../../store/models/Bump.js";
 import {
+  clearBumpsCache,
   extractStreaks,
   getAllBumps,
   getBumpStreak,
@@ -65,6 +67,10 @@ export async function handleBumpStreak(
   if (allStreaks.length > 1) {
     const mostRecent = allStreaks[allStreaks.length - 2]!;
     logger.debug(`Most recent streak:`, mostRecent);
+    logger.debug(
+      "Most recent streaks:",
+      allStreaks.slice(allStreaks.length - 5),
+    );
     if (mostRecent.userId != bumper.id && mostRecent.current >= 2) {
       const user = await client.users.fetch(mostRecent.userId.toString());
       message.channel.send(
@@ -80,6 +86,10 @@ export async function handleBumpStreak(
     if (timeSinceLastBump < 5000) {
       message.channel.send(
         `⚡ ${fakeMention(interactionOld.user)} bumped in just **${timeSinceLastBump / 1000}s**!`,
+      );
+    } else {
+      logger.debug(
+        `Time since last bump: ${timeSinceLastBump / 1000}s, not fast enough for a lightning bolt`,
       );
     }
   } else {
@@ -101,6 +111,7 @@ export async function handleBumpStreak(
   if (
     highestStreakEver &&
     highestStreakEver.current == streak.current &&
+    streak.current == streak.highest && // has to be the current streak
     highestStreakEver.highest == streak.highest && // i think this is maybe error prone tbh
     highestStreakEver.userId == bumper.id
   ) {
@@ -122,6 +133,7 @@ export async function handleBump(
   },
 ) {
   lastBumpTime = new Date();
+
   scheduleBumpReminder(client);
 
   await handleBumpStreak(bumper, interactionOld, message, client);
@@ -156,6 +168,7 @@ export const BumpListener: EventListener = {
     logger.info(
       `User ${interactionOld.user.id} bumped! Total bumps: ${await ddUser.countBumps()}`,
     );
+    clearBumpsCache();
     await ddUser.save();
     await handleBump(client, ddUser, interactionOld, message);
   },
