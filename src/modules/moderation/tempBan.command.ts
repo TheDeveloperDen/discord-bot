@@ -5,10 +5,11 @@ import {
 } from "discord.js";
 import { config } from "../../Config.js";
 import { actualMention, fakeMention } from "../../util/users.js";
+import { createTempBanModAction } from "./tempBan.js";
 
 export const SoftBanCommand: Command<ApplicationCommandType.ChatInput> = {
-  name: "ban",
-  description: "Ban a baaaaad boy",
+  name: "tempban",
+  description: "Temp Ban a baaaaad boy",
   type: ApplicationCommandType.ChatInput,
   default_permission: false,
   options: [
@@ -22,6 +23,12 @@ export const SoftBanCommand: Command<ApplicationCommandType.ChatInput> = {
       type: ApplicationCommandOptionType.String,
       name: "reason",
       description: "The reason why the user gets banned",
+    },
+    {
+      type: ApplicationCommandOptionType.Number,
+      name: "ban_duration_days",
+      description: "The duration of the ban in days",
+      required: true,
     },
     {
       type: ApplicationCommandOptionType.Boolean,
@@ -41,11 +48,12 @@ export const SoftBanCommand: Command<ApplicationCommandType.ChatInput> = {
       await interaction.deferReply();
       const user = interaction.options.getUser("user", true);
       const reason = interaction.options.getString("reason", false);
+      const days = interaction.options.getNumber("ban_duration_days", true);
       const deleteMessages =
         interaction.options.getBoolean("delete_messages", false) ?? true;
       try {
         await user.send({
-          content: `You got soft-banned from ${interaction.guild.name} ${reason ? `with the reason: ${reason}` : ""}`,
+          content: `You got temp-banned from ${interaction.guild.name} ${reason ? `with the reason: ${reason}` : ""} for ${days} Days`,
         });
       } catch {
         /* empty */
@@ -55,29 +63,35 @@ export const SoftBanCommand: Command<ApplicationCommandType.ChatInput> = {
         reason: reason ?? undefined,
         deleteMessageSeconds: deleteMessages ? 604800 : undefined,
       });
+      const unbanTimestamp = Math.floor(
+        (Date.now() + days * 24 * 60 * 60 * 1000) / 1000,
+      );
+      await createTempBanModAction(
+        interaction.user,
+        user,
+        new Date(unbanTimestamp),
+        reason,
+      );
 
       const auditLogChannel = await interaction.guild.channels.fetch(
         config.channels.auditLog,
       );
       if (auditLogChannel?.isTextBased()) {
         await auditLogChannel.send({
-          content: `${actualMention(interaction.user)} soft banned ${fakeMention(user)} (${user.id})\nDelete Messages: ${deleteMessages}`,
+          content: `${actualMention(interaction.user)} temp banned ${fakeMention(user)} (${user.id})\nDelete Messages: ${deleteMessages}\nDays: ${days}\nUntil: <t:${
+            unbanTimestamp
+          }:R>`,
           allowedMentions: {
             parse: [],
           },
         });
       }
 
-      const softBanMessage = await interaction.followUp({
-        content: `Soft banned ${fakeMention(user)} (${user.id})`,
+      const tempBanMessage = await interaction.followUp({
+        content: `Temp banned ${fakeMention(user)} (${user.id})`,
       });
 
-      setTimeout(() => softBanMessage.delete().catch(() => null), 5000);
-      setTimeout(
-        () =>
-          interaction.guild && interaction.guild.bans.remove(user, "Softban"),
-        5000,
-      );
+      setTimeout(() => tempBanMessage.delete().catch(() => null), 5000);
     } catch (e) {
       console.error("Failed to ban user: ", e);
 
