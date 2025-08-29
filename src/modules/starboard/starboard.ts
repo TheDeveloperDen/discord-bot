@@ -9,52 +9,7 @@ import {
 import { StarboardMessage } from "../../store/models/StarboardMessage.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { config } from "../../Config.js";
-import ffmpeg from "fluent-ffmpeg";
-import { Readable } from "node:stream";
-import { execSync } from "node:child_process";
-// Check if system FFmpeg is available, otherwise fall back to a common path
-let ffmpegPath: string;
-try {
-  // Try to find FFmpeg in system PATH
-  const command =
-    process.platform === "win32" ? "where ffmpeg" : "which ffmpeg";
-  ffmpegPath = execSync(command, { encoding: "utf8" }).trim();
-  // On Windows, 'where' can return multiple paths, so take the first one
-  if (process.platform === "win32" && ffmpegPath.includes("\n")) {
-    ffmpegPath = ffmpegPath.split("\n")[0] as string;
-  }
-} catch {
-  // Fallback paths where FFmpeg might be installed
-  const possiblePaths =
-    process.platform === "win32"
-      ? [
-          "C:\\ffmpeg\\bin\\ffmpeg.exe",
-          "C:\\Program Files\\ffmpeg\\bin\\ffmpeg.exe",
-          "C:\\Program Files (x86)\\ffmpeg\\bin\\ffmpeg.exe",
-          "%USERPROFILE%\\ffmpeg\\bin\\ffmpeg.exe",
-          "ffmpeg.exe",
-        ]
-      : [
-          "/usr/bin/ffmpeg",
-          "/usr/local/bin/ffmpeg",
-          "/opt/homebrew/bin/ffmpeg",
-        ];
-
-  ffmpegPath =
-    possiblePaths.find((path) => {
-      try {
-        const testPath =
-          process.platform === "win32" && path.includes("%USERPROFILE%")
-            ? path.replace("%USERPROFILE%", process.env.USERPROFILE || "")
-            : path;
-        execSync(`"${testPath}" -version`, { stdio: "ignore" });
-        return true;
-      } catch {
-        return false;
-      }
-    }) || (process.platform === "win32" ? "ffmpeg.exe" : "ffmpeg"); // Last resort: hope it's in PATH
-}
-ffmpeg.setFfmpegPath(ffmpegPath);
+import { convertVideoToGif } from "../../util/video.js";
 
 export const createStarboardMessage: (
   originalMessageId: Snowflake,
@@ -121,7 +76,6 @@ export const createStarboardMessageFromMessage: (
   const files: AttachmentBuilder[] = [];
   if (!starboardMessage) {
     const imageOrGif = await getImageOrGifEmbed(message);
-    console.log(imageOrGif);
     if (imageOrGif) {
       if ("gifBuffer" in imageOrGif) {
         files.push(
@@ -142,51 +96,6 @@ export const createStarboardMessageFromMessage: (
     content: `${config.starboard.emojiId}: ${stars} | ${message.url}`,
     files: files.length > 0 ? files : undefined,
   };
-};
-
-const convertVideoToGif: (url: string) => Promise<Buffer> = async (url) => {
-  try {
-    // Download the video into memory
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch video: ${response.statusText}`);
-    }
-
-    const videoBuffer = Buffer.from(await response.arrayBuffer());
-    const inputStream = new Readable();
-    inputStream.push(videoBuffer);
-    inputStream.push(null); // End the stream
-
-    return new Promise((resolve, reject) => {
-      const chunks: Buffer[] = [];
-
-      ffmpeg(inputStream)
-        .inputFormat("mp4")
-        .outputFormat("gif")
-        .size("320x?")
-        .fps(10)
-        .on("error", (err) => {
-          console.error("FFmpeg error:", err);
-          reject(err);
-        })
-        .on("end", () => {
-          console.log("Video conversion completed");
-          const gifBuffer = Buffer.concat(chunks);
-          resolve(gifBuffer);
-        })
-        .pipe()
-        .on("data", (chunk: Buffer) => {
-          chunks.push(chunk);
-        })
-        .on("error", (err) => {
-          console.error("Stream error:", err);
-          reject(err);
-        });
-    });
-  } catch (error) {
-    console.error("Error converting video to GIF:", error);
-    throw error;
-  }
 };
 
 const isEmbedableContentType = (type: string) => {
