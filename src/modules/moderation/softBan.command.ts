@@ -7,8 +7,8 @@ import { config } from "../../Config.js";
 import { actualMention, fakeMention } from "../../util/users.js";
 
 export const SoftBanCommand: Command<ApplicationCommandType.ChatInput> = {
-  name: "ban",
-  description: "Ban a baaaaad boy",
+  name: "softban",
+  description: "Soft Ban a baaaaad boy",
   type: ApplicationCommandType.ChatInput,
   default_permission: false,
   options: [
