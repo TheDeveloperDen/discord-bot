@@ -6,7 +6,7 @@ import {
 import { config } from "../../Config.js";
 import { actualMention, fakeMention } from "../../util/users.js";
 
-export const BanCommand: Command<ApplicationCommandType.ChatInput> = {
+export const KickCommand: Command<ApplicationCommandType.ChatInput> = {
   name: "kick",
   description: "Ban a baaaaad boy",
   type: ApplicationCommandType.ChatInput,

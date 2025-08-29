@@ -5,6 +5,7 @@ import {
 } from "discord.js";
 import { config } from "../../Config.js";
 import { actualMention, fakeMention } from "../../util/users.js";
+import { getActiveTempBanModAction } from "./tempBan.js";
 
 export const UnbanCommand: Command<ApplicationCommandType.ChatInput> = {
   name: "unban",
@@ -40,6 +41,9 @@ export const UnbanCommand: Command<ApplicationCommandType.ChatInput> = {
       const user = await interaction.client.users.fetch(userId);
 
       await interaction.guild.bans.remove(user.id, reason ?? undefined);
+
+      const modAction = await getActiveTempBanModAction(BigInt(user.id));
+      if (modAction) await modAction.destroy();
 
       const auditLogChannel = await interaction.guild.channels.fetch(
         config.channels.auditLog,

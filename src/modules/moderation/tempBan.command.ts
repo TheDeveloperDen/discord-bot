@@ -7,7 +7,7 @@ import { config } from "../../Config.js";
 import { actualMention, fakeMention } from "../../util/users.js";
 import { createTempBanModAction } from "./tempBan.js";
 
-export const SoftBanCommand: Command<ApplicationCommandType.ChatInput> = {
+export const TempBanCommand: Command<ApplicationCommandType.ChatInput> = {
   name: "tempban",
   description: "Temp Ban a baaaaad boy",
   type: ApplicationCommandType.ChatInput,
@@ -20,16 +20,17 @@ export const SoftBanCommand: Command<ApplicationCommandType.ChatInput> = {
       required: true,
     },
     {
-      type: ApplicationCommandOptionType.String,
-      name: "reason",
-      description: "The reason why the user gets banned",
-    },
-    {
       type: ApplicationCommandOptionType.Number,
       name: "ban_duration_days",
       description: "The duration of the ban in days",
       required: true,
     },
+    {
+      type: ApplicationCommandOptionType.String,
+      name: "reason",
+      description: "The reason why the user gets banned",
+    },
+
     {
       type: ApplicationCommandOptionType.Boolean,
       name: "delete_messages",
