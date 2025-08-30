@@ -64,6 +64,7 @@
   ],
   "repository": "https://github.com/TheDeveloperDen/DevDenBot.git",
   "devDependencies": {
+    "@biomejs/biome": "^2.2.2",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.32.0",
     "@microsoft/eslint-formatter-sarif": "3.1.0",
