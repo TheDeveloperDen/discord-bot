@@ -55,7 +55,7 @@ test("getStreaks with real data", () => {
   ).toReversed();
 
   const actualStreaks = getStreaks(streaks);
-  expect(actualStreaks).toBeArrayOfSize(3);
+  expect(actualStreaks).toBeArrayOfSize(4);
   expect(actualStreaks[0]).toEqual({
     userId: 266973575225933824n,
     current: 2,
@@ -67,6 +67,11 @@ test("getStreaks with real data", () => {
     highest: 1,
   });
   expect(actualStreaks[2]).toEqual({
+    userId: 266973575225933824n,
+    current: 2,
+    highest: 2,
+  });
+  expect(actualStreaks[3]).toEqual({
     userId: 1118501031488274517n,
     current: 8,
     highest: 8,

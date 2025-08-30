@@ -1,6 +1,7 @@
 import { Bump } from "./Bump.js";
 import * as Sentry from "@sentry/node";
 import { DDUser } from "./DDUser.js";
+import { logger } from "../../logging.js";
 
 /**
 
@@ -12,6 +13,7 @@ export const getAllBumps = async (): Promise<Bump[]> =>
       bumpsCache.bumps.length > 0 &&
       new Date().getTime() - bumpsCache.lastUpdated.getTime() < 1000 * 60 * 60 // 1 hour to be safe
     ) {
+      logger.debug("Using cached bumps");
       return bumpsCache.bumps;
     }
     const bumps = await Bump.findAll({
@@ -49,25 +51,27 @@ export const getBumpStreak = async (user: DDUser): Promise<Streak> =>
  * Turns a list of bump streaks into a list of user IDs and their streaks.
  * This will preserve the order of the streaks.
  * @param bumpStreaks  A list of bump streaks.
- * @returns A map of user IDs to their streaks.
+ * @returns An associative array of user IDs and their streaks, which may contain user IDs.
  */
 export function getStreaks(bumpStreaks: { userId: bigint }[][]): ({
   userId: bigint;
 } & Streak)[] {
-  const streakMap = new Map<bigint, Streak>();
+  const maxStreakMap = new Map<bigint, number>();
+  const streaks: ({
+    userId: bigint;
+  } & Streak)[] = [];
   for (const streak of bumpStreaks) {
     const userId = streak[0]!.userId;
     const currentStreak = streak.length;
-    const highestStreak = streakMap.get(userId)?.highest ?? 0;
-    streakMap.set(userId, {
+    const highestStreak = maxStreakMap.get(userId) ?? 0;
+    maxStreakMap.set(userId, Math.max(highestStreak, currentStreak));
+    streaks.push({
+      userId,
       current: currentStreak,
       highest: Math.max(highestStreak, currentStreak),
     });
   }
-  return Array.from(streakMap.entries()).map(([userId, streak]) => ({
-    userId,
-    ...streak,
-  }));
+  return streaks;
 }
 
 export function getStreak(
