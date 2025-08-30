@@ -1,14 +1,14 @@
+import { Op } from "@sequelize/core";
 import type { Client, GuildMember } from "discord.js";
+import { type Job, scheduleJob } from "node-schedule";
+import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
 import { DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
-import { config } from "../../Config.js";
 import { actualMention, isSpecialUser } from "../../util/users.js";
-import { type Job, scheduleJob } from "node-schedule";
 import {
   getActualDailyStreak,
   getNextDailyTime,
 } from "./dailyReward.command.js";
-import { Op } from "@sequelize/core";
 
 const FORTY_EIGHT_HOURS_IN_MS = 48 * 60 * 60 * 1000;
 
@@ -26,10 +26,7 @@ const sendReminder = async (client: Client, user: GuildMember) => {
     logger.error("lastClaimTime is null");
     return;
   }
-  if (
-    new Date().getTime() - lastClaimTime.getTime() >
-    FORTY_EIGHT_HOURS_IN_MS
-  ) {
+  if (Date.now() - lastClaimTime.getTime() > FORTY_EIGHT_HOURS_IN_MS) {
     logger.info(
       `User ${user.user.tag} has not claimed their daily in over 48 hours, not reminding them and cancelling future reminders`,
     );

@@ -1,11 +1,11 @@
 import * as Sentry from "@sentry/node";
-import { compose } from "../../util/functions.js";
-import { compareTwoStrings as distance } from "string-similarity";
 import { type Channel, type GuildMember, Message, type User } from "discord.js";
+import { compareTwoStrings as distance } from "string-similarity";
+import { config } from "../../Config.js";
 import type { Config } from "../../config.type.js";
 import { logger } from "../../logging.js";
-import { config } from "../../Config.js";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
+import { compose } from "../../util/functions.js";
 import { levelUp } from "./xpRoles.util.js";
 
 const pingRegex = /<[a-zA-Z0-9@:&!#]+?[0-9]+>/g;
@@ -26,7 +26,7 @@ export const getTierByLevel = (level: number): number =>
 function findForward(input: string, index: number, set: Set<string>): number {
   let current = "";
   while (set.has(current) && index < input.length) {
-    current = current.concat(input[index]!);
+    current = current.concat(input[index]);
     index++;
   }
   set.add(current);
@@ -97,8 +97,8 @@ export const tierOf = (level: number) =>
 
 export function tierRoleId(level: number): string {
   const tier = tierOf(level);
-  if (tier < config.roles.tiers.length) return config.roles.tiers[tier]!;
-  return config.roles.tiers[config.roles.tiers.length - 1]!;
+  if (tier < config.roles.tiers.length) return config.roles.tiers[tier];
+  return config.roles.tiers[config.roles.tiers.length - 1];
 }
 
 /**

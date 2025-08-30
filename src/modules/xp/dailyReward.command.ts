@@ -1,17 +1,17 @@
 import {
+  ApplicationCommandType,
   type GuildMember,
   type Snowflake,
-  ApplicationCommandType,
 } from "discord.js";
 import type { Command } from "djs-slash-helper";
 
 import { logger } from "../../logging.js";
+import { wrapInTransaction } from "../../sentry.js";
 import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { createStandardEmbed } from "../../util/embeds.js";
-import { giveXp } from "./xpForMessage.util.js";
-import { wrapInTransaction } from "../../sentry.js";
-import { scheduleReminder } from "./dailyReward.reminder.js";
 import { isSpecialUser } from "../../util/users.js";
+import { scheduleReminder } from "./dailyReward.reminder.js";
+import { giveXp } from "./xpForMessage.util.js";
 
 const dailiesInProgress = new Set<Snowflake>();
 
@@ -22,7 +22,7 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
   options: [],
 
   handle: wrapInTransaction("daily", async (_, interaction) => {
-    const startTime = new Date().getTime();
+    const startTime = Date.now();
     const user = interaction.member as GuildMember;
     if (!user) {
       await interaction.reply("You must be in a guild to use this command");
@@ -39,8 +39,7 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
     try {
       dailiesInProgress.add(user.id);
       const ddUser = await getOrCreateUserById(BigInt(user.id));
-      const difference =
-        new Date().getTime() - (ddUser.lastDailyTime?.getTime() ?? 0);
+      const difference = Date.now() - (ddUser.lastDailyTime?.getTime() ?? 0);
       if (difference < 1000 * 60 * 60 * 24) {
         const lastClaimTime = ddUser.lastDailyTime;
         if (lastClaimTime == null) {
@@ -55,9 +54,7 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
           )}:R>.`,
         });
         logger.info(
-          `Daily reward attempted by ${user.user.tag} in ${
-            new Date().getTime() - startTime
-          }ms`,
+          `Daily reward attempted by ${user.user.tag} in ${Date.now() - startTime}ms`,
         );
         return;
       }
@@ -79,7 +76,7 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
           : 0;
       await Promise.all([
         interaction.followUp({
-          ephemeral: false,
+          flags: ["Ephemeral"],
           embeds: [
             createStandardEmbed(user)
               .setTitle("Daily Reward Claimed!")
@@ -97,9 +94,7 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
         ddUser.save(),
       ]);
       logger.info(
-        `Daily reward claimed by ${user.user.tag} in ${
-          new Date().getTime() - startTime
-        }ms`,
+        `Daily reward claimed by ${user.user.tag} in ${Date.now() - startTime}ms`,
       );
       if (isSpecialUser(user)) {
         await scheduleReminder(user.client, user, ddUser);
@@ -137,8 +132,7 @@ export async function getActualDailyStreak(ddUser: DDUser): Promise<number> {
 export function getActualDailyStreakWithoutSaving(
   ddUser: DDUser,
 ): [boolean, number] {
-  const difference =
-    new Date().getTime() - (ddUser.lastDailyTime?.getTime() ?? 0);
+  const difference = Date.now() - (ddUser.lastDailyTime?.getTime() ?? 0);
   if (difference >= 1000 * 60 * 60 * 24 * 2) {
     // Set streak to 0
     ddUser.currentDailyStreak = 0;

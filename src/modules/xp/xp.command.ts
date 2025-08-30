@@ -1,21 +1,21 @@
 import type { GuildMember } from "discord.js";
-import { getOrCreateUserById } from "../../store/models/DDUser.js";
-import { createStandardEmbed } from "../../util/embeds.js";
-import { getTierByLevel, xpForLevel } from "./xpForMessage.util.js";
-import { createImage, font, getCanvasContext } from "../../util/imageUtils.js";
-import { branding } from "../../util/branding.js";
-import { drawText } from "../../util/textRendering.js";
 import {
   ApplicationCommandOptionType,
   ApplicationCommandType,
 } from "discord.js";
-import { formatDayCount, getActualDailyStreak } from "./dailyReward.command.js";
-import { wrapInTransaction } from "../../sentry.js";
-import { format } from "../core/info.command.js";
-import { fakeMention } from "../../util/users.js";
 import type { Command } from "djs-slash-helper";
-import { getResolvedMember } from "../../util/interactions.js";
 import { logger } from "../../logging.js";
+import { wrapInTransaction } from "../../sentry.js";
+import { getOrCreateUserById } from "../../store/models/DDUser.js";
+import { branding } from "../../util/branding.js";
+import { createStandardEmbed } from "../../util/embeds.js";
+import { createImage, font, getCanvasContext } from "../../util/imageUtils.js";
+import { getResolvedMember } from "../../util/interactions.js";
+import { drawText } from "../../util/textRendering.js";
+import { fakeMention } from "../../util/users.js";
+import { format } from "../core/info.command.js";
+import { formatDayCount, getActualDailyStreak } from "./dailyReward.command.js";
+import { getTierByLevel, xpForLevel } from "./xpForMessage.util.js";
 
 export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
   name: "xp",
@@ -30,7 +30,7 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
     },
   ],
 
-  handle: wrapInTransaction("xp", async (span, interaction) => {
+  handle: wrapInTransaction("xp", async (_, interaction) => {
     await interaction.deferReply();
 
     const targetUser =
