@@ -11,6 +11,7 @@ import { ColourRoles } from "./models/ColourRoles.js";
 import { DDUser } from "./models/DDUser.js";
 import { FAQ } from "./models/FAQ.js";
 import { ModeratorActions } from "./models/ModeratorActions.js";
+import { StarboardMessage } from "./models/StarboardMessage.js";
 
 function sequelizeLog(sql: string, timing?: number) {
   if (timing) {
@@ -58,7 +59,14 @@ export async function initStorage() {
   }
   await sequelize.authenticate();
 
-  const models = [DDUser, ColourRoles, FAQ, Bump, ModeratorActions];
+  const models = [
+    DDUser,
+    ColourRoles,
+    FAQ,
+    Bump,
+    StarboardMessage,
+    ModeratorActions,
+  ];
   sequelize.addModels(models);
 
   Bump.belongsTo(DDUser, {
