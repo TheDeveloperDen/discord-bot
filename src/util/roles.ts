@@ -7,7 +7,7 @@ export interface RoleChanges {
 }
 
 export async function modifyRoles(
-  client: Client,
+  _: Client,
   user: GuildMember,
   roleChanges: RoleChanges,
 ) {
@@ -26,10 +26,12 @@ export async function modifyRoles(
 
   const addRole = (roleId: string) => currentRoles.set(roleId, getRole(roleId));
   roleChanges.toAdd.forEach(addRole);
-  roleChanges.toRemove.forEach((role) => currentRoles.delete(role));
+  roleChanges.toRemove.forEach((role) => {
+    currentRoles.delete(role);
+  });
 
-  const langsSeparator = hasRolesBetween(roles.langs, null)(currentRoles);
-  if (langsSeparator) {
+  const languagesSeparator = hasRolesBetween(roles.langs, null)(currentRoles);
+  if (languagesSeparator) {
     addRole(roles.langs);
   } else {
     currentRoles.delete(roles.langs);

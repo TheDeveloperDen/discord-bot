@@ -1,19 +1,19 @@
-import type { Command, ExecutableSubcommand } from "djs-slash-helper";
-import type { ColorResolvable, GuildMember } from "discord.js";
-import { ColourRoles } from "../../store/models/ColourRoles.js";
-import { config } from "../../Config.js";
+import type { ColorResolvable, GuildMember, Role } from "discord.js";
 import {
   ApplicationCommandOptionType,
   ApplicationCommandType,
 } from "discord.js";
+import type { Command, ExecutableSubcommand } from "djs-slash-helper";
+import { config } from "../../Config.js";
 import { wrapInTransaction } from "../../sentry.js";
+import { ColourRoles } from "../../store/models/ColourRoles.js";
 
 const ResetSubcommand: ExecutableSubcommand = {
   type: ApplicationCommandOptionType.Subcommand,
   name: "reset",
   description: "Reset your role colour",
   async handle(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: ["Ephemeral"] });
     const user = interaction.user;
     const member = interaction.member as GuildMember;
     const roleInfo = await ColourRoles.findOne({
@@ -70,7 +70,7 @@ const SetSubcommand: ExecutableSubcommand = {
       required: true,
     },
   ],
-  handle: wrapInTransaction("rolecolour/set", async (span, interaction) => {
+  handle: wrapInTransaction("rolecolour/set", async (_, interaction) => {
     const colour = interaction.options.get("colour", true).value as string;
     if (!colour.startsWith("#") || colour.length !== 7) {
       await interaction.reply({
@@ -80,7 +80,7 @@ const SetSubcommand: ExecutableSubcommand = {
       return;
     }
 
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: ["Ephemeral"] });
     const user = interaction.user;
     const member = interaction.member as GuildMember;
     const roleInfo = await ColourRoles.findOne({
@@ -88,14 +88,14 @@ const SetSubcommand: ExecutableSubcommand = {
         id: BigInt(user.id),
       },
     });
-    let role;
+    let role: Role | null = null;
     if (roleInfo != null) {
       const roleId = roleInfo.getDataValue("role"); // no idea why normal property lookup doesnt work
       if (!roleId) {
         throw new Error("No colour role found, database call failed?");
       }
       role = member.roles.resolve(roleId.toString());
-      await role?.setColor(colour as ColorResolvable);
+      await role?.setColors({ primaryColor: colour as ColorResolvable });
     }
 
     if (role == null) {
@@ -103,7 +103,7 @@ const SetSubcommand: ExecutableSubcommand = {
         interaction.guild?.roles.resolve(config.roles.separators.general)
           ?.position ?? 0;
       role = await member.guild.roles.create({
-        color: colour as ColorResolvable,
+        colors: { primaryColor: colour as ColorResolvable },
         permissions: [],
         name: member.user.username,
         position,

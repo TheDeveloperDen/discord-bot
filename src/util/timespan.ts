@@ -53,7 +53,7 @@ export function parseTimespan(span: string): number {
 
   for (const element of inputSplit) {
     const number = parseInt(element.groups?.[1] ?? "0", 10);
-    if (isNaN(number)) continue;
+    if (Number.isNaN(number)) continue;
     out += number * getDuration(element.groups?.[2] ?? "");
   }
   return out;

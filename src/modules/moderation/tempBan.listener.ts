@@ -1,12 +1,12 @@
-import type { EventListener } from "../module.js";
+import { Op } from "@sequelize/core";
 import * as schedule from "node-schedule";
+import { config } from "../../Config.js";
+import { logger } from "../../logging.js";
 import {
   ModeratorAction,
   ModeratorActions,
 } from "../../store/models/ModeratorActions.js";
-import { Op } from "@sequelize/core";
-import { config } from "../../Config.js";
-import { logger } from "../../logging.js";
+import type { EventListener } from "../module.js";
 
 export const TempBanListener: EventListener = {
   clientReady: async (client) => {

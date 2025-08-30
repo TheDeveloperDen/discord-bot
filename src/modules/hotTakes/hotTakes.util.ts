@@ -1,10 +1,9 @@
-import { randomInt } from "crypto";
+import { randomInt } from "node:crypto";
+import { readFileSync } from "node:fs";
 import type { Guild } from "discord.js";
-import { actualMention, isSpecialUser } from "../../util/users.js";
-import { readFileSync } from "fs";
 import ExpiryMap from "expiry-map";
-
 import { LRUCache } from "lru-cache";
+import { actualMention, isSpecialUser } from "../../util/users.js";
 
 const thingCache = new LRUCache<string, object>({
   max: 1000,
@@ -42,7 +41,7 @@ export const hotTakeData: {
   problems: HotTakeThing[];
   tlds: HotTakeThing[];
   takes: HotTakeThing[];
-} = JSON.parse(readFileSync(process.cwd() + "/hotTakeData.json").toString());
+} = JSON.parse(readFileSync(`${process.cwd()}/hotTakeData.json`).toString());
 
 interface Placeholders {
   [k: string]: (users: string[]) => HotTakeThing[];
@@ -86,7 +85,7 @@ function combineSources(
   ...source: Array<NewOmit<keyof typeof hotTakeData, "takes">>
 ): (users: string[]) => HotTakeThing[] {
   if (source.length === 0) return () => [];
-  const head: HotTakeThing[] = hotTakeData[source[0]!];
+  const head: HotTakeThing[] = hotTakeData[source[0]];
   const tail = source.slice(1).flatMap((it) => hotTakeData[it]);
   return (users: string[]) => head.concat(tail, users);
 }
@@ -95,7 +94,7 @@ function mapPlaceholder(
   key: Placeholder,
   f: (s: HotTakeThing) => HotTakeThing,
 ): (users: string[]) => HotTakeThing[] {
-  return (users: string[]) => placeholders[key]!(users).map(f);
+  return (users: string[]) => placeholders[key](users).map(f);
 }
 
 async function getAdditionalUsers(guild: Guild): Promise<string[]> {
@@ -137,21 +136,19 @@ function createWeights(options: HotTakeThing[]): (1 | 5)[] {
  */
 function weightedRandom(weights: number[]) {
   let totalWeight = 0;
-  let i;
-  let random;
+  let i: number;
 
   for (i = 0; i < weights.length; i++) {
-    totalWeight += weights[i]!;
+    totalWeight += weights[i];
   }
 
-  random = Math.random() * totalWeight;
-
+  let random = Math.random() * totalWeight;
   for (i = 0; i < weights.length; i++) {
-    if (random < weights[i]!) {
+    if (random < weights[i]) {
       return i;
     }
 
-    random -= weights[i]!;
+    random -= weights[i];
   }
 
   return -1;
@@ -161,7 +158,7 @@ function getWeightedRandom(options: HotTakeThing[]): HotTakeThing {
   const weights = createWeights(options);
 
   const opt = weightedRandom(weights);
-  const val = options[opt]!;
+  const val = options[opt];
   thingCache.set(hotTakeValue(val), {});
   return val;
 }
@@ -184,7 +181,7 @@ export default async function generateHotTake(guild: Guild) {
         }
       })
       .flatMap((it) => {
-        return placeholders[it]!(members);
+        return placeholders[it](members);
       }); // get the values for each placeholder
 
     const randomReplacement = getWeightedRandom(randomOptions);
