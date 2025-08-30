@@ -20,6 +20,12 @@ export interface Config {
     introductions?: string;
     general: string;
   };
+  suggest: {
+    suggestionsChannel: string;
+    archiveChannel: string;
+    yesEmojiId: string;
+    noEmojiId: string;
+  };
   commands: {
     daily: Snowflake;
   };
