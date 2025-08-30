@@ -1,5 +1,5 @@
-import { Client, GuildMember, TextChannel } from "discord.js";
-import { DDUser } from "../../store/models/DDUser.js";
+import type { Client, GuildMember, TextChannel } from "discord.js";
+import type { DDUser } from "../../store/models/DDUser.js";
 import { modifyRoles } from "../../util/roles.js";
 import { config } from "../../Config.js";
 import { createStandardEmbed } from "../../util/embeds.js";

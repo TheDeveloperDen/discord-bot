@@ -1,6 +1,6 @@
-import { Snowflake } from "discord.js";
-import { BrandingConfig } from "./util/branding.js";
-import { InformationMessage } from "./modules/information/information.js";
+import type { Snowflake } from "discord.js";
+import type { BrandingConfig } from "./util/branding.js";
+import type { InformationMessage } from "./modules/information/information.js";
 
 export interface Config {
   guildId: string;

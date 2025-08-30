@@ -3,7 +3,7 @@ import {
   handleBumpStreak,
   setLastBumpNotificationTime,
 } from "./bump.listener.js";
-import {
+import type {
   Client,
   Message,
   MessageInteraction,

@@ -1,12 +1,12 @@
-import { Command } from "djs-slash-helper";
-import {
+import type { Command } from "djs-slash-helper";
+import type {
   ApplicationCommandType,
   Awaitable,
   Client,
   ClientEvents,
 } from "discord.js";
 
-import ModuleManager from "./moduleManager.js";
+import type ModuleManager from "./moduleManager.js";
 
 export type EventListener = {
   [k in keyof ClientEvents]?: (

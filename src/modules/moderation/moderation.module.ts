@@ -1,4 +1,4 @@
-import Module from "../module.js";
+import type Module from "../module.js";
 import { InviteListeners } from "./discordInvitesMonitor.listener.js";
 import { BanCommand } from "./ban.command.js";
 import { UnbanCommand } from "./unban.command.js";

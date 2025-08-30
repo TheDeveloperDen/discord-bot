@@ -1,4 +1,4 @@
-import { Message } from "discord.js";
+import type { Message } from "discord.js";
 import { logger } from "../logging.js";
 import * as Sentry from "@sentry/bun";
 

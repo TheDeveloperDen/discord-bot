@@ -1,4 +1,4 @@
-import { User } from "discord.js";
+import type { User } from "discord.js";
 import {
   ModeratorAction,
   ModeratorActions,

@@ -1,6 +1,6 @@
 import { Bump } from "./Bump.js";
 import * as Sentry from "@sentry/node";
-import { DDUser } from "./DDUser.js";
+import type { DDUser } from "./DDUser.js";
 import { logger } from "../../logging.js";
 
 /**

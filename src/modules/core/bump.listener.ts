@@ -1,14 +1,14 @@
-import { EventListener } from "../module.js";
+import type { EventListener } from "../module.js";
 import {
   ChannelType,
-  Client,
-  EmojiIdentifierResolvable,
+  type Client,
+  type EmojiIdentifierResolvable,
   InteractionType,
-  Message,
-  MessageInteraction,
-  PartialTextBasedChannelFields,
+  type Message,
+  type MessageInteraction,
+  type PartialTextBasedChannelFields,
 } from "discord.js";
-import { DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
+import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { logger } from "../../logging.js";
 import { config } from "../../Config.js";
 import { Bump } from "../../store/models/Bump.js";

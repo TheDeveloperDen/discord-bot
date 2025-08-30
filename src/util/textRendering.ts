@@ -1,6 +1,6 @@
 // adjusted from https://github.com/kaivi/node-canvas-text
-import { Font } from "opentype.js";
-import { CanvasRenderingContext2D } from "canvas";
+import type { Font } from "opentype.js";
+import type { CanvasRenderingContext2D } from "canvas";
 
 const measureText = (
   text: string,

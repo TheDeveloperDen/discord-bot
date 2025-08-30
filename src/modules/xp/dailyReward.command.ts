@@ -1,8 +1,12 @@
-import { GuildMember, Snowflake, ApplicationCommandType } from "discord.js";
-import { Command } from "djs-slash-helper";
+import {
+  type GuildMember,
+  type Snowflake,
+  ApplicationCommandType,
+} from "discord.js";
+import type { Command } from "djs-slash-helper";
 
 import { logger } from "../../logging.js";
-import { DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
+import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { giveXp } from "./xpForMessage.util.js";
 import { wrapInTransaction } from "../../sentry.js";

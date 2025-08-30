@@ -1,7 +1,10 @@
-import { APIApplicationCommandOptionChoice, GuildMember } from "discord.js";
+import type {
+  APIApplicationCommandOptionChoice,
+  GuildMember,
+} from "discord.js";
 
 import { DDUser } from "../../store/models/DDUser.js";
-import { Command } from "djs-slash-helper";
+import type { Command } from "djs-slash-helper";
 import {
   ApplicationCommandOptionType,
   ApplicationCommandType,

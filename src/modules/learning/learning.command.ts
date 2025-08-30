@@ -1,11 +1,11 @@
-import { Command, ExecutableSubcommand } from "djs-slash-helper";
+import type { Command, ExecutableSubcommand } from "djs-slash-helper";
 import {
   ApplicationCommandOptionType,
   ApplicationCommandType,
-  Client,
-  GuildMember,
+  type Client,
+  type GuildMember,
   PermissionFlagsBits,
-  User,
+  type User,
 } from "discord.js";
 import {
   getAllCachedResources,
@@ -17,7 +17,7 @@ import { fakeMention } from "../../util/users.js";
 import { moduleManager } from "../../index.js";
 import { getEmoji, stringifyEmoji } from "../../util/emojis.js";
 import { logger } from "../../logging.js";
-import { LearningResource } from "./learningResource.model.js";
+import type { LearningResource } from "./learningResource.model.js";
 
 const resources: Array<{ name: string; value: string }> = [];
 

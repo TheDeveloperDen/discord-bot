@@ -1,7 +1,7 @@
 import {
   DataTypes,
-  InferAttributes,
-  InferCreationAttributes,
+  type InferAttributes,
+  type InferCreationAttributes,
   Model,
 } from "@sequelize/core";
 import {

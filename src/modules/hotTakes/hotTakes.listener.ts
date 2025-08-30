@@ -1,6 +1,6 @@
-import { Client, TextChannel } from "discord.js";
+import type { Client, TextChannel } from "discord.js";
 import { config } from "../../Config.js";
-import { EventListener } from "../module.js";
+import type { EventListener } from "../module.js";
 import generateHotTake from "./hotTakes.util.js";
 import { awaitTimeout } from "../../util/timeouts.js";
 import { logger } from "../../logging.js";

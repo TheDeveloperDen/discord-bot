@@ -1,6 +1,6 @@
 import { test, expect, mock, jest, afterAll } from "bun:test";
-import { Client, Guild, GuildMember, TextChannel } from "discord.js";
-import { DDUser } from "../../store/models/DDUser.js";
+import type { Client, Guild, GuildMember, TextChannel } from "discord.js";
+import type { DDUser } from "../../store/models/DDUser.js";
 import {
   scheduleAllReminders,
   scheduledReminders,

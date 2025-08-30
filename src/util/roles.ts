@@ -1,4 +1,4 @@
-import { Client, Collection, GuildMember, Role } from "discord.js";
+import type { Client, Collection, GuildMember, Role } from "discord.js";
 import { config } from "../Config.js";
 
 export interface RoleChanges {

@@ -5,11 +5,11 @@ import {
   ButtonBuilder,
   ButtonStyle,
   Colors,
-  ComponentType,
+  type ComponentType,
   GuildMember,
 } from "discord.js";
-import { Command } from "djs-slash-helper";
-import { DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
+import type { Command } from "djs-slash-helper";
+import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { mentionIfPingable } from "../../util/users.js";
 import { levelForXp } from "../xp/xpRoles.util.js";

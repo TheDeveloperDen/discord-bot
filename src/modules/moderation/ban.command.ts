@@ -1,8 +1,8 @@
-import { Command } from "djs-slash-helper";
 import {
   ApplicationCommandOptionType,
   ApplicationCommandType,
 } from "discord.js";
+import type { Command } from "djs-slash-helper";
 import { config } from "../../Config.js";
 import { actualMention, fakeMention } from "../../util/users.js";
 

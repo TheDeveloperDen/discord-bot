@@ -1,5 +1,5 @@
 import { FAQ } from "../../store/models/FAQ.js";
-import { EventListener } from "../module.js";
+import type { EventListener } from "../module.js";
 import { createFaqEmbed } from "./faq.util.js";
 import { awaitTimeout } from "../../util/timeouts.js";
 

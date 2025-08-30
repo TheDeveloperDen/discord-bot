@@ -1,5 +1,5 @@
-import { Command, ExecutableSubcommand } from "djs-slash-helper";
-import { ColorResolvable, GuildMember } from "discord.js";
+import type { Command, ExecutableSubcommand } from "djs-slash-helper";
+import type { ColorResolvable, GuildMember } from "discord.js";
 import { ColourRoles } from "../../store/models/ColourRoles.js";
 import { config } from "../../Config.js";
 import {

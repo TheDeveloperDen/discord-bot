@@ -1,4 +1,4 @@
-import Module from "../module.js";
+import type Module from "../module.js";
 import { XpCommand } from "./xp.command.js";
 import { DailyRewardCommand } from "./dailyReward.command.js";
 import { XpListener } from "./xp.listener.js";

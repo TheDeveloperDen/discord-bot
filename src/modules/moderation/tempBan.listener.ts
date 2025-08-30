@@ -1,4 +1,4 @@
-import { EventListener } from "../module.js";
+import type { EventListener } from "../module.js";
 import * as schedule from "node-schedule";
 import {
   ModeratorAction,
@@ -15,7 +15,7 @@ export const TempBanListener: EventListener = {
         minute: 0,
         second: 0,
       },
-      async function () {
+      async () => {
         logger.info("Starting Temp Ban Checks...");
         const tempBans = await ModeratorActions.findAll({
           where: {

@@ -1,5 +1,5 @@
-import { CommandInteraction } from "discord.js";
-import { Command } from "djs-slash-helper";
+import type { CommandInteraction } from "discord.js";
+import type { Command } from "djs-slash-helper";
 import { ApplicationCommandType } from "discord.js";
 import generateHotTake from "./hotTakes.util.js";
 

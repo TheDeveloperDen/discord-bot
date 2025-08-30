@@ -1,4 +1,4 @@
-import Module from "../module.js";
+import type Module from "../module.js";
 import HotTakeCommand from "./hotTake.command.js";
 import HotTakeListener from "./hotTakes.listener.js";
 import ManyHotTakesCommand from "./manyHotTakes.command.js";

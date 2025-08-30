@@ -1,4 +1,4 @@
-import Module from "./module.js";
+import type Module from "./module.js";
 import { getOrCreateUserById } from "../store/models/DDUser.js";
 import stringSimilarity from "string-similarity";
 import { logger } from "../logging.js";

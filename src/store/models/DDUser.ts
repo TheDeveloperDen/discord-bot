@@ -1,10 +1,10 @@
 import { logger } from "../../logging.js";
 import {
   DataTypes,
-  InferAttributes,
-  InferCreationAttributes,
+  type InferAttributes,
+  type InferCreationAttributes,
   Model,
-  SaveOptions,
+  type SaveOptions,
 } from "@sequelize/core";
 import {
   AllowNull,

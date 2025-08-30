@@ -2,10 +2,14 @@ import { logger } from "../logging.js";
 import { DDUser } from "./models/DDUser.js";
 import { ColourRoles } from "./models/ColourRoles.js";
 import { FAQ } from "./models/FAQ.js";
-import { AbstractDialect, DialectName, Sequelize } from "@sequelize/core";
+import {
+  type AbstractDialect,
+  type DialectName,
+  Sequelize,
+} from "@sequelize/core";
 
 import { SqliteDialect } from "@sequelize/sqlite3";
-import { ConnectionConfig } from "pg";
+import type { ConnectionConfig } from "pg";
 import { Bump } from "./models/Bump.js";
 import { ModeratorActions } from "./models/ModeratorActions.js";
 

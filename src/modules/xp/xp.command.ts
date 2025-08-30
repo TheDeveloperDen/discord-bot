@@ -1,4 +1,4 @@
-import { GuildMember } from "discord.js";
+import type { GuildMember } from "discord.js";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { getTierByLevel, xpForLevel } from "./xpForMessage.util.js";
@@ -13,7 +13,7 @@ import { formatDayCount, getActualDailyStreak } from "./dailyReward.command.js";
 import { wrapInTransaction } from "../../sentry.js";
 import { format } from "../core/info.command.js";
 import { fakeMention } from "../../util/users.js";
-import { Command } from "djs-slash-helper";
+import type { Command } from "djs-slash-helper";
 import { getResolvedMember } from "../../util/interactions.js";
 import { logger } from "../../logging.js";
 

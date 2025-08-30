@@ -1,4 +1,4 @@
-import { EventListener } from "../module.js";
+import type { EventListener } from "../module.js";
 import { ColourRoles } from "../../store/models/ColourRoles.js";
 
 export const RoleColourListener: EventListener = {

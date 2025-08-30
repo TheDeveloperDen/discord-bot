@@ -1,4 +1,4 @@
-import Module from "../module.js";
+import type Module from "../module.js";
 import { NoPingCommand } from "./role.command.js";
 import { RoleColourCommand } from "./roleColour.command.js";
 import { RoleColourListener } from "./roleColour.listener.js";

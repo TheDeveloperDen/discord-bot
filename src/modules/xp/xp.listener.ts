@@ -1,5 +1,5 @@
-import { EventListener } from "../module.js";
-import { Channel } from "discord.js";
+import type { EventListener } from "../module.js";
+import type { Channel } from "discord.js";
 import { config } from "../../Config.js";
 import {
   giveXp,

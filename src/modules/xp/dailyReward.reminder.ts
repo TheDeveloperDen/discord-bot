@@ -1,9 +1,9 @@
-import { Client, GuildMember } from "discord.js";
+import type { Client, GuildMember } from "discord.js";
 import { logger } from "../../logging.js";
 import { DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { config } from "../../Config.js";
 import { actualMention, isSpecialUser } from "../../util/users.js";
-import { Job, scheduleJob } from "node-schedule";
+import { type Job, scheduleJob } from "node-schedule";
 import {
   getActualDailyStreak,
   getNextDailyTime,

@@ -1,4 +1,4 @@
-import { Command } from "djs-slash-helper";
+import type { Command } from "djs-slash-helper";
 import {
   ApplicationCommandOptionType,
   ApplicationCommandType,

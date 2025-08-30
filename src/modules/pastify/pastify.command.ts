@@ -1,7 +1,7 @@
-import { Command } from "djs-slash-helper";
+import type { Command } from "djs-slash-helper";
 import { ApplicationCommandType } from "discord.js";
 import { pastify } from "./pastify.js";
-import { Message } from "discord.js";
+import type { Message } from "discord.js";
 
 export const PastifyCommand: Command<ApplicationCommandType.Message> = {
   name: "Pastify",

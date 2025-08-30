@@ -1,8 +1,8 @@
-import { EventListener } from "../module.js";
+import type { EventListener } from "../module.js";
 import { actualMention, isSpecialUser } from "../../util/users.js";
 import { config } from "../../Config.js";
 import { getMember } from "../../util/member.js";
-import { GuildMember, Message } from "discord.js";
+import type { GuildMember, Message } from "discord.js";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import { getTierByLevel } from "../xp/xpForMessage.util.js";
 import { logger } from "../../logging.js";

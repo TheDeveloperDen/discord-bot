@@ -1,5 +1,5 @@
 import { actualMention } from "./util/users.js";
-import { Config } from "./config.type.js";
+import type { Config } from "./config.type.js";
 import { ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
 
 // Config file for the Developer Den server (.gg/devden)

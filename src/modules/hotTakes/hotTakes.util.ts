@@ -1,5 +1,5 @@
 import { randomInt } from "crypto";
-import { Guild } from "discord.js";
+import type { Guild } from "discord.js";
 import { actualMention, isSpecialUser } from "../../util/users.js";
 import { readFileSync } from "fs";
 import ExpiryMap from "expiry-map";

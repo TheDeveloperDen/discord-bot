@@ -1,8 +1,8 @@
 import * as Sentry from "@sentry/node";
 import { compose } from "../../util/functions.js";
 import { compareTwoStrings as distance } from "string-similarity";
-import { Channel, GuildMember, Message, User } from "discord.js";
-import { Config } from "../../config.type.js";
+import { type Channel, type GuildMember, Message, type User } from "discord.js";
+import type { Config } from "../../config.type.js";
 import { logger } from "../../logging.js";
 import { config } from "../../Config.js";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
@@ -50,8 +50,7 @@ function compressibility(input: string): number {
 export function xpForMessage(message: string) {
   const length = strip(message).length;
   return Math.round(
-    (1 - compressibility(message)) * Math.tanh(length / 3) +
-      Math.pow(length, 0.75),
+    (1 - compressibility(message)) * Math.tanh(length / 3) + length ** 0.75,
   );
 }
 

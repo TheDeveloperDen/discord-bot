@@ -3,7 +3,7 @@ import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { mentionIfPingable } from "../../util/users.js";
-import { InteractionReplyOptions, Message } from "discord.js";
+import type { InteractionReplyOptions, Message } from "discord.js";
 
 const codeBlockPattern =
   /```(?:(?<lang>[a-zA-Z]+)?\n)?(?<content>(?:.|\n)*?)```|(?:(?:.|\n)(?!```))+/g;

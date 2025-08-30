@@ -1,6 +1,6 @@
-import { EventListener } from "../module.js";
+import type { EventListener } from "../module.js";
 import { config } from "../../Config.js";
-import { Message, PartialUser, User } from "discord.js";
+import { Message, type PartialUser, type User } from "discord.js";
 import { isSpecialUser } from "../../util/users.js";
 
 export const PollListener: EventListener = {

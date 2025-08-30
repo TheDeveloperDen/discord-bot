@@ -1,12 +1,12 @@
-import { EventListener } from "../module.js";
+import type { EventListener } from "../module.js";
 import { FAQ } from "../../store/models/FAQ.js";
 import { createFaqEmbed } from "../faq/faq.util.js";
 import {
   ActionRowBuilder,
-  ButtonInteraction,
-  GuildMember,
-  Interaction,
-  SelectMenuBuilder,
+  type ButtonInteraction,
+  type GuildMember,
+  type Interaction,
+  type SelectMenuBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
 } from "discord.js";

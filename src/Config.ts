@@ -1,5 +1,5 @@
 import { actualMention } from "./util/users.js";
-import { Config } from "./config.type.js";
+import type { Config } from "./config.type.js";
 import { config as prodConfig } from "./Config.prod.js";
 
 // Config file for the DevDen Testing server

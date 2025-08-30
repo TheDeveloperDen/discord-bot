@@ -1,5 +1,5 @@
 import { config } from "../../Config.js";
-import { EventListener } from "../module.js";
+import type { EventListener } from "../module.js";
 
 export const IntroListener: EventListener = {
   messageCreate: async (_client, message) => {

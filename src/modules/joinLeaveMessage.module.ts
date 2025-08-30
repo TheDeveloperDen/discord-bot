@@ -1,6 +1,6 @@
-import Module from "./module.js";
+import type Module from "./module.js";
 import { config } from "../Config.js";
-import {
+import type {
   Client,
   GuildMember,
   PartialGuildMember,
@@ -12,8 +12,9 @@ import { branding } from "../util/branding.js";
 import { fakeMention } from "../util/users.js";
 import { awaitTimeout } from "../util/timeouts.js";
 
-const handler = (isAdding: boolean) =>
-  async function (client: Client, member: PartialGuildMember | GuildMember) {
+const handler =
+  (isAdding: boolean) =>
+  async (client: Client, member: PartialGuildMember | GuildMember) => {
     const channel = (await client.channels.fetch(
       config.channels.welcome,
     )) as TextChannel;
