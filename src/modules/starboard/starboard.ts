@@ -40,6 +40,10 @@ export const getStarboardMessageForOriginalMessageId: (
 const getColorForStars: (stars: number) => ColorResolvable = (
   stars: number,
 ) => {
+  if (stars === -1) {
+    return "DarkButNotBlack";
+  }
+
   const overthreshold = stars - config.starboard.threshold;
   switch (overthreshold) {
     case 2:
@@ -53,17 +57,20 @@ const getColorForStars: (stars: number) => ColorResolvable = (
       return "Blue";
   }
 };
-
-export const createStarboardMessageFromMessage: (
+export const extractEmbedAndFilesFromMessage: (
   message: Message,
   member: GuildMember,
   stars: number,
   starboardMessage?: Message,
 ) => Promise<{
-  embeds: EmbedBuilder[];
-  content: string;
+  embed: EmbedBuilder;
   files?: AttachmentBuilder[];
-}> = async (message, member, stars, starboardMessage) => {
+}> = async (
+  message: Message,
+  member: GuildMember,
+  stars: number,
+  starboardMessage?: Message,
+) => {
   const embed = createStandardEmbed(member)
     .setColor(getColorForStars(stars))
     .setAuthor({
@@ -92,8 +99,67 @@ export const createStarboardMessageFromMessage: (
   }
 
   return {
-    embeds: [embed],
-    content: `${config.starboard.emojiId}: ${stars} | ${message.url}`,
+    embed: embed,
+    files: files.length > 0 ? files : undefined,
+  };
+};
+export const createStarboardMessageFromMessage: (
+  message: Message,
+  member: GuildMember,
+  stars: number,
+  starboardMessage?: Message,
+) => Promise<{
+  embeds: EmbedBuilder[];
+  content: string;
+  files?: AttachmentBuilder[];
+}> = async (message, member, stars, starboardMessage) => {
+  const embeds: EmbedBuilder[] = [];
+  const files: AttachmentBuilder[] = [];
+  let content: string = `${config.starboard.emojiId}: ${stars} | ${message.url}`;
+  if (message.reference) {
+    const referencedMessage = await message.fetchReference();
+
+    if (
+      referencedMessage.inGuild() &&
+      referencedMessage.guildId === message.guildId &&
+      referencedMessage.member
+    ) {
+      const { embed: referencedEmbed, files: referencedFiles } =
+        await extractEmbedAndFilesFromMessage(
+          referencedMessage,
+          referencedMessage.member,
+          -1,
+          starboardMessage,
+        );
+
+      referencedEmbed.setAuthor({
+        name: `Reply to: ${referencedEmbed.data.author?.name}`,
+        iconURL: referencedMessage.member.displayAvatarURL(),
+        url: `https://discord.com/channels/${referencedMessage.guildId}/${referencedMessage.channelId}/${referencedMessage.id}`,
+      });
+      embeds.push(referencedEmbed);
+      if (referencedFiles) {
+        files.push(...referencedFiles);
+      }
+
+      content += ` | Replied to ${referencedMessage.url} by ${referencedMessage.member.displayName}`;
+    }
+  }
+  const { embed, files: mainmessageFiles } =
+    await extractEmbedAndFilesFromMessage(
+      message,
+      member,
+      stars,
+      starboardMessage,
+    );
+  embeds.push(embed);
+  if (mainmessageFiles) {
+    files.push(...mainmessageFiles);
+  }
+
+  return {
+    embeds: embeds,
+    content: content,
     files: files.length > 0 ? files : undefined,
   };
 };
@@ -119,7 +185,6 @@ export const getImageOrGifEmbed: (message: Message) => Promise<
   const embeds = message.embeds.filter(
     (emb) => emb.data.type === "image" || emb.data.type === "gifv",
   );
-  console.log(embeds);
   if (embeds.length > 0) {
     const embed = embeds[0]!;
 
