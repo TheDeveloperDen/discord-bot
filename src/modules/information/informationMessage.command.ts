@@ -1,9 +1,9 @@
-import { Command } from "djs-slash-helper";
-import { APIEmbed, ApplicationCommandType } from "discord.js";
+import type { Command } from "djs-slash-helper";
+import { type APIEmbed, ApplicationCommandType } from "discord.js";
 import { config } from "../../Config.js";
 import { ActionRowBuilder, ButtonBuilder } from "discord.js";
 import { createStandardEmbed } from "../../util/embeds.js";
-import { CustomButton } from "./information.js";
+import type { CustomButton } from "./information.js";
 import { logger } from "../../logging.js";
 
 function loadCustomButton(customButton: CustomButton) {

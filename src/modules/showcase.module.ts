@@ -1,6 +1,6 @@
-import Module from "./module.js";
+import type Module from "./module.js";
 import { config } from "../Config.js";
-import { Collection, MessageReaction, Snowflake } from "discord.js";
+import type { Collection, MessageReaction, Snowflake } from "discord.js";
 
 export const ShowcaseModule: Module = {
   name: "showcase",

@@ -1,4 +1,8 @@
-import { Canvas, CanvasRenderingContext2D, createCanvas } from "canvas";
+import {
+  type Canvas,
+  type CanvasRenderingContext2D,
+  createCanvas,
+} from "canvas";
 import { loadSync } from "opentype.js";
 import { branding } from "./branding.js";
 

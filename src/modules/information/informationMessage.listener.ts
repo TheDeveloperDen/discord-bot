@@ -1,31 +1,30 @@
-import { EventListener } from "../module.js";
-import { FAQ } from "../../store/models/FAQ.js";
-import { createFaqEmbed } from "../faq/faq.util.js";
 import {
   ActionRowBuilder,
-  ButtonInteraction,
-  GuildMember,
-  Interaction,
-  SelectMenuBuilder,
+  type ButtonInteraction,
+  type GuildMember,
+  type Interaction,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
 } from "discord.js";
+import { FAQ } from "../../store/models/FAQ.js";
+import { getEmoji, toAPIMessageComponentEmoji } from "../../util/emojis.js";
+import { truncateTo } from "../../util/strings.js";
+import { createFaqEmbed } from "../faq/faq.util.js";
+import { getResourceEmbed } from "../learning/learning.command.js";
 import {
   getAllCachedResources,
   getResource,
 } from "../learning/resourcesCache.util.js";
-import { truncateTo } from "../../util/strings.js";
-import { getEmoji, toAPIMessageComponentEmoji } from "../../util/emojis.js";
-import { getResourceEmbed } from "../learning/learning.command.js";
+import type { EventListener } from "../module.js";
 
 export const InformationButtonListener: EventListener = {
-  async interactionCreate(client, interaction: Interaction) {
+  async interactionCreate(_, interaction: Interaction) {
     if (
       interaction.isStringSelectMenu() &&
       interaction.customId === "learningResourcePicker"
     ) {
-      const resourceName = interaction.values[0]!;
-      await interaction.deferReply({ ephemeral: true });
+      const resourceName = interaction.values[0];
+      await interaction.deferReply({ flags: "Ephemeral" });
       const resource = await getResource(resourceName);
       if (resource == null) {
         return; // shouldn't ever happen
@@ -56,7 +55,7 @@ export const InformationButtonListener: EventListener = {
       return;
     }
     const faqId = id.substring(4);
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: "Ephemeral" });
     const faq = await FAQ.findOne({
       where: {
         name: faqId,
@@ -100,7 +99,7 @@ async function sendLearningResourcesPicker(interaction: ButtonInteraction) {
 
   await interaction.reply({
     components: [
-      new ActionRowBuilder<SelectMenuBuilder>().addComponents(selectMenu),
+      new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu),
     ],
     flags: ["Ephemeral"],
     withResponse: false,

@@ -1,4 +1,4 @@
-import { Guild, GuildMember, PartialGuildMember } from "discord.js";
+import type { Guild, GuildMember, PartialGuildMember } from "discord.js";
 import { config } from "../Config.js";
 import { logger } from "../logging.js";
 

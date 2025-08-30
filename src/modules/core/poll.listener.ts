@@ -1,7 +1,12 @@
-import { EventListener } from "../module.js";
+import {
+  Message,
+  type PartialMessage,
+  type PartialUser,
+  type User,
+} from "discord.js";
 import { config } from "../../Config.js";
-import { Message, PartialUser, User } from "discord.js";
 import { isSpecialUser } from "../../util/users.js";
+import type { EventListener } from "../module.js";
 
 export const PollListener: EventListener = {
   async messageReactionAdd(_, reaction, user: User | PartialUser) {
@@ -26,7 +31,7 @@ export const PollListener: EventListener = {
     ) {
       return;
     }
-    const message = reaction.message;
+    const message: Message | PartialMessage = reaction.message;
     if (message.partial) {
       try {
         await message.fetch();

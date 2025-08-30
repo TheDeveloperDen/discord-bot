@@ -1,5 +1,5 @@
-import { FAQ } from "../../store/models/FAQ.js";
-import { EmbedBuilder, GuildMember, User } from "discord.js";
+import type { FAQ } from "../../store/models/FAQ.js";
+import type { EmbedBuilder, GuildMember, User } from "discord.js";
 import { createStandardEmbed, standardFooter } from "../../util/embeds.js";
 import { fakeMention } from "../../util/users.js";
 

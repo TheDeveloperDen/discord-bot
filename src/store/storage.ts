@@ -1,12 +1,16 @@
-import { logger } from "../logging.js";
-import { DDUser } from "./models/DDUser.js";
-import { ColourRoles } from "./models/ColourRoles.js";
-import { FAQ } from "./models/FAQ.js";
-import { AbstractDialect, DialectName, Sequelize } from "@sequelize/core";
-
+import {
+  type AbstractDialect,
+  type DialectName,
+  Sequelize,
+} from "@sequelize/core";
 import { SqliteDialect } from "@sequelize/sqlite3";
-import { ConnectionConfig } from "pg";
+import type { ConnectionConfig } from "pg";
+import { logger } from "../logging.js";
 import { Bump } from "./models/Bump.js";
+import { ColourRoles } from "./models/ColourRoles.js";
+import { DDUser } from "./models/DDUser.js";
+import { FAQ } from "./models/FAQ.js";
+import { ModeratorActions } from "./models/ModeratorActions.js";
 import { StarboardMessage } from "./models/StarboardMessage.js";
 
 function sequelizeLog(sql: string, timing?: number) {
@@ -36,7 +40,7 @@ export async function initStorage() {
       user: username,
       password,
       host,
-      port: parseInt(port),
+      port: parseInt(port, 10),
       logging: sequelizeLog,
       benchmark: true,
     });
@@ -55,7 +59,14 @@ export async function initStorage() {
   }
   await sequelize.authenticate();
 
-  const models = [DDUser, ColourRoles, FAQ, Bump, StarboardMessage];
+  const models = [
+    DDUser,
+    ColourRoles,
+    FAQ,
+    Bump,
+    StarboardMessage,
+    ModeratorActions,
+  ];
   sequelize.addModels(models);
 
   Bump.belongsTo(DDUser, {

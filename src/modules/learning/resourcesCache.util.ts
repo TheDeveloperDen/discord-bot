@@ -1,6 +1,6 @@
 import { logger } from "../../logging.js";
 import fetch from "node-fetch";
-import { LearningResource } from "./learningResource.model.js";
+import type { LearningResource } from "./learningResource.model.js";
 import { parse } from "yaml";
 
 type FileName = string;
