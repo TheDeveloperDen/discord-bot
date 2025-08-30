@@ -1,8 +1,4 @@
 import { afterEach, beforeAll, expect, mock, test } from "bun:test";
-import {
-  handleBumpStreak,
-  setLastBumpNotificationTime,
-} from "./bump.listener.js";
 import type {
   Client,
   Message,
@@ -10,13 +6,17 @@ import type {
   PartialTextBasedChannelFields,
   User,
 } from "discord.js";
+import { Bump } from "../../store/models/Bump.js";
+import { clearBumpsCache } from "../../store/models/bumps.js";
 import {
   clearUserCache,
   getOrCreateUserById,
 } from "../../store/models/DDUser.js";
 import { getSequelizeInstance, initStorage } from "../../store/storage.js";
-import { Bump } from "../../store/models/Bump.js";
-import { clearBumpsCache } from "../../store/models/bumps.js";
+import {
+  handleBumpStreak,
+  setLastBumpNotificationTime,
+} from "./bump.listener.js";
 
 beforeAll(async () => {
   await initStorage();
@@ -107,9 +107,7 @@ test("simple bump with big streak", async () => {
   for (let i = 0; i < 9; i++) {
     await Bump.create({
       userId: BigInt(fakeUser.id),
-      timestamp: new Date(
-        new Date().getTime() - 1000 * 60 * 60 * 24 * (10 - i),
-      ),
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * (10 - i)),
       messageId: BigInt(10 + i),
     });
   }
@@ -136,7 +134,7 @@ test("simple bump with big streak", async () => {
 
 test("speedy bump ", async () => {
   const { ddUser, fakeUser, mockReact, mockChannel } = await setupMocks();
-  setLastBumpNotificationTime(new Date(new Date().getTime() - 1000));
+  setLastBumpNotificationTime(new Date(Date.now() - 1000));
   await handleBumpStreak(
     ddUser,
     { user: fakeUser } as unknown as MessageInteraction,
@@ -157,9 +155,7 @@ test("End other user's streak", async () => {
   for (let i = 0; i < 5; i++) {
     await Bump.create({
       userId: BigInt(fakeUser.id),
-      timestamp: new Date(
-        new Date().getTime() - 1000 * 60 * 60 * 24 * (10 - i),
-      ),
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * (10 - i)),
       messageId: BigInt(10 + i),
     });
   }

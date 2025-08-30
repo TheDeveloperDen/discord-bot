@@ -1,9 +1,10 @@
-import type { Command } from "djs-slash-helper";
-import { GuildMember } from "discord.js";
 import {
+  type APIInteractionDataResolvedGuildMember,
   ApplicationCommandOptionType,
   ApplicationCommandType,
+  GuildMember,
 } from "discord.js";
+import type { Command } from "djs-slash-helper";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { parseTimespan } from "../../util/timespan.js";
 
@@ -44,7 +45,11 @@ export const TimeoutCommand: Command<ApplicationCommandType.ChatInput> = {
       await interaction.reply("Invalid timespan");
     }
 
-    const user = interaction.options.get("target")?.member;
+    const user:
+      | GuildMember
+      | APIInteractionDataResolvedGuildMember
+      | null
+      | undefined = interaction.options.get("target")?.member;
     if (!(user instanceof GuildMember)) {
       await interaction.reply("Could not find user");
       return;

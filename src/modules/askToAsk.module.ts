@@ -1,11 +1,11 @@
-import type Module from "./module.js";
-import { getOrCreateUserById } from "../store/models/DDUser.js";
 import stringSimilarity from "string-similarity";
 import { logger } from "../logging.js";
+import { getOrCreateUserById } from "../store/models/DDUser.js";
 import { FAQ } from "../store/models/FAQ.js";
-import { createFaqEmbed } from "./faq/faq.util.js";
-import { tierOf } from "./xp/xpRoles.util.js";
 import { isSpecialUser } from "../util/users.js";
+import { createFaqEmbed } from "./faq/faq.util.js";
+import type Module from "./module.js";
+import { tierOf } from "./xp/xpRoles.util.js";
 
 const targets = [
   "i need help",

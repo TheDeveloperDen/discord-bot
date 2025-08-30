@@ -1,4 +1,3 @@
-import type { EventListener } from "../module.js";
 import {
   ChannelType,
   type Client,
@@ -8,9 +7,8 @@ import {
   type MessageInteraction,
   type PartialTextBasedChannelFields,
 } from "discord.js";
-import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
-import { logger } from "../../logging.js";
 import { config } from "../../Config.js";
+import { logger } from "../../logging.js";
 import { Bump } from "../../store/models/Bump.js";
 import {
   clearBumpsCache,
@@ -19,7 +17,9 @@ import {
   getBumpStreak,
   getStreaks,
 } from "../../store/models/bumps.js";
+import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { fakeMention, mentionIfPingable } from "../../util/users.js";
+import type { EventListener } from "../module.js";
 
 /**
  * Stores the time of the most recent bump
@@ -58,20 +58,20 @@ export async function handleBumpStreak(
   // cool reactions
   for (let i = 0; i < streak.current; i++) {
     if (i >= streakReacts.length) return;
-    await message.react(streakReacts[i]!);
+    await message.react(streakReacts[i]);
   }
 
   // check if the user dethroned another user
 
   const allStreaks = getStreaks(extractStreaks(await getAllBumps()));
   if (allStreaks.length > 1) {
-    const mostRecent = allStreaks[allStreaks.length - 2]!;
+    const mostRecent = allStreaks[allStreaks.length - 2];
     logger.debug(`Most recent streak:`, mostRecent);
     logger.debug(
       "Most recent streaks:",
       allStreaks.slice(allStreaks.length - 5),
     );
-    if (mostRecent.userId != bumper.id && mostRecent.current >= 2) {
+    if (mostRecent.userId !== bumper.id && mostRecent.current >= 2) {
       const user = await client.users.fetch(mostRecent.userId.toString());
       message.channel.send(
         `${mentionIfPingable(interactionOld.user)} ended ${fakeMention(user)}'s bump streak of ${mostRecent.current}!`,
@@ -80,9 +80,8 @@ export async function handleBumpStreak(
   }
 
   // time since last bump
-  if (lastBumpNotificationTime.getTime() != 0) {
-    const timeSinceLastBump =
-      new Date().getTime() - lastBumpNotificationTime.getTime();
+  if (lastBumpNotificationTime.getTime() !== 0) {
+    const timeSinceLastBump = Date.now() - lastBumpNotificationTime.getTime();
     if (timeSinceLastBump < 5000) {
       message.channel.send(
         `⚡ ${fakeMention(interactionOld.user)} bumped in just **${timeSinceLastBump / 1000}s**!`,
@@ -98,7 +97,7 @@ export async function handleBumpStreak(
 
   if (streak.current < 3) return;
 
-  if (streak.current == streak.highest) {
+  if (streak.current === streak.highest) {
     // new high score!
     message.channel.send(
       `${mentionIfPingable(interactionOld.user)}, you beat your max bump streak and are now on a streak of ${streak.current}! Keep it up!`,
@@ -110,10 +109,10 @@ export async function handleBumpStreak(
   logger.debug("This streak: %O", streak);
   if (
     highestStreakEver &&
-    highestStreakEver.current == streak.current &&
-    streak.current == streak.highest && // has to be the current streak
-    highestStreakEver.highest == streak.highest && // i think this is maybe error prone tbh
-    highestStreakEver.userId == bumper.id
+    highestStreakEver.current === streak.current &&
+    streak.current === streak.highest && // has to be the current streak
+    highestStreakEver.highest === streak.highest && // i think this is maybe error prone tbh
+    highestStreakEver.userId === bumper.id
   ) {
     // if they currently have the highest streak
     logger.debug("User has the highest streak");
@@ -148,10 +147,10 @@ export const BumpListener: EventListener = {
 
     if (
       !interaction ||
-      !(interaction.type == InteractionType.ApplicationCommand)
+      !(interaction.type === InteractionType.ApplicationCommand)
     )
       return;
-    if (message.author.id != "302050872383242240") return; // /disboard user id
+    if (message.author.id !== "302050872383242240") return; // /disboard user id
     // noinspection JSDeprecatedSymbols don't think there's another way of doing this
     const interactionOld = message.interaction;
     if (interactionOld?.commandName !== "bump") return;
@@ -206,7 +205,7 @@ function scheduleBumpReminder(client: Client) {
 
 export async function sendBumpNotification(client: Client) {
   // if the last bump was less than 2 hours ago, don't send another notification
-  if (new Date().getTime() - lastBumpTime.getTime() < 60 * 60 * 1000 * 2) {
+  if (Date.now() - lastBumpTime.getTime() < 60 * 60 * 1000 * 2) {
     logger.info(
       `Last bump was less than 2 hours ago (${lastBumpTime.toUTCString()}), not sending bump notification`,
     );
@@ -218,7 +217,7 @@ export async function sendBumpNotification(client: Client) {
     logger.error("Bot commands channel not found");
     return;
   }
-  if (botCommands.type != ChannelType.GuildText) {
+  if (botCommands.type !== ChannelType.GuildText) {
     logger.error("Bot commands channel is not a text channel");
     return;
   }

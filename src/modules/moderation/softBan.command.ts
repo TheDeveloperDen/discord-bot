@@ -1,8 +1,8 @@
-import type { Command } from "djs-slash-helper";
 import {
   ApplicationCommandOptionType,
   ApplicationCommandType,
 } from "discord.js";
+import type { Command } from "djs-slash-helper";
 import { config } from "../../Config.js";
 import { actualMention, fakeMention } from "../../util/users.js";
 
@@ -73,11 +73,7 @@ export const SoftBanCommand: Command<ApplicationCommandType.ChatInput> = {
       });
 
       setTimeout(() => softBanMessage.delete().catch(() => null), 5000);
-      setTimeout(
-        () =>
-          interaction.guild && interaction.guild.bans.remove(user, "Softban"),
-        5000,
-      );
+      setTimeout(() => interaction.guild?.bans.remove(user, "Softban"), 5000);
     } catch (e) {
       console.error("Failed to ban user: ", e);
 
