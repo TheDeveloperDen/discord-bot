@@ -35,7 +35,7 @@ export class ModeratorActions extends Model<
 
   @Attribute(RealBigInt)
   @NotNull
-  declare public dduserId: bigint;
+  declare public ddUserId: bigint;
 
   @Attribute(RealBigInt)
   @NotNull
@@ -58,7 +58,7 @@ export class ModeratorActions extends Model<
   @Default(false)
   declare public expired: CreationOptional<boolean>;
 
-  @BelongsTo(() => DDUser, "dduserId")
+  @BelongsTo(() => DDUser, "ddUserId")
   declare public ddUser?: DDUser;
 
   @BelongsTo(() => DDUser, "moderatorId")

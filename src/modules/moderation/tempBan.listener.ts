@@ -1,12 +1,12 @@
 import { EventListener } from "../module.js";
 import * as schedule from "node-schedule";
-import { logger } from "@sentry/bun";
 import {
   ModeratorAction,
   ModeratorActions,
 } from "../../store/models/ModeratorActions.js";
 import { Op } from "@sequelize/core";
 import { config } from "../../Config.js";
+import { logger } from "../../logging.js";
 
 export const TempBanListener: EventListener = {
   clientReady: async (client) => {
@@ -30,12 +30,13 @@ export const TempBanListener: EventListener = {
 
         // Process the expired temp bans
         for (const tempBan of tempBans) {
-          console.log(
-            `Processing expired temp ban for user ${tempBan.dduserId}`,
+          logger.info(
+            `Processing expired temp ban for user %s`,
+            tempBan.ddUserId,
           );
 
           await guild.bans.remove(
-            tempBan.dduserId.toString(),
+            tempBan.ddUserId.toString(),
             "Temp Ban Expired",
           );
           const auditLogChannel = await guild.channels.fetch(
@@ -43,7 +44,7 @@ export const TempBanListener: EventListener = {
           );
 
           if (auditLogChannel?.isSendable()) {
-            await auditLogChannel.send(`Unbanned ${tempBan.dduserId})`);
+            await auditLogChannel.send(`Unbanned ${tempBan.ddUserId})`);
           }
 
           // Mark as expired
@@ -55,7 +56,7 @@ export const TempBanListener: EventListener = {
           // await guild?.bans.remove(tempBan.dduserId);
 
           logger.info(
-            `Processed expired temp ban for user ${tempBan.dduserId}`,
+            `Processed expired temp ban for user ${tempBan.ddUserId}`,
           );
         }
       },

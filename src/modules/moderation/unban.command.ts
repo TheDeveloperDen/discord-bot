@@ -6,6 +6,7 @@ import {
 import { config } from "../../Config.js";
 import { actualMention, fakeMention } from "../../util/users.js";
 import { getActiveTempBanModAction } from "./tempBan.js";
+import { logger } from "../../logging.js";
 
 export const UnbanCommand: Command<ApplicationCommandType.ChatInput> = {
   name: "unban",
@@ -63,7 +64,7 @@ export const UnbanCommand: Command<ApplicationCommandType.ChatInput> = {
 
       setTimeout(() => unbanMessage.delete().catch(() => null), 5000);
     } catch (e) {
-      console.error("Failed to unban user: ", e);
+      logger.error("Failed to unban user: ", e);
 
       if (interaction.replied) {
         await interaction.editReply(

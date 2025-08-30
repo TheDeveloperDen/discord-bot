@@ -6,6 +6,7 @@ import {
 import { config } from "../../Config.js";
 import { actualMention, fakeMention } from "../../util/users.js";
 import { createTempBanModAction } from "./tempBan.js";
+import { logger } from "../../logging.js";
 
 export const TempBanCommand: Command<ApplicationCommandType.ChatInput> = {
   name: "tempban",
@@ -94,7 +95,7 @@ export const TempBanCommand: Command<ApplicationCommandType.ChatInput> = {
 
       setTimeout(() => tempBanMessage.delete().catch(() => null), 5000);
     } catch (e) {
-      console.error("Failed to ban user: ", e);
+      logger.error("Failed to ban user: ", e);
 
       if (interaction.replied) {
         await interaction.editReply("Something went wrong!");

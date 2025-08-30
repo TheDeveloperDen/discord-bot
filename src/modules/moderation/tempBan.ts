@@ -30,17 +30,17 @@ export const createTempBanModAction: (
 
   return await ModeratorActions.create({
     moderatorId: moderatorDDUser.id,
-    dduserId: userDDUser.id,
+    ddUserId: userDDUser.id,
     expires: expires,
     reason: reason,
     action: ModeratorAction.TEMPBAN,
   });
 };
 
-export const getActiveTempBanModAction = async (dduserId: bigint) =>
+export const getActiveTempBanModAction = async (ddUserId: bigint) =>
   await ModeratorActions.findOne({
     where: {
-      dduserId: dduserId,
+      ddUserId: ddUserId,
       action: ModeratorAction.TEMPBAN,
       expired: false,
     },
