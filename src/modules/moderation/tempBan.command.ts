@@ -1,12 +1,13 @@
-import type { Command } from "djs-slash-helper";
 import {
   ApplicationCommandOptionType,
   ApplicationCommandType,
 } from "discord.js";
+import type { Command } from "djs-slash-helper";
 import { config } from "../../Config.js";
+import { logger } from "../../logging.js";
+import { parseTimespan, prettyPrintDuration } from "../../util/timespan.js";
 import { actualMention, fakeMention } from "../../util/users.js";
 import { createTempBanModAction } from "./tempBan.js";
-import { logger } from "../../logging.js";
 
 export const TempBanCommand: Command<ApplicationCommandType.ChatInput> = {
   name: "tempban",
@@ -21,9 +22,9 @@ export const TempBanCommand: Command<ApplicationCommandType.ChatInput> = {
       required: true,
     },
     {
-      type: ApplicationCommandOptionType.Number,
+      type: ApplicationCommandOptionType.String,
       name: "ban_duration_days",
-      description: "The duration of the ban in days",
+      description: "The duration of the ban",
       required: true,
     },
     {
@@ -50,12 +51,14 @@ export const TempBanCommand: Command<ApplicationCommandType.ChatInput> = {
       await interaction.deferReply();
       const user = interaction.options.getUser("user", true);
       const reason = interaction.options.getString("reason", false);
-      const days = interaction.options.getNumber("ban_duration_days", true);
+      const banDurationMillis = parseTimespan(
+        interaction.options.getString("ban_duration_days", true),
+      );
       const deleteMessages =
         interaction.options.getBoolean("delete_messages", false) ?? true;
       try {
         await user.send({
-          content: `You got temp-banned from ${interaction.guild.name} ${reason ? `with the reason: ${reason}` : ""} for ${days} Days`,
+          content: `You got temp-banned from ${interaction.guild.name} ${reason ? `with the reason: ${reason}` : ""} for ${prettyPrintDuration(banDurationMillis)}`,
         });
       } catch {
         /* empty */
@@ -66,7 +69,7 @@ export const TempBanCommand: Command<ApplicationCommandType.ChatInput> = {
         deleteMessageSeconds: deleteMessages ? 604800 : undefined,
       });
       const unbanTimestamp = Math.floor(
-        (Date.now() + days * 24 * 60 * 60 * 1000) / 1000,
+        (Date.now() + banDurationMillis) / 1000,
       );
       await createTempBanModAction(
         interaction.user,
@@ -80,7 +83,7 @@ export const TempBanCommand: Command<ApplicationCommandType.ChatInput> = {
       );
       if (auditLogChannel?.isTextBased()) {
         await auditLogChannel.send({
-          content: `${actualMention(interaction.user)} temp banned ${fakeMention(user)} (${user.id})\nDelete Messages: ${deleteMessages}\nDays: ${days}\nUntil: <t:${
+          content: `${actualMention(interaction.user)} temp banned ${fakeMention(user)} (${user.id})\nDelete Messages: ${deleteMessages}\nDuration ${prettyPrintDuration(banDurationMillis)}\nUntil: <t:${
             unbanTimestamp
           }:R>`,
           allowedMentions: {
