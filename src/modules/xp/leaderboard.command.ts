@@ -1,16 +1,18 @@
-import { APIApplicationCommandOptionChoice, GuildMember } from "discord.js";
-
-import { DDUser } from "../../store/models/DDUser.js";
-import { Command } from "djs-slash-helper";
+import type {
+  APIApplicationCommandOptionChoice,
+  GuildMember,
+} from "discord.js";
 import {
   ApplicationCommandOptionType,
   ApplicationCommandType,
 } from "discord.js";
-import { createStandardEmbed } from "../../util/embeds.js";
+import type { Command } from "djs-slash-helper";
+import { wrapInTransaction } from "../../sentry.js";
+import { DDUser } from "../../store/models/DDUser.js";
 import { branding } from "../../util/branding.js";
+import { createStandardEmbed } from "../../util/embeds.js";
 import { actualMention } from "../../util/users.js";
 import { getActualDailyStreak } from "./dailyReward.command.js";
-import { wrapInTransaction } from "../../sentry.js";
 
 type KeysMatching<T, V> = {
   [K in keyof T]-?: T[K] extends V ? K : never;
@@ -56,7 +58,7 @@ const info: LeaderboardType[] = [
     value: "bumps",
     select: async (user) => user.countBumps(),
     format: (value) =>
-      value == 1 ? "1 Bump" : `${value.toLocaleString()} Bumps`,
+      value.toString() === "1" ? "1 Bump" : `${value.toLocaleString()} Bumps`,
   },
 ];
 
@@ -74,7 +76,7 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
     },
   ],
 
-  handle: wrapInTransaction("leaderboard", async (span, interaction) => {
+  handle: wrapInTransaction("leaderboard", async (_, interaction) => {
     await interaction.deferReply();
     const guild = interaction.guild;
     if (guild == null) {

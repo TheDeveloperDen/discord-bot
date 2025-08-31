@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/node";
-import { Client } from "discord.js";
+import type { Client } from "discord.js";
 import { logger } from "./logging.js";
 
 export function initSentry(client: Client) {

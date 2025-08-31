@@ -1,6 +1,6 @@
 // adjusted from https://github.com/kaivi/node-canvas-text
-import { Font } from "opentype.js";
-import { CanvasRenderingContext2D } from "canvas";
+import type { Font } from "opentype.js";
+import type { CanvasRenderingContext2D } from "canvas";
 
 const measureText = (
   text: string,
@@ -21,10 +21,10 @@ const measureText = (
   let width = 0;
 
   for (let i = 0; i < glyphs.length; i++) {
-    const glyph = glyphs[i]!;
+    const glyph = glyphs[i];
     width += (glyph.advanceWidth ?? 0) * scale;
     if (i < glyphs.length - 1) {
-      const kerningValue = font.getKerningValue(glyph, glyphs[i + 1]!);
+      const kerningValue = font.getKerningValue(glyph, glyphs[i + 1]);
       width += kerningValue * scale;
     }
 
@@ -105,7 +105,7 @@ export function drawText(
     case "left":
       break;
     default:
-      throw new Error("Invalid options.hAlign parameter: " + options.hAlign);
+      throw new Error(`Invalid options.hAlign parameter: ${options.hAlign}`);
   }
 
   switch (options.vAlign) {
@@ -120,7 +120,7 @@ export function drawText(
     case "baseline":
       break;
     default:
-      throw new Error("Invalid options.vAlign parameter: " + options.vAlign);
+      throw new Error(`Invalid options.vAlign parameter: ${options.vAlign}`);
   }
 
   // Draw text

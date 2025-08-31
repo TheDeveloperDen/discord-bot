@@ -1,4 +1,4 @@
-import { FAQ } from "../../store/models/FAQ.js";
+import type { FAQ } from "../../store/models/FAQ.js";
 import {
   ActionRowBuilder,
   ModalBuilder,

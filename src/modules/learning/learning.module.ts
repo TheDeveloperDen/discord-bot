@@ -1,4 +1,4 @@
-import Module from "../module.js";
+import type Module from "../module.js";
 import {
   LearningCommand,
   updateResourcesForCommands,

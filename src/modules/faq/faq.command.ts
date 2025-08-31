@@ -1,8 +1,8 @@
-import { Command, ExecutableSubcommand } from "djs-slash-helper";
+import type { Command, ExecutableSubcommand } from "djs-slash-helper";
 import {
   ApplicationCommandOptionType,
   ApplicationCommandType,
-  GuildMember,
+  type GuildMember,
   PermissionFlagsBits,
 } from "discord.js";
 import { FAQ } from "../../store/models/FAQ.js";

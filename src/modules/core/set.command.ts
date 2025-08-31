@@ -1,15 +1,16 @@
 import {
   ActionRowBuilder,
+  type APIInteractionDataResolvedGuildMember,
   ApplicationCommandOptionType,
   ApplicationCommandType,
   ButtonBuilder,
   ButtonStyle,
   Colors,
-  ComponentType,
+  type ComponentType,
   GuildMember,
 } from "discord.js";
-import { Command } from "djs-slash-helper";
-import { DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
+import type { Command } from "djs-slash-helper";
+import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { mentionIfPingable } from "../../util/users.js";
 import { levelForXp } from "../xp/xpRoles.util.js";
@@ -45,7 +46,11 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
   ],
 
   async handle(interaction) {
-    const target = interaction.options.get("target")?.member;
+    const target:
+      | GuildMember
+      | APIInteractionDataResolvedGuildMember
+      | null
+      | undefined = interaction.options.get("target")?.member;
     if (!(target instanceof GuildMember)) {
       await interaction.reply("Could not find user");
       return;
@@ -124,7 +129,7 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
       });
       setter(user, value);
       await user.save();
-      reply.edit({
+      await reply.edit({
         components: [],
         embeds: [
           createStandardEmbed(target)

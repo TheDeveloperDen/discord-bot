@@ -3,7 +3,7 @@ export default function randomElementFromArray<T>(array: T[]): T | undefined {
     return undefined;
   }
   if (array.length === 1) {
-    return array[0]!;
+    return array[0];
   }
-  return array[Math.floor(Math.random() * array.length)]!;
+  return array[Math.floor(Math.random() * array.length)];
 }

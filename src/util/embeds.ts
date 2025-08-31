@@ -1,9 +1,9 @@
 import {
-  ColorResolvable,
+  type ColorResolvable,
   EmbedBuilder,
-  EmbedFooterOptions,
-  GuildMember,
-  PartialGuildMember,
+  type EmbedFooterOptions,
+  type GuildMember,
+  type PartialGuildMember,
 } from "discord.js";
 import { branding } from "./branding.js";
 

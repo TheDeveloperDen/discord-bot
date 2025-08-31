@@ -1,4 +1,4 @@
-import { APIMessageComponentEmoji, Client, GuildEmoji } from "discord.js";
+import type { APIMessageComponentEmoji, Client, GuildEmoji } from "discord.js";
 
 const isUnicodeEmoji = (char: string): boolean => {
   return /\p{Extended_Pictographic}/u.test(char);

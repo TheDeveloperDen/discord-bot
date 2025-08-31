@@ -1,10 +1,10 @@
-import { logger } from "../../logging.js";
+import * as Sentry from "@sentry/node";
 import {
   DataTypes,
-  InferAttributes,
-  InferCreationAttributes,
+  type InferAttributes,
+  type InferCreationAttributes,
   Model,
-  SaveOptions,
+  type SaveOptions,
 } from "@sequelize/core";
 import {
   AllowNull,
@@ -13,8 +13,8 @@ import {
   PrimaryKey,
   Table,
 } from "@sequelize/core/decorators-legacy";
+import { logger } from "../../logging.js";
 import { RealBigInt } from "../RealBigInt.js";
-import * as Sentry from "@sentry/node";
 import { Bump } from "./Bump.js";
 
 @Table({ tableName: "Users" })
@@ -99,7 +99,7 @@ export const getOrCreateUserById = async (id: bigint) =>
       if (inCache != null) {
         logger.debug(`Found user ${id} in cache`);
         const [lastUpdated, user] = inCache;
-        if (new Date().getTime() - lastUpdated.getTime() < 1000 * 60 * 5) {
+        if (Date.now() - lastUpdated.getTime() < 1000 * 60 * 5) {
           return user;
         }
         logger.debug(

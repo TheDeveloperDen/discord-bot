@@ -1,4 +1,4 @@
-import { GuildMember, PartialGuildMember, User } from "discord.js";
+import { type GuildMember, type PartialGuildMember, User } from "discord.js";
 import { config } from "../Config.js";
 
 export const userShouldBePinged = (

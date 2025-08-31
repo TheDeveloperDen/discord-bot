@@ -1,13 +1,13 @@
-import { EventListener } from "../module.js";
-import { actualMention, isSpecialUser } from "../../util/users.js";
-import { config } from "../../Config.js";
-import { getMember } from "../../util/member.js";
-import { GuildMember, Message } from "discord.js";
-import { getOrCreateUserById } from "../../store/models/DDUser.js";
-import { getTierByLevel } from "../xp/xpForMessage.util.js";
-import { logger } from "../../logging.js";
-
 import * as Sentry from "@sentry/bun";
+import type { GuildMember, Message } from "discord.js";
+import { config } from "../../Config.js";
+import { logger } from "../../logging.js";
+import { getOrCreateUserById } from "../../store/models/DDUser.js";
+import { getMember } from "../../util/member.js";
+import { actualMention, isSpecialUser } from "../../util/users.js";
+import type { EventListener } from "../module.js";
+import { getTierByLevel } from "../xp/xpForMessage.util.js";
+
 const invitePatterns = [
   /discord\.gg\/[a-zA-Z0-9]+/gi,
   /discordapp\.com\/invite\/[a-zA-Z0-9]+/gi,
@@ -27,6 +27,7 @@ function parseInvites(message: Message<true>) {
   const matches = invitePatterns
     .map((pattern) => message.content.match(pattern))
     .filter((match) => match != null && match.length > 0)
+    // biome-ignore lint/style/noNonNullAssertion: null checked
     .map((match) => match![0])
     .filter(
       (match) => !whitelistDomains.some((domain) => match.includes(domain)),

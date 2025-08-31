@@ -1,4 +1,4 @@
-import Module from "./module.js";
+import type Module from "./module.js";
 import { createStandardEmbed } from "../util/embeds.js";
 
 const tokenPattern = /[MN][A-Za-z\d]{23}\.[\w-]{6}\.[\w-]{27}/g;
@@ -18,7 +18,7 @@ export const TokenScannerModule: Module = {
   name: "tokenScanner",
   listeners: [
     {
-      messageCreate: async function (_, message) {
+      messageCreate: async (_, message) => {
         const discordMatches = message.content.match(tokenPattern);
         const githubMatches = message.content.match(githubTokenPattern);
 

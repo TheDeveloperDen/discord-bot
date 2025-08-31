@@ -1,6 +1,6 @@
-import { createLogger, format, transports } from "winston";
-import * as path from "path";
+import * as path from "node:path";
 import { stringify } from "safe-stable-stringify";
+import { createLogger, format, transports } from "winston";
 
 const timestamp = format.timestamp({
   format: "YYYY-MM-DD HH:mm:ss",
@@ -51,7 +51,7 @@ const cliFormat = format.combine(
     const metaString = Object.keys(filteredMeta).length
       ? stringify(filteredMeta, null, 2)
       : "";
-    return `[${timestamp}] ${level}${source ? ` (${source})` : ""}: ${message}${metaString ? " " + metaString : ""}`;
+    return `[${timestamp}] ${level}${source ? ` (${source})` : ""}: ${message}${metaString ? ` ${metaString}` : ""}`;
   }),
 );
 

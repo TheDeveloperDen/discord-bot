@@ -1,4 +1,4 @@
-import Module from "../module.js";
+import type Module from "../module.js";
 import { InformationMessageCommand } from "./informationMessage.command.js";
 import { InformationButtonListener } from "./informationMessage.listener.js";
 

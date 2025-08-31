@@ -1,4 +1,4 @@
-import { ButtonBuilder, EmbedBuilder } from "discord.js";
+import type { ButtonBuilder, EmbedBuilder } from "discord.js";
 
 export interface InformationMessage {
   content?: string;

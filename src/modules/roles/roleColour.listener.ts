@@ -1,8 +1,8 @@
-import { EventListener } from "../module.js";
 import { ColourRoles } from "../../store/models/ColourRoles.js";
+import type { EventListener } from "../module.js";
 
 export const RoleColourListener: EventListener = {
-  async guildMemberUpdate(client, oldMember, newMember) {
+  async guildMemberUpdate(_, oldMember, newMember) {
     if (
       oldMember.premiumSince === newMember.premiumSince ||
       newMember.premiumSinceTimestamp !== 0
