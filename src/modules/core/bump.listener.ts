@@ -78,7 +78,7 @@ export async function handleBumpStreak(
     if (mostRecent.userId !== bumper.id && mostRecent.current > 2) {
       const user = await client.users.fetch(mostRecent.userId.toString());
       message.channel.send(
-        `${mentionIfPingable(interactionOld.user)} ended ${fakeMention(user)}'s bump streak of ${mostRecent.current}!`,
+        `☠️ ${mentionIfPingable(interactionOld.user)} ended ${fakeMention(user)}'s bump streak of ${mostRecent.current}!`,
       );
     }
   }
@@ -86,9 +86,9 @@ export async function handleBumpStreak(
   // time since last bump
   if (lastBumpNotificationTime.getTime() !== 0) {
     const timeSinceLastBump = Date.now() - lastBumpNotificationTime.getTime();
-    if (timeSinceLastBump < 5000) {
+    if (timeSinceLastBump < 8000) {
       message.channel.send(
-        `⚡ ${fakeMention(interactionOld.user)} bumped in just **${timeSinceLastBump / 1000}s**!`,
+        `⚡⚡⚡ ${fakeMention(interactionOld.user)} bumped in just **${timeSinceLastBump / 1000}s**!`,
       );
     } else {
       logger.debug(
