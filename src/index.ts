@@ -24,6 +24,8 @@ import { initSentry } from "./sentry.js";
 import { logger } from "./logging.js";
 import { startHealthCheck } from "./healthcheck.js";
 import { ModerationModule } from "./modules/moderation/moderation.module.js";
+import { StarboardModule } from "./modules/starboard/starboard.module.js";
+import * as schedule from "node-schedule";
 import SuggestModule from "./modules/suggest/suggest.module.js";
 
 const client = new Client({
@@ -59,6 +61,7 @@ export const moduleManager = new ModuleManager(
     XpModule,
     SuggestModule,
     ModerationModule,
+    StarboardModule,
   ],
 );
 
@@ -90,6 +93,13 @@ async function main() {
     });
   }
 }
+
+// Clean up jobs on application shutdown
+process.on("SIGINT", function () {
+  console.log("Gracefully shutting down scheduled jobs");
+  schedule.gracefulShutdown();
+  process.exit(0);
+});
 
 try {
   startHealthCheck();

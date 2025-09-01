@@ -1,34 +1,32 @@
 import {
-  DataTypes,
   type InferAttributes,
   type InferCreationAttributes,
   Model,
 } from "@sequelize/core";
+
 import {
   Attribute,
-  Index,
   NotNull,
   PrimaryKey,
   Table,
 } from "@sequelize/core/decorators-legacy";
 import { RealBigInt } from "../RealBigInt.js";
 
-@Table({ tableName: "Bumps" })
-export class Bump extends Model<
-  InferAttributes<Bump>,
-  InferCreationAttributes<Bump>
+@Table({ tableName: "StarboardMessages" })
+export class StarboardMessage extends Model<
+  InferAttributes<StarboardMessage>,
+  InferCreationAttributes<StarboardMessage>
 > {
   @Attribute(RealBigInt)
   @PrimaryKey
   @NotNull
-  declare public messageId: bigint;
+  public originalMessageId!: bigint;
 
   @Attribute(RealBigInt)
   @NotNull
-  declare public userId: bigint;
+  public originalMessageChannelId!: bigint;
 
-  @Attribute(DataTypes.DATE)
+  @Attribute(RealBigInt)
   @NotNull
-  @Index
-  declare public timestamp: Date;
+  public starboardMessageId!: bigint;
 }

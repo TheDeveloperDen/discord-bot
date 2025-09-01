@@ -14,6 +14,7 @@ import { Bump } from "./models/Bump.js";
 import { Suggestion } from "./models/Suggestion.js";
 import { SuggestionVote } from "./models/SuggestionVote.js";
 import { ModeratorActions } from "./models/ModeratorActions.js";
+import { StarboardMessage } from "./models/StarboardMessage.js";
 
 function sequelizeLog(sql: string, timing?: number) {
   if (timing) {
@@ -66,6 +67,7 @@ export async function initStorage() {
     ColourRoles,
     FAQ,
     Bump,
+    StarboardMessage,
     ModeratorActions,
     Suggestion,
     SuggestionVote,
