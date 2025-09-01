@@ -1,7 +1,7 @@
 import type { EventListener } from "../module.js";
 
 export const ThreadListener: EventListener = {
-  async threadCreate(_, thread) {
-    await thread.join();
-  },
+	async threadCreate(_, thread) {
+		await thread.join();
+	},
 };

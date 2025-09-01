@@ -8,7 +8,7 @@
   },
   "scripts": {
     "version": "echo $npm_package_version",
-    "lint": "bunx eslint 'src/**/*.ts' --fix",
+    "lint": "bunx biome --fix",
     "build": "bunx tsc --build tsconfig.json",
     "build-prod": "bunx tsc -p tsconfig.production.json && ([ -f bin/Config.prod.js ] && mv -f bin/Config.prod.js bin/Config.js) || true",
     "watch-dev": "bun --watch src/index.ts",
@@ -21,9 +21,9 @@
     "test:retry": "scripts/bun-test-retry.sh"
   },
   "lint-staged": {
-    "**/*": [
-      "eslint --fix",
-      "prettier --write --ignore-unknown"
+    "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}": [
+      "biome check --write --no-errors-on-unmatched"
+
     ]
   },
   "keywords": [],
