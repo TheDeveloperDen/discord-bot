@@ -32,7 +32,7 @@
             projectRootFile = "./flake.nix";
             package = pkgs.treefmt;
             programs.nixpkgs-fmt.enable = true;
-            programs.prettier.enable = true;
+            programs.biome.enable = true;
           };
           devShells.default = pkgs.mkShell {
 

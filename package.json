@@ -23,7 +23,6 @@
   "lint-staged": {
     "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}": [
       "biome check --write --no-errors-on-unmatched"
-
     ]
   },
   "keywords": [],
@@ -67,9 +66,6 @@
   "repository": "https://github.com/TheDeveloperDen/DevDenBot.git",
   "devDependencies": {
     "@biomejs/biome": "^2.2.2",
-    "@eslint/eslintrc": "^3.3.1",
-    "@eslint/js": "^9.32.0",
-    "@microsoft/eslint-formatter-sarif": "3.1.0",
     "@sentry/types": "^10.5.0",
     "@sinonjs/fake-timers": "^14.0.0",
     "@types/bun": "^1.2.19",
@@ -82,17 +78,13 @@
     "@types/sqlite3": "^5.1.0",
     "@types/string-similarity": "^4.0.2",
     "@types/validator": "^13.15.2",
-    "eslint": "^9.32.0",
-    "eslint-config-prettier": "^10.1.8",
     "globals": "^16.3.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.4",
     "nodemon": "^3.1.10",
-    "prettier": "3.6.2",
     "ts-node": "^10.9.2",
     "ts-prune": "^0.10.3",
     "ts-standard": "^12.0.2",
-    "typescript": ">=4.8.4 <6.0.0",
-    "typescript-eslint": "^8.38.0"
+    "typescript": ">=4.8.4 <6.0.0"
   }
 }
