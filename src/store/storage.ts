@@ -3,14 +3,10 @@ import {
   type DialectName,
   Sequelize,
 } from "@sequelize/core";
-import { SqliteDialect } from "@sequelize/sqlite3";
-import type { ConnectionConfig } from "pg";
 import { logger } from "../logging.js";
-import { Bump } from "./models/Bump.js";
 import { ColourRoles } from "./models/ColourRoles.js";
 import { DDUser } from "./models/DDUser.js";
 import { FAQ } from "./models/FAQ.js";
-import { AbstractDialect, DialectName, Sequelize } from "@sequelize/core";
 
 import { SqliteDialect } from "@sequelize/sqlite3";
 import { ConnectionConfig } from "pg";
@@ -65,7 +61,15 @@ export async function initStorage() {
   }
   await sequelize.authenticate();
 
-  const models = [DDUser, ColourRoles, FAQ, Bump, ModeratorActions, Suggestion, SuggestionVote];
+  const models = [
+    DDUser,
+    ColourRoles,
+    FAQ,
+    Bump,
+    ModeratorActions,
+    Suggestion,
+    SuggestionVote,
+  ];
   sequelize.addModels(models);
 
   Bump.belongsTo(DDUser, {
