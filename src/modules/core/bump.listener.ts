@@ -71,7 +71,7 @@ export async function handleBumpStreak(
       "Most recent streaks:",
       allStreaks.slice(allStreaks.length - 5),
     );
-    if (mostRecent.userId !== bumper.id && mostRecent.current >= 2) {
+    if (mostRecent.userId !== bumper.id && mostRecent.current > 2) {
       const user = await client.users.fetch(mostRecent.userId.toString());
       message.channel.send(
         `${mentionIfPingable(interactionOld.user)} ended ${fakeMention(user)}'s bump streak of ${mostRecent.current}!`,
