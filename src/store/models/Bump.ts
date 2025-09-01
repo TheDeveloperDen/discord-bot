@@ -13,7 +13,7 @@ import {
 } from "@sequelize/core/decorators-legacy";
 import { RealBigInt } from "../RealBigInt.js";
 
-@Table
+@Table({ tableName: "Bumps" })
 export class Bump extends Model<
   InferAttributes<Bump>,
   InferCreationAttributes<Bump>
