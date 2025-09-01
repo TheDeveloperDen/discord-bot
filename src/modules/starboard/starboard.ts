@@ -186,7 +186,7 @@ export const getImageOrGifEmbed: (message: Message) => Promise<
 		(emb) => emb.data.type === "image" || emb.data.type === "gifv",
 	);
 	if (embeds.length > 0) {
-		const embed = embeds[0]!;
+		const embed = embeds[0];
 
 		if (embed.video) {
 			const gifBuffer = await convertVideoToGif(
@@ -207,16 +207,16 @@ export const getImageOrGifEmbed: (message: Message) => Promise<
 		(x) => x.contentType && isEmbedableContentType(x.contentType),
 	);
 
-	if (attachments.size > 0) {
-		const attachment = attachments.first()!;
+	const attachment = attachments.first();
+	if (attachment) {
 		return {
 			url: attachment.proxyURL ?? attachment.url,
 		};
 	}
 
 	const stickers = message.stickers;
-	if (stickers.size > 0) {
-		const sticker = stickers.first()!;
+	const sticker = stickers.first();
+	if (sticker) {
 		return {
 			url: sticker.url,
 		};

@@ -3,9 +3,8 @@ import {
 	ApplicationCommandType,
 } from "discord.js";
 import type { Command } from "djs-slash-helper";
-import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
-import { actualMention, fakeMention } from "../../util/users.js";
+import { fakeMention } from "../../util/users.js";
 import { logModerationAction } from "./logs.js";
 
 export const KickCommand: Command<ApplicationCommandType.ChatInput> = {

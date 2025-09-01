@@ -32,8 +32,7 @@ export const StarboardListener: EventListener = {
 				const channels = await guild.channels.fetch();
 				for (const channel of channels.values()) {
 					if (
-						channel &&
-						channel.isTextBased() &&
+						channel?.isTextBased() &&
 						channel.id !== config.starboard.channel
 					) {
 						// Add to rate-limited queue
@@ -121,7 +120,7 @@ export const StarboardListener: EventListener = {
 						const messageStarCount =
 							message.reactions.cache.get(config.starboard.emojiId)?.count || 0;
 						const starboardStarCount = getStarsFromEmbed(
-							starboardMessage.embeds[0]!,
+							starboardMessage.embeds[0],
 						);
 						if (messageStarCount !== starboardStarCount) {
 							const starboardMessageContent =

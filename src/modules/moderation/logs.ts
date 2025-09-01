@@ -8,12 +8,8 @@ import {
 } from "discord.js";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
-import { parseTimespan, prettyPrintDuration } from "../../util/timespan.js";
-import {
-	actualMention,
-	actualMentionById,
-	fakeMention,
-} from "../../util/users.js";
+import { prettyPrintDuration } from "../../util/timespan.js";
+import { actualMention, fakeMention } from "../../util/users.js";
 
 export type ModerationLog =
 	| BanLog
