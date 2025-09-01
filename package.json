@@ -8,7 +8,7 @@
 	},
 	"scripts": {
 		"version": "echo $npm_package_version",
-		"lint": "bunx biome --fix",
+		"lint": "bunx biome check --fix",
 		"build": "bunx tsc --build tsconfig.json",
 		"build-prod": "bunx tsc -p tsconfig.production.json && ([ -f bin/Config.prod.js ] && mv -f bin/Config.prod.js bin/Config.js) || true",
 		"watch-dev": "bun --watch src/index.ts",
