@@ -1,12 +1,19 @@
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
+	type ButtonInteraction,
 	ButtonStyle,
 	type GuildMember,
 	type Interaction,
+	type Message,
+	type OmitPartialGroupDMChannel,
+	type SendableChannels,
 } from "discord.js";
 import { config } from "../../Config.js";
-import { SuggestionStatus } from "../../store/models/Suggestion.js";
+import {
+	type Suggestion,
+	SuggestionStatus,
+} from "../../store/models/Suggestion.js";
 import type { EventListener } from "../module.js";
 import {
 	createSuggestionEmbedFromEntity,
@@ -29,6 +36,42 @@ const SUGGESTION_BUTTON_MAP: {
 	"suggestion-no": -1,
 	"suggestion-yes": 1,
 };
+
+async function respondToSuggestionInteraction(
+	interaction: ButtonInteraction,
+	suggestion: Suggestion,
+	suggestionArchive: SendableChannels,
+	initialMessage: OmitPartialGroupDMChannel<Message>,
+) {
+	if (!interaction.guild) {
+		await interaction.followUp({
+			content: "This can only be done in a guild!",
+			flags: "Ephemeral",
+		});
+		return;
+	}
+	const member = await interaction.guild.members.fetch(
+		suggestion.memberId.toString(),
+	);
+
+	const embed = await createSuggestionEmbedFromEntity(suggestion, member);
+
+	const newMessage = await suggestionArchive.send({
+		embeds: [embed],
+		components: [
+			new ActionRowBuilder<ButtonBuilder>().addComponents(
+				new ButtonBuilder()
+					.setCustomId(SUGGESTION_VIEW_VOTES_ID)
+					.setStyle(ButtonStyle.Secondary)
+					.setEmoji("👁")
+					.setLabel("View Votes"),
+			),
+		],
+	});
+	if (initialMessage.deletable) await initialMessage.delete();
+	suggestion.messageId = BigInt(newMessage.id);
+	await suggestion.save();
+}
 
 export const SuggestionButtonListener: EventListener = {
 	async interactionCreate(client, interaction: Interaction) {
@@ -159,30 +202,12 @@ export const SuggestionButtonListener: EventListener = {
 				}
 
 				try {
-					const member = await interaction.guild!.members.fetch(
-						suggestion.memberId.toString(),
-					);
-
-					const embed = await createSuggestionEmbedFromEntity(
+					await respondToSuggestionInteraction(
+						interaction,
 						suggestion,
-						member,
+						suggestionArchive,
+						initialMessage,
 					);
-
-					const newMessage = await suggestionArchive.send({
-						embeds: [embed],
-						components: [
-							new ActionRowBuilder<ButtonBuilder>().addComponents(
-								new ButtonBuilder()
-									.setCustomId(SUGGESTION_VIEW_VOTES_ID)
-									.setStyle(ButtonStyle.Secondary)
-									.setEmoji("👁")
-									.setLabel("View Votes"),
-							),
-						],
-					});
-					if (initialMessage.deletable) await initialMessage.delete();
-					suggestion.messageId = BigInt(newMessage.id);
-					await suggestion.save();
 					await interaction.followUp({
 						content: "Suggestion approved!",
 						flags: ["Ephemeral"],
@@ -231,30 +256,12 @@ export const SuggestionButtonListener: EventListener = {
 				}
 
 				try {
-					const member = await interaction.guild!.members.fetch(
-						suggestion.memberId.toString(),
-					);
-
-					const embed = await createSuggestionEmbedFromEntity(
+					await respondToSuggestionInteraction(
+						interaction,
 						suggestion,
-						member,
+						suggestionArchive,
+						initialMessage,
 					);
-
-					const newMessage = await suggestionArchive.send({
-						embeds: [embed],
-						components: [
-							new ActionRowBuilder<ButtonBuilder>().addComponents(
-								new ButtonBuilder()
-									.setCustomId(SUGGESTION_VIEW_VOTES_ID)
-									.setStyle(ButtonStyle.Secondary)
-									.setEmoji("👁")
-									.setLabel("View Votes"),
-							),
-						],
-					});
-					if (initialMessage.deletable) await initialMessage.delete();
-					suggestion.messageId = BigInt(newMessage.id);
-					await suggestion.save();
 					await interaction.followUp({
 						content: "Suggestion rejected!",
 						flags: ["Ephemeral"],
