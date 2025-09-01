@@ -25,6 +25,12 @@ export interface Config {
     channel: string;
     threshold: number;
   };
+  suggest: {
+    suggestionsChannel: string;
+    archiveChannel: string;
+    yesEmojiId: string;
+    noEmojiId: string;
+  };
   commands: {
     daily: Snowflake;
   };

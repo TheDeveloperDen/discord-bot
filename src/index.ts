@@ -26,6 +26,7 @@ import { startHealthCheck } from "./healthcheck.js";
 import { ModerationModule } from "./modules/moderation/moderation.module.js";
 import { StarboardModule } from "./modules/starboard/starboard.module.js";
 import * as schedule from "node-schedule";
+import SuggestModule from "./modules/suggest/suggest.module.js";
 
 const client = new Client({
   intents: [
@@ -58,6 +59,7 @@ export const moduleManager = new ModuleManager(
     ShowcaseModule,
     TokenScannerModule,
     XpModule,
+    SuggestModule,
     ModerationModule,
     StarboardModule,
   ],

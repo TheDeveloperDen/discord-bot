@@ -3,13 +3,16 @@ import {
   type DialectName,
   Sequelize,
 } from "@sequelize/core";
-import { SqliteDialect } from "@sequelize/sqlite3";
-import type { ConnectionConfig } from "pg";
 import { logger } from "../logging.js";
-import { Bump } from "./models/Bump.js";
 import { ColourRoles } from "./models/ColourRoles.js";
 import { DDUser } from "./models/DDUser.js";
 import { FAQ } from "./models/FAQ.js";
+
+import { SqliteDialect } from "@sequelize/sqlite3";
+import { ConnectionConfig } from "pg";
+import { Bump } from "./models/Bump.js";
+import { Suggestion } from "./models/Suggestion.js";
+import { SuggestionVote } from "./models/SuggestionVote.js";
 import { ModeratorActions } from "./models/ModeratorActions.js";
 import { StarboardMessage } from "./models/StarboardMessage.js";
 
@@ -66,6 +69,8 @@ export async function initStorage() {
     Bump,
     StarboardMessage,
     ModeratorActions,
+    Suggestion,
+    SuggestionVote,
   ];
   sequelize.addModels(models);
 

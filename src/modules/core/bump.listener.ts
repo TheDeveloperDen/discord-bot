@@ -64,14 +64,18 @@ export async function handleBumpStreak(
   // check if the user dethroned another user
 
   const allStreaks = getStreaks(extractStreaks(await getAllBumps()));
-  if (allStreaks.length > 1) {
-    const mostRecent = allStreaks[allStreaks.length - 2];
+  if (
+    allStreaks.length > 1 &&
+    streak.current === 1 // just started a new streak
+  ) {
+    // allStreaks[-1] will be the current streak
+    const mostRecent = allStreaks[allStreaks.length - 2]; // so check the one before that
     logger.debug(`Most recent streak:`, mostRecent);
     logger.debug(
       "Most recent streaks:",
       allStreaks.slice(allStreaks.length - 5),
     );
-    if (mostRecent.userId !== bumper.id && mostRecent.current >= 2) {
+    if (mostRecent.userId !== bumper.id && mostRecent.current > 2) {
       const user = await client.users.fetch(mostRecent.userId.toString());
       message.channel.send(
         `${mentionIfPingable(interactionOld.user)} ended ${fakeMention(user)}'s bump streak of ${mostRecent.current}!`,
