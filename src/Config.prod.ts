@@ -49,6 +49,12 @@ export const config: Config = {
     yesEmojiId: "997496973093502986",
     noEmojiId: "1012427085798723666",
   },
+  suggest: {
+    suggestionsChannel: "",
+    archiveChannel: "",
+    yesEmojiId: "thumbsup",
+    noEmojiId: "thumbsdown",
+  },
   pastebin: {
     url: "https://paste.developerden.org",
     threshold: 20,
