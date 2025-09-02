@@ -1,43 +1,43 @@
 import {
-  type CreationOptional,
-  DataTypes,
-  type InferAttributes,
-  type InferCreationAttributes,
-  Model,
+	type CreationOptional,
+	DataTypes,
+	type InferAttributes,
+	type InferCreationAttributes,
+	Model,
 } from "@sequelize/core";
 
 import {
-  Attribute,
-  AutoIncrement,
-  NotNull,
-  PrimaryKey,
-  Table,
+	Attribute,
+	AutoIncrement,
+	NotNull,
+	PrimaryKey,
+	Table,
 } from "@sequelize/core/decorators-legacy";
 import { RealBigInt } from "../RealBigInt.js";
 
 @Table({ tableName: "FAQs" })
 export class FAQ extends Model<
-  InferAttributes<FAQ>,
-  InferCreationAttributes<FAQ>
+	InferAttributes<FAQ>,
+	InferCreationAttributes<FAQ>
 > {
-  @Attribute(RealBigInt)
-  @PrimaryKey
-  @AutoIncrement
-  declare public id: CreationOptional<bigint>;
+	@Attribute(RealBigInt)
+	@PrimaryKey
+	@AutoIncrement
+	public declare id: CreationOptional<bigint>;
 
-  @Attribute(RealBigInt)
-  @NotNull
-  declare public author: bigint;
+	@Attribute(RealBigInt)
+	@NotNull
+	public declare author: bigint;
 
-  @Attribute(DataTypes.STRING(64))
-  @NotNull
-  declare public name: string;
+	@Attribute(DataTypes.STRING(64))
+	@NotNull
+	public declare name: string;
 
-  @Attribute(DataTypes.STRING(64))
-  @NotNull
-  declare public title: string;
+	@Attribute(DataTypes.STRING(64))
+	@NotNull
+	public declare title: string;
 
-  @Attribute(DataTypes.TEXT("long"))
-  @NotNull
-  declare public content: string;
+	@Attribute(DataTypes.TEXT("long"))
+	@NotNull
+	public declare content: string;
 }

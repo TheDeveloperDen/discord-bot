@@ -3,31 +3,30 @@ import {
 	type InferCreationAttributes,
 	Model,
 } from "@sequelize/core";
+
 import {
 	Attribute,
-	ColumnName,
 	NotNull,
 	PrimaryKey,
 	Table,
-	Unique,
 } from "@sequelize/core/decorators-legacy";
 import { RealBigInt } from "../RealBigInt.js";
 
-@Table({
-	tableName: "RoleColours",
-})
-export class ColourRoles extends Model<
-	InferAttributes<ColourRoles>,
-	InferCreationAttributes<ColourRoles>
+@Table({ tableName: "StarboardMessages" })
+export class StarboardMessage extends Model<
+	InferAttributes<StarboardMessage>,
+	InferCreationAttributes<StarboardMessage>
 > {
 	@Attribute(RealBigInt)
 	@PrimaryKey
-	@Unique
 	@NotNull
-	public declare id: bigint;
+	public originalMessageId!: bigint;
 
 	@Attribute(RealBigInt)
 	@NotNull
-	@ColumnName("colourRole")
-	public role!: bigint;
+	public originalMessageChannelId!: bigint;
+
+	@Attribute(RealBigInt)
+	@NotNull
+	public starboardMessageId!: bigint;
 }

@@ -1,66 +1,66 @@
 import {
-  type CreationOptional,
-  DataTypes,
-  type InferAttributes,
-  type InferCreationAttributes,
-  Model,
+	type CreationOptional,
+	DataTypes,
+	type InferAttributes,
+	type InferCreationAttributes,
+	Model,
 } from "@sequelize/core";
 import {
-  AllowNull,
-  Attribute,
-  AutoIncrement,
-  BelongsTo,
-  ColumnName,
-  Default,
-  NotNull,
-  PrimaryKey,
-  Table,
+	AllowNull,
+	Attribute,
+	AutoIncrement,
+	BelongsTo,
+	ColumnName,
+	Default,
+	NotNull,
+	PrimaryKey,
+	Table,
 } from "@sequelize/core/decorators-legacy";
 import { RealBigInt } from "../RealBigInt.js";
 import { DDUser } from "./DDUser.js";
 
 export enum ModeratorAction {
-  TEMPBAN = "TEMPBAN",
+	TEMPBAN = "TEMPBAN",
 }
 
 @Table({ tableName: "ModeratorActions" })
 export class ModeratorActions extends Model<
-  InferAttributes<ModeratorActions>,
-  InferCreationAttributes<ModeratorActions>
+	InferAttributes<ModeratorActions>,
+	InferCreationAttributes<ModeratorActions>
 > {
-  @Attribute(RealBigInt)
-  @PrimaryKey
-  @AutoIncrement
-  declare public id: CreationOptional<bigint>;
+	@Attribute(RealBigInt)
+	@PrimaryKey
+	@AutoIncrement
+	public declare id: CreationOptional<bigint>;
 
-  @Attribute(RealBigInt)
-  @NotNull
-  declare public ddUserId: bigint;
+	@Attribute(RealBigInt)
+	@NotNull
+	public declare ddUserId: bigint;
 
-  @Attribute(RealBigInt)
-  @NotNull
-  declare public moderatorId: bigint;
+	@Attribute(RealBigInt)
+	@NotNull
+	public declare moderatorId: bigint;
 
-  @Attribute(DataTypes.ENUM(ModeratorAction))
-  @NotNull
-  @ColumnName("action")
-  declare public action: ModeratorAction;
+	@Attribute(DataTypes.ENUM(ModeratorAction))
+	@NotNull
+	@ColumnName("action")
+	public declare action: ModeratorAction;
 
-  @Attribute(DataTypes.STRING)
-  @AllowNull
-  declare public reason: string | null;
+	@Attribute(DataTypes.STRING)
+	@AllowNull
+	public declare reason: string | null;
 
-  @Attribute(DataTypes.DATE)
-  @AllowNull
-  declare public expires: Date | null;
+	@Attribute(DataTypes.DATE)
+	@AllowNull
+	public declare expires: Date | null;
 
-  @Attribute(DataTypes.BOOLEAN)
-  @Default(false)
-  declare public expired: CreationOptional<boolean>;
+	@Attribute(DataTypes.BOOLEAN)
+	@Default(false)
+	public declare expired: CreationOptional<boolean>;
 
-  @BelongsTo(() => DDUser, "ddUserId")
-  declare public ddUser?: DDUser;
+	@BelongsTo(() => DDUser, "ddUserId")
+	public declare ddUser?: DDUser;
 
-  @BelongsTo(() => DDUser, "moderatorId")
-  declare public moderator?: DDUser;
+	@BelongsTo(() => DDUser, "moderatorId")
+	public declare moderator?: DDUser;
 }

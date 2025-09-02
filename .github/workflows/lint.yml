@@ -87,34 +87,8 @@ jobs:
         with:
           name: node-modules-${{ runner.os }}-${{ hashFiles('bun.lock') }}
           path: node_modules
-      - name: Run ESLint
-        run: bunx eslint . --format @microsoft/eslint-formatter-sarif --output-file eslint-results.sarif
-      - name: Upload analysis results to GitHub
-        if: always()
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: eslint-results.sarif
-          wait-for-processing: true
-
-  format:
-    name: Prettier Format Check
-    needs: deps
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - name: Download node_modules artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: node-modules-${{ runner.os }}-${{ hashFiles('bun.lock') }}
-          path: node_modules
-      - name: Check formatting
-        run: bunx prettier --check .
+      - name: Run Biome
+        run: bunx --bun biome ci
 
   typecheck:
     name: Type Check
@@ -182,10 +156,11 @@ jobs:
         with:
           name: node-modules-${{ runner.os }}-${{ hashFiles('bun.lock') }}
           path: node_modules
-      - name: Run Unit Tests with coverage
-        run: bun test:retry --coverage --coverage-reporter=lcov
-      - name: Upload coverage report
 
+      - name: Run Unit Tests with coverage
+        run: CLICOLOR=1 bun test:retry --coverage --coverage-reporter=lcov
+
+      - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ runner.os }}-${{ github.run_id }}
