@@ -16,7 +16,7 @@ export const config: Config = {
 	},
 	starboard: {
 		emojiId: "⭐",
-		channel: "1407366658552631296",
+		channel: "975786395211816980",
 		threshold: 1,
 	},
 	commands: {
