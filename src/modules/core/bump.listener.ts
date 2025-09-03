@@ -86,7 +86,7 @@ export async function handleBumpStreak(
 	// time since last bump
 	if (lastBumpNotificationTime.getTime() !== 0) {
 		const timeSinceLastBump = Date.now() - lastBumpNotificationTime.getTime();
-		if (timeSinceLastBump < 8000) {
+		if (timeSinceLastBump < 300000) { // this might seem generous, but in reality when you factor in the discord delay, even if you react instantaneously on your screen you can still be too slow
 			message.channel.send(
 				`⚡⚡⚡ ${fakeMention(interactionOld.user)} bumped in just **${timeSinceLastBump / 1000}s**!`,
 			);
