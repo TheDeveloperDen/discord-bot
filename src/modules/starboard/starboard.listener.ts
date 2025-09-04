@@ -152,18 +152,20 @@ export const StarboardListener: EventListener = {
 		);
 	},
 	async messageReactionAdd(_, reaction) {
+		let message = reaction.message;
+		if (message.partial) message = await reaction.message.fetch();
 		if (
-			!reaction.message.inGuild() ||
-			reaction.message.author.bot ||
-			reaction.message.author.system ||
-			reaction.message.channel.id === config.starboard.channel ||
+			!message.inGuild() ||
+			message.author.bot ||
+			message.author.system ||
+			message.channel.id === config.starboard.channel ||
 			reaction.emoji.name !== config.starboard.emojiId
 		)
 			return;
 		await reaction.fetch();
 		const count = reaction.count || 1;
 		if (count >= config.starboard.threshold) {
-			const starboardChannel = await reaction.message.guild.channels.fetch(
+			const starboardChannel = await message.guild.channels.fetch(
 				config.starboard.channel,
 			);
 
@@ -174,14 +176,14 @@ export const StarboardListener: EventListener = {
 				return;
 			}
 			const existingStarboardMessage =
-				await getStarboardMessageForOriginalMessageId(reaction.message.id);
+				await getStarboardMessageForOriginalMessageId(message.id);
 			try {
-				const member = await getMember(reaction.message);
+				const member = await getMember(message);
 
 				if (!member) {
 					logger.info(
 						"Member not found for reaction message id %s, skipping",
-						reaction.message.id,
+						message.id,
 					);
 					return;
 				}
@@ -190,51 +192,54 @@ export const StarboardListener: EventListener = {
 					await updateStarboardMessage(
 						starboardChannel,
 						existingStarboardMessage,
-						reaction.message,
+						message,
 						member,
 						count,
 					);
 				}
 
 				const starboardMessageContent = await createStarboardMessageFromMessage(
-					reaction.message,
+					message,
 					member,
 					count,
 				);
 
-				const message = await starboardChannel.send({
+				const starboardMessage = await starboardChannel.send({
 					...starboardMessageContent,
 					allowedMentions: {
 						parse: [],
 					},
 				});
-
-				await createStarboardMessage(
-					reaction.message.id,
-					reaction.message.channelId,
-					message.id,
-				);
+				if (!existingStarboardMessage) {
+					await createStarboardMessage(
+						message.id,
+						message.channelId,
+						starboardMessage.id,
+					);
+				}
 			} catch (error) {
 				logger.error("Error sending starboard message", error);
 			}
 		}
 	},
 	async messageReactionRemove(_, reaction) {
+		let message = reaction.message;
+		if (message.partial) message = await reaction.message.fetch();
 		if (
-			!reaction.message.inGuild() ||
-			reaction.message.author.bot ||
-			reaction.message.author.system ||
-			reaction.message.channel.id === config.starboard.channel ||
+			!message.inGuild() ||
+			message.author.bot ||
+			message.author.system ||
+			message.channel.id === config.starboard.channel ||
 			reaction.emoji.name !== config.starboard.emojiId
 		)
 			return;
 		await reaction.fetch();
 		const count = reaction.count || 0;
 		const existingStarboardMessage =
-			await getStarboardMessageForOriginalMessageId(reaction.message.id);
+			await getStarboardMessageForOriginalMessageId(message.id);
 		if (!existingStarboardMessage) return;
 		try {
-			const member = await getMember(reaction.message);
+			const member = await getMember(message);
 
 			if (!member) {
 				logger.info(
@@ -245,7 +250,7 @@ export const StarboardListener: EventListener = {
 			}
 
 			if (existingStarboardMessage) {
-				const starboardChannel = await reaction.message.guild.channels.fetch(
+				const starboardChannel = await message.guild.channels.fetch(
 					config.starboard.channel,
 				);
 				if (
@@ -261,7 +266,7 @@ export const StarboardListener: EventListener = {
 				await updateStarboardMessage(
 					starboardChannel,
 					existingStarboardMessage,
-					reaction.message,
+					message,
 					member,
 					count,
 				);
