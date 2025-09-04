@@ -1,7 +1,9 @@
 import type Module from "../module.js";
+import { ModmailCommand } from "./modmail.command.js";
+import { ModMailListener } from "./modmail.listener.js";
 
 export const ModmailModule: Module = {
-  name: "modMail",
-  commands: [],
-  listeners: [],
+	name: "modMail",
+	commands: [ModmailCommand],
+	listeners: [...ModMailListener],
 };

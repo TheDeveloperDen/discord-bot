@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Discord Thread Archive - {{threadName}}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #36393f;
+            color: #dcddde;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: #2f3136;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #7289da;
+        }
+
+        .header h1 {
+            color: #7289da;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .header-info {
+            color: #b9bbbe;
+            font-size: 14px;
+        }
+
+        .message {
+            background: #40444b;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: background-color 0.2s;
+        }
+
+        .message:hover {
+            background: #42464d;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .username {
+            font-weight: 600;
+            color: #ffffff;
+            font-size: 16px;
+        }
+
+        .timestamp {
+            color: #72767d;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        .message-content {
+            margin-left: 52px;
+            word-wrap: break-word;
+        }
+
+        .message-text {
+            margin-bottom: 8px;
+            white-space: pre-wrap;
+        }
+
+        .attachments {
+            margin-top: 12px;
+        }
+
+        .attachment {
+            background: #2f3136;
+            border: 1px solid #4f545c;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            display: inline-block;
+            max-width: 100%;
+        }
+
+        .attachment-link {
+            color: #00b0f4;
+            text-decoration: none;
+            font-size: 14px;
+            word-break: break-all;
+        }
+
+        .attachment-link:hover {
+            text-decoration: underline;
+        }
+
+        .attachment-image {
+            max-width: 400px;
+            max-height: 300px;
+            border-radius: 4px;
+            margin-top: 8px;
+            display: block;
+        }
+
+        .attachment-info {
+            color: #b9bbbe;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .embed {
+            border-left: 4px solid #7289da;
+            background: #2f3136;
+            margin: 8px 0;
+            padding: 8px 12px;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .no-messages {
+            text-align: center;
+            color: #72767d;
+            font-style: italic;
+            padding: 40px 20px;
+        }
+
+        .footer {
+            text-align: center;
+            color: #72767d;
+            font-size: 12px;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #4f545c;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .message-content {
+                margin-left: 0;
+                margin-top: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{{threadName}}</h1>
+            <div class="header-info">
+                <p><strong>Thread ID:</strong> {{threadId}}</p>
+                <p><strong>Assigned to:</strong> {{assignedTo}}</p>
+                <p><strong>Categroy:</strong> {{ticket.category}}</p>
+                <p><strong>Created:</strong> {{createdAt}}</p>
+                <p><strong>Archived:</strong> {{archivedAt}}</p>
+                <p><strong>Total Messages:</strong> {{messageCount}}</p>
+            </div>
+        </div>
+
+        <div class="messages">
+            {{#if messages.length}}
+                {{#each messages}}
+                <div class="message">
+                    <div class="message-header">
+                        <img alt="{{author.username}}" class="avatar" src="{{author.avatarURL}}">
+                        <div class="user-info">
+                            <div class="username">{{author.displayName}}</div>
+                            <div class="timestamp">{{createdAt}}</div>
+                        </div>
+                    </div>
+                    <div class="message-content">
+                        {{#if content}}
+                        <div class="message-text">{{content}}</div>
+                        {{/if}}
+                        
+                        {{#if attachments.length}}
+                        <div class="attachments">
+                            <strong>Attachments:</strong>
+                            {{#each attachments}}
+                            <div class="attachment">
+                                <a class="attachment-link" href="{{url}}" target="_blank">
+                                    {{name}}
+                                </a>
+                                {{#if isImage}}
+                                <img alt="{{name}}" class="attachment-image" src="{{url}}">
+                                {{/if}}
+                                <div class="attachment-info">
+                                    Size: {{size}} bytes | Type: {{contentType}}
+                                </div>
+                            </div>
+                            {{/each}}
+                        </div>
+                        {{/if}}
+                    </div>
+                </div>
+                {{/each}}
+            {{else}}
+                <div class="no-messages">
+                    No messages found in this thread.
+                </div>
+            {{/if}}
+        </div>
+
+        <div class="footer">
+            <p>Generated on {{generatedAt}} | Discord Thread Archive</p>
+        </div>
+    </div>
+</body>
+</html>
