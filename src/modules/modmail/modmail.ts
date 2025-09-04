@@ -6,7 +6,9 @@ import {
 	AttachmentBuilder,
 	type AttachmentPayload,
 	ButtonBuilder,
+	type ButtonInteraction,
 	ButtonStyle,
+	type EmbedAuthorData,
 	type EmbedBuilder,
 	type JSONEncodable,
 	type Message,
@@ -15,6 +17,7 @@ import {
 	type User,
 } from "discord.js";
 import Handlebars from "handlebars";
+import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
 import {
 	ModMailTicket,
@@ -110,7 +113,19 @@ export async function createArchiveFromThread(
 			: await thread.guild.members.fetch(
 					modMailTicket.assignedUserId.toString(),
 				);
-		const messages = await fetchAllMessagesWithRetry(thread, 3, 50000); // Max 3 retries, up to 50k messages
+		const messages = await fetchAllMessagesWithRetry(
+			thread,
+			3,
+			50000,
+			(message) => {
+				return (
+					message.author.bot &&
+					message.author.id === thread.client.user.id &&
+					message.embeds.length === 1 &&
+					!message.embeds[0].title
+				);
+			},
+		); // Max 3 retries, up to 50k messages
 
 		logger.info(`Processing ${messages.size} messages for archive...`);
 
@@ -124,16 +139,19 @@ export async function createArchiveFromThread(
 					contentType: attachment.contentType || "unknown",
 					isImage: attachment.contentType?.startsWith("image/") || false,
 				}));
+				const embed = message.embeds[0];
+				const messageContent = embed.description ?? "Unknown";
+
+				const author = embed.author as EmbedAuthorData;
 
 				return {
 					id: message.id,
-					content: message.content || "",
+					content: messageContent,
 					createdAt: message.createdAt.toLocaleString(),
 					author: {
-						id: message.author.id,
-						username: message.author.username,
-						displayName: message.author.displayName || message.author.username,
-						avatarURL: message.author.displayAvatarURL({ size: 128 }),
+						url: author.url,
+						displayName: author.name,
+						avatarURL: author.iconURL,
 					},
 					attachments: attachments,
 				};
@@ -170,7 +188,14 @@ export async function createArchiveFromThread(
 
 		// Generate HTML
 		logger.debug("Generating HTML archive...");
-		const html = template(templateData);
+		const html = template(templateData, {
+			allowedProtoProperties: {
+				category: true,
+				avatarURL: true,
+				displayName: true,
+				url: true,
+			},
+		});
 
 		logger.info(
 			`Successfully created archive with ${messageData.length} messages`,
@@ -293,10 +318,10 @@ export function createModMailDetails(
 export const extractEmbedAndFilesFromMessageModMail: (
 	message: Message,
 	user: User,
-) => Promise<{
+) => {
 	embed: EmbedBuilder;
 	files?: AttachmentBuilder[];
-}> = async (message, user) => {
+} = (message, user) => {
 	const embed = createStandardEmbed(user)
 		.setColor("Blurple")
 		.setAuthor({
@@ -315,4 +340,166 @@ export const extractEmbedAndFilesFromMessageModMail: (
 		embed: embed,
 		files: files.length > 0 ? files : undefined,
 	};
+};
+export const handleModmailArchive = async (interaction: ButtonInteraction) => {
+	await interaction.deferReply({ flags: ["Ephemeral"] });
+
+	try {
+		if (!interaction.channel?.isThread()) {
+			await interaction.followUp({
+				content: "This command can only be used in a modmail thread.",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		const modMail = await getActiveModMailByChannel(
+			BigInt(interaction.channelId),
+		);
+		if (!modMail) {
+			await interaction.followUp({
+				content: "This is not an active modmail thread.",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		// Create archive using the filtered messages
+		const archiveResult = await createArchiveFromThread(
+			interaction.channel,
+			modMail,
+		);
+
+		if (!archiveResult.success || !archiveResult.content) {
+			await interaction.followUp({
+				content: `Failed to create archive: ${archiveResult.error}`,
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		// Create HTML file attachment
+		const htmlBuffer = Buffer.from(archiveResult.content, "utf-8");
+		const fileName = `modmail-archive-${interaction.channel.name}-${Date.now()}.html`;
+		const attachment = new AttachmentBuilder(htmlBuffer, { name: fileName });
+
+		let dmSendSuccess = false;
+		let archiveChannelSendSuccess = false;
+
+		try {
+			// Send to user's DM
+			const user = await interaction.client.users.fetch(
+				modMail.creatorId.toString(),
+			);
+			const dmChannel = await user.createDM();
+
+			if (dmChannel.isSendable()) {
+				await dmChannel.send({
+					content:
+						"Your modmail ticket has been archived. Here's a copy of the conversation:",
+					files: [attachment],
+				});
+				dmSendSuccess = true;
+				logger.info(
+					`Successfully sent archive to user ${modMail.creatorId} via DM`,
+				);
+			} else {
+				logger.warn(
+					`Could not send archive to user ${modMail.creatorId} - DM not accessible`,
+				);
+			}
+		} catch (error) {
+			logger.error(
+				`Failed to send archive to user ${modMail.creatorId} via DM:`,
+				error,
+			);
+		}
+
+		try {
+			// Send to archive channel
+			const guild = await interaction.client.guilds.fetch(config.guildId);
+			const archiveChannel = await guild.channels.fetch(
+				config.modmail.archiveChannel,
+			);
+
+			if (archiveChannel?.isTextBased() && archiveChannel.isSendable()) {
+				// Create a new attachment for the archive channel (Discord requires separate instances)
+				const archiveAttachment = new AttachmentBuilder(htmlBuffer, {
+					name: fileName,
+				});
+
+				await archiveChannel.send({
+					content: `Modmail ticket archived: ${interaction.channel.name}\nTicket ID: ${modMail.id}\nUser: <@${modMail.creatorId}>`,
+					files: [archiveAttachment],
+				});
+				archiveChannelSendSuccess = true;
+				logger.info(
+					`Successfully sent archive to archive channel ${config.modmail.archiveChannel}`,
+				);
+			} else {
+				logger.warn(
+					`Could not send archive to archive channel - channel not accessible`,
+				);
+			}
+		} catch (error) {
+			logger.error(`Failed to send archive to archive channel:`, error);
+		}
+
+		// Close the ticket
+		await closeModMailTicketByModMail(modMail);
+
+		// Provide feedback to moderator if we reach here (thread wasn't deleted)
+		let statusMessage = `Archive created with ${archiveResult.messageCount} messages.`;
+
+		if (dmSendSuccess && archiveChannelSendSuccess) {
+			statusMessage +=
+				"\n✅ Sent to user's DM and archive channel. Deleting Thread in 10 seconds...";
+		} else if (dmSendSuccess) {
+			statusMessage +=
+				"\n✅ Sent to user's DM.\n❌ Failed to send to archive channel.";
+		} else if (archiveChannelSendSuccess) {
+			statusMessage +=
+				"\n❌ Failed to send to user's DM.\n✅ Sent to archive channel.";
+		} else {
+			statusMessage +=
+				"\n❌ Failed to send to both user's DM and archive channel.";
+		}
+
+		await interaction.followUp({
+			content: statusMessage,
+			flags: ["Ephemeral"],
+		});
+
+		setTimeout(async () => {
+			if (!interaction.channel) {
+				logger.warn(
+					`Modmail thread ${interaction.channelId} was deleted before timeout or something went wrong!`,
+				);
+				return;
+			}
+			// Delete thread if both sends were successful
+			if (dmSendSuccess && archiveChannelSendSuccess) {
+				try {
+					await interaction.channel.delete(
+						"Modmail ticket archived and processed successfully",
+					);
+					// Since thread is deleted, we can't send followUp, so log instead
+					logger.info(
+						`Successfully deleted modmail thread ${interaction.channelId} after archiving`,
+					);
+				} catch (error) {
+					logger.error(
+						`Failed to delete thread ${interaction.channelId}:`,
+						error,
+					);
+				}
+			}
+		}, 10 * 1000);
+	} catch (error) {
+		logger.error(`Error creating modmail archive:`, error);
+		await interaction.followUp({
+			content: "An error occurred while creating the archive.",
+			flags: ["Ephemeral"],
+		});
+	}
 };
