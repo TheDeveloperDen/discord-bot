@@ -12,9 +12,11 @@ import {
 	type EmbedBuilder,
 	type JSONEncodable,
 	type Message,
+	PermissionFlagsBits,
 	type SelectMenuComponentOptionData,
 	StringSelectMenuBuilder,
 	type User,
+	UserSelectMenuBuilder,
 } from "discord.js";
 import Handlebars from "handlebars";
 import { config } from "../../Config.js";
@@ -25,6 +27,7 @@ import {
 	ModMailTicketStatus,
 } from "../../store/models/ModMailTicket.js";
 import { createStandardEmbed } from "../../util/embeds.js";
+import { getMemberFromInteraction } from "../../util/member.js";
 import { fetchAllMessagesWithRetry } from "../../util/message.js";
 import { actualMentionById } from "../../util/users.js";
 
@@ -499,6 +502,71 @@ export const handleModmailArchive = async (interaction: ButtonInteraction) => {
 		logger.error(`Error creating modmail archive:`, error);
 		await interaction.followUp({
 			content: "An error occurred while creating the archive.",
+			flags: ["Ephemeral"],
+		});
+	}
+};
+
+export const handleModmailAssign = async (interaction: ButtonInteraction) => {
+	await interaction.deferReply({ flags: ["Ephemeral"] });
+
+	try {
+		if (!interaction.inGuild()) {
+			await interaction.followUp({
+				content: "This command can only be used in a guild.",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		// Check if user has moderator permissions
+		const member = await getMemberFromInteraction(interaction);
+		if (!member?.permissions.has(PermissionFlagsBits.ManageMessages)) {
+			await interaction.followUp({
+				content: "You don't have permission to assign tickets.",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		if (!interaction.channel?.isThread()) {
+			await interaction.followUp({
+				content: "This command can only be used in a modmail thread.",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		const modMail = await getActiveModMailByChannel(
+			BigInt(interaction.channelId),
+		);
+		if (!modMail) {
+			await interaction.followUp({
+				content: "This is not an active modmail thread.",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		// Create a user select menu for assignment
+		const userSelect = new UserSelectMenuBuilder()
+			.setCustomId(`modmail-assign-select-${modMail.id}`)
+			.setPlaceholder("Select a moderator to assign")
+			.setMaxValues(1)
+			.setMinValues(1);
+
+		const selectRow =
+			new ActionRowBuilder<UserSelectMenuBuilder>().addComponents(userSelect);
+
+		await interaction.followUp({
+			content: "Please select a moderator to assign this ticket to:",
+			components: [selectRow],
+			flags: ["Ephemeral"],
+		});
+	} catch (error) {
+		logger.error("Failed to create assign selection:", error);
+		await interaction.followUp({
+			content: "An error occurred while creating the assignment selection.",
 			flags: ["Ephemeral"],
 		});
 	}

@@ -2,17 +2,25 @@ import { clearTimeout } from "node:timers";
 import {
 	type ActionRowBuilder,
 	type ButtonBuilder,
+	type ButtonInteraction,
 	ChannelType,
 	type Client,
 	type EmbedBuilder,
 	type Interaction,
 	type Message,
 	type OmitPartialGroupDMChannel,
+	PermissionFlagsBits,
+	type StringSelectMenuInteraction,
+	type UserSelectMenuInteraction,
 } from "discord.js";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
-import { ModMailTicketCategory } from "../../store/models/ModMailTicket.js";
+import {
+	ModMailTicket,
+	ModMailTicketCategory,
+} from "../../store/models/ModMailTicket.js";
 import { mentionRoleById } from "../../util/role.js";
+import { safelyFetchUser } from "../../util/users.js";
 import type { EventListener } from "../module.js";
 import {
 	closeModMailTicketByModMail,
@@ -23,8 +31,10 @@ import {
 	getActiveModMailByChannel,
 	getActiveModMailByUser,
 	handleModmailArchive,
+	handleModmailAssign,
 	hasActiveModMailByUser,
 	MODMAIL_ARCHIVE_ID,
+	MODMAIL_ASSIGN_ID,
 	MODMAIL_CATEGORY_SELECT_ID,
 	MODMAIL_SUBMIT_ID,
 } from "./modmail.js";
@@ -160,7 +170,102 @@ const handleThreadMessage = async (client: Client, message: Message<true>) => {
 	}
 };
 
-const handleModmailSubmit = async (client: any, interaction: any) => {
+const handleModmailAssignSelect = async (
+	interaction: UserSelectMenuInteraction,
+) => {
+	await interaction.deferReply({ flags: ["Ephemeral"] });
+
+	try {
+		if (!interaction.inGuild()) {
+			await interaction.followUp({
+				content: "This command can only be used in a guild.",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		// Extract ticket ID from custom ID
+		const ticketId = interaction.customId.split("-").pop();
+		if (!ticketId) {
+			await interaction.followUp({
+				content: "Invalid ticket ID.",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+		const modMail = await ModMailTicket.findOne({
+			where: {
+				id: BigInt(ticketId),
+			},
+		});
+
+		if (!modMail) {
+			await interaction.followUp({
+				content: "Ticket not found.",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		const targetUserId = interaction.values[0];
+		const targetMember = await interaction.guild?.members.fetch(targetUserId);
+
+		// Check if the target user has moderator permissions
+		if (!targetMember?.permissions.has(PermissionFlagsBits.ManageMessages)) {
+			await interaction.followUp({
+				content: "The selected user doesn't have moderator permissions.",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		// Update the ticket assignment
+		await modMail.update({
+			assignedUserId: BigInt(targetUserId),
+		});
+
+		// Send notification in the channel
+		if (interaction.channel?.isSendable()) {
+			await interaction.channel.send({
+				content: `🎯 Ticket has been assigned to <@${targetUserId}> by ${interaction.user}`,
+			});
+		}
+
+		// Notify the user via DM
+		try {
+			const ticketCreator = await safelyFetchUser(
+				interaction.client,
+				modMail.creatorId.toString(),
+			);
+			if (ticketCreator) {
+				const dmChannel = await ticketCreator.createDM();
+				if (dmChannel?.isSendable()) {
+					await dmChannel.send({
+						content: `Your support ticket (#${modMail.id}) has been assigned to ${targetMember.displayName}. They will assist you shortly.`,
+					});
+				}
+			}
+		} catch (error) {
+			logger.warn("Failed to send DM notification to ticket creator:", error);
+		}
+
+		await interaction.followUp({
+			content: `✅ Successfully assigned ticket to ${targetMember.displayName}`,
+			flags: ["Ephemeral"],
+		});
+	} catch (error) {
+		logger.error("Failed to assign ticket:", error);
+		await interaction.followUp({
+			content: "An error occurred while assigning the ticket.",
+			flags: ["Ephemeral"],
+		});
+	}
+};
+
+const handleModmailSubmit = async (
+	client: Client,
+	interaction: ButtonInteraction,
+) => {
 	await interaction.deferUpdate();
 
 	const userId = interaction.user.id;
@@ -254,12 +359,14 @@ const handleModmailSubmit = async (client: any, interaction: any) => {
 		await interaction.followUp({
 			content:
 				"An error occurred while creating your ticket. Please try again or contact an administrator.",
-			ephemeral: true,
+			flags: ["Ephemeral"],
 		});
 	}
 };
 
-const handleCategorySelect = async (interaction: any) => {
+const handleCategorySelect = async (
+	interaction: StringSelectMenuInteraction,
+) => {
 	const category = interaction.values[0] as ModMailTicketCategory;
 	const userId = interaction.user.id;
 
@@ -295,10 +402,18 @@ export const ModMailListener: EventListener[] = [
 		},
 
 		async interactionCreate(client, interaction: Interaction) {
-			if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
+			if (
+				!interaction.isButton() &&
+				!interaction.isStringSelectMenu() &&
+				!interaction.isUserSelectMenu()
+			)
+				return;
 
 			try {
-				if (interaction.customId === MODMAIL_SUBMIT_ID) {
+				if (
+					interaction.customId === MODMAIL_SUBMIT_ID &&
+					interaction.isButton()
+				) {
 					await handleModmailSubmit(client, interaction);
 				} else if (
 					interaction.isStringSelectMenu() &&
@@ -310,6 +425,16 @@ export const ModMailListener: EventListener[] = [
 					interaction.customId === MODMAIL_ARCHIVE_ID
 				) {
 					await handleModmailArchive(interaction);
+				} else if (
+					interaction.isButton() &&
+					interaction.customId === MODMAIL_ASSIGN_ID
+				) {
+					await handleModmailAssign(interaction);
+				} else if (
+					interaction.isUserSelectMenu() &&
+					interaction.customId.startsWith("modmail-assign-select-")
+				) {
+					await handleModmailAssignSelect(interaction);
 				}
 			} catch (error) {
 				logger.error(`Error handling interaction ${interaction.id}:`, error);
@@ -321,14 +446,14 @@ export const ModMailListener: EventListener[] = [
 					await interaction
 						.followUp({
 							content: errorMessage,
-							ephemeral: true,
+							flags: ["Ephemeral"],
 						})
 						.catch(() => {});
 				} else {
 					await interaction
 						.reply({
 							content: errorMessage,
-							ephemeral: true,
+							flags: ["Ephemeral"],
 						})
 						.catch(() => {});
 				}
