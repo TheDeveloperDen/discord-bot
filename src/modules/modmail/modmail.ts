@@ -35,6 +35,8 @@ export const MODMAIL_SUBMIT_ID = "modmail-submit";
 export const MODMAIL_CATEGORY_SELECT_ID = "modmail-category-select";
 export const MODMAIL_ARCHIVE_ID = "modmail-archive";
 export const MODMAIL_ASSIGN_ID = "modmail-assign";
+export const MODMAIL_USER_DETAILS_ID = "modmail-user-details";
+export const MODMAIL_USER_CLOSE_ID = "modmail-user-close";
 
 const modMailCategorySelections: SelectMenuComponentOptionData[] = [
 	{
@@ -272,11 +274,11 @@ export function createModMailInitializationEmbed(user: User) {
 		components: [categorySelectRow, actionRow],
 	};
 }
-
 export function createModMailDetails(
 	modMailTicket: ModMailTicket,
 	user: User | string,
 	moderator: boolean | null = null,
+	forUser: boolean = false,
 ) {
 	const isString = typeof user === "string";
 	const embed = isString ? createStandardEmbed() : createStandardEmbed(user);
@@ -290,15 +292,52 @@ export function createModMailDetails(
 		},
 	]);
 
-	if (!moderator) {
+	console.log("ModMail Ticket: ", modMailTicket);
+	console.log("For User: ", forUser);
+
+	if (!moderator && !forUser) {
 		return { embed: embed, row: null };
 	}
 
+	// Moderator buttons (existing functionality)
 	if (modMailTicket.assignedUserId) {
 		embed.addFields({
 			name: "Assigned Moderator",
 			value: actualMentionById(modMailTicket.assignedUserId),
+			inline: true,
 		});
+	} else {
+		embed.addFields({
+			name: "Assigned Moderator",
+			value: "Unassigned",
+			inline: true,
+		});
+	}
+
+	embed.addFields({
+		name: "Status",
+		value: modMailTicket.status,
+		inline: true,
+	});
+	if (forUser) {
+		// Show user-specific buttons
+		const detailsButton = new ButtonBuilder()
+			.setStyle(ButtonStyle.Secondary)
+			.setLabel("Show Details")
+			.setCustomId(MODMAIL_USER_DETAILS_ID);
+
+		const closeButton = new ButtonBuilder()
+			.setStyle(ButtonStyle.Danger)
+			.setLabel("Close Ticket")
+			.setCustomId(MODMAIL_USER_CLOSE_ID);
+
+		const actionRow =
+			new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents([
+				detailsButton,
+				closeButton,
+			]);
+
+		return { embed: embed, row: actionRow };
 	}
 
 	const archiveButton = new ButtonBuilder()
@@ -318,6 +357,7 @@ export function createModMailDetails(
 		]);
 	return { embed: embed, row: actionRow };
 }
+
 export const extractEmbedAndFilesFromMessageModMail: (
 	message: Message,
 	user: User,
@@ -567,6 +607,203 @@ export const handleModmailAssign = async (interaction: ButtonInteraction) => {
 		logger.error("Failed to create assign selection:", error);
 		await interaction.followUp({
 			content: "An error occurred while creating the assignment selection.",
+			flags: ["Ephemeral"],
+		});
+	}
+};
+export const handleModmailUserDetails = async (
+	interaction: ButtonInteraction,
+) => {
+	await interaction.deferReply({ flags: ["Ephemeral"] });
+
+	try {
+		// Only allow this in DMs
+		if (interaction.inGuild()) {
+			await interaction.followUp({
+				content: "This action can only be used in DMs.",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		const modMail = await getActiveModMailByUser(BigInt(interaction.user.id));
+		if (!modMail) {
+			await interaction.followUp({
+				content: "You don't have an active ticket.",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		const ticketDetails = createModMailDetails(
+			modMail,
+			interaction.user,
+			false,
+			true,
+		) as {
+			embed: EmbedBuilder;
+			row: ActionRowBuilder<ButtonBuilder>;
+		};
+
+		// Add additional details for the user
+		ticketDetails.embed.addFields([
+			{
+				name: "Status",
+				value: modMail.status,
+				inline: true,
+			},
+		]);
+
+		if (modMail.assignedUserId) {
+			try {
+				const assignedUser = await interaction.client.users.fetch(
+					modMail.assignedUserId.toString(),
+				);
+				ticketDetails.embed.addFields({
+					name: "Assigned Moderator",
+					value: assignedUser.displayName,
+					inline: true,
+				});
+			} catch {
+				ticketDetails.embed.addFields({
+					name: "Assigned Moderator",
+					value: "Unknown",
+					inline: true,
+				});
+			}
+		} else {
+			ticketDetails.embed.addFields({
+				name: "Assigned Moderator",
+				value: "Unassigned",
+				inline: true,
+			});
+		}
+
+		await interaction.followUp({
+			embeds: [ticketDetails.embed],
+			components: [ticketDetails.row],
+			flags: ["Ephemeral"],
+		});
+	} catch (error) {
+		logger.error("Failed to show user ticket details:", error);
+		await interaction.followUp({
+			content: "An error occurred while retrieving your ticket details.",
+			flags: ["Ephemeral"],
+		});
+	}
+};
+export const handleModmailUserClose = async (
+	interaction: ButtonInteraction,
+) => {
+	await interaction.deferReply({ flags: ["Ephemeral"] });
+
+	try {
+		// Only allow this in DMs
+		if (interaction.inGuild()) {
+			await interaction.followUp({
+				content: "This action can only be used in DMs.",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		const modMail = await getActiveModMailByUser(BigInt(interaction.user.id));
+		if (!modMail) {
+			await interaction.followUp({
+				content: "You don't have an active ticket.",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		// Create archive before closing the ticket
+		let archiveCreated = false;
+		try {
+			if (modMail.threadId) {
+				const guild = await interaction.client.guilds.fetch(config.guildId);
+				const thread = await guild.channels.fetch(modMail.threadId.toString());
+
+				if (thread?.isThread()) {
+					// Create archive using the filtered messages
+					const archiveResult = await createArchiveFromThread(thread, modMail);
+
+					if (archiveResult.success && archiveResult.content) {
+						// Create HTML file attachment
+						const htmlBuffer = Buffer.from(archiveResult.content, "utf-8");
+						const fileName = `modmail-archive-${thread.name}-${Date.now()}.html`;
+						const attachment = new AttachmentBuilder(htmlBuffer, {
+							name: fileName,
+						});
+						if (interaction.channel?.isSendable()) {
+							// Send archive to user's DM
+							await interaction.channel?.send({
+								content:
+									"Your ticket has been closed and archived. Here's a copy of the conversation:",
+								files: [attachment],
+							});
+						}
+
+						// Send to archive channel
+						try {
+							const archiveChannel = await guild.channels.fetch(
+								config.modmail.archiveChannel,
+							);
+
+							if (
+								archiveChannel?.isTextBased() &&
+								archiveChannel.isSendable()
+							) {
+								const archiveAttachment = new AttachmentBuilder(htmlBuffer, {
+									name: fileName,
+								});
+
+								await archiveChannel.send({
+									content: `Modmail ticket closed by user: ${thread.name}\nTicket ID: ${modMail.id}\nUser: <@${modMail.creatorId}>`,
+									files: [archiveAttachment],
+								});
+							}
+						} catch (error) {
+							logger.warn("Failed to send archive to archive channel:", error);
+						}
+
+						archiveCreated = true;
+						logger.info(
+							`Successfully created archive for user-closed ticket ${modMail.id}`,
+						);
+					}
+				}
+			}
+		} catch (error) {
+			logger.error("Failed to create archive for user-closed ticket:", error);
+		}
+
+		// Close the ticket
+		await closeModMailTicketByModMail(modMail);
+
+		// Notify the thread if it exists
+		try {
+			if (modMail.threadId) {
+				const guild = await interaction.client.guilds.fetch(config.guildId);
+				const thread = await guild.channels.fetch(modMail.threadId.toString());
+
+				if (thread?.isThread() && thread.isSendable()) {
+					await thread.send({
+						content: `🔒 Ticket has been closed by the user (${interaction.user.displayName}).${archiveCreated ? " Archive has been created." : ""}`,
+					});
+				}
+			}
+		} catch (error) {
+			logger.warn("Failed to notify thread about user closing ticket:", error);
+		}
+
+		await interaction.followUp({
+			content: `✅ Your ticket has been closed. Thank you for contacting us!${archiveCreated ? " An archive of your conversation has been sent above." : ""}`,
+			flags: ["Ephemeral"],
+		});
+	} catch (error) {
+		logger.error("Failed to close user ticket:", error);
+		await interaction.followUp({
+			content: "An error occurred while closing your ticket.",
 			flags: ["Ephemeral"],
 		});
 	}

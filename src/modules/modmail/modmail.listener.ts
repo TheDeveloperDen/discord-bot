@@ -32,11 +32,15 @@ import {
 	getActiveModMailByUser,
 	handleModmailArchive,
 	handleModmailAssign,
+	handleModmailUserClose,
+	handleModmailUserDetails,
 	hasActiveModMailByUser,
 	MODMAIL_ARCHIVE_ID,
 	MODMAIL_ASSIGN_ID,
 	MODMAIL_CATEGORY_SELECT_ID,
 	MODMAIL_SUBMIT_ID,
+	MODMAIL_USER_CLOSE_ID,
+	MODMAIL_USER_DETAILS_ID,
 } from "./modmail.js";
 
 interface PendingModmailSelection {
@@ -339,15 +343,17 @@ const handleModmailSubmit = async (
 			const userTicketDetails = createModMailDetails(
 				ticket,
 				interaction.user,
+				false,
 				true,
 			) as {
 				embed: EmbedBuilder;
-				row: null;
+				row: ActionRowBuilder<ButtonBuilder>;
 			};
 
 			await interaction.channel.send({
 				content: "Your ticket has been created successfully!",
 				embeds: [userTicketDetails.embed],
+				components: [userTicketDetails.row],
 			});
 		}
 
@@ -435,6 +441,16 @@ export const ModMailListener: EventListener[] = [
 					interaction.customId.startsWith("modmail-assign-select-")
 				) {
 					await handleModmailAssignSelect(interaction);
+				} else if (
+					interaction.customId === MODMAIL_USER_DETAILS_ID &&
+					interaction.isButton()
+				) {
+					await handleModmailUserDetails(interaction);
+				} else if (
+					interaction.customId === MODMAIL_USER_CLOSE_ID &&
+					interaction.isButton()
+				) {
+					await handleModmailUserClose(interaction);
 				}
 			} catch (error) {
 				logger.error(`Error handling interaction ${interaction.id}:`, error);

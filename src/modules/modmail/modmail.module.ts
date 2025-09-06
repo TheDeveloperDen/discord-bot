@@ -4,6 +4,6 @@ import { ModMailListener } from "./modmail.listener.js";
 
 export const ModmailModule: Module = {
 	name: "modMail",
-	commands: [ModmailCommand],
+	globalCommands: [ModmailCommand],
 	listeners: [...ModMailListener],
 };
