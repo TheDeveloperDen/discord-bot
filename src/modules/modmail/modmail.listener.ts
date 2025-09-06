@@ -173,7 +173,8 @@ const handleDMMessage = async (
 		if (message.channel.isSendable())
 			message.channel
 				.send({
-					content: "Sorry, there was an error processing your message.",
+					content:
+						"Sorry, there was an error processing your message. Please contact a member of staff manually.",
 				})
 				.catch(() => {
 					logger.error(
