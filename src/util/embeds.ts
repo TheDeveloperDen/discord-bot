@@ -4,16 +4,21 @@ import {
 	type EmbedFooterOptions,
 	type GuildMember,
 	type PartialGuildMember,
+	type User,
 } from "discord.js";
 import { branding } from "./branding.js";
 
 export function createStandardEmbed(
-	user?: GuildMember | PartialGuildMember,
+	user?: GuildMember | PartialGuildMember | User,
 ): EmbedBuilder {
 	const builder = new EmbedBuilder();
-	builder.setColor(
-		user?.roles?.color?.hexColor ?? (branding.color as ColorResolvable),
-	);
+	if (user && "roles" in user) {
+		builder.setColor(
+			user?.roles?.color?.hexColor ?? (branding.color as ColorResolvable),
+		);
+	} else {
+		builder.setColor(branding.color as ColorResolvable);
+	}
 	const options = standardFooter();
 	builder.setFooter(options);
 	builder.setTimestamp(new Date());

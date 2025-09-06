@@ -1,4 +1,5 @@
 import {
+	type Client,
 	type GuildMember,
 	Message,
 	type PartialGuildMember,
@@ -68,3 +69,16 @@ export const isSpecialUser = (user: GuildMember): boolean =>
 	user.roles.cache.has(config.roles.staff) ||
 	user.roles.cache.has(config.roles.notable ?? "") ||
 	user.roles.cache.has("1185946490984738938");
+
+export const safelyFetchUser = async (
+	client: Client,
+	userId: string,
+): Promise<User | null> => {
+	try {
+		return await client.users.fetch(userId);
+	} catch (error) {
+		// Optionally log the error
+		console.warn(`Could not fetch user ${userId}:`, error);
+		return null;
+	}
+};

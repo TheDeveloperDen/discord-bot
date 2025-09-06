@@ -61,6 +61,11 @@ export const config: Config = {
 		yesEmojiId: "thumbsup",
 		noEmojiId: "thumbsdown",
 	},
+	modmail: {
+		pingRole: "",
+		archiveChannel: "",
+		channel: "",
+	},
 	pastebin: {
 		url: "https://paste.developerden.org",
 		threshold: 20,

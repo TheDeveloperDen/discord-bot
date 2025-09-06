@@ -18,6 +18,7 @@ export type EventListener = {
 export default interface Module {
 	name: string;
 	commands?: Array<Command<ApplicationCommandType>>;
+	globalCommands?: Array<Command<ApplicationCommandType>>;
 	listeners?: EventListener[];
 
 	/**

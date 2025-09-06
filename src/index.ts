@@ -17,6 +17,7 @@ import JoinLeaveMessageModule from "./modules/joinLeaveMessage.module.js";
 import { LanguageStatusModule } from "./modules/languageStatus.module.js";
 import { LearningModule } from "./modules/learning/learning.module.js";
 import { ModerationModule } from "./modules/moderation/moderation.module.js";
+import { ModmailModule } from "./modules/modmail/modmail.module.js";
 import ModuleManager from "./modules/moduleManager.js";
 import PastifyModule from "./modules/pastify/pastify.module.js";
 import { RolesModule } from "./modules/roles/roles.module.js";
@@ -36,6 +37,7 @@ const client = new Client({
 		GatewayIntentBits.GuildMessageReactions,
 		GatewayIntentBits.MessageContent,
 		GatewayIntentBits.GuildMembers,
+		GatewayIntentBits.DirectMessages,
 	],
 	partials: [Partials.Message, Partials.Channel, Partials.Reaction],
 });
@@ -62,6 +64,7 @@ export const moduleManager = new ModuleManager(
 		SuggestModule,
 		ModerationModule,
 		StarboardModule,
+		ModmailModule,
 	],
 );
 

@@ -49,6 +49,11 @@ export const config: Config = {
 		yesEmojiId: "👍",
 		noEmojiId: "👎",
 	},
+	modmail: {
+		pingRole: "1412470653050818724",
+		archiveChannel: "1412470199495561338",
+		channel: "1412470223004766268",
+	},
 	pastebin: prodConfig.pastebin,
 	branding: {
 		color: "#ffffff",
