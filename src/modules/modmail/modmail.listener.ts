@@ -464,7 +464,8 @@ const handleModmailSubmit = async (
 			};
 
 			await interaction.channel.send({
-				content: "Your ticket has been created successfully!",
+				content:
+					"Your ticket has been created successfully! A member of staff will follow up soon.",
 				embeds: [userTicketDetails.embed],
 				components: [userTicketDetails.row],
 			});
