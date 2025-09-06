@@ -5,6 +5,7 @@ import {
 	type ButtonInteraction,
 	ChannelType,
 	type Client,
+	DiscordAPIError,
 	type EmbedBuilder,
 	type Interaction,
 	type Message,
@@ -95,10 +96,42 @@ const handleDMMessage = async (
 		const guild = await client.guilds.fetch(config.guildId);
 		const thread = await guild.channels.fetch(modMail.threadId.toString());
 
-		if (!thread?.isThread() || !thread.isSendable()) {
+		// Check if thread exists, is accessible, and is not archived
+		if (!thread?.isThread()) {
 			logger.warn(
-				`Thread ${modMail.threadId} is not accessible or not sendable`,
+				`Thread ${modMail.threadId} no longer exists or is not a thread`,
 			);
+			await closeModMailTicketByModMail(modMail);
+			if (message.channel.isSendable()) {
+				await message.channel.send({
+					content:
+						"Your ticket has been closed because the associated thread channel is no longer available.",
+				});
+			}
+			return;
+		}
+
+		if (thread.archived) {
+			logger.warn(`Thread ${modMail.threadId} is archived`);
+			await closeModMailTicketByModMail(modMail);
+			if (message.channel.isSendable()) {
+				await message.channel.send({
+					content:
+						"Your ticket has been closed because the associated thread has been archived.",
+				});
+			}
+			return;
+		}
+
+		if (!thread.isSendable()) {
+			logger.warn(`Thread ${modMail.threadId} is not sendable`);
+			await closeModMailTicketByModMail(modMail);
+			if (message.channel.isSendable()) {
+				await message.channel.send({
+					content:
+						"Your ticket has been closed because messages cannot be sent to the associated thread.",
+				});
+			}
 			return;
 		}
 
@@ -110,8 +143,33 @@ const handleDMMessage = async (
 			embeds: [parsedMessage.embed],
 			files: parsedMessage.files,
 		});
-	} catch (error) {
-		logger.error(`Error handling DM message from ${message.author.id}:`, error);
+	} catch (error: unknown) {
+		if (error instanceof DiscordAPIError) {
+			// Check if the error is related to thread not existing or being inaccessible
+			if (
+				error.code === 10003 ||
+				error.code === 50001 ||
+				error.code === 50013
+			) {
+				logger.warn(
+					`Thread ${modMail.threadId} is deleted or inaccessible, closing ticket`,
+				);
+				await closeModMailTicketByModMail(modMail);
+				if (message.channel.isSendable()) {
+					await message.channel.send({
+						content:
+							"Your ticket has been closed because the associated thread is no longer accessible.",
+					});
+				}
+			} else {
+				logger.error(
+					`Error handling DM message from ${message.author.id}:`,
+					error,
+				);
+			}
+			return;
+		}
+
 		if (message.channel.isSendable())
 			message.channel
 				.send({
@@ -130,15 +188,25 @@ const handleThreadMessage = async (client: Client, message: Message<true>) => {
 		const modMail = await getActiveModMailByChannel(BigInt(message.channelId));
 		if (!modMail) return;
 
+		// Check if the current thread is archived before processing
+		if (message.channel.isThread() && message.channel.archived) {
+			logger.warn(`Thread ${message.channelId} is archived, closing ticket`);
+			await closeModMailTicketByModMail(modMail);
+			// Can't send messages to archived threads, so just log and return
+			return;
+		}
+
 		const user = await client.users.fetch(modMail.creatorId.toString());
 		const dmChannel = await user.createDM();
 
 		if (!dmChannel?.isSendable()) {
 			await closeModMailTicketByModMail(modMail);
-			await message.channel.send({
-				content:
-					"This ticket was closed because the DM channel is no longer accessible.",
-			});
+			if (message.channel.isSendable()) {
+				await message.channel.send({
+					content:
+						"This ticket was closed because the DM channel is no longer accessible.",
+				});
+			}
 			return;
 		}
 
@@ -147,10 +215,12 @@ const handleThreadMessage = async (client: Client, message: Message<true>) => {
 			message.author,
 		);
 
-		// Send to thread first to show it was processed
-		await message.channel.send({
-			embeds: [parsedMessage.embed],
-		});
+		// Send to thread first to show it was processed (only if thread is sendable)
+		if (message.channel.isSendable()) {
+			await message.channel.send({
+				embeds: [parsedMessage.embed],
+			});
+		}
 
 		// Then send to DM
 		await dmChannel.send({
@@ -162,12 +232,37 @@ const handleThreadMessage = async (client: Client, message: Message<true>) => {
 		await message.delete().catch(() => {
 			logger.warn(`Failed to delete message ${message.id} in thread`);
 		});
-	} catch (error) {
-		logger.error(`Error handling thread message ${message.id}:`, error);
+	} catch (error: unknown) {
+		if (error instanceof DiscordAPIError) {
+			logger.error(`Discord API Error: ${error.code} - ${error.message}`);
+			// Check if the error is related to thread being deleted or archived
+			if (
+				error.code === 10003 ||
+				error.code === 50001 ||
+				error.code === 50013
+			) {
+				logger.warn(
+					`Thread ${message.channelId} is deleted or inaccessible, closing ticket`,
+				);
+				const modMail = await getActiveModMailByChannel(
+					BigInt(message.channelId),
+				);
+				if (modMail) {
+					await closeModMailTicketByModMail(modMail);
+				}
+			} else {
+				logger.error(`Error handling thread message ${message.id}:`, error);
+			}
+
+			return;
+		}
+
 		try {
-			await message.channel.send({
-				content: `An error occurred while processing the message. Message link: ${message.url}`,
-			});
+			if (message.channel.isSendable()) {
+				await message.channel.send({
+					content: `An error occurred while processing the message. Message link: ${message.url}`,
+				});
+			}
 		} catch (innerError) {
 			logger.error(`Failed to send error message in thread:`, innerError);
 		}
@@ -186,6 +281,18 @@ const handleModmailAssignSelect = async (
 				flags: ["Ephemeral"],
 			});
 			return;
+		}
+
+		// Check if the current thread is still accessible
+		if (interaction.channel?.isThread()) {
+			if (interaction.channel.archived) {
+				await interaction.followUp({
+					content:
+						"This thread has been archived and the ticket is no longer active.",
+					flags: ["Ephemeral"],
+				});
+				return;
+			}
 		}
 
 		// Extract ticket ID from custom ID
@@ -228,11 +335,16 @@ const handleModmailAssignSelect = async (
 			assignedUserId: BigInt(targetUserId),
 		});
 
-		// Send notification in the channel
+		// Send notification in the channel (with error handling for deleted/archived threads)
 		if (interaction.channel?.isSendable()) {
-			await interaction.channel.send({
-				content: `🎯 Ticket has been assigned to <@${targetUserId}> by ${interaction.user}`,
-			});
+			try {
+				await interaction.channel.send({
+					content: `🎯 Ticket has been assigned to <@${targetUserId}> by ${interaction.user}`,
+				});
+			} catch (error) {
+				logger.warn("Failed to send assignment notification to thread:", error);
+				// Thread might be deleted or archived, but assignment was successful
+			}
 		}
 
 		// Notify the user via DM
