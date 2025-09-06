@@ -66,7 +66,7 @@ const cleanupPendingSelection = (userId: string) => {
 
 const handleDMMessage = async (
 	client: Client,
-	message: OmitPartialGroupDMChannel<Message<boolean>>,
+	message: OmitPartialGroupDMChannel<Message>,
 ) => {
 	const modMail = await getActiveModMailByUser(BigInt(message.author.id));
 
@@ -274,7 +274,7 @@ const handleModmailSubmit = async (
 		await interaction.message.delete().catch(() => {});
 		await interaction.followUp({
 			content: "You already have an open ticket",
-			ephemeral: true,
+			flags: ["Ephemeral"],
 		});
 		return;
 	}
@@ -292,7 +292,7 @@ const handleModmailSubmit = async (
 		if (!channel) {
 			await interaction.followUp({
 				content: "Modmail channel not found. Please contact an administrator.",
-				ephemeral: true,
+				flags: ["Ephemeral"],
 			});
 			logger.error("Modmail channel not found");
 			return;
@@ -302,7 +302,7 @@ const handleModmailSubmit = async (
 			await interaction.followUp({
 				content:
 					"Modmail channel configuration error. Please contact an administrator.",
-				ephemeral: true,
+				flags: ["Ephemeral"],
 			});
 			logger.error("Modmail channel is not a text channel");
 			return;
