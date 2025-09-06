@@ -292,9 +292,6 @@ export function createModMailDetails(
 		},
 	]);
 
-	console.log("ModMail Ticket: ", modMailTicket);
-	console.log("For User: ", forUser);
-
 	if (!moderator && !forUser) {
 		return { embed: embed, row: null };
 	}
