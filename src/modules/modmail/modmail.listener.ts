@@ -173,7 +173,8 @@ const handleDMMessage = async (
 		if (message.channel.isSendable())
 			message.channel
 				.send({
-					content: "Sorry, there was an error processing your message.",
+					content:
+						"Sorry, there was an error processing your message. Please contact a member of staff manually.",
 				})
 				.catch(() => {
 					logger.error(
@@ -464,7 +465,8 @@ const handleModmailSubmit = async (
 			};
 
 			await interaction.channel.send({
-				content: "Your ticket has been created successfully!",
+				content:
+					"Your ticket has been created successfully! A member of staff will follow up soon.",
 				embeds: [userTicketDetails.embed],
 				components: [userTicketDetails.row],
 			});
