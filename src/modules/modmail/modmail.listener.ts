@@ -429,6 +429,7 @@ const handleModmailSubmit = async (
 			reason: `Modmail thread created by ${interaction.user.tag}`,
 			type: ChannelType.PublicThread,
 		});
+		if (!thread.joined) await thread.join();
 
 		const ticket = await createModMailTicket(
 			BigInt(userId),
