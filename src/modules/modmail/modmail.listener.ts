@@ -307,7 +307,7 @@ const handleModmailAssignSelect = async (
 		}
 		const modMail = await ModMailTicket.findOne({
 			where: {
-				id: BigInt(ticketId),
+				id: ticketId,
 			},
 		});
 
@@ -431,6 +431,11 @@ const handleModmailSubmit = async (
 			type: ChannelType.PublicThread,
 		});
 		if (!thread.joined) await thread.join();
+		logger.debug(
+			"Created modmail thread for user %s with id %s",
+			interaction.user.id,
+			thread.id,
+		);
 
 		const ticket = await createModMailTicket(
 			BigInt(userId),

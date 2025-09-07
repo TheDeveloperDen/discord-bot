@@ -20,10 +20,10 @@ export class FAQ extends Model<
 	InferAttributes<FAQ>,
 	InferCreationAttributes<FAQ>
 > {
-	@Attribute(RealBigInt)
+	@Attribute(DataTypes.INTEGER)
 	@PrimaryKey
 	@AutoIncrement
-	public declare id: CreationOptional<bigint>;
+	public declare id: CreationOptional<number>;
 
 	@Attribute(RealBigInt)
 	@NotNull

@@ -1,10 +1,29 @@
 import { DataTypes, ValidationErrorItem } from "@sequelize/core";
 
+/**
+ * A better bigint type than the one Sequelize provides
+ * It uses a native bigint where supported, otherwise it converts it to a string adding the suffix "n" to prevent
+ * the driver parsing as a number
+ */
 export class RealBigInt extends DataTypes.ABSTRACT<bigint> {
 	toSql() {
-		return "BIGINT";
-		// this is actually kind of bad, as it will use BIGINT on sqlite too, potentially losing data
-		// however since sqlite is only used for testing i basically don't care
+		if (this.nativeBigIntSupport()) {
+			return "BIGINT";
+		} else {
+			return "STRING";
+		}
+	}
+
+	nativeBigIntSupport() {
+		return this._getDialect().supports.dataTypes.BIGINT;
+	}
+
+	override toBindableValue(value: bigint): unknown {
+		if (this.nativeBigIntSupport()) {
+			return value;
+		} else {
+			return `${value.toString()}n`;
+		}
 	}
 
 	override sanitize(value: unknown): unknown {
@@ -29,7 +48,13 @@ export class RealBigInt extends DataTypes.ABSTRACT<bigint> {
 
 	override parseDatabaseValue(value: unknown) {
 		if (typeof value === "bigint") return value;
-		if (typeof value === "string") return BigInt(value);
+		if (typeof value === "string") {
+			// stupid lol
+			if (value.endsWith("n")) {
+				return BigInt(value.slice(0, -1));
+			}
+			return BigInt(value);
+		}
 		if (typeof value === "number") return BigInt(value);
 		if (typeof value === "boolean") return BigInt(value);
 
