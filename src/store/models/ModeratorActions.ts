@@ -8,7 +8,6 @@ import {
 import {
 	AllowNull,
 	Attribute,
-	AutoIncrement,
 	BelongsTo,
 	ColumnName,
 	Default,
@@ -28,10 +27,9 @@ export class ModeratorActions extends Model<
 	InferAttributes<ModeratorActions>,
 	InferCreationAttributes<ModeratorActions>
 > {
-	@Attribute(RealBigInt)
+	@Attribute(DataTypes.INTEGER)
 	@PrimaryKey
-	@AutoIncrement
-	public declare id: CreationOptional<bigint>;
+	public declare id: CreationOptional<number>;
 
 	@Attribute(RealBigInt)
 	@NotNull
