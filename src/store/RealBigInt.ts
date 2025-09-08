@@ -26,6 +26,16 @@ export class RealBigInt extends DataTypes.ABSTRACT<bigint> {
 		}
 	}
 
+	override escape(value: unknown): string {
+		if (this.nativeBigIntSupport()) {
+			// For native bigint support, return the value as string
+			return value?.toString() ?? "0";
+		} else {
+			// For string representation, escape as a string literal
+			return `'${value}'`;
+		}
+	}
+
 	override sanitize(value: unknown): unknown {
 		if (value instanceof BigInt || typeof value === "bigint") {
 			return value;

@@ -94,7 +94,14 @@ const handleDMMessage = async (
 
 	try {
 		const guild = await client.guilds.fetch(config.guildId);
-		const thread = await guild.channels.fetch(modMail.threadId.toString());
+		const threadChannel = await guild.channels.fetch(config.modmail.channel);
+		if (!threadChannel || threadChannel.type !== ChannelType.GuildText) {
+			logger.warn(`Modmail channel ${config.modmail.channel} not found`);
+			return;
+		}
+		const thread = await threadChannel.threads.fetch(
+			modMail.threadId.toString(),
+		);
 
 		// Check if thread exists, is accessible, and is not archived
 		if (!thread?.isThread()) {
