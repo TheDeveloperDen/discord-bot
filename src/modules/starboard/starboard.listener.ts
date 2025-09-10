@@ -196,6 +196,7 @@ export const StarboardListener: EventListener = {
 						member,
 						count,
 					);
+					return;
 				}
 
 				const starboardMessageContent = await createStarboardMessageFromMessage(

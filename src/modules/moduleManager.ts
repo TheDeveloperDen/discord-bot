@@ -5,7 +5,8 @@ import { logger } from "../logging.js";
 import type Module from "./module.js";
 
 export default class ModuleManager {
-	private readonly commandManager: CommandManager;
+	private readonly guildCommandManager: CommandManager;
+	private readonly globalCommandManager: CommandManager;
 	private readonly originalEmit;
 
 	constructor(
@@ -16,16 +17,20 @@ export default class ModuleManager {
 	) {
 		this.originalEmit = this.client.emit;
 		client.emit = this.overrideEmit().bind(client);
+
 		for (const module of modules) {
 			module.preInit?.(client)?.catch((e) => {
 				Sentry.captureException(e);
 				logger.error(`Error in preInit for module ${module.name}`, e);
 			});
 		}
-		this.commandManager = new CommandManager(
-			modules.flatMap((it) => it.commands ?? []),
-			client,
-		);
+
+		// Separate guild and global commands
+		const guildCommands = modules.flatMap((it) => it.commands ?? []);
+		const globalCommands = modules.flatMap((it) => it.globalCommands ?? []);
+
+		this.guildCommandManager = new CommandManager(guildCommands, client);
+		this.globalCommandManager = new CommandManager(globalCommands, client);
 	}
 
 	/**
@@ -55,11 +60,17 @@ export default class ModuleManager {
 		for (const module of this.modules) {
 			module.onCommandInit?.(this.client)?.catch((e) => {
 				Sentry.captureException(e);
-				logger.error(`Error in preInit for module ${module.name}`, e);
+				logger.error(`Error in onCommandInit for module ${module.name}`, e);
 			});
 		}
 
-		await this.commandManager.setupForGuild(this.clientId, this.guildId);
+		// Set up guild-specific commands
+		await this.guildCommandManager.setupForGuild(this.clientId, this.guildId);
+
+		// Set up global commands
+		if (this.globalCommandManager) {
+			await this.globalCommandManager.setupGlobally(this.clientId);
+		}
 	}
 
 	getModules() {

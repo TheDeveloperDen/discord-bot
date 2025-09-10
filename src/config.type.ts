@@ -44,6 +44,11 @@ export interface Config {
 		noPing: Snowflake;
 		bumpNotifications?: Snowflake;
 	};
+	modmail: {
+		channel: string;
+		archiveChannel: string;
+		pingRole?: Snowflake;
+	};
 	branding: BrandingConfig;
 	informationMessage?: InformationMessage;
 }
