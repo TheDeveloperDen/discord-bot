@@ -8,6 +8,7 @@ import {
 import {
 	AllowNull,
 	Attribute,
+	AutoIncrement,
 	Default,
 	NotNull,
 	PrimaryKey,
@@ -34,9 +35,10 @@ export class ModMailTicket extends Model<
 	InferAttributes<ModMailTicket>,
 	InferCreationAttributes<ModMailTicket>
 > {
-	@Attribute(DataTypes.INTEGER)
+	@Attribute(RealBigInt)
 	@PrimaryKey
-	public declare id: CreationOptional<number>;
+	@AutoIncrement
+	public declare id: CreationOptional<bigint>;
 
 	@Attribute(RealBigInt)
 	@NotNull
