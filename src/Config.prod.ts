@@ -63,8 +63,8 @@ export const config: Config = {
 	},
 	modmail: {
 		pingRole: "",
-		archiveChannel: "",
-		channel: "",
+		archiveChannel: "1415283787440328836",
+		channel: "1415283659350741062",
 	},
 	pastebin: {
 		url: "https://paste.developerden.org",
