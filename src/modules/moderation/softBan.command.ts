@@ -61,6 +61,7 @@ export const SoftBanCommand: Command<ApplicationCommandType.ChatInput> = {
 				target: user,
 				moderator: interaction.user,
 				deleteMessages,
+				reason,
 			});
 
 			const softBanMessage = await interaction.followUp({

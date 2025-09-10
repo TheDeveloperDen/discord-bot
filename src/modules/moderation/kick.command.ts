@@ -53,6 +53,7 @@ export const KickCommand: Command<ApplicationCommandType.ChatInput> = {
 				kind: "Kick",
 				moderator: interaction.user,
 				target: user,
+				reason,
 			});
 
 			const kickMessage = await interaction.followUp({

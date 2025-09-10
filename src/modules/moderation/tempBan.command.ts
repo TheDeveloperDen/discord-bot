@@ -84,7 +84,7 @@ export const TempBanCommand: Command<ApplicationCommandType.ChatInput> = {
 				target: user,
 				deleteMessages,
 				banDuration: banDurationMillis,
-				reason: reason ?? undefined,
+				reason,
 			});
 
 			const tempBanMessage = await interaction.followUp({

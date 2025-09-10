@@ -25,13 +25,14 @@ interface BanLog {
 	moderator: User;
 	target: UserResolvable;
 	deleteMessages: boolean;
+	reason: string | null;
 }
 
 interface UnbanLog {
 	kind: "Unban";
 	moderator: User;
 	target: UserResolvable;
-	reason?: string;
+	reason: string | null;
 }
 
 interface SoftBanLog {
@@ -39,6 +40,7 @@ interface SoftBanLog {
 	moderator: User;
 	target: UserResolvable;
 	deleteMessages: boolean;
+	reason: string | null;
 }
 interface TempBanLog {
 	kind: "TempBan";
@@ -46,7 +48,7 @@ interface TempBanLog {
 	target: UserResolvable;
 	deleteMessages: boolean;
 	banDuration: number;
-	reason?: string;
+	reason: string | null;
 }
 
 interface TempBanExpiredLog {
@@ -57,6 +59,7 @@ interface KickLog {
 	kind: "Kick";
 	moderator: User;
 	target: UserResolvable;
+	reason: string | null;
 }
 
 interface InviteDeletedLog {

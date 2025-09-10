@@ -60,6 +60,7 @@ export const BanCommand: Command<ApplicationCommandType.ChatInput> = {
 				moderator: interaction.user,
 				target: user,
 				deleteMessages,
+				reason,
 			});
 
 			const banMessage = await interaction.followUp({

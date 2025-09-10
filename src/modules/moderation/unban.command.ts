@@ -50,7 +50,7 @@ export const UnbanCommand: Command<ApplicationCommandType.ChatInput> = {
 				kind: "Unban",
 				target: user,
 				moderator: interaction.user,
-				reason: reason ?? undefined,
+				reason,
 			});
 
 			const unbanMessage = await interaction.followUp({
