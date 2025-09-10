@@ -17,7 +17,7 @@ export const config: Config = {
 	starboard: {
 		emojiId: "⭐",
 		channel: "975786395211816980",
-		threshold: 1,
+		threshold: 2,
 	},
 	commands: {
 		daily: "1059214166075912225",
