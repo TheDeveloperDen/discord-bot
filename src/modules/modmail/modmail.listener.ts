@@ -28,17 +28,24 @@ import {
 	createModMailDetails,
 	createModMailInitializationEmbed,
 	createModMailTicket,
+	extractContentsFromMessage,
 	extractEmbedAndFilesFromMessageModMail,
 	getActiveModMailByChannel,
 	getActiveModMailByUser,
+	getModmailNoteByMessageId,
+	handleModmailAddNote,
 	handleModmailArchive,
 	handleModmailAssign,
+	handleModmailShowNotes,
 	handleModmailUserClose,
 	handleModmailUserDetails,
 	hasActiveModMailByUser,
+	MODMAIL_ADD_NOTE_ID,
 	MODMAIL_ARCHIVE_ID,
 	MODMAIL_ASSIGN_ID,
 	MODMAIL_CATEGORY_SELECT_ID,
+	MODMAIL_DELETE_NOTE_ID,
+	MODMAIL_LIST_NOTES_ID,
 	MODMAIL_SUBMIT_ID,
 	MODMAIL_USER_CLOSE_ID,
 	MODMAIL_USER_DETAILS_ID,
@@ -508,6 +515,15 @@ const handleCategorySelect = async (
 
 	const timeout = setTimeout(() => {
 		pendingModmailSelections.delete(userId);
+		try {
+			if (interaction.channel?.isSendable()) {
+				interaction.channel
+					.send({
+						content: `The selection process for your ticket has timed out. Please try again.`,
+					})
+					.catch(() => {});
+			}
+		} catch {}
 	}, SELECTION_TIMEOUT_MS);
 
 	pendingModmailSelections.set(userId, {
@@ -516,6 +532,40 @@ const handleCategorySelect = async (
 	});
 
 	await interaction.deferUpdate();
+};
+
+const handleModmailNoteDelete = async (interaction: ButtonInteraction) => {
+	await interaction.deferUpdate();
+	if (!interaction.inGuild()) return;
+	const message = interaction.message as Message<true>;
+	const note = await getModmailNoteByMessageId(message.id);
+
+	if (!note) {
+		await interaction.followUp({
+			content: "Note not found.",
+			flags: ["Ephemeral"],
+		});
+	} else {
+		const modLogChannel = await interaction.guild?.channels.fetch(
+			config.channels.modLog,
+		);
+		if (modLogChannel?.isSendable()) {
+			const contents = await extractContentsFromMessage(message);
+			modLogChannel
+				.send({
+					content: `**Note deleted by ${interaction.user.tag}**\n\nContents: ${contents.content}`,
+				})
+				.catch(() => {
+					console.log("Failed to send note deletion to mod log channel");
+				});
+		}
+		await note.destroy();
+		message.delete().catch(() => {});
+		await interaction.followUp({
+			content: "Note deleted.",
+			flags: ["Ephemeral"],
+		});
+	}
 };
 
 export const ModMailListener: EventListener[] = [
@@ -563,6 +613,21 @@ export const ModMailListener: EventListener[] = [
 					interaction.customId === MODMAIL_ASSIGN_ID
 				) {
 					await handleModmailAssign(interaction);
+				} else if (
+					interaction.isButton() &&
+					interaction.customId === MODMAIL_ADD_NOTE_ID
+				) {
+					await handleModmailAddNote(interaction);
+				} else if (
+					interaction.isButton() &&
+					interaction.customId === MODMAIL_LIST_NOTES_ID
+				) {
+					await handleModmailShowNotes(interaction);
+				} else if (
+					interaction.isButton() &&
+					interaction.customId === MODMAIL_DELETE_NOTE_ID
+				) {
+					await handleModmailNoteDelete(interaction);
 				} else if (
 					interaction.isUserSelectMenu() &&
 					interaction.customId.startsWith("modmail-assign-select-")

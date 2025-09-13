@@ -8,10 +8,14 @@ import {
 	ButtonBuilder,
 	type ButtonInteraction,
 	ButtonStyle,
+	type Client,
 	type EmbedAuthorData,
 	type EmbedBuilder,
+	type GuildMember,
+	type GuildMessageManager,
 	type JSONEncodable,
 	type Message,
+	type PartialGuildMember,
 	PermissionFlagsBits,
 	type SelectMenuComponentOptionData,
 	StringSelectMenuBuilder,
@@ -21,6 +25,7 @@ import {
 import Handlebars from "handlebars";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
+import { ModMailNote } from "../../store/models/ModMailNote.js";
 import {
 	ModMailTicket,
 	ModMailTicketCategory,
@@ -29,15 +34,24 @@ import {
 import { createStandardEmbed } from "../../util/embeds.js";
 import { getMemberFromInteraction } from "../../util/member.js";
 import { fetchAllMessagesWithRetry } from "../../util/message.js";
-import { actualMentionById } from "../../util/users.js";
+import { actualMentionById, safelyFetchUser } from "../../util/users.js"; // =============================================
 
+// =============================================
+// CONSTANTS & CONFIGURATION
+// =============================================
+
+/** Custom IDs for Discord components */
 export const MODMAIL_SUBMIT_ID = "modmail-submit";
 export const MODMAIL_CATEGORY_SELECT_ID = "modmail-category-select";
 export const MODMAIL_ARCHIVE_ID = "modmail-archive";
 export const MODMAIL_ASSIGN_ID = "modmail-assign";
 export const MODMAIL_USER_DETAILS_ID = "modmail-user-details";
 export const MODMAIL_USER_CLOSE_ID = "modmail-user-close";
+export const MODMAIL_ADD_NOTE_ID = "modmail-add-note";
+export const MODMAIL_LIST_NOTES_ID = "modmail-list-notes";
+export const MODMAIL_DELETE_NOTE_ID = "modmail-delete-note";
 
+/** Category selection options for modmail tickets */
 const modMailCategorySelections: SelectMenuComponentOptionData[] = [
 	{
 		label: "Question",
@@ -66,6 +80,15 @@ const modMailCategorySelections: SelectMenuComponentOptionData[] = [
 	},
 ];
 
+// =============================================
+// DATABASE OPERATIONS
+// =============================================
+
+/**
+ * Retrieves an active modmail ticket for a specific user
+ * @param userId The ID of the user to search for
+ * @returns The active modmail ticket or null if none exists
+ */
 export async function getActiveModMailByUser(userId: bigint) {
 	return await ModMailTicket.findOne({
 		where: {
@@ -75,6 +98,11 @@ export async function getActiveModMailByUser(userId: bigint) {
 	});
 }
 
+/**
+ * Checks if a user has an active modmail ticket
+ * @param userId The ID of the user to check
+ * @returns True if the user has an active ticket, false otherwise
+ */
 export async function hasActiveModMailByUser(userId: bigint) {
 	return (
 		(await ModMailTicket.count({
@@ -86,6 +114,11 @@ export async function hasActiveModMailByUser(userId: bigint) {
 	);
 }
 
+/**
+ * Retrieves an active modmail ticket for a specific thread/channel
+ * @param threadId The ID of the thread to search for
+ * @returns The active modmail ticket or null if none exists
+ */
 export async function getActiveModMailByChannel(threadId: bigint) {
 	return await ModMailTicket.findOne({
 		where: {
@@ -95,6 +128,13 @@ export async function getActiveModMailByChannel(threadId: bigint) {
 	});
 }
 
+/**
+ * Creates a new modmail ticket in the database
+ * @param creatorId The ID of the user creating the ticket
+ * @param threadId The ID of the thread for this ticket
+ * @param category The category of the ticket (defaults to QUESTION)
+ * @returns The created modmail ticket
+ */
 export async function createModMailTicket(
 	creatorId: bigint,
 	threadId: bigint,
@@ -108,6 +148,46 @@ export async function createModMailTicket(
 	});
 }
 
+/**
+ * Closes a modmail ticket by thread ID
+ * @param threadId The ID of the thread to close
+ * @returns The updated ticket or undefined if not found
+ */
+export async function closeModMailTicketByThreadId(threadId: bigint) {
+	const ticket = await ModMailTicket.findOne({
+		where: {
+			threadId: threadId,
+		},
+	});
+	if (ticket == null) {
+		return;
+	}
+	return await ticket.update({
+		status: ModMailTicketStatus.ARCHIVED,
+	});
+}
+
+/**
+ * Closes a modmail ticket by ticket instance
+ * @param ticket The modmail ticket to close
+ * @returns The updated ticket
+ */
+export async function closeModMailTicketByModMail(ticket: ModMailTicket) {
+	return await ticket.update({
+		status: ModMailTicketStatus.ARCHIVED,
+	});
+}
+
+// =============================================
+// ARCHIVE SYSTEM
+// =============================================
+
+/**
+ * Creates an HTML archive from a Discord thread and modmail ticket
+ * @param thread The Discord thread to archive
+ * @param modMailTicket The associated modmail ticket
+ * @returns Archive result with success status and content
+ */
 export async function createArchiveFromThread(
 	thread: AnyThreadChannel,
 	modMailTicket: ModMailTicket,
@@ -220,26 +300,15 @@ export async function createArchiveFromThread(
 	}
 }
 
-export async function closeModMailTicketByThreadId(threadId: bigint) {
-	const ticket = await ModMailTicket.findOne({
-		where: {
-			threadId: threadId,
-		},
-	});
-	if (ticket == null) {
-		return;
-	}
-	return await ticket.update({
-		status: ModMailTicketStatus.ARCHIVED,
-	});
-}
+// =============================================
+// UI COMPONENTS & EMBEDS
+// =============================================
 
-export async function closeModMailTicketByModMail(ticket: ModMailTicket) {
-	return await ticket.update({
-		status: ModMailTicketStatus.ARCHIVED,
-	});
-}
-
+/**
+ * Creates the initial modmail setup embed with category selection
+ * @param user The user initiating the modmail
+ * @returns Embed and components for modmail initialization
+ */
 export function createModMailInitializationEmbed(user: User) {
 	const embed = createStandardEmbed(user)
 		.setTitle("Modmail")
@@ -274,6 +343,15 @@ export function createModMailInitializationEmbed(user: User) {
 		components: [categorySelectRow, actionRow],
 	};
 }
+
+/**
+ * Creates detailed ticket information embed with action buttons
+ * @param modMailTicket The ticket to display details for
+ * @param user User or username associated with the ticket
+ * @param moderator Whether this is for a moderator view
+ * @param forUser Whether this is for the user who created the ticket
+ * @returns Embed and action row with appropriate buttons
+ */
 export function createModMailDetails(
 	modMailTicket: ModMailTicket,
 	user: User | string,
@@ -296,7 +374,7 @@ export function createModMailDetails(
 		return { embed: embed, row: null };
 	}
 
-	// Moderator buttons (existing functionality)
+	// Add moderator assignment information
 	if (modMailTicket.assignedUserId) {
 		embed.addFields({
 			name: "Assigned Moderator",
@@ -316,6 +394,7 @@ export function createModMailDetails(
 		value: modMailTicket.status,
 		inline: true,
 	});
+
 	if (forUser) {
 		// Show user-specific buttons
 		const detailsButton = new ButtonBuilder()
@@ -337,6 +416,7 @@ export function createModMailDetails(
 		return { embed: embed, row: actionRow };
 	}
 
+	// Moderator action buttons
 	const archiveButton = new ButtonBuilder()
 		.setStyle(ButtonStyle.Danger)
 		.setLabel("Archive")
@@ -347,21 +427,36 @@ export function createModMailDetails(
 		.setLabel("Assign")
 		.setCustomId(MODMAIL_ASSIGN_ID);
 
+	const addNoteButton = new ButtonBuilder()
+		.setStyle(ButtonStyle.Secondary)
+		.setLabel("Add Note")
+		.setCustomId(MODMAIL_ADD_NOTE_ID);
+
+	const listNotesButton = new ButtonBuilder()
+		.setStyle(ButtonStyle.Secondary)
+		.setLabel("List Notes")
+		.setCustomId(MODMAIL_LIST_NOTES_ID);
+
 	const actionRow =
 		new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents([
 			archiveButton,
 			assignButton,
+			addNoteButton,
+			listNotesButton,
 		]);
 	return { embed: embed, row: actionRow };
 }
 
-export const extractEmbedAndFilesFromMessageModMail: (
+/**
+ * Extracts embed and files from a Discord message for modmail display
+ * @param message The Discord message to extract from
+ * @param user The user who sent the message
+ * @returns Embed and files for modmail thread
+ */
+export function extractEmbedAndFilesFromMessageModMail(
 	message: Message,
-	user: User,
-) => {
-	embed: EmbedBuilder;
-	files?: AttachmentBuilder[];
-} = (message, user) => {
+	user: GuildMember | User,
+) {
 	const embed = createStandardEmbed(user)
 		.setColor("Blurple")
 		.setAuthor({
@@ -380,8 +475,107 @@ export const extractEmbedAndFilesFromMessageModMail: (
 		embed: embed,
 		files: files.length > 0 ? files : undefined,
 	};
-};
-export const handleModmailArchive = async (interaction: ButtonInteraction) => {
+}
+
+// =============================================
+// NOTES SYSTEM
+// =============================================
+
+/**
+ * Generates an embed displaying all notes for a modmail ticket
+ * @param client The Discord client
+ * @param messages The message manager for fetching note messages
+ * @param modMail The modmail ticket
+ * @param notes Array of notes to display
+ * @param user The user requesting the notes (optional)
+ * @returns Embed containing all notes information
+ */
+export async function generateEmbedsForModMailNotes(
+	client: Client,
+	messages: GuildMessageManager,
+	modMail: ModMailTicket,
+	notes: ModMailNote[],
+	user?: GuildMember | PartialGuildMember | User,
+): Promise<{ embed: EmbedBuilder }> {
+	const embed = createStandardEmbed(user)
+		.setTitle(`Notes for Ticket #${modMail.id}`)
+		.setDescription(`Found ${notes.length} note(s):`);
+
+	for (const note of notes) {
+		try {
+			const noteMessage = await messages.fetch(note.messageId.toString());
+			const author = await safelyFetchUser(client, note.authorId.toString());
+			const authorName = author?.displayName ?? "Unknown User";
+
+			if (noteMessage.embeds[0]?.description) {
+				embed.addFields([
+					{
+						name: `Note by ${authorName}`,
+						value: noteMessage.embeds[0].description.substring(0, 1024),
+						inline: false,
+					},
+				]);
+			}
+			embed.addFields({
+				name: "URL",
+				value: noteMessage.url,
+			});
+		} catch (error) {
+			logger.warn(`Failed to fetch note message ${note.messageId}:`, error);
+			const author = await safelyFetchUser(client, note.authorId.toString());
+			const authorName = author?.displayName ?? "Unknown User";
+			embed.addFields({
+				name: `Note by ${authorName}`,
+				value: "*(Note message not found)*",
+				inline: false,
+			});
+		}
+	}
+
+	return {
+		embed: embed,
+	};
+}
+
+/**
+ * Retrieves a modmail note associated with the specified message ID.
+ *
+ * @param {string} messageId - The unique identifier of the message to find the associated modmail note.
+ * @return {Promise<ModMailNote|null>} A promise that resolves to the modmail note object if found, or null if no matching note is found.
+ */
+export async function getModmailNoteByMessageId(
+	messageId: string,
+): Promise<ModMailNote | null> {
+	return await ModMailNote.findOne({
+		where: {
+			messageId: BigInt(messageId),
+		},
+	});
+}
+
+/**
+ * Extracts the content and embed from a given message.
+ *
+ * @param {Message<true>} message - The message object from which to extract the content and embed.
+ * @return {Promise<{ content: string, embed: object | undefined }>} An object containing the extracted content and the embed, if present.
+ */
+export async function extractContentsFromMessage(
+	message: Message<true>,
+): Promise<{ content: string; embed: object | undefined }> {
+	const embed = message.embeds[0];
+	const content = embed?.description || message.content;
+	return { content, embed };
+}
+
+// =============================================
+// MODERATOR INTERACTION HANDLERS
+// =============================================
+
+/**
+ * Handles the modmail archive button interaction
+ * Creates an archive, sends it to user and archive channel, then closes the ticket
+ */
+export async function handleModmailArchive(interaction: ButtonInteraction) {
 	await interaction.deferReply({ flags: ["Ephemeral"] });
 
 	try {
@@ -488,7 +682,7 @@ export const handleModmailArchive = async (interaction: ButtonInteraction) => {
 		// Close the ticket
 		await closeModMailTicketByModMail(modMail);
 
-		// Provide feedback to moderator if we reach here (thread wasn't deleted)
+		// Provide feedback to moderator
 		let statusMessage = `Archive created with ${archiveResult.messageCount} messages.`;
 
 		if (dmSendSuccess && archiveChannelSendSuccess) {
@@ -510,6 +704,7 @@ export const handleModmailArchive = async (interaction: ButtonInteraction) => {
 			flags: ["Ephemeral"],
 		});
 
+		// Auto-delete thread after successful archiving
 		setTimeout(async () => {
 			if (!interaction.channel) {
 				logger.warn(
@@ -523,7 +718,6 @@ export const handleModmailArchive = async (interaction: ButtonInteraction) => {
 					await interaction.channel.delete(
 						"Modmail ticket archived and processed successfully",
 					);
-					// Since thread is deleted, we can't send followUp, so log instead
 					logger.info(
 						`Successfully deleted modmail thread ${interaction.channelId} after archiving`,
 					);
@@ -542,9 +736,13 @@ export const handleModmailArchive = async (interaction: ButtonInteraction) => {
 			flags: ["Ephemeral"],
 		});
 	}
-};
+}
 
-export const handleModmailAssign = async (interaction: ButtonInteraction) => {
+/**
+ * Handles the modmail assign button interaction
+ * Creates a user selection menu for assigning moderators to tickets
+ */
+export async function handleModmailAssign(interaction: ButtonInteraction) {
 	await interaction.deferReply({ flags: ["Ephemeral"] });
 
 	try {
@@ -607,10 +805,155 @@ export const handleModmailAssign = async (interaction: ButtonInteraction) => {
 			flags: ["Ephemeral"],
 		});
 	}
-};
-export const handleModmailUserDetails = async (
-	interaction: ButtonInteraction,
-) => {
+}
+
+/**
+ * Handles the show notes button interaction
+ * Displays all notes associated with the current modmail ticket
+ */
+export async function handleModmailShowNotes(interaction: ButtonInteraction) {
+	await interaction.deferReply({ flags: ["Ephemeral"] });
+	try {
+		if (!interaction.inGuild()) {
+			await interaction.followUp({
+				content: "This command can only be used in a guild.",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		// Check if user has moderator permissions
+		const member = await getMemberFromInteraction(interaction);
+		if (!member?.permissions.has(PermissionFlagsBits.ManageMessages)) {
+			await interaction.followUp({
+				content: "You don't have permission to view notes",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		if (!interaction.channel?.isThread()) {
+			await interaction.followUp({
+				content: "This command can only be used in a modmail thread",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		const modMail = await getActiveModMailByChannel(
+			BigInt(interaction.channelId),
+		);
+
+		if (!modMail) {
+			await interaction.followUp({
+				content: "This command can only be used in a modmail thread",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		// Get all notes for this ticket
+		const notes = await ModMailNote.findAll({
+			where: {
+				modMailTicketId: modMail.id,
+			},
+			order: [["createdAt", "ASC"]],
+		});
+
+		if (notes.length === 0) {
+			await interaction.followUp({
+				content: "No notes found for this ticket",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+		const noteEmbed = await generateEmbedsForModMailNotes(
+			interaction.client,
+			interaction.channel.messages,
+			modMail,
+			notes,
+			member,
+		);
+		await interaction.followUp({
+			embeds: [noteEmbed.embed],
+			flags: ["Ephemeral"],
+		});
+	} catch (error) {
+		logger.error("Failed to show notes:", error);
+		await interaction.followUp({
+			content: "An error occurred while showing notes.",
+		});
+	}
+}
+
+/**
+ * Handles the add note button interaction
+ * Directs users to use the slash command for adding notes
+ */
+export async function handleModmailAddNote(interaction: ButtonInteraction) {
+	await interaction.deferReply({ flags: ["Ephemeral"] });
+
+	try {
+		if (!interaction.inGuild()) {
+			await interaction.followUp({
+				content: "This command can only be used in a guild.",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		// Check if user has moderator permissions
+		const member = await getMemberFromInteraction(interaction);
+		if (!member?.permissions.has(PermissionFlagsBits.ManageMessages)) {
+			await interaction.followUp({
+				content: "You don't have permission to add notes.",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		if (!interaction.channel?.isThread()) {
+			await interaction.followUp({
+				content: "This command can only be used in a modmail thread.",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		const modMail = await getActiveModMailByChannel(
+			BigInt(interaction.channelId),
+		);
+		if (!modMail) {
+			await interaction.followUp({
+				content: "This is not an active modmail thread.",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		await interaction.followUp({
+			content:
+				"Please use the `/ticket note` command to add a note with your desired content.",
+			flags: ["Ephemeral"],
+		});
+	} catch (error) {
+		logger.error("Failed to handle add note button:", error);
+		await interaction.followUp({
+			content: "An error occurred while processing the add note request.",
+			flags: ["Ephemeral"],
+		});
+	}
+}
+
+// =============================================
+// USER INTERACTION HANDLERS
+// =============================================
+
+/**
+ * Handles the user details button interaction in DMs
+ * Shows ticket information to the user who created the ticket
+ */
+export async function handleModmailUserDetails(interaction: ButtonInteraction) {
 	await interaction.deferReply({ flags: ["Ephemeral"] });
 
 	try {
@@ -688,10 +1031,13 @@ export const handleModmailUserDetails = async (
 			flags: ["Ephemeral"],
 		});
 	}
-};
-export const handleModmailUserClose = async (
-	interaction: ButtonInteraction,
-) => {
+}
+
+/**
+ * Handles the user close button interaction in DMs
+ * Allows users to close their own tickets, creates an archive, and notifies the thread
+ */
+export async function handleModmailUserClose(interaction: ButtonInteraction) {
 	await interaction.deferReply({ flags: ["Ephemeral"] });
 
 	try {
@@ -804,4 +1150,4 @@ export const handleModmailUserClose = async (
 			flags: ["Ephemeral"],
 		});
 	}
-};
+}
