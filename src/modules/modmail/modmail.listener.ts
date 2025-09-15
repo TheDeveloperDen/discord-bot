@@ -645,6 +645,7 @@ const handleModmailNoteEditModal = async (
 	}
 
 	const newContent = interaction.fields.getTextInputValue("noteContentField");
+	const existingContent = note.content;
 
 	// Update the note
 	await note.update({
@@ -671,7 +672,7 @@ const handleModmailNoteEditModal = async (
 	if (modLogChannel?.isSendable()) {
 		modLogChannel
 			.send({
-				content: `**Note edited by ${interaction.user.tag}**\n\nOriginal: ${note.content}\nNew: ${newContent}`,
+				content: `**Note edited by ${interaction.user.tag}**\n\nOriginal: ${existingContent}\nNew: ${newContent}`,
 			})
 			.catch(() => {
 				console.log("Failed to send note edit to mod log channel");
