@@ -12,7 +12,6 @@ import {
 	type EmbedAuthorData,
 	type EmbedBuilder,
 	type GuildMember,
-	type GuildMessageManager,
 	type JSONEncodable,
 	type Message,
 	type PartialGuildMember,
@@ -34,7 +33,11 @@ import {
 import { createStandardEmbed } from "../../util/embeds.js";
 import { getMemberFromInteraction } from "../../util/member.js";
 import { fetchAllMessagesWithRetry } from "../../util/message.js";
-import { actualMentionById, safelyFetchUser } from "../../util/users.js"; // =============================================
+import {
+	DiscordTimestampStyle,
+	formatDiscordTimestamp,
+} from "../../util/time.js"; // =============================================
+import { actualMentionById, safelyFetchUser } from "../../util/users.js";
 
 // =============================================
 // CONSTANTS & CONFIGURATION
@@ -50,7 +53,9 @@ export const MODMAIL_USER_CLOSE_ID = "modmail-user-close";
 export const MODMAIL_ADD_NOTE_ID = "modmail-add-note";
 export const MODMAIL_LIST_NOTES_ID = "modmail-list-notes";
 export const MODMAIL_DELETE_NOTE_ID = "modmail-delete-note";
+export const MODMAIL_EDIT_NOTE_ID = "modmail-edit-note";
 
+export const MODMAIL_NOTE_FIELD_NAME = "Note ID";
 /** Category selection options for modmail tickets */
 const modMailCategorySelections: SelectMenuComponentOptionData[] = [
 	{
@@ -481,10 +486,59 @@ export function extractEmbedAndFilesFromMessageModMail(
 // NOTES SYSTEM
 // =============================================
 
+export async function getModMailNoteById(
+	id: bigint,
+): Promise<ModMailNote | null> {
+	return ModMailNote.findOne({
+		where: {
+			id: id,
+		},
+	});
+}
+
+export async function createModMailNoteEmbed(
+	client: Client,
+	modmailNote: ModMailNote,
+) {
+	const author = await safelyFetchUser(client, modmailNote.authorId.toString());
+	const authorName = author?.displayName ?? "Unknown User";
+
+	const updaterUser = modmailNote.updatedBy
+		? await safelyFetchUser(client, modmailNote.updatedBy.toString())
+		: null;
+	const updaterName = updaterUser?.displayName;
+
+	const embed = createStandardEmbed(author ?? undefined)
+		.setTitle("Mod Note")
+		.setDescription(modmailNote.content)
+		.setAuthor({
+			name: `#${modmailNote.id} | Note by ${authorName}`,
+			iconURL: author?.displayAvatarURL(),
+		})
+		.addFields({
+			name: MODMAIL_NOTE_FIELD_NAME,
+			value: modmailNote.id.toString(),
+			inline: true,
+		})
+		.setTimestamp(modmailNote.createdAt);
+
+	if (updaterName !== undefined) {
+		embed.addFields({
+			name: `Last Updated by ${updaterName}`,
+			value: formatDiscordTimestamp(
+				modmailNote.contentUpdatedAt as Date,
+				DiscordTimestampStyle.RELATIVE,
+			),
+			inline: true,
+		});
+	}
+
+	return embed;
+}
+
 /**
  * Generates an embed displaying all notes for a modmail ticket
  * @param client The Discord client
- * @param messages The message manager for fetching note messages
  * @param modMail The modmail ticket
  * @param notes Array of notes to display
  * @param user The user requesting the notes (optional)
@@ -492,7 +546,6 @@ export function extractEmbedAndFilesFromMessageModMail(
  */
 export async function generateEmbedsForModMailNotes(
 	client: Client,
-	messages: GuildMessageManager,
 	modMail: ModMailTicket,
 	notes: ModMailNote[],
 	user?: GuildMember | PartialGuildMember | User,
@@ -502,55 +555,31 @@ export async function generateEmbedsForModMailNotes(
 		.setDescription(`Found ${notes.length} note(s):`);
 
 	for (const note of notes) {
-		try {
-			const noteMessage = await messages.fetch(note.messageId.toString());
-			const author = await safelyFetchUser(client, note.authorId.toString());
-			const authorName = author?.displayName ?? "Unknown User";
+		const author = await safelyFetchUser(client, note.authorId.toString());
+		const authorName = author?.displayName ?? "Unknown User";
 
-			if (noteMessage.embeds[0]?.description) {
-				embed.addFields([
-					{
-						name: `Note by ${authorName}`,
-						value: noteMessage.embeds[0].description.substring(0, 1024),
-						inline: false,
-					},
-				]);
-			}
-			embed.addFields({
-				name: "URL",
-				value: noteMessage.url,
-			});
-		} catch (error) {
-			logger.warn(`Failed to fetch note message ${note.messageId}:`, error);
-			const author = await safelyFetchUser(client, note.authorId.toString());
-			const authorName = author?.displayName ?? "Unknown User";
-			embed.addFields({
-				name: `Note by ${authorName}`,
-				value: "*(Note message not found)*",
-				inline: false,
-			});
-		}
+		const updaterUser = note.updatedBy
+			? await safelyFetchUser(client, note.updatedBy.toString())
+			: null;
+
+		const updaterName = updaterUser?.displayName;
+
+		embed.addFields({
+			name: `#${note.id} | Note by ${authorName} ${
+				updaterName !== undefined
+					? `| Last updated by ${updaterName} ${formatDiscordTimestamp(
+							note.contentUpdatedAt as Date,
+							DiscordTimestampStyle.RELATIVE,
+						)}`
+					: ""
+			}`,
+			value: note.content.substring(0, 1024), // Because Embed Fields have a maximum of 1024 chars
+			inline: false,
+		});
 	}
-
 	return {
 		embed: embed,
 	};
-}
-
-/**
- * Retrieves a modmail note associated with the specified message ID.
- *
- * @param {string} messageId - The unique identifier of the message to find the associated modmail note.
- * @return {Promise<ModMailNote|null>} A promise that resolves to the modmail note object if found, or null if no matching note is found.
- */
-export async function getModmailNoteByMessageId(
-	messageId: string,
-): Promise<ModMailNote | null> {
-	return await ModMailNote.findOne({
-		where: {
-			messageId: BigInt(messageId),
-		},
-	});
 }
 
 /**
@@ -565,6 +594,17 @@ export async function extractContentsFromMessage(
 	const embed = message.embeds[0];
 	const content = embed?.description || message.content;
 	return { content, embed };
+}
+
+export async function extractNoteIdFromMessage(
+	message: Message<true>,
+): Promise<bigint | undefined> {
+	const embed = message.embeds[0];
+	const fields = embed?.fields;
+	const foundId = fields?.find(
+		(field) => field.name === MODMAIL_NOTE_FIELD_NAME,
+	)?.value;
+	return foundId ? BigInt(foundId) : undefined;
 }
 
 // =============================================
@@ -869,7 +909,6 @@ export async function handleModmailShowNotes(interaction: ButtonInteraction) {
 		}
 		const noteEmbed = await generateEmbedsForModMailNotes(
 			interaction.client,
-			interaction.channel.messages,
 			modMail,
 			notes,
 			member,

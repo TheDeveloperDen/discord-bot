@@ -12,16 +12,17 @@ import type { Command, ExecutableSubcommand } from "djs-slash-helper";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
 import { ModMailNote } from "../../store/models/ModMailNote.js";
-import { createStandardEmbed } from "../../util/embeds.js";
 import { getMemberFromInteraction } from "../../util/member.js";
 import { safelyFetchUser } from "../../util/users.js";
 import {
 	closeModMailTicketByModMail,
 	createModMailDetails,
+	createModMailNoteEmbed,
 	generateEmbedsForModMailNotes,
 	getActiveModMailByChannel,
 	getActiveModMailByUser,
 	MODMAIL_DELETE_NOTE_ID,
+	MODMAIL_EDIT_NOTE_ID,
 } from "./modmail.js";
 
 const NoteSubCommand: ExecutableSubcommand = {
@@ -81,37 +82,37 @@ const NoteSubCommand: ExecutableSubcommand = {
 
 		const content = interaction.options.getString("content", true);
 
-		// Create note embed
-		const noteEmbed = createStandardEmbed(interaction.user)
-			.setTitle("Mod Note")
-			.setDescription(content)
-			.setAuthor({
-				name: `Mod Note from: ${interaction.user.displayName}`,
-				iconURL: interaction.user.displayAvatarURL(),
-			})
-			.setTimestamp();
-
 		const deleteButton = new ButtonBuilder()
 			.setStyle(ButtonStyle.Danger)
 			.setLabel("Delete Note")
 			.setCustomId(MODMAIL_DELETE_NOTE_ID);
 
+		const editButton = new ButtonBuilder()
+			.setStyle(ButtonStyle.Secondary)
+			.setLabel("Edit Note")
+			.setCustomId(MODMAIL_EDIT_NOTE_ID);
+
 		const row =
 			new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
+				editButton,
 				deleteButton,
 			);
 
-		// Send the note to the channel
-		const noteMessage = await interaction.channel.send({
-			embeds: [noteEmbed],
-			components: [row],
-		});
-
-		// Save to database
-		await ModMailNote.create({
+		const createdModMailNote = await ModMailNote.create({
 			modMailTicketId: modMail.id,
 			authorId: BigInt(interaction.user.id),
-			messageId: BigInt(noteMessage.id),
+			content: content,
+		});
+
+		const noteEmbed = await createModMailNoteEmbed(
+			interaction.client,
+			createdModMailNote,
+		);
+
+		// Send the note to the channel
+		await interaction.channel.send({
+			embeds: [noteEmbed],
+			components: [row],
 		});
 
 		await interaction.followUp({
@@ -185,7 +186,6 @@ const ListNotesSubCommand: ExecutableSubcommand = {
 		}
 		const noteEmbed = await generateEmbedsForModMailNotes(
 			interaction.client,
-			interaction.channel.messages,
 			modMail,
 			notes,
 			member,
