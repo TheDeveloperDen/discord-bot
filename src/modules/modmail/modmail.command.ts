@@ -15,15 +15,46 @@ import { ModMailNote } from "../../store/models/ModMailNote.js";
 import { getMemberFromInteraction } from "../../util/member.js";
 import { safelyFetchUser } from "../../util/users.js";
 import {
+	archiveModmailTicket,
 	closeModMailTicketByModMail,
 	createModMailDetails,
 	createModMailNoteEmbed,
-	generateEmbedsForModMailNotes,
 	getActiveModMailByChannel,
 	getActiveModMailByUser,
 	MODMAIL_DELETE_NOTE_ID,
 	MODMAIL_EDIT_NOTE_ID,
+	showModmailNotes,
+	validateModmailPermissions,
 } from "./modmail.js";
+
+const ArchiveSubCommand: ExecutableSubcommand = {
+	type: ApplicationCommandOptionType.Subcommand,
+	name: "archive",
+	description: "Archive and close the current modmail thread.",
+	async handle(interaction) {
+		await interaction.deferReply({ flags: ["Ephemeral"] });
+
+		try {
+			// Validate permissions
+			if (!(await validateModmailPermissions(interaction))) {
+				return;
+			}
+
+			// Use the reusable archive function
+			await archiveModmailTicket(
+				interaction,
+				interaction.channelId,
+				interaction.client,
+			);
+		} catch (error) {
+			logger.error(`Error creating modmail archive:`, error);
+			await interaction.followUp({
+				content: "An error occurred while creating the archive.",
+				flags: ["Ephemeral"],
+			});
+		}
+	},
+};
 
 const NoteSubCommand: ExecutableSubcommand = {
 	type: ApplicationCommandOptionType.Subcommand,
@@ -131,69 +162,15 @@ const ListNotesSubCommand: ExecutableSubcommand = {
 			flags: ["Ephemeral"],
 		});
 
-		if (!interaction.inGuild()) {
+		try {
+			await showModmailNotes(interaction);
+		} catch (error) {
+			logger.error("Failed to show notes:", error);
 			await interaction.followUp({
-				content: "This command can only be used in a guild",
+				content: "An error occurred while showing notes.",
 				flags: ["Ephemeral"],
 			});
-			return;
 		}
-
-		// Check if user has moderator permissions
-		const member = await getMemberFromInteraction(interaction);
-		if (!member?.permissions.has(PermissionFlagsBits.ManageMessages)) {
-			await interaction.followUp({
-				content: "You don't have permission to view notes",
-				flags: ["Ephemeral"],
-			});
-			return;
-		}
-
-		if (!interaction.channel?.isThread()) {
-			await interaction.followUp({
-				content: "This command can only be used in a modmail thread",
-				flags: ["Ephemeral"],
-			});
-			return;
-		}
-
-		const modMail = await getActiveModMailByChannel(
-			BigInt(interaction.channelId),
-		);
-
-		if (!modMail) {
-			await interaction.followUp({
-				content: "This command can only be used in a modmail thread",
-				flags: ["Ephemeral"],
-			});
-			return;
-		}
-
-		// Get all notes for this ticket
-		const notes = await ModMailNote.findAll({
-			where: {
-				modMailTicketId: modMail.id,
-			},
-			order: [["createdAt", "ASC"]],
-		});
-
-		if (notes.length === 0) {
-			await interaction.followUp({
-				content: "No notes found for this ticket",
-				flags: ["Ephemeral"],
-			});
-			return;
-		}
-		const noteEmbed = await generateEmbedsForModMailNotes(
-			interaction.client,
-			modMail,
-			notes,
-			member,
-		);
-		await interaction.followUp({
-			embeds: [noteEmbed.embed],
-			flags: ["Ephemeral"],
-		});
 	},
 };
 
@@ -501,6 +478,7 @@ export const ModmailCommand: Command<ApplicationCommandType.ChatInput> = {
 		CloseSubCommand,
 		NoteSubCommand,
 		ListNotesSubCommand,
+		ArchiveSubCommand,
 	],
 	handle() {},
 };

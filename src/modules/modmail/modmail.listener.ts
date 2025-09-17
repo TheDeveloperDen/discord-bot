@@ -39,6 +39,7 @@ import {
 	getActiveModMailByChannel,
 	getActiveModMailByUser,
 	getModMailNoteById,
+	handleArchivedModmailShowNotes,
 	handleModmailAddNote,
 	handleModmailArchive,
 	handleModmailAssign,
@@ -756,6 +757,11 @@ export const ModMailListener: EventListener[] = [
 					interaction.customId === MODMAIL_DELETE_NOTE_ID
 				) {
 					await handleModmailNoteDelete(interaction);
+				} else if (
+					interaction.isButton() &&
+					interaction.customId.startsWith(`${MODMAIL_LIST_NOTES_ID}-archived-`)
+				) {
+					await handleArchivedModmailShowNotes(interaction);
 				} else if (
 					interaction.isUserSelectMenu() &&
 					interaction.customId.startsWith("modmail-assign-select-")

@@ -8,6 +8,7 @@ import {
 	ButtonBuilder,
 	type ButtonInteraction,
 	ButtonStyle,
+	type ChatInputCommandInteraction,
 	type Client,
 	type EmbedAuthorData,
 	type EmbedBuilder,
@@ -54,6 +55,7 @@ export const MODMAIL_ADD_NOTE_ID = "modmail-add-note";
 export const MODMAIL_LIST_NOTES_ID = "modmail-list-notes";
 export const MODMAIL_DELETE_NOTE_ID = "modmail-delete-note";
 export const MODMAIL_EDIT_NOTE_ID = "modmail-edit-note";
+export const MODMAIL_ARCHIVE_WITH_NOTES_ID = "modmail-archive-with-notes";
 
 export const MODMAIL_NOTE_FIELD_NAME = "Note ID";
 /** Category selection options for modmail tickets */
@@ -610,7 +612,260 @@ export async function extractNoteIdFromMessage(
 // =============================================
 // MODERATOR INTERACTION HANDLERS
 // =============================================
+/**
+ * Creates an archive file from thread content and returns it as an AttachmentBuilder
+ * @param thread The Discord thread to archive
+ * @param modMail The associated modmail ticket
+ * @returns Archive result with attachment and message count
+ */
+export async function createArchiveAttachment(
+	thread: AnyThreadChannel,
+	modMail: ModMailTicket,
+) {
+	const archiveResult = await createArchiveFromThread(thread, modMail);
 
+	if (!archiveResult.success || !archiveResult.content) {
+		return {
+			success: false,
+			error: archiveResult.error,
+		};
+	}
+
+	const htmlBuffer = Buffer.from(archiveResult.content, "utf-8");
+	const fileName = `modmail-archive-${thread.name}-${Date.now()}.html`;
+	const attachment = new AttachmentBuilder(htmlBuffer, { name: fileName });
+
+	return {
+		success: true,
+		attachment,
+		messageCount: archiveResult.messageCount,
+	};
+}
+
+/**
+ * Sends archive to user's DM and archive channel
+ * @param client Discord client
+ * @param modMail ModMail ticket
+ * @param attachment Archive attachment
+ * @param threadName Name of the thread
+ * @returns Object with success status for DM and archive channel
+ */
+export async function sendArchiveToChannels(
+	client: Client,
+	modMail: ModMailTicket,
+	attachment: AttachmentBuilder,
+	threadName: string,
+) {
+	let dmSendSuccess = false;
+	let archiveChannelSendSuccess = false;
+
+	// Send to user's DM
+	try {
+		const user = await client.users.fetch(modMail.creatorId.toString());
+		const dmChannel = await user.createDM();
+
+		if (dmChannel.isSendable()) {
+			await dmChannel.send({
+				content:
+					"Your modmail ticket has been archived. Here's a copy of the conversation:",
+				files: [attachment],
+			});
+			dmSendSuccess = true;
+			logger.info(
+				`Successfully sent archive to user ${modMail.creatorId} via DM`,
+			);
+		} else {
+			logger.warn(
+				`Could not send archive to user ${modMail.creatorId} - DM not accessible`,
+			);
+		}
+	} catch (error) {
+		logger.error(
+			`Failed to send archive to user ${modMail.creatorId} via DM:`,
+			error,
+		);
+	}
+
+	// Send to archive channel
+	try {
+		const guild = await client.guilds.fetch(config.guildId);
+		const archiveChannel = await guild.channels.fetch(
+			config.modmail.archiveChannel,
+		);
+
+		if (archiveChannel?.isTextBased() && archiveChannel.isSendable()) {
+			// Create a new attachment for the archive channel (Discord requires separate instances)
+			const archiveAttachment = new AttachmentBuilder(attachment.attachment, {
+				name: attachment.name ?? "archived_thread.html",
+			});
+
+			// Create button to list mod notes
+			const listNotesButton = new ButtonBuilder()
+				.setCustomId(`${MODMAIL_LIST_NOTES_ID}-archived-${modMail.id}`)
+				.setLabel("List Mod Notes")
+				.setStyle(ButtonStyle.Secondary)
+				.setEmoji("📝");
+
+			const notesRow =
+				new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
+					listNotesButton,
+				);
+
+			await archiveChannel.send({
+				content: `Modmail ticket archived: ${threadName}\nTicket ID: ${modMail.id}\nUser: <@${modMail.creatorId}>`,
+				files: [archiveAttachment],
+				components: [notesRow],
+			});
+			archiveChannelSendSuccess = true;
+			logger.info(
+				`Successfully sent archive to archive channel ${config.modmail.archiveChannel}`,
+			);
+		} else {
+			logger.warn(
+				`Could not send archive to archive channel - channel not accessible`,
+			);
+		}
+	} catch (error) {
+		logger.error(`Failed to send archive to archive channel:`, error);
+	}
+
+	return { dmSendSuccess, archiveChannelSendSuccess };
+}
+/**
+ * Core archive logic that can be used by both button and slash command interactions
+ * @param interaction The interaction (button or chat input)
+ * @param channelId The channel ID to archive
+ * @param client Discord client
+ * @returns Promise<void>
+ */
+export async function archiveModmailTicket(
+	interaction: ButtonInteraction | ChatInputCommandInteraction,
+	channelId: string,
+	client: Client,
+) {
+	const channel =
+		client.channels.cache.get(channelId) ??
+		(await client.channels.fetch(channelId));
+
+	if (!channel?.isThread()) {
+		await interaction.followUp({
+			content: "This command can only be used in a modmail thread.",
+			flags: ["Ephemeral"],
+		});
+		return;
+	}
+
+	const modMail = await getActiveModMailByChannel(BigInt(channelId));
+	if (!modMail) {
+		await interaction.followUp({
+			content: "This is not an active modmail thread.",
+			flags: ["Ephemeral"],
+		});
+		return;
+	}
+
+	// Create archive attachment
+	const archiveResult = await createArchiveAttachment(channel, modMail);
+
+	if (!archiveResult.success || !archiveResult.attachment) {
+		await interaction.followUp({
+			content: `Failed to create archive: ${archiveResult.error}`,
+			flags: ["Ephemeral"],
+		});
+		return;
+	}
+
+	// Send to channels
+	const sendResults = await sendArchiveToChannels(
+		client,
+		modMail,
+		archiveResult.attachment,
+		channel.name,
+	);
+
+	// Close the ticket
+	await closeModMailTicketByModMail(modMail);
+
+	// Provide feedback to moderator
+	let statusMessage = `Archive created with ${archiveResult.messageCount} messages.`;
+
+	if (sendResults.dmSendSuccess && sendResults.archiveChannelSendSuccess) {
+		statusMessage +=
+			"\n✅ Sent to user's DM and archive channel. Deleting Thread in 10 seconds...";
+	} else if (sendResults.dmSendSuccess) {
+		statusMessage +=
+			"\n✅ Sent to user's DM.\n❌ Failed to send to archive channel.";
+	} else if (sendResults.archiveChannelSendSuccess) {
+		statusMessage +=
+			"\n❌ Failed to send to user's DM.\n✅ Sent to archive channel.";
+	} else {
+		statusMessage +=
+			"\n❌ Failed to send to both user's DM and archive channel.";
+	}
+
+	await interaction.followUp({
+		content: statusMessage,
+		flags: ["Ephemeral"],
+	});
+
+	// Auto-delete thread after successful archiving
+	setTimeout(async () => {
+		const currentChannel =
+			client.channels.cache.get(channelId) ??
+			(await client.channels.fetch(channelId).catch(() => null));
+		if (!currentChannel) {
+			logger.warn(
+				`Modmail thread ${channelId} was deleted before timeout or something went wrong!`,
+			);
+			return;
+		}
+		// Delete thread if both sends were successful
+		if (
+			sendResults.dmSendSuccess &&
+			sendResults.archiveChannelSendSuccess &&
+			currentChannel.isThread()
+		) {
+			try {
+				await currentChannel.delete(
+					"Modmail ticket archived and processed successfully",
+				);
+				logger.info(
+					`Successfully deleted modmail thread ${channelId} after archiving`,
+				);
+			} catch (error) {
+				logger.error(`Failed to delete thread ${channelId}:`, error);
+			}
+		}
+	}, 10 * 1000);
+}
+/**
+ * Validates if user has permission to perform modmail actions
+ * @param interaction The interaction
+ * @returns Promise<boolean>
+ */
+export async function validateModmailPermissions(
+	interaction: ButtonInteraction | ChatInputCommandInteraction,
+): Promise<boolean> {
+	if (!interaction.inGuild()) {
+		await interaction.followUp({
+			content: "This command can only be used in a guild.",
+			flags: ["Ephemeral"],
+		});
+		return false;
+	}
+
+	// Check if user has moderator permissions
+	const member = await getMemberFromInteraction(interaction);
+	if (!member?.permissions.has(PermissionFlagsBits.ManageMessages)) {
+		await interaction.followUp({
+			content: "You don't have permission to archive tickets.",
+			flags: ["Ephemeral"],
+		});
+		return false;
+	}
+
+	return true;
+}
 /**
  * Handles the modmail archive button interaction
  * Creates an archive, sends it to user and archive channel, then closes the ticket
@@ -619,160 +874,151 @@ export async function handleModmailArchive(interaction: ButtonInteraction) {
 	await interaction.deferReply({ flags: ["Ephemeral"] });
 
 	try {
-		if (!interaction.channel?.isThread()) {
-			await interaction.followUp({
-				content: "This command can only be used in a modmail thread.",
-				flags: ["Ephemeral"],
-			});
+		// Validate permissions
+		if (!(await validateModmailPermissions(interaction))) {
 			return;
 		}
 
-		const modMail = await getActiveModMailByChannel(
-			BigInt(interaction.channelId),
+		// Use the reusable archive function
+		await archiveModmailTicket(
+			interaction,
+			interaction.channelId,
+			interaction.client,
 		);
-		if (!modMail) {
-			await interaction.followUp({
-				content: "This is not an active modmail thread.",
-				flags: ["Ephemeral"],
-			});
-			return;
-		}
-
-		// Create archive using the filtered messages
-		const archiveResult = await createArchiveFromThread(
-			interaction.channel,
-			modMail,
-		);
-
-		if (!archiveResult.success || !archiveResult.content) {
-			await interaction.followUp({
-				content: `Failed to create archive: ${archiveResult.error}`,
-				flags: ["Ephemeral"],
-			});
-			return;
-		}
-
-		// Create HTML file attachment
-		const htmlBuffer = Buffer.from(archiveResult.content, "utf-8");
-		const fileName = `modmail-archive-${interaction.channel.name}-${Date.now()}.html`;
-		const attachment = new AttachmentBuilder(htmlBuffer, { name: fileName });
-
-		let dmSendSuccess = false;
-		let archiveChannelSendSuccess = false;
-
-		try {
-			// Send to user's DM
-			const user = await interaction.client.users.fetch(
-				modMail.creatorId.toString(),
-			);
-			const dmChannel = await user.createDM();
-
-			if (dmChannel.isSendable()) {
-				await dmChannel.send({
-					content:
-						"Your modmail ticket has been archived. Here's a copy of the conversation:",
-					files: [attachment],
-				});
-				dmSendSuccess = true;
-				logger.info(
-					`Successfully sent archive to user ${modMail.creatorId} via DM`,
-				);
-			} else {
-				logger.warn(
-					`Could not send archive to user ${modMail.creatorId} - DM not accessible`,
-				);
-			}
-		} catch (error) {
-			logger.error(
-				`Failed to send archive to user ${modMail.creatorId} via DM:`,
-				error,
-			);
-		}
-
-		try {
-			// Send to archive channel
-			const guild = await interaction.client.guilds.fetch(config.guildId);
-			const archiveChannel = await guild.channels.fetch(
-				config.modmail.archiveChannel,
-			);
-
-			if (archiveChannel?.isTextBased() && archiveChannel.isSendable()) {
-				// Create a new attachment for the archive channel (Discord requires separate instances)
-				const archiveAttachment = new AttachmentBuilder(htmlBuffer, {
-					name: fileName,
-				});
-
-				await archiveChannel.send({
-					content: `Modmail ticket archived: ${interaction.channel.name}\nTicket ID: ${modMail.id}\nUser: <@${modMail.creatorId}>`,
-					files: [archiveAttachment],
-				});
-				archiveChannelSendSuccess = true;
-				logger.info(
-					`Successfully sent archive to archive channel ${config.modmail.archiveChannel}`,
-				);
-			} else {
-				logger.warn(
-					`Could not send archive to archive channel - channel not accessible`,
-				);
-			}
-		} catch (error) {
-			logger.error(`Failed to send archive to archive channel:`, error);
-		}
-
-		// Close the ticket
-		await closeModMailTicketByModMail(modMail);
-
-		// Provide feedback to moderator
-		let statusMessage = `Archive created with ${archiveResult.messageCount} messages.`;
-
-		if (dmSendSuccess && archiveChannelSendSuccess) {
-			statusMessage +=
-				"\n✅ Sent to user's DM and archive channel. Deleting Thread in 10 seconds...";
-		} else if (dmSendSuccess) {
-			statusMessage +=
-				"\n✅ Sent to user's DM.\n❌ Failed to send to archive channel.";
-		} else if (archiveChannelSendSuccess) {
-			statusMessage +=
-				"\n❌ Failed to send to user's DM.\n✅ Sent to archive channel.";
-		} else {
-			statusMessage +=
-				"\n❌ Failed to send to both user's DM and archive channel.";
-		}
-
-		await interaction.followUp({
-			content: statusMessage,
-			flags: ["Ephemeral"],
-		});
-
-		// Auto-delete thread after successful archiving
-		setTimeout(async () => {
-			if (!interaction.channel) {
-				logger.warn(
-					`Modmail thread ${interaction.channelId} was deleted before timeout or something went wrong!`,
-				);
-				return;
-			}
-			// Delete thread if both sends were successful
-			if (dmSendSuccess && archiveChannelSendSuccess) {
-				try {
-					await interaction.channel.delete(
-						"Modmail ticket archived and processed successfully",
-					);
-					logger.info(
-						`Successfully deleted modmail thread ${interaction.channelId} after archiving`,
-					);
-				} catch (error) {
-					logger.error(
-						`Failed to delete thread ${interaction.channelId}:`,
-						error,
-					);
-				}
-			}
-		}, 10 * 1000);
 	} catch (error) {
 		logger.error(`Error creating modmail archive:`, error);
 		await interaction.followUp({
 			content: "An error occurred while creating the archive.",
+			flags: ["Ephemeral"],
+		});
+	}
+}
+
+/**
+ * Core logic for showing modmail notes
+ * @param interaction The interaction
+ * @param ticketId Optional ticket ID for archived tickets
+ * @returns Promise<void>
+ */
+export async function showModmailNotes(
+	interaction: ButtonInteraction | ChatInputCommandInteraction,
+	ticketId?: string,
+) {
+	// Validate permissions
+	if (!(await validateModmailPermissions(interaction))) {
+		return;
+	}
+
+	let modMail: ModMailTicket | null = null;
+
+	if (ticketId) {
+		// For archived tickets
+		modMail = await ModMailTicket.findOne({
+			where: {
+				id: BigInt(ticketId),
+			},
+		});
+
+		if (!modMail) {
+			await interaction.followUp({
+				content: "Ticket not found.",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+	} else {
+		// For active tickets
+		if (!interaction.channel?.isThread()) {
+			await interaction.followUp({
+				content: "This command can only be used in a modmail thread",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		modMail = await getActiveModMailByChannel(BigInt(interaction.channelId));
+
+		if (!modMail) {
+			await interaction.followUp({
+				content: "This command can only be used in a modmail thread",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+	}
+
+	// Get all notes for this ticket
+	const notes = await ModMailNote.findAll({
+		where: {
+			modMailTicketId: modMail.id,
+		},
+		order: [["createdAt", "ASC"]],
+	});
+
+	if (notes.length === 0) {
+		await interaction.followUp({
+			content: `No notes found for this ${ticketId ? "archived " : ""}ticket.`,
+			flags: ["Ephemeral"],
+		});
+		return;
+	}
+
+	const member = await getMemberFromInteraction(interaction);
+	const noteEmbed = await generateEmbedsForModMailNotes(
+		interaction.client,
+		modMail,
+		notes,
+		member ?? undefined,
+	);
+
+	await interaction.followUp({
+		embeds: [noteEmbed.embed],
+		flags: ["Ephemeral"],
+	});
+}
+
+/**
+ * Handles the show notes button interaction
+ * Displays all notes associated with the current modmail ticket
+ */
+export async function handleModmailShowNotes(interaction: ButtonInteraction) {
+	await interaction.deferReply({ flags: ["Ephemeral"] });
+	try {
+		await showModmailNotes(interaction);
+	} catch (error) {
+		logger.error("Failed to show notes:", error);
+		await interaction.followUp({
+			content: "An error occurred while showing notes.",
+			flags: ["Ephemeral"],
+		});
+	}
+}
+
+/**
+ * Handles the show notes button interaction for archived tickets
+ * Displays all notes associated with an archived modmail ticket
+ */
+export async function handleArchivedModmailShowNotes(
+	interaction: ButtonInteraction,
+) {
+	await interaction.deferReply({ flags: ["Ephemeral"] });
+
+	try {
+		// Extract ticket ID from custom ID (format: "modmail-list-notes-archived-{ticketId}")
+		const ticketId = interaction.customId.split("-").pop();
+		if (!ticketId) {
+			await interaction.followUp({
+				content: "Invalid ticket ID.",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		await showModmailNotes(interaction, ticketId);
+	} catch (error) {
+		logger.error("Failed to show archived ticket notes:", error);
+		await interaction.followUp({
+			content: "An error occurred while showing notes.",
 			flags: ["Ephemeral"],
 		});
 	}
@@ -843,84 +1089,6 @@ export async function handleModmailAssign(interaction: ButtonInteraction) {
 		await interaction.followUp({
 			content: "An error occurred while creating the assignment selection.",
 			flags: ["Ephemeral"],
-		});
-	}
-}
-
-/**
- * Handles the show notes button interaction
- * Displays all notes associated with the current modmail ticket
- */
-export async function handleModmailShowNotes(interaction: ButtonInteraction) {
-	await interaction.deferReply({ flags: ["Ephemeral"] });
-	try {
-		if (!interaction.inGuild()) {
-			await interaction.followUp({
-				content: "This command can only be used in a guild.",
-				flags: ["Ephemeral"],
-			});
-			return;
-		}
-
-		// Check if user has moderator permissions
-		const member = await getMemberFromInteraction(interaction);
-		if (!member?.permissions.has(PermissionFlagsBits.ManageMessages)) {
-			await interaction.followUp({
-				content: "You don't have permission to view notes",
-				flags: ["Ephemeral"],
-			});
-			return;
-		}
-
-		if (!interaction.channel?.isThread()) {
-			await interaction.followUp({
-				content: "This command can only be used in a modmail thread",
-				flags: ["Ephemeral"],
-			});
-			return;
-		}
-
-		const modMail = await getActiveModMailByChannel(
-			BigInt(interaction.channelId),
-		);
-
-		if (!modMail) {
-			await interaction.followUp({
-				content: "This command can only be used in a modmail thread",
-				flags: ["Ephemeral"],
-			});
-			return;
-		}
-
-		// Get all notes for this ticket
-		const notes = await ModMailNote.findAll({
-			where: {
-				modMailTicketId: modMail.id,
-			},
-			order: [["createdAt", "ASC"]],
-		});
-
-		if (notes.length === 0) {
-			await interaction.followUp({
-				content: "No notes found for this ticket",
-				flags: ["Ephemeral"],
-			});
-			return;
-		}
-		const noteEmbed = await generateEmbedsForModMailNotes(
-			interaction.client,
-			modMail,
-			notes,
-			member,
-		);
-		await interaction.followUp({
-			embeds: [noteEmbed.embed],
-			flags: ["Ephemeral"],
-		});
-	} catch (error) {
-		logger.error("Failed to show notes:", error);
-		await interaction.followUp({
-			content: "An error occurred while showing notes.",
 		});
 	}
 }
@@ -1106,26 +1274,20 @@ export async function handleModmailUserClose(interaction: ButtonInteraction) {
 				const thread = await guild.channels.fetch(modMail.threadId.toString());
 
 				if (thread?.isThread()) {
-					// Create archive using the filtered messages
-					const archiveResult = await createArchiveFromThread(thread, modMail);
+					// Create archive attachment
+					const archiveResult = await createArchiveAttachment(thread, modMail);
 
-					if (archiveResult.success && archiveResult.content) {
-						// Create HTML file attachment
-						const htmlBuffer = Buffer.from(archiveResult.content, "utf-8");
-						const fileName = `modmail-archive-${thread.name}-${Date.now()}.html`;
-						const attachment = new AttachmentBuilder(htmlBuffer, {
-							name: fileName,
-						});
+					if (archiveResult.success && archiveResult.attachment) {
 						if (interaction.channel?.isSendable()) {
 							// Send archive to user's DM
 							await interaction.channel?.send({
 								content:
 									"Your ticket has been closed and archived. Here's a copy of the conversation:",
-								files: [attachment],
+								files: [archiveResult.attachment],
 							});
 						}
 
-						// Send to archive channel
+						// Send to archive channel with notes button
 						try {
 							const archiveChannel = await guild.channels.fetch(
 								config.modmail.archiveChannel,
@@ -1135,13 +1297,32 @@ export async function handleModmailUserClose(interaction: ButtonInteraction) {
 								archiveChannel?.isTextBased() &&
 								archiveChannel.isSendable()
 							) {
-								const archiveAttachment = new AttachmentBuilder(htmlBuffer, {
-									name: fileName,
-								});
+								const archiveAttachment = new AttachmentBuilder(
+									archiveResult.attachment.attachment,
+									{
+										name:
+											archiveResult.attachment.name || "archived_thread.html",
+									},
+								);
+
+								// Create button to list mod notes
+								const listNotesButton = new ButtonBuilder()
+									.setCustomId(
+										`${MODMAIL_LIST_NOTES_ID}-archived-${modMail.id}`,
+									)
+									.setLabel("List Mod Notes")
+									.setStyle(ButtonStyle.Secondary)
+									.setEmoji("📝");
+
+								const notesRow =
+									new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
+										listNotesButton,
+									);
 
 								await archiveChannel.send({
 									content: `Modmail ticket closed by user: ${thread.name}\nTicket ID: ${modMail.id}\nUser: <@${modMail.creatorId}>`,
 									files: [archiveAttachment],
+									components: [notesRow],
 								});
 							}
 						} catch (error) {
