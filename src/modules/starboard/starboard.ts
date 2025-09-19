@@ -61,16 +61,10 @@ export const extractEmbedAndFilesFromMessage: (
 	message: Message,
 	member: GuildMember,
 	stars: number,
-	starboardMessage?: Message,
 ) => Promise<{
 	embed: EmbedBuilder;
 	files?: AttachmentBuilder[];
-}> = async (
-	message: Message,
-	member: GuildMember,
-	stars: number,
-	starboardMessage?: Message,
-) => {
+}> = async (message: Message, member: GuildMember, stars: number) => {
 	const embed = createStandardEmbed(member)
 		.setColor(getColorForStars(stars))
 		.setAuthor({
@@ -81,20 +75,18 @@ export const extractEmbedAndFilesFromMessage: (
 		.setURL(message.url)
 		.setDescription(message.content.length > 0 ? message.content : null);
 	const files: AttachmentBuilder[] = [];
-	if (!starboardMessage) {
-		const imageOrGif = await getImageOrGifEmbed(message);
-		if (imageOrGif) {
-			if ("gifBuffer" in imageOrGif) {
-				files.push(
-					new AttachmentBuilder(imageOrGif.gifBuffer, {
-						name: imageOrGif.gifName,
-					}),
-				);
-				embed.setImage(`attachment://${imageOrGif.gifName}`);
-			} else if (imageOrGif.url) {
-				// If we have a regular image URL, use it directly
-				embed.setImage(imageOrGif.url);
-			}
+	const imageOrGif = await getImageOrGifEmbed(message);
+	if (imageOrGif) {
+		if ("gifBuffer" in imageOrGif) {
+			files.push(
+				new AttachmentBuilder(imageOrGif.gifBuffer, {
+					name: imageOrGif.gifName,
+				}),
+			);
+			embed.setImage(`attachment://${imageOrGif.gifName}`);
+		} else if (imageOrGif.url) {
+			// If we have a regular image URL, use it directly
+			embed.setImage(imageOrGif.url);
 		}
 	}
 
@@ -129,7 +121,6 @@ export const createStarboardMessageFromMessage: (
 					referencedMessage,
 					referencedMessage.member,
 					-1,
-					starboardMessage,
 				);
 
 			referencedEmbed.setAuthor({
@@ -146,12 +137,7 @@ export const createStarboardMessageFromMessage: (
 		}
 	}
 	const { embed, files: mainmessageFiles } =
-		await extractEmbedAndFilesFromMessage(
-			message,
-			member,
-			stars,
-			starboardMessage,
-		);
+		await extractEmbedAndFilesFromMessage(message, member, stars);
 	embeds.push(embed);
 	if (mainmessageFiles) {
 		files.push(...mainmessageFiles);
@@ -185,6 +171,7 @@ export const getImageOrGifEmbed: (message: Message) => Promise<
 	const embeds = message.embeds.filter(
 		(emb) => emb.data.type === "image" || emb.data.type === "gifv",
 	);
+	console.log(embeds);
 	if (embeds.length > 0) {
 		const embed = embeds[0];
 
