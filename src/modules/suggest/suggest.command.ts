@@ -12,7 +12,6 @@ import { config } from "../../Config.js";
 import {
 	createSuggestion,
 	createSuggestionEmbed,
-	SUGGESTION_MANAGE_ID,
 	SUGGESTION_NO_ID,
 	SUGGESTION_VIEW_VOTES_ID,
 	SUGGESTION_YES_ID,

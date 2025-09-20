@@ -20,10 +20,16 @@ export const SUGGESTION_MANAGE_ID = "suggestion-manage";
 export const SUGGESTION_MANAGE_APPROVE_ID = "suggestion-manage-approve";
 export const SUGGESTION_MANAGE_REJECT_ID = "suggestion-manage-reject";
 
+export const SUGGESTION_MANAGE_APPROVE_MODAL_ID =
+	"suggestion-manage-approve-modal";
+export const SUGGESTION_MANAGE_REJECT_MODAL_ID =
+	"suggestion-manage-reject-modal";
+
+export const SUGGESTION_REASON_INPUT_ID = "suggestion-reason-input";
+
 export const SUGGESTION_VIEW_VOTES_ID = "suggestion-view-votes";
 
 export type SuggestionVoteType = 1 | -1;
-
 export const createSuggestionEmbed: (
 	id: string,
 	member: GuildMember,
@@ -32,6 +38,8 @@ export const createSuggestionEmbed: (
 	downVotes?: number,
 	status?: SuggestionStatus,
 	moderatorId?: string,
+	moderatorReason?: string,
+	threadUrl?: string,
 ) => Promise<EmbedBuilder> = async (
 	id: string,
 	member,
@@ -40,6 +48,8 @@ export const createSuggestionEmbed: (
 	downVotes = 0,
 	status,
 	moderatorId,
+	moderatorReason,
+	threadUrl,
 ) => {
 	const builder = createStandardEmbed(member);
 
@@ -53,6 +63,19 @@ export const createSuggestionEmbed: (
 			builder.addFields({
 				name: `${status === SuggestionStatus.REJECTED ? "**Denied**" : "**Approved**"} By`,
 				value: actualMentionById(BigInt(moderatorId)),
+			});
+		}
+		if (moderatorReason) {
+			builder.addFields({
+				name: "Reason",
+				value: moderatorReason,
+			});
+		}
+		if (threadUrl) {
+			builder.addFields({
+				name: "Discussion Thread",
+				value: `[View Discussion](${threadUrl})`,
+				inline: true,
 			});
 		}
 	}
@@ -87,7 +110,14 @@ export const createSuggestionEmbed: (
 export const createSuggestionEmbedFromEntity: (
 	suggestion: Suggestion,
 	member: GuildMember,
-) => Promise<EmbedBuilder> = async (suggestion: Suggestion, member) => {
+	moderatorReason?: string,
+	threadUrl?: string,
+) => Promise<EmbedBuilder> = async (
+	suggestion: Suggestion,
+	member,
+	moderatorReason,
+	threadUrl,
+) => {
 	const upvotes = suggestion.votes?.filter((vote) => vote.vote === 1).length;
 	const downvotes = suggestion.votes?.filter((vote) => vote.vote === -1).length;
 
@@ -101,6 +131,8 @@ export const createSuggestionEmbedFromEntity: (
 			? suggestion.status
 			: undefined,
 		suggestion.moderatorId ? suggestion.moderatorId.toString() : undefined,
+		moderatorReason,
+		threadUrl,
 	);
 };
 
