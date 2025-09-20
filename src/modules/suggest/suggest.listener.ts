@@ -159,16 +159,8 @@ export const SuggestionButtonListener: EventListener = {
 				embeds: [embed],
 				flags: ["Ephemeral"],
 			});
-		} else if (interaction.customId === SUGGESTION_MANAGE_ID) {
-			const row = createSuggestionManageButtons();
-
-			await interaction.reply({
-				content: "Manage Suggestion",
-				components: [row],
-				flags: ["Ephemeral"],
-			});
 		} else if (interaction.customId === SUGGESTION_MANAGE_APPROVE_ID) {
-			await interaction.deferReply({ flags: ["Ephemeral"] });
+			await interaction.deferUpdate();
 			const initialMessage = await interaction.message.fetchReference();
 			const suggestion = await getSuggestionByMessageId(
 				BigInt(initialMessage.id),
@@ -208,9 +200,8 @@ export const SuggestionButtonListener: EventListener = {
 						suggestionArchive,
 						initialMessage,
 					);
-					await interaction.followUp({
+					await interaction.editReply({
 						content: "Suggestion approved!",
-						flags: ["Ephemeral"],
 					});
 				} catch (e) {
 					console.error(e);
@@ -222,8 +213,12 @@ export const SuggestionButtonListener: EventListener = {
 				}
 			}
 		} else if (interaction.customId === SUGGESTION_MANAGE_REJECT_ID) {
+			console.debug(
+				interaction.message.id,
+				await interaction.message.fetchReference().then((i) => i.id),
+			);
 			const initialMessage = await interaction.message.fetchReference();
-			await interaction.deferReply({ flags: ["Ephemeral"] });
+			await interaction.deferUpdate();
 			const suggestion = await getSuggestionByMessageId(
 				BigInt(initialMessage.id),
 			);
@@ -262,9 +257,8 @@ export const SuggestionButtonListener: EventListener = {
 						suggestionArchive,
 						initialMessage,
 					);
-					await interaction.followUp({
+					await interaction.editReply({
 						content: "Suggestion rejected!",
-						flags: ["Ephemeral"],
 					});
 				} catch (e) {
 					console.error(e);

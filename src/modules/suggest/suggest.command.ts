@@ -87,12 +87,7 @@ export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
 			new ButtonBuilder()
 				.setCustomId(SUGGESTION_VIEW_VOTES_ID)
 				.setStyle(ButtonStyle.Secondary)
-				.setEmoji("👁")
 				.setLabel("View Votes"),
-			new ButtonBuilder()
-				.setStyle(ButtonStyle.Secondary)
-				.setCustomId(SUGGESTION_MANAGE_ID)
-				.setEmoji("🎛"),
 		);
 		const response = await suggestionChannel.send({
 			embeds: [embed],
