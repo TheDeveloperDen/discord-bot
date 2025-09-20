@@ -104,7 +104,7 @@ export const createStarboardMessageFromMessage: (
 	embeds: EmbedBuilder[];
 	content: string;
 	files?: AttachmentBuilder[];
-}> = async (message, member, stars, starboardMessage) => {
+}> = async (message, member, stars) => {
 	const embeds: EmbedBuilder[] = [];
 	const files: AttachmentBuilder[] = [];
 	let content: string = `${config.starboard.emojiId}: ${stars} | ${message.url}`;

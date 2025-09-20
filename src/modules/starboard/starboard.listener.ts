@@ -386,7 +386,6 @@ async function updateStarboardMessage(
 			reactionMessage,
 			member,
 			starCount,
-			starboardMessage,
 		);
 		await starboardMessage.edit(starboardMessageFromMessage);
 		return;
