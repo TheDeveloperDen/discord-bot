@@ -69,7 +69,11 @@ export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
 
 		const suggestionId = interaction.id;
 
-		const embed = createSuggestionEmbed(suggestionId, member, suggestionText);
+		const embed = await createSuggestionEmbed(
+			suggestionId,
+			member,
+			suggestionText,
+		);
 
 		const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder()

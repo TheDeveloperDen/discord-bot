@@ -8,7 +8,7 @@ import {
 import { config } from "../../Config.js";
 import { Suggestion, SuggestionStatus } from "../../store/models/Suggestion.js";
 import { SuggestionVote } from "../../store/models/SuggestionVote.js";
-import { createStandardEmbed } from "../../util/embeds.js";
+import { createStandardEmbed, standardFooter } from "../../util/embeds.js";
 import { actualMention, actualMentionById } from "../../util/users.js";
 
 export const SUGGESTION_ID_FIELD_NAME = "Suggestion ID";
@@ -32,7 +32,7 @@ export const createSuggestionEmbed: (
 	downVotes?: number,
 	status?: SuggestionStatus,
 	moderatorId?: string,
-) => EmbedBuilder = (
+) => Promise<EmbedBuilder> = async (
 	id: string,
 	member,
 	suggestionText,
@@ -64,22 +64,23 @@ export const createSuggestionEmbed: (
 			inline: true,
 		},
 		{
-			name: SUGGESTION_ID_FIELD_NAME,
-			value: id,
-		},
-		{
 			name: "Suggestion",
 			value: suggestionText,
 		},
 		{
 			name: status === SuggestionStatus.PENDING ? "Current Votes" : "Results",
-			value: `-------------
-        :white_check_mark::\`${upvotes}\`
-        :x::\`${downVotes}\`
-      `,
+			value: `:white_check_mark:: **${upvotes}**
+        :x:: **${downVotes}**
+            `,
 		},
 	]);
 
+	builder.setFooter({
+		...standardFooter(),
+		text: `${SUGGESTION_ID_FIELD_NAME}: ${id}`,
+	});
+
+	builder.setThumbnail((await member.fetch()).user.avatarURL());
 	return builder;
 };
 
