@@ -1,4 +1,10 @@
-import type { Embed, GuildMember, Message, SendableChannels } from "discord.js";
+import type {
+	Embed,
+	GuildMember,
+	Message,
+	SendableChannels,
+	Snowflake,
+} from "discord.js";
 import * as schedule from "node-schedule";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
@@ -10,7 +16,67 @@ import {
 	createStarboardMessage,
 	createStarboardMessageFromMessage,
 	getStarboardMessageForOriginalMessageId,
-} from "./starboard.js";
+} from "./starboard.js"; // Debounce system for starboard reactions
+
+// Debounce system for starboard reactions
+interface ReactionDebounceEntry {
+	timeoutId: NodeJS.Timeout;
+	addCount: number;
+	removeCount: number;
+}
+
+const reactionDebounceMap = new Map<Snowflake, ReactionDebounceEntry>();
+const DEBOUNCE_DELAY = 2000; // 2 seconds
+
+export const debounceStarboardReaction = (
+	messageId: Snowflake,
+	isAdd: boolean,
+	callback: () => Promise<void>,
+): void => {
+	const existing = reactionDebounceMap.get(messageId);
+
+	if (existing) {
+		// Clear the existing timeout
+		clearTimeout(existing.timeoutId);
+
+		// Update counters
+		if (isAdd) {
+			existing.addCount++;
+		} else {
+			existing.removeCount++;
+		}
+
+		// Check if we should cancel execution (equal adds and removes)
+		const shouldCancel = existing.addCount === existing.removeCount;
+
+		if (shouldCancel) {
+			// Remove from map and don't execute
+			reactionDebounceMap.delete(messageId);
+			return;
+		}
+	} else {
+		// Create new entry
+		reactionDebounceMap.set(messageId, {
+			timeoutId: setTimeout(() => {}, 0), // Placeholder, will be replaced immediately
+			addCount: isAdd ? 1 : 0,
+			removeCount: isAdd ? 0 : 1,
+		});
+	}
+
+	const entry = reactionDebounceMap.get(messageId);
+	if (!entry) {
+		return;
+	}
+
+	// Set new timeout
+	entry.timeoutId = setTimeout(async () => {
+		try {
+			await callback();
+		} finally {
+			reactionDebounceMap.delete(messageId);
+		}
+	}, DEBOUNCE_DELAY);
+};
 
 const messageFetcher = new MessageFetcher();
 
@@ -153,7 +219,7 @@ export const StarboardListener: EventListener = {
 	},
 	async messageReactionAdd(_, reaction) {
 		let message = reaction.message;
-		if (message.partial) message = await reaction.message.fetch();
+		if (message.partial) message = await message.fetch();
 		if (
 			!message.inGuild() ||
 			message.author.bot ||
@@ -162,67 +228,76 @@ export const StarboardListener: EventListener = {
 			reaction.emoji.name !== config.starboard.emojiId
 		)
 			return;
-		await reaction.fetch();
-		const count = reaction.count || 1;
-		if (count >= config.starboard.threshold) {
-			const starboardChannel = await message.guild.channels.fetch(
-				config.starboard.channel,
-			);
 
-			if (!starboardChannel?.isTextBased() || !starboardChannel.isSendable()) {
-				logger.error(
-					"Starboard channel not found, not a text channel or not sendable",
+		debounceStarboardReaction(message.id, true, async () => {
+			reaction = await reaction.fetch();
+			const count = reaction.count || 1;
+			console.log(count, count >= config.starboard.threshold);
+
+			if (count >= config.starboard.threshold) {
+				const starboardChannel = await message.guild.channels.fetch(
+					config.starboard.channel,
 				);
-				return;
-			}
-			const existingStarboardMessage =
-				await getStarboardMessageForOriginalMessageId(message.id);
-			try {
-				const member = await getMember(message);
 
-				if (!member) {
-					logger.info(
-						"Member not found for reaction message id %s, skipping",
-						message.id,
-					);
-					return;
-				}
-				if (existingStarboardMessage) {
-					// Already on the starboard so update it
-					await updateStarboardMessage(
-						starboardChannel,
-						existingStarboardMessage,
-						message,
-						member,
-						count,
+				if (
+					!starboardChannel?.isTextBased() ||
+					!starboardChannel.isSendable()
+				) {
+					logger.error(
+						"Starboard channel not found, not a text channel or not sendable",
 					);
 					return;
 				}
 
-				const starboardMessageContent = await createStarboardMessageFromMessage(
-					message,
-					member,
-					count,
-				);
+				const existingStarboardMessage =
+					await getStarboardMessageForOriginalMessageId(message.id);
+				try {
+					const member = await getMember(message);
 
-				const starboardMessage = await starboardChannel.send({
-					...starboardMessageContent,
-					allowedMentions: {
-						parse: [],
-					},
-				});
-				if (!existingStarboardMessage) {
-					await createStarboardMessage(
-						message.id,
-						message.channelId,
-						starboardMessage.id,
-					);
+					if (!member) {
+						logger.info(
+							"Member not found for reaction message id %s, skipping",
+							message.id,
+						);
+						return;
+					}
+
+					if (existingStarboardMessage) {
+						// Already on the starboard so update it
+						await updateStarboardMessage(
+							starboardChannel,
+							existingStarboardMessage,
+							message,
+							member,
+							count,
+						);
+						return;
+					}
+
+					const starboardMessageContent =
+						await createStarboardMessageFromMessage(message, member, count);
+
+					const starboardMessage = await starboardChannel.send({
+						...starboardMessageContent,
+						allowedMentions: {
+							parse: [],
+						},
+					});
+
+					if (!existingStarboardMessage) {
+						await createStarboardMessage(
+							message.id,
+							message.channelId,
+							starboardMessage.id,
+						);
+					}
+				} catch (error) {
+					logger.error("Error sending starboard message", error);
 				}
-			} catch (error) {
-				logger.error("Error sending starboard message", error);
 			}
-		}
+		});
 	},
+
 	async messageReactionRemove(_, reaction) {
 		let message = reaction.message;
 		if (message.partial) message = await reaction.message.fetch();
@@ -234,47 +309,52 @@ export const StarboardListener: EventListener = {
 			reaction.emoji.name !== config.starboard.emojiId
 		)
 			return;
-		await reaction.fetch();
-		const count = reaction.count || 0;
-		const existingStarboardMessage =
-			await getStarboardMessageForOriginalMessageId(message.id);
-		if (!existingStarboardMessage) return;
-		try {
-			const member = await getMember(message);
 
-			if (!member) {
-				logger.info(
-					"Member not found for reaction message id: %s",
-					reaction.message.id,
-				);
-				return;
-			}
+		debounceStarboardReaction(message.id, false, async () => {
+			reaction = await reaction.fetch();
+			const count = reaction.count || 0;
 
-			if (existingStarboardMessage) {
-				const starboardChannel = await message.guild.channels.fetch(
-					config.starboard.channel,
-				);
-				if (
-					!starboardChannel?.isTextBased() ||
-					!starboardChannel.isSendable()
-				) {
-					logger.error(
-						"Starboard channel not found, not a text channel or not sendable",
+			const existingStarboardMessage =
+				await getStarboardMessageForOriginalMessageId(message.id);
+			if (!existingStarboardMessage) return;
+
+			try {
+				const member = await getMember(message);
+
+				if (!member) {
+					logger.info(
+						"Member not found for reaction message id: %s",
+						reaction.message.id,
 					);
 					return;
 				}
 
-				await updateStarboardMessage(
-					starboardChannel,
-					existingStarboardMessage,
-					message,
-					member,
-					count,
-				);
+				if (existingStarboardMessage) {
+					const starboardChannel = await message.guild.channels.fetch(
+						config.starboard.channel,
+					);
+					if (
+						!starboardChannel?.isTextBased() ||
+						!starboardChannel.isSendable()
+					) {
+						logger.error(
+							"Starboard channel not found, not a text channel or not sendable",
+						);
+						return;
+					}
+
+					await updateStarboardMessage(
+						starboardChannel,
+						existingStarboardMessage,
+						message,
+						member,
+						count,
+					);
+				}
+			} catch (error) {
+				logger.error("Error sending starboard message", error);
 			}
-		} catch (error) {
-			logger.error("Error sending starboard message", error);
-		}
+		});
 	},
 };
 
