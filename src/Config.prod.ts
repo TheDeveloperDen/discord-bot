@@ -56,8 +56,8 @@ export const config: Config = {
 		noEmojiId: "1012427085798723666",
 	},
 	suggest: {
-		suggestionsChannel: "",
-		archiveChannel: "",
+		suggestionsChannel: "933455599486767194",
+		archiveChannel: "933456493368471572",
 		yesEmojiId: "thumbsup",
 		noEmojiId: "thumbsdown",
 	},
