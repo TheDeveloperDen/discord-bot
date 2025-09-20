@@ -19,6 +19,7 @@ export class RealBigInt extends DataTypes.ABSTRACT<bigint> {
 	}
 
 	override toBindableValue(value: bigint): unknown {
+		console.debug(`toBindableValue: ${value}`);
 		if (this.nativeBigIntSupport()) {
 			return value;
 		} else {
@@ -31,8 +32,11 @@ export class RealBigInt extends DataTypes.ABSTRACT<bigint> {
 			// For native bigint support, return the value as string
 			return value?.toString() ?? "0";
 		} else {
+			if (typeof value === "string") {
+				return value.toString();
+			}
 			// For string representation, escape as a string literal
-			return `'${value}'`;
+			return `'${value}n'`;
 		}
 	}
 
