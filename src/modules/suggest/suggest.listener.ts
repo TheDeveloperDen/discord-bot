@@ -17,11 +17,9 @@ import {
 import type { EventListener } from "../module.js";
 import {
 	createSuggestionEmbedFromEntity,
-	createSuggestionManageButtons,
 	createVotesEmbed,
 	getSuggestionByMessageId,
 	SUGGESTION_MANAGE_APPROVE_ID,
-	SUGGESTION_MANAGE_ID,
 	SUGGESTION_MANAGE_REJECT_ID,
 	SUGGESTION_NO_ID,
 	SUGGESTION_VIEW_VOTES_ID,
