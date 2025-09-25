@@ -915,7 +915,7 @@ export async function showModmailNotes(
 		// For archived tickets
 		modMail = await ModMailTicket.findOne({
 			where: {
-				id: BigInt(ticketId),
+				id: ticketId,
 			},
 		});
 

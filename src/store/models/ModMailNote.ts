@@ -30,9 +30,9 @@ export class ModMailNote extends Model<
 	@AutoIncrement
 	public declare id: CreationOptional<bigint>;
 
-	@Attribute(RealBigInt)
+	@Attribute(DataTypes.INTEGER)
 	@NotNull
-	public modMailTicketId!: bigint;
+	public modMailTicketId!: number;
 
 	@Attribute(RealBigInt)
 	@NotNull
