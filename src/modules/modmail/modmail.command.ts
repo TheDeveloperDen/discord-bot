@@ -1,22 +1,178 @@
+import type { MessageActionRowComponentBuilder } from "@discordjs/builders";
 import {
-	type ActionRowBuilder,
+	ActionRowBuilder,
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
-	type ButtonBuilder,
+	ButtonBuilder,
+	ButtonStyle,
 	type EmbedBuilder,
 	PermissionFlagsBits,
 } from "discord.js";
 import type { Command, ExecutableSubcommand } from "djs-slash-helper";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
+import { ModMailNote } from "../../store/models/ModMailNote.js";
 import { getMemberFromInteraction } from "../../util/member.js";
 import { safelyFetchUser } from "../../util/users.js";
 import {
+	archiveModmailTicket,
 	closeModMailTicketByModMail,
 	createModMailDetails,
+	createModMailNoteEmbed,
 	getActiveModMailByChannel,
 	getActiveModMailByUser,
+	MODMAIL_DELETE_NOTE_ID,
+	MODMAIL_EDIT_NOTE_ID,
+	showModmailNotes,
+	validateModmailPermissions,
 } from "./modmail.js";
+
+const ArchiveSubCommand: ExecutableSubcommand = {
+	type: ApplicationCommandOptionType.Subcommand,
+	name: "archive",
+	description: "Archive and close the current modmail thread.",
+	async handle(interaction) {
+		await interaction.deferReply({ flags: ["Ephemeral"] });
+
+		try {
+			// Validate permissions
+			if (!(await validateModmailPermissions(interaction))) {
+				return;
+			}
+
+			// Use the reusable archive function
+			await archiveModmailTicket(
+				interaction,
+				interaction.channelId,
+				interaction.client,
+			);
+		} catch (error) {
+			logger.error(`Error creating modmail archive:`, error);
+			await interaction.followUp({
+				content: "An error occurred while creating the archive.",
+				flags: ["Ephemeral"],
+			});
+		}
+	},
+};
+
+const NoteSubCommand: ExecutableSubcommand = {
+	type: ApplicationCommandOptionType.Subcommand,
+	name: "note",
+	description: "Add a note for moderators about this ticket.",
+	options: [
+		{
+			type: ApplicationCommandOptionType.String,
+			name: "content",
+			description: "The note content",
+			required: true,
+		},
+	],
+	async handle(interaction) {
+		await interaction.deferReply({
+			flags: ["Ephemeral"],
+		});
+
+		if (!interaction.inGuild()) {
+			await interaction.followUp({
+				content: "This command can only be used in a guild",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		// Check if user has moderator permissions
+		const member = await getMemberFromInteraction(interaction);
+		if (!member?.permissions.has(PermissionFlagsBits.ManageMessages)) {
+			await interaction.followUp({
+				content: "You don't have permission to add notes",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		if (!interaction.channel?.isThread()) {
+			await interaction.followUp({
+				content: "This command can only be used in a modmail thread",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		const modMail = await getActiveModMailByChannel(
+			BigInt(interaction.channelId),
+		);
+
+		if (!modMail) {
+			await interaction.followUp({
+				content: "This command can only be used in a modmail thread",
+				flags: ["Ephemeral"],
+			});
+			return;
+		}
+
+		const content = interaction.options.getString("content", true);
+
+		const deleteButton = new ButtonBuilder()
+			.setStyle(ButtonStyle.Danger)
+			.setLabel("Delete Note")
+			.setCustomId(MODMAIL_DELETE_NOTE_ID);
+
+		const editButton = new ButtonBuilder()
+			.setStyle(ButtonStyle.Secondary)
+			.setLabel("Edit Note")
+			.setCustomId(MODMAIL_EDIT_NOTE_ID);
+
+		const row =
+			new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
+				editButton,
+				deleteButton,
+			);
+
+		const createdModMailNote = await ModMailNote.create({
+			modMailTicketId: modMail.id,
+			authorId: BigInt(interaction.user.id),
+			content: content,
+		});
+
+		const noteEmbed = await createModMailNoteEmbed(
+			interaction.client,
+			createdModMailNote,
+		);
+
+		// Send the note to the channel
+		await interaction.channel.send({
+			embeds: [noteEmbed],
+			components: [row],
+		});
+
+		await interaction.followUp({
+			content: "✅ Note added successfully",
+			flags: ["Ephemeral"],
+		});
+	},
+};
+
+const ListNotesSubCommand: ExecutableSubcommand = {
+	type: ApplicationCommandOptionType.Subcommand,
+	name: "listnotes",
+	description: "List all notes for this ticket.",
+	async handle(interaction) {
+		await interaction.deferReply({
+			flags: ["Ephemeral"],
+		});
+
+		try {
+			await showModmailNotes(interaction);
+		} catch (error) {
+			logger.error("Failed to show notes:", error);
+			await interaction.followUp({
+				content: "An error occurred while showing notes.",
+				flags: ["Ephemeral"],
+			});
+		}
+	},
+};
 
 const DetailsSubCommand: ExecutableSubcommand = {
 	type: ApplicationCommandOptionType.Subcommand,
@@ -316,6 +472,13 @@ export const ModmailCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: "ticket",
 	description: "Manage Tickets",
 	type: ApplicationCommandType.ChatInput,
-	options: [DetailsSubCommand, AssignSubCommand, CloseSubCommand],
+	options: [
+		DetailsSubCommand,
+		AssignSubCommand,
+		CloseSubCommand,
+		NoteSubCommand,
+		ListNotesSubCommand,
+		ArchiveSubCommand,
+	],
 	handle() {},
 };

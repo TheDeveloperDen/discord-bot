@@ -11,6 +11,7 @@ import { ColourRoles } from "./models/ColourRoles.js";
 import { DDUser } from "./models/DDUser.js";
 import { FAQ } from "./models/FAQ.js";
 import { ModeratorActions } from "./models/ModeratorActions.js";
+import { ModMailNote } from "./models/ModMailNote.js";
 import { ModMailTicket } from "./models/ModMailTicket.js";
 import { StarboardMessage } from "./models/StarboardMessage.js";
 import { Suggestion } from "./models/Suggestion.js";
@@ -72,6 +73,7 @@ export async function initStorage() {
 		Suggestion,
 		SuggestionVote,
 		ModMailTicket,
+		ModMailNote,
 	];
 	sequelize.addModels(models);
 

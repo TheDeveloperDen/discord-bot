@@ -1,6 +1,6 @@
 import { clearTimeout } from "node:timers";
 import {
-	type ActionRowBuilder,
+	ActionRowBuilder,
 	type ButtonBuilder,
 	type ButtonInteraction,
 	ChannelType,
@@ -9,9 +9,13 @@ import {
 	type EmbedBuilder,
 	type Interaction,
 	type Message,
+	ModalBuilder,
+	type ModalSubmitInteraction,
 	type OmitPartialGroupDMChannel,
 	PermissionFlagsBits,
 	type StringSelectMenuInteraction,
+	TextInputBuilder,
+	TextInputStyle,
 	type UserSelectMenuInteraction,
 } from "discord.js";
 import { config } from "../../Config.js";
@@ -27,18 +31,29 @@ import {
 	closeModMailTicketByModMail,
 	createModMailDetails,
 	createModMailInitializationEmbed,
+	createModMailNoteEmbed,
 	createModMailTicket,
+	extractContentsFromMessage,
 	extractEmbedAndFilesFromMessageModMail,
+	extractNoteIdFromMessage,
 	getActiveModMailByChannel,
 	getActiveModMailByUser,
+	getModMailNoteById,
+	handleArchivedModmailShowNotes,
+	handleModmailAddNote,
 	handleModmailArchive,
 	handleModmailAssign,
+	handleModmailShowNotes,
 	handleModmailUserClose,
 	handleModmailUserDetails,
 	hasActiveModMailByUser,
+	MODMAIL_ADD_NOTE_ID,
 	MODMAIL_ARCHIVE_ID,
 	MODMAIL_ASSIGN_ID,
 	MODMAIL_CATEGORY_SELECT_ID,
+	MODMAIL_DELETE_NOTE_ID,
+	MODMAIL_EDIT_NOTE_ID,
+	MODMAIL_LIST_NOTES_ID,
 	MODMAIL_SUBMIT_ID,
 	MODMAIL_USER_CLOSE_ID,
 	MODMAIL_USER_DETAILS_ID,
@@ -508,6 +523,15 @@ const handleCategorySelect = async (
 
 	const timeout = setTimeout(() => {
 		pendingModmailSelections.delete(userId);
+		try {
+			if (interaction.channel?.isSendable()) {
+				interaction.channel
+					.send({
+						content: `The selection process for your ticket has timed out. Please try again.`,
+					})
+					.catch(() => {});
+			}
+		} catch {}
 	}, SELECTION_TIMEOUT_MS);
 
 	pendingModmailSelections.set(userId, {
@@ -516,6 +540,150 @@ const handleCategorySelect = async (
 	});
 
 	await interaction.deferUpdate();
+};
+
+const handleModmailNoteDelete = async (interaction: ButtonInteraction) => {
+	await interaction.deferUpdate();
+	if (!interaction.inGuild()) return;
+	const message = interaction.message as Message<true>;
+	const noteId = await extractNoteIdFromMessage(message);
+
+	if (!noteId) {
+		await interaction.followUp({
+			content: "Invalid Message you are trying to fake as Note.",
+			flags: ["Ephemeral"],
+		});
+		return;
+	} else {
+		const note = await getModMailNoteById(noteId);
+		const modLogChannel = await interaction.guild?.channels.fetch(
+			config.channels.modLog,
+		);
+		if (modLogChannel?.isSendable()) {
+			const contents = await extractContentsFromMessage(message);
+			modLogChannel
+				.send({
+					content: `**Note deleted by ${interaction.user.tag}**\n\nContents: ${contents.content}`,
+				})
+				.catch(() => {
+					console.log("Failed to send note deletion to mod log channel");
+				});
+			await note?.destroy();
+			message.delete().catch(() => {});
+			await interaction.followUp({
+				content: "Note deleted.",
+				flags: ["Ephemeral"],
+			});
+		}
+	}
+};
+
+const handleModmailNoteEdit = async (interaction: ButtonInteraction) => {
+	if (!interaction.inGuild()) return;
+	const message = interaction.message as Message<true>;
+	const noteId = await extractNoteIdFromMessage(message);
+
+	if (!noteId) {
+		await interaction.reply({
+			content: "Invalid Message you are trying to fake as Note.",
+			flags: ["Ephemeral"],
+		});
+		return;
+	}
+
+	const note = await getModMailNoteById(noteId);
+	if (!note) {
+		await interaction.reply({
+			content: "Note not found.",
+			flags: ["Ephemeral"],
+		});
+		return;
+	}
+
+	// Create modal for editing the note
+	const modal = new ModalBuilder()
+		.setTitle("Edit Note")
+		.setCustomId(`modmail-edit-note-${noteId}`);
+
+	const contentField = new TextInputBuilder()
+		.setCustomId("noteContentField")
+		.setLabel("Note Content")
+		.setStyle(TextInputStyle.Paragraph)
+		.setValue(note.content)
+		.setRequired(true);
+
+	modal.addComponents(
+		new ActionRowBuilder<TextInputBuilder>().addComponents(contentField),
+	);
+
+	await interaction.showModal(modal);
+};
+
+const handleModmailNoteEditModal = async (
+	interaction: ModalSubmitInteraction,
+) => {
+	await interaction.deferReply({ flags: ["Ephemeral"] });
+
+	if (!interaction.inGuild()) return;
+
+	// Extract note ID from custom ID
+	const noteId = interaction.customId.split("-").pop();
+	if (!noteId) {
+		await interaction.followUp({
+			content: "Invalid note ID.",
+			flags: ["Ephemeral"],
+		});
+		return;
+	}
+
+	const note = await getModMailNoteById(BigInt(noteId));
+	if (!note) {
+		await interaction.followUp({
+			content: "Note not found.",
+			flags: ["Ephemeral"],
+		});
+		return;
+	}
+
+	const newContent = interaction.fields.getTextInputValue("noteContentField");
+	const existingContent = note.content;
+
+	// Update the note
+	await note.update({
+		content: newContent,
+		updatedBy: BigInt(interaction.user.id),
+		contentUpdatedAt: new Date(),
+	});
+
+	// Update the message embed
+	const originalMessage = interaction.message;
+	if (originalMessage?.embeds[0]) {
+		const updatedEmbed = await createModMailNoteEmbed(interaction.client, note);
+		// Add updated information
+		await originalMessage.edit({
+			embeds: [updatedEmbed],
+			components: originalMessage.components,
+		});
+	}
+
+	// Log the edit to mod log
+	const modLogChannel = await interaction.guild?.channels.fetch(
+		config.channels.modLog,
+	);
+	if (modLogChannel?.isSendable()) {
+		modLogChannel
+			.send({
+				content: `**Note edited by ${interaction.user.tag}**\n\nOriginal: ${existingContent}\nNew: ${newContent}`,
+			})
+			.catch(() => {
+				console.log("Failed to send note edit to mod log channel");
+			});
+	}
+
+	await interaction.followUp({
+		content: "Note updated successfully.",
+		flags: ["Ephemeral"],
+	});
 };
 
 export const ModMailListener: EventListener[] = [
@@ -538,7 +706,8 @@ export const ModMailListener: EventListener[] = [
 			if (
 				!interaction.isButton() &&
 				!interaction.isStringSelectMenu() &&
-				!interaction.isUserSelectMenu()
+				!interaction.isUserSelectMenu() &&
+				!interaction.isModalSubmit()
 			)
 				return;
 
@@ -563,6 +732,36 @@ export const ModMailListener: EventListener[] = [
 					interaction.customId === MODMAIL_ASSIGN_ID
 				) {
 					await handleModmailAssign(interaction);
+				} else if (
+					interaction.isButton() &&
+					interaction.customId === MODMAIL_ADD_NOTE_ID
+				) {
+					await handleModmailAddNote(interaction);
+				} else if (
+					interaction.isButton() &&
+					interaction.customId === MODMAIL_EDIT_NOTE_ID
+				) {
+					await handleModmailNoteEdit(interaction);
+				} else if (
+					interaction.isModalSubmit() &&
+					interaction.customId.startsWith("modmail-edit-note-")
+				) {
+					await handleModmailNoteEditModal(interaction);
+				} else if (
+					interaction.isButton() &&
+					interaction.customId === MODMAIL_LIST_NOTES_ID
+				) {
+					await handleModmailShowNotes(interaction);
+				} else if (
+					interaction.isButton() &&
+					interaction.customId === MODMAIL_DELETE_NOTE_ID
+				) {
+					await handleModmailNoteDelete(interaction);
+				} else if (
+					interaction.isButton() &&
+					interaction.customId.startsWith(`${MODMAIL_LIST_NOTES_ID}-archived-`)
+				) {
+					await handleArchivedModmailShowNotes(interaction);
 				} else if (
 					interaction.isUserSelectMenu() &&
 					interaction.customId.startsWith("modmail-assign-select-")

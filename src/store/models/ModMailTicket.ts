@@ -10,11 +10,13 @@ import {
 	Attribute,
 	AutoIncrement,
 	Default,
+	HasMany,
 	NotNull,
 	PrimaryKey,
 	Table,
 } from "@sequelize/core/decorators-legacy";
 import { RealBigInt } from "../RealBigInt.js";
+import { ModMailNote } from "./ModMailNote.js";
 
 export enum ModMailTicketStatus {
 	OPEN = "OPEN",
@@ -69,4 +71,7 @@ export class ModMailTicket extends Model<
 	@Default(ModMailTicketCategory.QUESTION)
 	@NotNull
 	public category: ModMailTicketCategory = ModMailTicketCategory.QUESTION;
+
+	@HasMany(() => ModMailNote, "modMailTicketId")
+	public declare notes?: ModMailNote[];
 }
