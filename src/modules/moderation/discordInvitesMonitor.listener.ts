@@ -86,10 +86,10 @@ export const InviteListeners: EventListener[] = [
 			if (message.author.bot || !message.inGuild()) return;
 			const member = await getMember(message);
 			if (!member || isSpecialUser(member)) return;
-			if (!(await isAllowedToSendDiscordInvites(member))) return;
+			if (await isAllowedToSendDiscordInvites(member)) return;
 
 			const { matches, hasInvite } = parseInvites(message);
-
+			console.log(matches, hasInvite);
 			if (hasInvite) {
 				await handleInvite(message, member, matches, false);
 			}
@@ -98,7 +98,7 @@ export const InviteListeners: EventListener[] = [
 			if (message.author.bot || !message.inGuild()) return;
 			const member = await getMember(message);
 			if (!member || isSpecialUser(member)) return;
-			if (!(await isAllowedToSendDiscordInvites(member))) return;
+			if (await isAllowedToSendDiscordInvites(member)) return;
 			const { matches, hasInvite } = parseInvites(message);
 
 			if (hasInvite) {
