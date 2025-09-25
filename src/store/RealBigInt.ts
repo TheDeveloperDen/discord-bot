@@ -19,7 +19,6 @@ export class RealBigInt extends DataTypes.ABSTRACT<bigint> {
 	}
 
 	override toBindableValue(value: bigint): unknown {
-		console.debug(`toBindableValue: ${value}`);
 		if (this.nativeBigIntSupport()) {
 			return value;
 		} else {
