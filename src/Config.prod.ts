@@ -58,8 +58,8 @@ export const config: Config = {
 	suggest: {
 		suggestionsChannel: "933455599486767194",
 		archiveChannel: "933456493368471572",
-		yesEmojiId: "thumbsup",
-		noEmojiId: "thumbsdown",
+		yesEmojiId: "✅",
+		noEmojiId: "❌",
 	},
 	modmail: {
 		pingRole: "",
