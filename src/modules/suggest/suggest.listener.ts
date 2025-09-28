@@ -56,9 +56,6 @@ async function respondToSuggestionInteraction(
 		});
 		return;
 	}
-	const member = await interaction.guild.members.fetch(
-		suggestion.memberId.toString(),
-	);
 
 	// Find the thread associated with the original message
 	let threadUrl: string | undefined;
@@ -70,8 +67,8 @@ async function respondToSuggestionInteraction(
 	}
 
 	const embed = await createSuggestionEmbedFromEntity(
+		interaction.client,
 		suggestion,
-		member,
 		moderatorReason,
 		threadUrl,
 	);
@@ -138,12 +135,7 @@ export const SuggestionButtonListener: EventListener = {
 
 				await suggestion.reload();
 				await interaction.message.edit({
-					embeds: [
-						await createSuggestionEmbedFromEntity(
-							suggestion,
-							interaction.member as GuildMember,
-						),
-					],
+					embeds: [await createSuggestionEmbedFromEntity(client, suggestion)],
 				});
 
 				let content = `You ${previousVoteValue && previousVoteValue === votingValue ? "already " : ""}voted ${votingValue === 1 ? "**Yes**" : "**No**"} on this suggestion`;

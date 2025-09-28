@@ -70,6 +70,7 @@ export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
 
 		const embed = await createSuggestionEmbed(
 			suggestionId,
+			interaction.client,
 			member,
 			suggestionText,
 		);
