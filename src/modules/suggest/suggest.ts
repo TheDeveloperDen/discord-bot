@@ -2,8 +2,10 @@ import {
 	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
+	type Client,
 	type EmbedBuilder,
 	type GuildMember,
+	type UserResolvable,
 } from "discord.js";
 import { config } from "../../Config.js";
 import { Suggestion, SuggestionStatus } from "../../store/models/Suggestion.js";
@@ -15,8 +17,6 @@ export const SUGGESTION_ID_FIELD_NAME = "Suggestion ID";
 
 export const SUGGESTION_YES_ID = "suggestion-yes";
 export const SUGGESTION_NO_ID = "suggestion-no";
-export const SUGGESTION_MANAGE_ID = "suggestion-manage";
-
 export const SUGGESTION_MANAGE_APPROVE_ID = "suggestion-manage-approve";
 export const SUGGESTION_MANAGE_REJECT_ID = "suggestion-manage-reject";
 
@@ -30,28 +30,20 @@ export const SUGGESTION_REASON_INPUT_ID = "suggestion-reason-input";
 export const SUGGESTION_VIEW_VOTES_ID = "suggestion-view-votes";
 
 export type SuggestionVoteType = 1 | -1;
-export const createSuggestionEmbed: (
+
+export async function createSuggestionEmbed(
 	id: string,
-	member: GuildMember,
+	client: Client,
+	submitter: UserResolvable,
 	suggestionText: string,
-	upVotes?: number,
+	upvotes?: number,
 	downVotes?: number,
 	status?: SuggestionStatus,
 	moderatorId?: string,
 	moderatorReason?: string,
 	threadUrl?: string,
-) => Promise<EmbedBuilder> = async (
-	id: string,
-	member,
-	suggestionText,
-	upvotes = 0,
-	downVotes = 0,
-	status,
-	moderatorId,
-	moderatorReason,
-	threadUrl,
-) => {
-	const builder = createStandardEmbed(member);
+): Promise<EmbedBuilder> {
+	const builder = createStandardEmbed(submitter ?? undefined);
 
 	if (status) {
 		builder.addFields({
@@ -83,7 +75,7 @@ export const createSuggestionEmbed: (
 	builder.addFields([
 		{
 			name: "Submitter",
-			value: actualMention(member),
+			value: actualMention(submitter),
 			inline: true,
 		},
 		{
@@ -103,26 +95,33 @@ export const createSuggestionEmbed: (
 		text: `${SUGGESTION_ID_FIELD_NAME}: ${id}`,
 	});
 
-	builder.setThumbnail((await member.fetch()).user.avatarURL());
+	const avatarURL = (await client.users.fetch(submitter)).avatarURL();
+	if (avatarURL) {
+		builder.setThumbnail(avatarURL);
+	}
 	return builder;
-};
+}
 
 export const createSuggestionEmbedFromEntity: (
+	client: Client,
 	suggestion: Suggestion,
-	member: GuildMember,
 	moderatorReason?: string,
 	threadUrl?: string,
 ) => Promise<EmbedBuilder> = async (
+	client,
 	suggestion: Suggestion,
-	member,
 	moderatorReason,
 	threadUrl,
 ) => {
 	const upvotes = suggestion.votes?.filter((vote) => vote.vote === 1).length;
 	const downvotes = suggestion.votes?.filter((vote) => vote.vote === -1).length;
 
+	const member = await client.users
+		.fetch(suggestion.memberId.toString())
+		.catch(() => suggestion.memberId.toString());
 	return createSuggestionEmbed(
 		suggestion.id.toString(),
+		client,
 		member,
 		suggestion.suggestionText,
 		upvotes ?? 0,
