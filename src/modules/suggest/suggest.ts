@@ -5,9 +5,11 @@ import {
 	type Client,
 	type EmbedBuilder,
 	type GuildMember,
+	type Message,
 	type UserResolvable,
 } from "discord.js";
 import { config } from "../../Config.js";
+import { logger } from "../../logging.js";
 import { Suggestion, SuggestionStatus } from "../../store/models/Suggestion.js";
 import { SuggestionVote } from "../../store/models/SuggestionVote.js";
 import { createStandardEmbed, standardFooter } from "../../util/embeds.js";
@@ -29,7 +31,9 @@ export const SUGGESTION_REASON_INPUT_ID = "suggestion-reason-input";
 
 export const SUGGESTION_VIEW_VOTES_ID = "suggestion-view-votes";
 
-export type SuggestionVoteType = 1 | -1;
+export type SuggestionVoteNo = -1;
+export type SuggestionVoteYes = 1;
+export type SuggestionVoteType = SuggestionVoteNo | SuggestionVoteYes;
 
 export async function createSuggestionEmbed(
 	id: string,
@@ -147,6 +151,58 @@ export const getSuggestionByMessageId: (
 	});
 };
 
+export async function getSuggestionByMessageIdOrRecoverFromMessage(
+	embedMessage: Message,
+): Promise<Suggestion | null> {
+	const fromMessage = await getSuggestionByMessageId(BigInt(embedMessage.id));
+	if (fromMessage) {
+		return fromMessage;
+	}
+
+	logger.warn(
+		"No suggestion found for message %s, trying to recover from message",
+		embedMessage.id,
+	);
+	// try to recover from message
+	if (embedMessage.embeds.length === 0) {
+		return null;
+	}
+
+	const embed = embedMessage.embeds[0];
+	const idField = embed.footer?.text;
+	if (!idField) {
+		return null;
+	}
+	const id = idField.match(/Suggestion ID: (\d+)/)?.[1];
+	if (!id) {
+		return null;
+	}
+
+	const submitter = embed.fields?.find((f) => f.name === "Submitter");
+	if (!submitter) {
+		return null;
+	}
+	const submitterId = submitter.value.match(/<@!?(\d+)>/)?.[1];
+	if (!submitterId) {
+		return null;
+	}
+	const suggestion = embed.fields?.find((f) => f.name === "Suggestion");
+	if (!suggestion) {
+		return null;
+	}
+
+	// we can't recover votes from message as we don't know who voted, so just create the suggestion
+
+	logger.warn("Recovered suggestion %s from message %s", id, embedMessage.id);
+	return await Suggestion.create({
+		id: BigInt(id),
+		memberId: BigInt(submitterId),
+		suggestionText: suggestion.value,
+		messageId: BigInt(embedMessage.id),
+		status: SuggestionStatus.PENDING,
+	});
+}
+
 export const createSuggestion: (
 	id: bigint,
 	userId: bigint,
@@ -232,21 +288,19 @@ export const createVotesEmbed: (
 	upvotes: SuggestionVote[],
 	downvotes: SuggestionVote[],
 ) => EmbedBuilder = (member, upvotes, downvotes) => {
+	const mentionVoter = (vote: SuggestionVote) =>
+		vote.memberId ? actualMentionById(vote.memberId) : "Unknown Voter";
 	return createStandardEmbed(member)
 		.setTitle("Suggestion Votes")
 		.addFields([
 			{
 				name: `${config.suggest.yesEmojiId} Upvotes`,
-				value: upvotes
-					.map((vote) => actualMentionById(vote.memberId))
-					.join("\n"),
+				value: upvotes.map(mentionVoter).join("\n"),
 				inline: true,
 			},
 			{
 				name: `${config.suggest.noEmojiId} Downvotes`,
-				value: downvotes
-					.map((vote) => actualMentionById(vote.memberId))
-					.join("\n"),
+				value: downvotes.map(mentionVoter).join("\n"),
 				inline: true,
 			},
 		]);

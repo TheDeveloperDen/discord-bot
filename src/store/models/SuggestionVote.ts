@@ -13,6 +13,7 @@ import {
 	Table,
 	Unique,
 } from "@sequelize/core/decorators-legacy";
+import type { SuggestionVoteType } from "../../modules/suggest/suggest.js";
 import { RealBigInt } from "../RealBigInt.js";
 import { Suggestion } from "./Suggestion.js";
 
@@ -38,7 +39,7 @@ export class SuggestionVote extends Model<
 	@Attribute(DataTypes.TINYINT)
 	@AllowNull
 	@ColumnName("vote")
-	public vote!: number;
+	public vote!: SuggestionVoteType;
 
 	@BelongsTo(() => Suggestion, "suggestionId")
 	public declare suggestion?: Suggestion;

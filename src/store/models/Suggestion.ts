@@ -26,6 +26,7 @@ export enum SuggestionStatus {
 
 @Table({
 	tableName: "Suggestion",
+	paranoid: true,
 })
 export class Suggestion extends Model<
 	InferAttributes<Suggestion>,

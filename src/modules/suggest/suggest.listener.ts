@@ -23,6 +23,7 @@ import {
 	createSuggestionEmbedFromEntity,
 	createVotesEmbed,
 	getSuggestionByMessageId,
+	getSuggestionByMessageIdOrRecoverFromMessage,
 	SUGGESTION_MANAGE_APPROVE_ID,
 	SUGGESTION_MANAGE_APPROVE_MODAL_ID,
 	SUGGESTION_MANAGE_REJECT_ID,
@@ -115,8 +116,8 @@ export const SuggestionButtonListener: EventListener = {
 					interaction.customId as keyof typeof SUGGESTION_BUTTON_MAP
 				] as SuggestionVoteType;
 
-				const suggestion = await getSuggestionByMessageId(
-					BigInt(interaction.message.id),
+				const suggestion = await getSuggestionByMessageIdOrRecoverFromMessage(
+					interaction.message,
 				);
 
 				if (suggestion == null) {
@@ -148,8 +149,8 @@ export const SuggestionButtonListener: EventListener = {
 				});
 			} else if (interaction.customId === SUGGESTION_VIEW_VOTES_ID) {
 				await interaction.deferReply({ flags: ["Ephemeral"] });
-				const suggestion = await getSuggestionByMessageId(
-					BigInt(interaction.message.id),
+				const suggestion = await getSuggestionByMessageIdOrRecoverFromMessage(
+					interaction.message,
 				);
 				if (!suggestion) {
 					await interaction.followUp({
@@ -228,9 +229,8 @@ export const SuggestionButtonListener: EventListener = {
 					return;
 				}
 
-				const suggestion = await getSuggestionByMessageId(
-					BigInt(initialMessage.id),
-				);
+				const suggestion =
+					await getSuggestionByMessageIdOrRecoverFromMessage(initialMessage);
 				if (!suggestion) {
 					await interaction.followUp({
 						content: "No Suggestion found for this message",
@@ -295,9 +295,8 @@ export const SuggestionButtonListener: EventListener = {
 					return;
 				}
 
-				const suggestion = await getSuggestionByMessageId(
-					BigInt(initialMessage.id),
-				);
+				const suggestion =
+					await getSuggestionByMessageIdOrRecoverFromMessage(initialMessage);
 				if (!suggestion) {
 					await interaction.followUp({
 						content: "No Suggestion found for this message",
