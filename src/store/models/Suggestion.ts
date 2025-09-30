@@ -48,7 +48,7 @@ export class Suggestion extends Model<
 	@ColumnName("memberId")
 	public memberId!: bigint;
 
-	@Attribute(DataTypes.STRING)
+	@Attribute(DataTypes.TEXT)
 	@NotNull
 	@ColumnName("suggestionText")
 	public suggestionText!: string;
