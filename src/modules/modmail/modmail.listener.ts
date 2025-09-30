@@ -636,7 +636,7 @@ const handleModmailNoteEditModal = async (
 		return;
 	}
 
-	const note = await getModMailNoteById(BigInt(noteId));
+	const note = await getModMailNoteById(Number(noteId));
 	if (!note) {
 		await interaction.followUp({
 			content: "Note not found.",

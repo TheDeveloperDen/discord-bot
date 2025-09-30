@@ -489,7 +489,7 @@ export function extractEmbedAndFilesFromMessageModMail(
 // =============================================
 
 export async function getModMailNoteById(
-	id: bigint,
+	id: number,
 ): Promise<ModMailNote | null> {
 	return ModMailNote.findOne({
 		where: {
@@ -600,13 +600,13 @@ export async function extractContentsFromMessage(
 
 export async function extractNoteIdFromMessage(
 	message: Message<true>,
-): Promise<bigint | undefined> {
+): Promise<number | undefined> {
 	const embed = message.embeds[0];
 	const fields = embed?.fields;
 	const foundId = fields?.find(
 		(field) => field.name === MODMAIL_NOTE_FIELD_NAME,
 	)?.value;
-	return foundId ? BigInt(foundId) : undefined;
+	return foundId ? Number(foundId) : undefined;
 }
 
 // =============================================
