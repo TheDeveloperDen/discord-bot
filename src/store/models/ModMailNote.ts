@@ -25,10 +25,10 @@ export class ModMailNote extends Model<
 	InferAttributes<ModMailNote>,
 	InferCreationAttributes<ModMailNote>
 > {
-	@Attribute(RealBigInt)
+	@Attribute(DataTypes.INTEGER)
 	@PrimaryKey
 	@AutoIncrement
-	public declare id: CreationOptional<bigint>;
+	public declare id: CreationOptional<number>;
 
 	@Attribute(DataTypes.INTEGER)
 	@NotNull
