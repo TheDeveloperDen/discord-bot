@@ -186,21 +186,31 @@ export async function getSuggestionByMessageIdOrRecoverFromMessage(
 	if (!submitterId) {
 		return null;
 	}
-	const suggestion = embed.fields?.find((f) => f.name === "Suggestion");
-	if (!suggestion) {
+	const suggestionField = embed.fields?.find((f) => f.name === "Suggestion");
+	if (!suggestionField) {
 		return null;
 	}
 
 	// we can't recover votes from message as we don't know who voted, so just create the suggestion
 
 	logger.warn("Recovered suggestion %s from message %s", id, embedMessage.id);
-	return await Suggestion.create({
+	const suggestion = await Suggestion.create({
 		id: BigInt(id),
 		memberId: BigInt(submitterId),
-		suggestionText: suggestion.value,
+		suggestionText: suggestionField.value,
 		messageId: BigInt(embedMessage.id),
 		status: SuggestionStatus.PENDING,
 	});
+
+	if (embedMessage.editable) {
+		const updatedEmbed = await createSuggestionEmbedFromEntity(
+			embedMessage.client,
+			suggestion,
+		);
+		await embedMessage.edit({ embeds: [updatedEmbed] });
+	}
+
+	return suggestion;
 }
 
 export const createSuggestion: (
