@@ -22,7 +22,6 @@ import type { EventListener } from "../module.js";
 import {
 	createSuggestionEmbedFromEntity,
 	createVotesEmbed,
-	getSuggestionByMessageId,
 	getSuggestionByMessageIdOrRecoverFromMessage,
 	SUGGESTION_MANAGE_APPROVE_ID,
 	SUGGESTION_MANAGE_APPROVE_MODAL_ID,
