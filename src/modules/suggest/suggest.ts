@@ -36,12 +36,12 @@ export async function createSuggestionEmbed(
 	client: Client,
 	submitter: UserResolvable,
 	suggestionText: string,
-	upvotes?: number,
-	downVotes?: number,
 	status?: SuggestionStatus,
 	moderatorId?: string,
 	moderatorReason?: string,
 	threadUrl?: string,
+	upvotes: number = 0,
+	downVotes: number = 0,
 ): Promise<EmbedBuilder> {
 	const builder = createStandardEmbed(submitter ?? undefined);
 
@@ -124,14 +124,15 @@ export const createSuggestionEmbedFromEntity: (
 		client,
 		member,
 		suggestion.suggestionText,
-		upvotes ?? 0,
-		downvotes ?? 0,
+
 		suggestion.status !== SuggestionStatus.PENDING
 			? suggestion.status
 			: undefined,
 		suggestion.moderatorId ? suggestion.moderatorId.toString() : undefined,
 		moderatorReason,
 		threadUrl,
+		upvotes ?? 0,
+		downvotes ?? 0,
 	);
 };
 
