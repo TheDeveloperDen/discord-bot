@@ -8,6 +8,7 @@ import type { Command } from "djs-slash-helper";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
 import { createStandardEmbed } from "../../util/embeds.js";
+import { EPHEMERAL_FLAG } from "../../util/message.js";
 import type { CustomButton } from "./information.js";
 
 function loadCustomButton(customButton: CustomButton) {
@@ -30,7 +31,7 @@ export const InformationMessageCommand: Command<ApplicationCommandType.Message> 
 		async handle(interaction) {
 			if (!interaction.targetMessage.editable) {
 				await interaction.reply({
-					flags: ["Ephemeral"],
+					flags: EPHEMERAL_FLAG,
 					content: "I can't edit that message.",
 				});
 				return;
@@ -38,7 +39,7 @@ export const InformationMessageCommand: Command<ApplicationCommandType.Message> 
 
 			if (config.informationMessage == null) {
 				await interaction.reply({
-					flags: ["Ephemeral"],
+					flags: EPHEMERAL_FLAG,
 					content: "There is no information message configured.",
 				});
 				return;
@@ -67,7 +68,7 @@ export const InformationMessageCommand: Command<ApplicationCommandType.Message> 
 				)}`,
 			);
 			await interaction.reply({
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 				content: "Information message set.",
 			});
 		},

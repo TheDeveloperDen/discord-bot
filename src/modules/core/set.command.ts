@@ -12,6 +12,7 @@ import {
 import type { Command } from "djs-slash-helper";
 import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { createStandardEmbed } from "../../util/embeds.js";
+import { EPHEMERAL_FLAG } from "../../util/message.js";
 import { mentionIfPingable } from "../../util/users.js";
 import { levelForXp } from "../xp/xpRoles.util.js";
 
@@ -120,7 +121,7 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
 		const event = await collector.next;
 		if (event.customId === "cancel") {
 			await event.reply({
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 				content: "**Cancelled**",
 			});
 		} else if (event.customId === "confirm") {

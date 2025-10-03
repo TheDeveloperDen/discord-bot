@@ -13,6 +13,7 @@ import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
 import { ModMailNote } from "../../store/models/ModMailNote.js";
 import { getMemberFromInteraction } from "../../util/member.js";
+import { EPHEMERAL_FLAG } from "../../util/message.js";
 import { safelyFetchUser } from "../../util/users.js";
 import {
 	archiveModmailTicket,
@@ -32,7 +33,7 @@ const ArchiveSubCommand: ExecutableSubcommand = {
 	name: "archive",
 	description: "Archive and close the current modmail thread.",
 	async handle(interaction) {
-		await interaction.deferReply({ flags: ["Ephemeral"] });
+		await interaction.deferReply({ flags: EPHEMERAL_FLAG });
 
 		try {
 			// Validate permissions
@@ -50,7 +51,7 @@ const ArchiveSubCommand: ExecutableSubcommand = {
 			logger.error(`Error creating modmail archive:`, error);
 			await interaction.followUp({
 				content: "An error occurred while creating the archive.",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 		}
 	},
@@ -70,13 +71,13 @@ const NoteSubCommand: ExecutableSubcommand = {
 	],
 	async handle(interaction) {
 		await interaction.deferReply({
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 
 		if (!interaction.inGuild()) {
 			await interaction.followUp({
 				content: "This command can only be used in a guild",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -86,7 +87,7 @@ const NoteSubCommand: ExecutableSubcommand = {
 		if (!member?.permissions.has(PermissionFlagsBits.ManageMessages)) {
 			await interaction.followUp({
 				content: "You don't have permission to add notes",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -94,7 +95,7 @@ const NoteSubCommand: ExecutableSubcommand = {
 		if (!interaction.channel?.isThread()) {
 			await interaction.followUp({
 				content: "This command can only be used in a modmail thread",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -106,7 +107,7 @@ const NoteSubCommand: ExecutableSubcommand = {
 		if (!modMail) {
 			await interaction.followUp({
 				content: "This command can only be used in a modmail thread",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -148,7 +149,7 @@ const NoteSubCommand: ExecutableSubcommand = {
 
 		await interaction.followUp({
 			content: "✅ Note added successfully",
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 	},
 };
@@ -159,7 +160,7 @@ const ListNotesSubCommand: ExecutableSubcommand = {
 	description: "List all notes for this ticket.",
 	async handle(interaction) {
 		await interaction.deferReply({
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 
 		try {
@@ -168,7 +169,7 @@ const ListNotesSubCommand: ExecutableSubcommand = {
 			logger.error("Failed to show notes:", error);
 			await interaction.followUp({
 				content: "An error occurred while showing notes.",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 		}
 	},
@@ -180,7 +181,7 @@ const DetailsSubCommand: ExecutableSubcommand = {
 	description: "Get details about the current thread.",
 	async handle(interaction) {
 		await interaction.deferReply({
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 
 		// Handle DM usage
@@ -189,7 +190,7 @@ const DetailsSubCommand: ExecutableSubcommand = {
 			if (!modMail) {
 				await interaction.followUp({
 					content: "You don't have an active ticket.",
-					flags: ["Ephemeral"],
+					flags: EPHEMERAL_FLAG,
 				});
 				return;
 			}
@@ -207,7 +208,7 @@ const DetailsSubCommand: ExecutableSubcommand = {
 			await interaction.followUp({
 				embeds: [ticketDetails.embed],
 				components: [ticketDetails.row],
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -216,7 +217,7 @@ const DetailsSubCommand: ExecutableSubcommand = {
 		if (!interaction.channel?.isThread()) {
 			await interaction.followUp({
 				content: "This command can only be used in a modmail thread",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -228,7 +229,7 @@ const DetailsSubCommand: ExecutableSubcommand = {
 		if (!modMail) {
 			await interaction.followUp({
 				content: "This command can only be used in a modmail thread",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -258,7 +259,7 @@ const CloseSubCommand: ExecutableSubcommand = {
 	description: "Close your ticket or the current modmail thread.",
 	async handle(interaction) {
 		await interaction.deferReply({
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 
 		// Handle DM usage - user closing their own ticket
@@ -267,7 +268,7 @@ const CloseSubCommand: ExecutableSubcommand = {
 			if (!modMail) {
 				await interaction.followUp({
 					content: "You don't have an active ticket.",
-					flags: ["Ephemeral"],
+					flags: EPHEMERAL_FLAG,
 				});
 				return;
 			}
@@ -298,7 +299,7 @@ const CloseSubCommand: ExecutableSubcommand = {
 
 			await interaction.followUp({
 				content: "✅ Your ticket has been closed. Thank you for contacting us!",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -308,7 +309,7 @@ const CloseSubCommand: ExecutableSubcommand = {
 		if (!member?.permissions.has(PermissionFlagsBits.ManageMessages)) {
 			await interaction.followUp({
 				content: "You don't have permission to close tickets",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -316,7 +317,7 @@ const CloseSubCommand: ExecutableSubcommand = {
 		if (!interaction.channel?.isThread()) {
 			await interaction.followUp({
 				content: "This command can only be used in a modmail thread",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -328,7 +329,7 @@ const CloseSubCommand: ExecutableSubcommand = {
 		if (!modMail) {
 			await interaction.followUp({
 				content: "This command can only be used in a modmail thread",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -361,7 +362,7 @@ const CloseSubCommand: ExecutableSubcommand = {
 
 		await interaction.followUp({
 			content: `✅ Successfully closed ticket`,
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 	},
 };
@@ -380,13 +381,13 @@ const AssignSubCommand: ExecutableSubcommand = {
 	],
 	async handle(interaction) {
 		await interaction.deferReply({
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 
 		if (!interaction.inGuild()) {
 			await interaction.followUp({
 				content: "This command can only be used in a guild",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -396,7 +397,7 @@ const AssignSubCommand: ExecutableSubcommand = {
 		if (!member?.permissions.has(PermissionFlagsBits.ManageMessages)) {
 			await interaction.followUp({
 				content: "You don't have permission to assign tickets",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -404,7 +405,7 @@ const AssignSubCommand: ExecutableSubcommand = {
 		if (!interaction.channel?.isThread()) {
 			await interaction.followUp({
 				content: "This command can only be used in a modmail thread",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -416,7 +417,7 @@ const AssignSubCommand: ExecutableSubcommand = {
 		if (!modMail) {
 			await interaction.followUp({
 				content: "This command can only be used in a modmail thread",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -428,7 +429,7 @@ const AssignSubCommand: ExecutableSubcommand = {
 		if (!targetMember?.permissions.has(PermissionFlagsBits.ManageMessages)) {
 			await interaction.followUp({
 				content: "The selected user doesn't have moderator permissions",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -463,7 +464,7 @@ const AssignSubCommand: ExecutableSubcommand = {
 
 		await interaction.followUp({
 			content: `✅ Successfully assigned ticket to ${targetUser.displayName}`,
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 	},
 };

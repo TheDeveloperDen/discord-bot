@@ -9,6 +9,7 @@ import {
 } from "discord.js";
 import type { Command } from "djs-slash-helper";
 import { config } from "../../Config.js";
+import { EPHEMERAL_FLAG } from "../../util/message.js";
 import {
 	createSuggestion,
 	createSuggestionEmbed,
@@ -32,7 +33,7 @@ export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
 	handle: async (interaction: ChatInputCommandInteraction) => {
 		if (!interaction.member || !interaction.inGuild()) {
 			await interaction.reply({
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 				content: "We are not in a guild?",
 			});
 		}
@@ -40,7 +41,7 @@ export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
 		const member = interaction.member as GuildMember;
 
 		await interaction.deferReply({
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 		// Get the suggestion and optional image
 		const suggestionText = interaction.options.get("suggestion")
@@ -53,7 +54,7 @@ export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
 		if (!suggestionChannel) {
 			await interaction.followUp({
 				content: "There is no Suggestion channel!",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -61,7 +62,7 @@ export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
 			await interaction.followUp({
 				content:
 					"The suggestion channel is either not writeable or not a text channel!",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -101,7 +102,7 @@ export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
 
 		await interaction.followUp({
 			content: `Suggestion with the ID \`${suggestionId}\` successfully submitted! See [here](${response.url})`,
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 
 		await createSuggestion(

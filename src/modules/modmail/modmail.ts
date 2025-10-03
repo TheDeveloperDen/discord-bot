@@ -33,7 +33,10 @@ import {
 } from "../../store/models/ModMailTicket.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { getMemberFromInteraction } from "../../util/member.js";
-import { fetchAllMessagesWithRetry } from "../../util/message.js";
+import {
+	EPHEMERAL_FLAG,
+	fetchAllMessagesWithRetry,
+} from "../../util/message.js";
 import {
 	DiscordTimestampStyle,
 	formatDiscordTimestamp,
@@ -750,7 +753,7 @@ export async function archiveModmailTicket(
 	if (!channel?.isThread()) {
 		await interaction.followUp({
 			content: "This command can only be used in a modmail thread.",
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 		return;
 	}
@@ -759,7 +762,7 @@ export async function archiveModmailTicket(
 	if (!modMail) {
 		await interaction.followUp({
 			content: "This is not an active modmail thread.",
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 		return;
 	}
@@ -770,7 +773,7 @@ export async function archiveModmailTicket(
 	if (!archiveResult.success || !archiveResult.attachment) {
 		await interaction.followUp({
 			content: `Failed to create archive: ${archiveResult.error}`,
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 		return;
 	}
@@ -805,7 +808,7 @@ export async function archiveModmailTicket(
 
 	await interaction.followUp({
 		content: statusMessage,
-		flags: ["Ephemeral"],
+		flags: EPHEMERAL_FLAG,
 	});
 
 	// Auto-delete thread after successful archiving
@@ -849,7 +852,7 @@ export async function validateModmailPermissions(
 	if (!interaction.inGuild()) {
 		await interaction.followUp({
 			content: "This command can only be used in a guild.",
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 		return false;
 	}
@@ -859,7 +862,7 @@ export async function validateModmailPermissions(
 	if (!member?.permissions.has(PermissionFlagsBits.ManageMessages)) {
 		await interaction.followUp({
 			content: "You don't have permission to archive tickets.",
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 		return false;
 	}
@@ -871,7 +874,7 @@ export async function validateModmailPermissions(
  * Creates an archive, sends it to user and archive channel, then closes the ticket
  */
 export async function handleModmailArchive(interaction: ButtonInteraction) {
-	await interaction.deferReply({ flags: ["Ephemeral"] });
+	await interaction.deferReply({ flags: EPHEMERAL_FLAG });
 
 	try {
 		// Validate permissions
@@ -889,7 +892,7 @@ export async function handleModmailArchive(interaction: ButtonInteraction) {
 		logger.error(`Error creating modmail archive:`, error);
 		await interaction.followUp({
 			content: "An error occurred while creating the archive.",
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 	}
 }
@@ -922,7 +925,7 @@ export async function showModmailNotes(
 		if (!modMail) {
 			await interaction.followUp({
 				content: "Ticket not found.",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -931,7 +934,7 @@ export async function showModmailNotes(
 		if (!interaction.channel?.isThread()) {
 			await interaction.followUp({
 				content: "This command can only be used in a modmail thread",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -941,7 +944,7 @@ export async function showModmailNotes(
 		if (!modMail) {
 			await interaction.followUp({
 				content: "This command can only be used in a modmail thread",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -958,7 +961,7 @@ export async function showModmailNotes(
 	if (notes.length === 0) {
 		await interaction.followUp({
 			content: `No notes found for this ${ticketId ? "archived " : ""}ticket.`,
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 		return;
 	}
@@ -973,7 +976,7 @@ export async function showModmailNotes(
 
 	await interaction.followUp({
 		embeds: [noteEmbed.embed],
-		flags: ["Ephemeral"],
+		flags: EPHEMERAL_FLAG,
 	});
 }
 
@@ -982,14 +985,14 @@ export async function showModmailNotes(
  * Displays all notes associated with the current modmail ticket
  */
 export async function handleModmailShowNotes(interaction: ButtonInteraction) {
-	await interaction.deferReply({ flags: ["Ephemeral"] });
+	await interaction.deferReply({ flags: EPHEMERAL_FLAG });
 	try {
 		await showModmailNotes(interaction);
 	} catch (error) {
 		logger.error("Failed to show notes:", error);
 		await interaction.followUp({
 			content: "An error occurred while showing notes.",
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 	}
 }
@@ -1001,7 +1004,7 @@ export async function handleModmailShowNotes(interaction: ButtonInteraction) {
 export async function handleArchivedModmailShowNotes(
 	interaction: ButtonInteraction,
 ) {
-	await interaction.deferReply({ flags: ["Ephemeral"] });
+	await interaction.deferReply({ flags: EPHEMERAL_FLAG });
 
 	try {
 		// Extract ticket ID from custom ID (format: "modmail-list-notes-archived-{ticketId}")
@@ -1009,7 +1012,7 @@ export async function handleArchivedModmailShowNotes(
 		if (!ticketId) {
 			await interaction.followUp({
 				content: "Invalid ticket ID.",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -1019,7 +1022,7 @@ export async function handleArchivedModmailShowNotes(
 		logger.error("Failed to show archived ticket notes:", error);
 		await interaction.followUp({
 			content: "An error occurred while showing notes.",
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 	}
 }
@@ -1029,13 +1032,13 @@ export async function handleArchivedModmailShowNotes(
  * Creates a user selection menu for assigning moderators to tickets
  */
 export async function handleModmailAssign(interaction: ButtonInteraction) {
-	await interaction.deferReply({ flags: ["Ephemeral"] });
+	await interaction.deferReply({ flags: EPHEMERAL_FLAG });
 
 	try {
 		if (!interaction.inGuild()) {
 			await interaction.followUp({
 				content: "This command can only be used in a guild.",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -1045,7 +1048,7 @@ export async function handleModmailAssign(interaction: ButtonInteraction) {
 		if (!member?.permissions.has(PermissionFlagsBits.ManageMessages)) {
 			await interaction.followUp({
 				content: "You don't have permission to assign tickets.",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -1053,7 +1056,7 @@ export async function handleModmailAssign(interaction: ButtonInteraction) {
 		if (!interaction.channel?.isThread()) {
 			await interaction.followUp({
 				content: "This command can only be used in a modmail thread.",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -1064,7 +1067,7 @@ export async function handleModmailAssign(interaction: ButtonInteraction) {
 		if (!modMail) {
 			await interaction.followUp({
 				content: "This is not an active modmail thread.",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -1082,13 +1085,13 @@ export async function handleModmailAssign(interaction: ButtonInteraction) {
 		await interaction.followUp({
 			content: "Please select a moderator to assign this ticket to:",
 			components: [selectRow],
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 	} catch (error) {
 		logger.error("Failed to create assign selection:", error);
 		await interaction.followUp({
 			content: "An error occurred while creating the assignment selection.",
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 	}
 }
@@ -1098,13 +1101,13 @@ export async function handleModmailAssign(interaction: ButtonInteraction) {
  * Directs users to use the slash command for adding notes
  */
 export async function handleModmailAddNote(interaction: ButtonInteraction) {
-	await interaction.deferReply({ flags: ["Ephemeral"] });
+	await interaction.deferReply({ flags: EPHEMERAL_FLAG });
 
 	try {
 		if (!interaction.inGuild()) {
 			await interaction.followUp({
 				content: "This command can only be used in a guild.",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -1114,7 +1117,7 @@ export async function handleModmailAddNote(interaction: ButtonInteraction) {
 		if (!member?.permissions.has(PermissionFlagsBits.ManageMessages)) {
 			await interaction.followUp({
 				content: "You don't have permission to add notes.",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -1122,7 +1125,7 @@ export async function handleModmailAddNote(interaction: ButtonInteraction) {
 		if (!interaction.channel?.isThread()) {
 			await interaction.followUp({
 				content: "This command can only be used in a modmail thread.",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -1133,7 +1136,7 @@ export async function handleModmailAddNote(interaction: ButtonInteraction) {
 		if (!modMail) {
 			await interaction.followUp({
 				content: "This is not an active modmail thread.",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -1141,13 +1144,13 @@ export async function handleModmailAddNote(interaction: ButtonInteraction) {
 		await interaction.followUp({
 			content:
 				"Please use the `/ticket note` command to add a note with your desired content.",
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 	} catch (error) {
 		logger.error("Failed to handle add note button:", error);
 		await interaction.followUp({
 			content: "An error occurred while processing the add note request.",
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 	}
 }
@@ -1161,14 +1164,14 @@ export async function handleModmailAddNote(interaction: ButtonInteraction) {
  * Shows ticket information to the user who created the ticket
  */
 export async function handleModmailUserDetails(interaction: ButtonInteraction) {
-	await interaction.deferReply({ flags: ["Ephemeral"] });
+	await interaction.deferReply({ flags: EPHEMERAL_FLAG });
 
 	try {
 		// Only allow this in DMs
 		if (interaction.inGuild()) {
 			await interaction.followUp({
 				content: "This action can only be used in DMs.",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -1177,7 +1180,7 @@ export async function handleModmailUserDetails(interaction: ButtonInteraction) {
 		if (!modMail) {
 			await interaction.followUp({
 				content: "You don't have an active ticket.",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -1229,13 +1232,13 @@ export async function handleModmailUserDetails(interaction: ButtonInteraction) {
 		await interaction.followUp({
 			embeds: [ticketDetails.embed],
 			components: [ticketDetails.row],
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 	} catch (error) {
 		logger.error("Failed to show user ticket details:", error);
 		await interaction.followUp({
 			content: "An error occurred while retrieving your ticket details.",
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 	}
 }
@@ -1245,14 +1248,14 @@ export async function handleModmailUserDetails(interaction: ButtonInteraction) {
  * Allows users to close their own tickets, creates an archive, and notifies the thread
  */
 export async function handleModmailUserClose(interaction: ButtonInteraction) {
-	await interaction.deferReply({ flags: ["Ephemeral"] });
+	await interaction.deferReply({ flags: EPHEMERAL_FLAG });
 
 	try {
 		// Only allow this in DMs
 		if (interaction.inGuild()) {
 			await interaction.followUp({
 				content: "This action can only be used in DMs.",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -1261,7 +1264,7 @@ export async function handleModmailUserClose(interaction: ButtonInteraction) {
 		if (!modMail) {
 			await interaction.followUp({
 				content: "You don't have an active ticket.",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -1361,13 +1364,13 @@ export async function handleModmailUserClose(interaction: ButtonInteraction) {
 
 		await interaction.followUp({
 			content: `✅ Your ticket has been closed. Thank you for contacting us!${archiveCreated ? " An archive of your conversation has been sent above." : ""}`,
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 	} catch (error) {
 		logger.error("Failed to close user ticket:", error);
 		await interaction.followUp({
 			content: "An error occurred while closing your ticket.",
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 	}
 }

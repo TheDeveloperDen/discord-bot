@@ -24,6 +24,7 @@ import {
 	ModMailTicket,
 	ModMailTicketCategory,
 } from "../../store/models/ModMailTicket.js";
+import { EPHEMERAL_FLAG } from "../../util/message.js";
 import { mentionRoleById } from "../../util/role.js";
 import { safelyFetchUser } from "../../util/users.js";
 import type { EventListener } from "../module.js";
@@ -295,13 +296,13 @@ const handleThreadMessage = async (client: Client, message: Message<true>) => {
 const handleModmailAssignSelect = async (
 	interaction: UserSelectMenuInteraction,
 ) => {
-	await interaction.deferReply({ flags: ["Ephemeral"] });
+	await interaction.deferReply({ flags: EPHEMERAL_FLAG });
 
 	try {
 		if (!interaction.inGuild()) {
 			await interaction.followUp({
 				content: "This command can only be used in a guild.",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -312,7 +313,7 @@ const handleModmailAssignSelect = async (
 				await interaction.followUp({
 					content:
 						"This thread has been archived and the ticket is no longer active.",
-					flags: ["Ephemeral"],
+					flags: EPHEMERAL_FLAG,
 				});
 				return;
 			}
@@ -323,7 +324,7 @@ const handleModmailAssignSelect = async (
 		if (!ticketId) {
 			await interaction.followUp({
 				content: "Invalid ticket ID.",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -336,7 +337,7 @@ const handleModmailAssignSelect = async (
 		if (!modMail) {
 			await interaction.followUp({
 				content: "Ticket not found.",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -348,7 +349,7 @@ const handleModmailAssignSelect = async (
 		if (!targetMember?.permissions.has(PermissionFlagsBits.ManageMessages)) {
 			await interaction.followUp({
 				content: "The selected user doesn't have moderator permissions.",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -390,13 +391,13 @@ const handleModmailAssignSelect = async (
 
 		await interaction.followUp({
 			content: `✅ Successfully assigned ticket to ${targetMember.displayName}`,
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 	} catch (error) {
 		logger.error("Failed to assign ticket:", error);
 		await interaction.followUp({
 			content: "An error occurred while assigning the ticket.",
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 	}
 };
@@ -413,7 +414,7 @@ const handleModmailSubmit = async (
 		await interaction.message.delete().catch(() => {});
 		await interaction.followUp({
 			content: "You already have an open ticket",
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 		return;
 	}
@@ -431,7 +432,7 @@ const handleModmailSubmit = async (
 		if (!channel) {
 			await interaction.followUp({
 				content: "Modmail channel not found. Please contact an administrator.",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			logger.error("Modmail channel not found");
 			return;
@@ -441,7 +442,7 @@ const handleModmailSubmit = async (
 			await interaction.followUp({
 				content:
 					"Modmail channel configuration error. Please contact an administrator.",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			logger.error("Modmail channel is not a text channel");
 			return;
@@ -507,7 +508,7 @@ const handleModmailSubmit = async (
 		await interaction.followUp({
 			content:
 				"An error occurred while creating your ticket. Please try again or contact an administrator.",
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 	}
 };
@@ -551,7 +552,7 @@ const handleModmailNoteDelete = async (interaction: ButtonInteraction) => {
 	if (!noteId) {
 		await interaction.followUp({
 			content: "Invalid Message you are trying to fake as Note.",
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 		return;
 	} else {
@@ -572,7 +573,7 @@ const handleModmailNoteDelete = async (interaction: ButtonInteraction) => {
 			message.delete().catch(() => {});
 			await interaction.followUp({
 				content: "Note deleted.",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 		}
 	}
@@ -586,7 +587,7 @@ const handleModmailNoteEdit = async (interaction: ButtonInteraction) => {
 	if (!noteId) {
 		await interaction.reply({
 			content: "Invalid Message you are trying to fake as Note.",
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 		return;
 	}
@@ -595,7 +596,7 @@ const handleModmailNoteEdit = async (interaction: ButtonInteraction) => {
 	if (!note) {
 		await interaction.reply({
 			content: "Note not found.",
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 		return;
 	}
@@ -622,7 +623,7 @@ const handleModmailNoteEdit = async (interaction: ButtonInteraction) => {
 const handleModmailNoteEditModal = async (
 	interaction: ModalSubmitInteraction,
 ) => {
-	await interaction.deferReply({ flags: ["Ephemeral"] });
+	await interaction.deferReply({ flags: EPHEMERAL_FLAG });
 
 	if (!interaction.inGuild()) return;
 
@@ -631,7 +632,7 @@ const handleModmailNoteEditModal = async (
 	if (!noteId) {
 		await interaction.followUp({
 			content: "Invalid note ID.",
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 		return;
 	}
@@ -640,7 +641,7 @@ const handleModmailNoteEditModal = async (
 	if (!note) {
 		await interaction.followUp({
 			content: "Note not found.",
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 		});
 		return;
 	}
@@ -682,7 +683,7 @@ const handleModmailNoteEditModal = async (
 
 	await interaction.followUp({
 		content: "Note updated successfully.",
-		flags: ["Ephemeral"],
+		flags: EPHEMERAL_FLAG,
 	});
 };
 
@@ -788,14 +789,14 @@ export const ModMailListener: EventListener[] = [
 					await interaction
 						.followUp({
 							content: errorMessage,
-							flags: ["Ephemeral"],
+							flags: EPHEMERAL_FLAG,
 						})
 						.catch(() => {});
 				} else {
 					await interaction
 						.reply({
 							content: errorMessage,
-							flags: ["Ephemeral"],
+							flags: EPHEMERAL_FLAG,
 						})
 						.catch(() => {});
 				}

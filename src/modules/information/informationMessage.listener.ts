@@ -8,6 +8,7 @@ import {
 } from "discord.js";
 import { FAQ } from "../../store/models/FAQ.js";
 import { getEmoji, toAPIMessageComponentEmoji } from "../../util/emojis.js";
+import { EPHEMERAL_FLAG } from "../../util/message.js";
 import { truncateTo } from "../../util/strings.js";
 import { createFaqEmbed } from "../faq/faq.util.js";
 import { getResourceEmbed } from "../learning/learning.command.js";
@@ -38,7 +39,7 @@ export const InformationButtonListener: EventListener = {
 
 			await interaction.followUp({
 				embeds: [embed],
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
@@ -71,7 +72,7 @@ export const InformationButtonListener: EventListener = {
 			(interaction.member as GuildMember) ?? undefined,
 		);
 		await interaction.followUp({
-			flags: ["Ephemeral"],
+			flags: EPHEMERAL_FLAG,
 			embeds: [embed],
 		});
 	},
@@ -101,7 +102,7 @@ async function sendLearningResourcesPicker(interaction: ButtonInteraction) {
 		components: [
 			new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu),
 		],
-		flags: ["Ephemeral"],
+		flags: EPHEMERAL_FLAG,
 		withResponse: false,
 	});
 }

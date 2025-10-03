@@ -9,6 +9,7 @@ import { logger } from "../../logging.js";
 import { wrapInTransaction } from "../../sentry.js";
 import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { createStandardEmbed } from "../../util/embeds.js";
+import { EPHEMERAL_FLAG } from "../../util/message.js";
 import { isSpecialUser } from "../../util/users.js";
 import { scheduleReminder } from "./dailyReward.reminder.js";
 import { giveXp } from "./xpForMessage.util.js";
@@ -31,7 +32,7 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
 		await interaction.deferReply();
 		if (dailiesInProgress.has(user.id)) {
 			await interaction.followUp({
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 				content: "You are already claiming your daily reward!",
 			});
 			return;
@@ -48,7 +49,7 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
 				}
 				const nextClaimTime = getNextDailyTimeFrom(lastClaimTime);
 				await interaction.followUp({
-					flags: ["Ephemeral"],
+					flags: EPHEMERAL_FLAG,
 					content: `You can only claim your daily reward once every 24 hours. You can claim it again <t:${Math.floor(
 						nextClaimTime.getTime() / 1000,
 					)}:R>.`,
@@ -76,7 +77,7 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
 					: 0;
 			await Promise.all([
 				interaction.followUp({
-					flags: ["Ephemeral"],
+					flags: EPHEMERAL_FLAG,
 					embeds: [
 						createStandardEmbed(user)
 							.setTitle("Daily Reward Claimed!")

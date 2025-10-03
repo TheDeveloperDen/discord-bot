@@ -1,5 +1,6 @@
 import { ApplicationCommandType } from "discord.js";
 import type { Command } from "djs-slash-helper";
+import { EPHEMERAL_FLAG } from "../../util/message.js";
 import { createSuggestionManageButtons } from "./suggest.js";
 
 export const ManageSuggestionCommand: Command<ApplicationCommandType.Message> =
@@ -13,7 +14,7 @@ export const ManageSuggestionCommand: Command<ApplicationCommandType.Message> =
 			await interaction.reply({
 				content: "Manage Suggestion",
 				components: [row],
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 		},
 	};

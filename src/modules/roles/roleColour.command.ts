@@ -7,13 +7,14 @@ import type { Command, ExecutableSubcommand } from "djs-slash-helper";
 import { config } from "../../Config.js";
 import { wrapInTransaction } from "../../sentry.js";
 import { ColourRoles } from "../../store/models/ColourRoles.js";
+import { EPHEMERAL_FLAG } from "../../util/message.js";
 
 const ResetSubcommand: ExecutableSubcommand = {
 	type: ApplicationCommandOptionType.Subcommand,
 	name: "reset",
 	description: "Reset your role colour",
 	async handle(interaction) {
-		await interaction.deferReply({ flags: ["Ephemeral"] });
+		await interaction.deferReply({ flags: EPHEMERAL_FLAG });
 		const user = interaction.user;
 		const member = interaction.member as GuildMember;
 		const roleInfo = await ColourRoles.findOne({
@@ -75,12 +76,12 @@ const SetSubcommand: ExecutableSubcommand = {
 		if (!colour.startsWith("#") || colour.length !== 7) {
 			await interaction.reply({
 				content: "Not a valid colour",
-				flags: ["Ephemeral"],
+				flags: EPHEMERAL_FLAG,
 			});
 			return;
 		}
 
-		await interaction.deferReply({ flags: ["Ephemeral"] });
+		await interaction.deferReply({ flags: EPHEMERAL_FLAG });
 		const user = interaction.user;
 		const member = interaction.member as GuildMember;
 		const roleInfo = await ColourRoles.findOne({
