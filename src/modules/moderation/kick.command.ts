@@ -1,6 +1,7 @@
 import {
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
+	MessageFlags,
 } from "discord.js";
 import type { Command } from "djs-slash-helper";
 import { logger } from "../../logging.js";
@@ -68,7 +69,7 @@ export const KickCommand: Command<ApplicationCommandType.ChatInput> = {
 				await interaction.editReply("Something went wrong!");
 			} else {
 				await interaction.followUp({
-					flags: "Ephemeral",
+					flags: MessageFlags.Ephemeral,
 					content: "Failed to kick member!",
 				});
 			}

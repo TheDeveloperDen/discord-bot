@@ -8,10 +8,12 @@ import {
 	Colors,
 	type ComponentType,
 	GuildMember,
+	MessageFlags,
 } from "discord.js";
 import type { Command } from "djs-slash-helper";
 import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { createStandardEmbed } from "../../util/embeds.js";
+
 import { mentionIfPingable } from "../../util/users.js";
 import { levelForXp } from "../xp/xpRoles.util.js";
 
@@ -120,12 +122,12 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
 		const event = await collector.next;
 		if (event.customId === "cancel") {
 			await event.reply({
-				flags: ["Ephemeral"],
+				flags: MessageFlags.Ephemeral,
 				content: "**Cancelled**",
 			});
 		} else if (event.customId === "confirm") {
 			await event.deferReply({
-				flags: "Ephemeral",
+				flags: MessageFlags.Ephemeral,
 			});
 			setter(user, value);
 			await user.save();
@@ -141,7 +143,7 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
 				],
 			});
 			await event.followUp({
-				flags: "Ephemeral",
+				flags: MessageFlags.Ephemeral,
 				content: "Success!",
 			});
 		}
