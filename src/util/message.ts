@@ -1,6 +1,8 @@
 import { Collection, type Message, type TextBasedChannel } from "discord.js";
 import { logger } from "../logging.js";
 
+export const EPHEMERAL_FLAGS = ["Ephemeral"] as const;
+
 /**
  * Fetches all messages from a channel with rate limit protection and pagination
  * @param channel The channel to fetch messages from
