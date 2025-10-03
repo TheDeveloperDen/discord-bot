@@ -30,7 +30,11 @@ import {
 	upsertVote,
 } from "./suggest.js";
 
-const SUGGESTION_BUTTON_MAP: Record<string, SuggestionVoteType> = {
+const SUGGESTION_BUTTON_MAP: {
+	[SUGGESTION_NO_ID]: SuggestionVoteType;
+	[SUGGESTION_YES_ID]: SuggestionVoteType;
+	[key: string]: SuggestionVoteType | undefined;
+} = {
 	[SUGGESTION_NO_ID]: -1,
 	[SUGGESTION_YES_ID]: 1,
 };
@@ -47,10 +51,17 @@ async function handleVoteButtonInteraction(
 		});
 		return;
 	}
+	const votingValue = SUGGESTION_BUTTON_MAP[interaction.customId];
+	if (!votingValue) {
+		await interaction.reply({
+			content: "This is not a valid Button!",
+			flags: MessageFlags.Ephemeral,
+		});
+		return;
+	}
 
 	await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-	const votingValue = SUGGESTION_BUTTON_MAP[interaction.customId];
 	const suggestion = await getSuggestionByMessageIdOrRecoverFromMessage(
 		interaction.message,
 	);
