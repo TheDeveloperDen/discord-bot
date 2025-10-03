@@ -9,6 +9,7 @@ import {
 	type EmbedBuilder,
 	type Interaction,
 	type Message,
+	MessageFlags,
 	ModalBuilder,
 	type ModalSubmitInteraction,
 	type OmitPartialGroupDMChannel,
@@ -24,7 +25,7 @@ import {
 	ModMailTicket,
 	ModMailTicketCategory,
 } from "../../store/models/ModMailTicket.js";
-import { EPHEMERAL_FLAG } from "../../util/message.js";
+
 import { mentionRoleById } from "../../util/role.js";
 import { safelyFetchUser } from "../../util/users.js";
 import type { EventListener } from "../module.js";
@@ -296,13 +297,13 @@ const handleThreadMessage = async (client: Client, message: Message<true>) => {
 const handleModmailAssignSelect = async (
 	interaction: UserSelectMenuInteraction,
 ) => {
-	await interaction.deferReply({ flags: EPHEMERAL_FLAG });
+	await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
 	try {
 		if (!interaction.inGuild()) {
 			await interaction.followUp({
 				content: "This command can only be used in a guild.",
-				flags: EPHEMERAL_FLAG,
+				flags: MessageFlags.Ephemeral,
 			});
 			return;
 		}
@@ -313,7 +314,7 @@ const handleModmailAssignSelect = async (
 				await interaction.followUp({
 					content:
 						"This thread has been archived and the ticket is no longer active.",
-					flags: EPHEMERAL_FLAG,
+					flags: MessageFlags.Ephemeral,
 				});
 				return;
 			}
@@ -324,7 +325,7 @@ const handleModmailAssignSelect = async (
 		if (!ticketId) {
 			await interaction.followUp({
 				content: "Invalid ticket ID.",
-				flags: EPHEMERAL_FLAG,
+				flags: MessageFlags.Ephemeral,
 			});
 			return;
 		}
@@ -337,7 +338,7 @@ const handleModmailAssignSelect = async (
 		if (!modMail) {
 			await interaction.followUp({
 				content: "Ticket not found.",
-				flags: EPHEMERAL_FLAG,
+				flags: MessageFlags.Ephemeral,
 			});
 			return;
 		}
@@ -349,7 +350,7 @@ const handleModmailAssignSelect = async (
 		if (!targetMember?.permissions.has(PermissionFlagsBits.ManageMessages)) {
 			await interaction.followUp({
 				content: "The selected user doesn't have moderator permissions.",
-				flags: EPHEMERAL_FLAG,
+				flags: MessageFlags.Ephemeral,
 			});
 			return;
 		}
@@ -391,13 +392,13 @@ const handleModmailAssignSelect = async (
 
 		await interaction.followUp({
 			content: `✅ Successfully assigned ticket to ${targetMember.displayName}`,
-			flags: EPHEMERAL_FLAG,
+			flags: MessageFlags.Ephemeral,
 		});
 	} catch (error) {
 		logger.error("Failed to assign ticket:", error);
 		await interaction.followUp({
 			content: "An error occurred while assigning the ticket.",
-			flags: EPHEMERAL_FLAG,
+			flags: MessageFlags.Ephemeral,
 		});
 	}
 };
@@ -414,7 +415,7 @@ const handleModmailSubmit = async (
 		await interaction.message.delete().catch(() => {});
 		await interaction.followUp({
 			content: "You already have an open ticket",
-			flags: EPHEMERAL_FLAG,
+			flags: MessageFlags.Ephemeral,
 		});
 		return;
 	}
@@ -432,7 +433,7 @@ const handleModmailSubmit = async (
 		if (!channel) {
 			await interaction.followUp({
 				content: "Modmail channel not found. Please contact an administrator.",
-				flags: EPHEMERAL_FLAG,
+				flags: MessageFlags.Ephemeral,
 			});
 			logger.error("Modmail channel not found");
 			return;
@@ -442,7 +443,7 @@ const handleModmailSubmit = async (
 			await interaction.followUp({
 				content:
 					"Modmail channel configuration error. Please contact an administrator.",
-				flags: EPHEMERAL_FLAG,
+				flags: MessageFlags.Ephemeral,
 			});
 			logger.error("Modmail channel is not a text channel");
 			return;
@@ -508,7 +509,7 @@ const handleModmailSubmit = async (
 		await interaction.followUp({
 			content:
 				"An error occurred while creating your ticket. Please try again or contact an administrator.",
-			flags: EPHEMERAL_FLAG,
+			flags: MessageFlags.Ephemeral,
 		});
 	}
 };
@@ -552,7 +553,7 @@ const handleModmailNoteDelete = async (interaction: ButtonInteraction) => {
 	if (!noteId) {
 		await interaction.followUp({
 			content: "Invalid Message you are trying to fake as Note.",
-			flags: EPHEMERAL_FLAG,
+			flags: MessageFlags.Ephemeral,
 		});
 		return;
 	} else {
@@ -573,7 +574,7 @@ const handleModmailNoteDelete = async (interaction: ButtonInteraction) => {
 			message.delete().catch(() => {});
 			await interaction.followUp({
 				content: "Note deleted.",
-				flags: EPHEMERAL_FLAG,
+				flags: MessageFlags.Ephemeral,
 			});
 		}
 	}
@@ -587,7 +588,7 @@ const handleModmailNoteEdit = async (interaction: ButtonInteraction) => {
 	if (!noteId) {
 		await interaction.reply({
 			content: "Invalid Message you are trying to fake as Note.",
-			flags: EPHEMERAL_FLAG,
+			flags: MessageFlags.Ephemeral,
 		});
 		return;
 	}
@@ -596,7 +597,7 @@ const handleModmailNoteEdit = async (interaction: ButtonInteraction) => {
 	if (!note) {
 		await interaction.reply({
 			content: "Note not found.",
-			flags: EPHEMERAL_FLAG,
+			flags: MessageFlags.Ephemeral,
 		});
 		return;
 	}
@@ -623,7 +624,7 @@ const handleModmailNoteEdit = async (interaction: ButtonInteraction) => {
 const handleModmailNoteEditModal = async (
 	interaction: ModalSubmitInteraction,
 ) => {
-	await interaction.deferReply({ flags: EPHEMERAL_FLAG });
+	await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
 	if (!interaction.inGuild()) return;
 
@@ -632,7 +633,7 @@ const handleModmailNoteEditModal = async (
 	if (!noteId) {
 		await interaction.followUp({
 			content: "Invalid note ID.",
-			flags: EPHEMERAL_FLAG,
+			flags: MessageFlags.Ephemeral,
 		});
 		return;
 	}
@@ -641,7 +642,7 @@ const handleModmailNoteEditModal = async (
 	if (!note) {
 		await interaction.followUp({
 			content: "Note not found.",
-			flags: EPHEMERAL_FLAG,
+			flags: MessageFlags.Ephemeral,
 		});
 		return;
 	}
@@ -683,7 +684,7 @@ const handleModmailNoteEditModal = async (
 
 	await interaction.followUp({
 		content: "Note updated successfully.",
-		flags: EPHEMERAL_FLAG,
+		flags: MessageFlags.Ephemeral,
 	});
 };
 
@@ -789,14 +790,14 @@ export const ModMailListener: EventListener[] = [
 					await interaction
 						.followUp({
 							content: errorMessage,
-							flags: EPHEMERAL_FLAG,
+							flags: MessageFlags.Ephemeral,
 						})
 						.catch(() => {});
 				} else {
 					await interaction
 						.reply({
 							content: errorMessage,
-							flags: EPHEMERAL_FLAG,
+							flags: MessageFlags.Ephemeral,
 						})
 						.catch(() => {});
 				}

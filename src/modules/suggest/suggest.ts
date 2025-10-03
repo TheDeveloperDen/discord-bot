@@ -7,6 +7,7 @@ import {
 	type EmbedBuilder,
 	type GuildMember,
 	type Message,
+	MessageFlags,
 	ModalBuilder,
 	type ModalSubmitInteraction,
 	type OmitPartialGroupDMChannel,
@@ -390,7 +391,7 @@ export async function respondToSuggestionInteraction(
 	if (!interaction.guild) {
 		await interaction.followUp({
 			content: "This can only be done in a guild!",
-			flags: "Ephemeral",
+			flags: MessageFlags.Ephemeral,
 		});
 		return;
 	}

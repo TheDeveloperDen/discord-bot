@@ -3,12 +3,13 @@ import {
 	ButtonStyle,
 	type GuildMember,
 	type Interaction,
+	MessageFlags,
 	type ModalSubmitInteraction,
 	TextInputStyle,
 } from "discord.js";
 import { config } from "../../Config.js";
 import { SuggestionStatus } from "../../store/models/Suggestion.js";
-import { EPHEMERAL_FLAG } from "../../util/message.js";
+
 import type { EventListener } from "../module.js";
 import {
 	createReasonModal,
@@ -42,12 +43,12 @@ async function handleVoteButtonInteraction(
 	if (!interaction.message.editable) {
 		await interaction.reply({
 			content: "This suggestion is no longer editable!",
-			flags: EPHEMERAL_FLAG,
+			flags: MessageFlags.Ephemeral,
 		});
 		return;
 	}
 
-	await interaction.deferReply({ flags: EPHEMERAL_FLAG });
+	await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
 	const votingValue = SUGGESTION_BUTTON_MAP[interaction.customId];
 	const suggestion = await getSuggestionByMessageIdOrRecoverFromMessage(
@@ -57,7 +58,7 @@ async function handleVoteButtonInteraction(
 	if (!suggestion) {
 		await interaction.followUp({
 			content: "No Suggestion found for this message",
-			flags: EPHEMERAL_FLAG,
+			flags: MessageFlags.Ephemeral,
 		});
 		return;
 	}
@@ -78,7 +79,7 @@ async function handleVoteButtonInteraction(
 	const content = generateVoteMessage(votingValue, previousVoteValue);
 	await interaction.followUp({
 		content,
-		flags: EPHEMERAL_FLAG,
+		flags: MessageFlags.Ephemeral,
 	});
 }
 
@@ -86,7 +87,7 @@ async function handleViewVotesInteraction(
 	interaction: ButtonInteraction,
 	member: GuildMember,
 ): Promise<void> {
-	await interaction.deferReply({ flags: EPHEMERAL_FLAG });
+	await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
 	const suggestion = await getSuggestionByMessageIdOrRecoverFromMessage(
 		interaction.message,
@@ -94,7 +95,7 @@ async function handleViewVotesInteraction(
 	if (!suggestion) {
 		await interaction.followUp({
 			content: "No Suggestion found for this message",
-			flags: EPHEMERAL_FLAG,
+			flags: MessageFlags.Ephemeral,
 		});
 		return;
 	}
@@ -105,7 +106,7 @@ async function handleViewVotesInteraction(
 
 	await interaction.followUp({
 		embeds: [embed],
-		flags: EPHEMERAL_FLAG,
+		flags: MessageFlags.Ephemeral,
 	});
 }
 
@@ -125,7 +126,7 @@ async function handleManageModalSubmission(
 	if (!initialMessage) {
 		await interaction.followUp({
 			content: "Could not find the original suggestion message!",
-			flags: EPHEMERAL_FLAG,
+			flags: MessageFlags.Ephemeral,
 		});
 		return;
 	}
@@ -135,7 +136,7 @@ async function handleManageModalSubmission(
 	if (!suggestion) {
 		await interaction.followUp({
 			content: "No Suggestion found for this message",
-			flags: EPHEMERAL_FLAG,
+			flags: MessageFlags.Ephemeral,
 		});
 		return;
 	}
@@ -151,7 +152,7 @@ async function handleManageModalSubmission(
 	if (!suggestionArchive) {
 		await interaction.followUp({
 			content: "Could not find the suggestion archive channel!",
-			flags: EPHEMERAL_FLAG,
+			flags: MessageFlags.Ephemeral,
 		});
 		return;
 	}
@@ -160,7 +161,7 @@ async function handleManageModalSubmission(
 		await interaction.followUp({
 			content:
 				"The suggestion channel is either not writeable or not a text channel!",
-			flags: EPHEMERAL_FLAG,
+			flags: MessageFlags.Ephemeral,
 		});
 		return;
 	}
@@ -181,7 +182,7 @@ async function handleManageModalSubmission(
 		await interaction.followUp({
 			content:
 				"Something went wrong while archiving the suggestion! Please try again later!",
-			flags: EPHEMERAL_FLAG,
+			flags: MessageFlags.Ephemeral,
 		});
 	}
 }

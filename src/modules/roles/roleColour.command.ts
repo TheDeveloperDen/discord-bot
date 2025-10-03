@@ -1,20 +1,22 @@
-import type { ColorResolvable, GuildMember, Role } from "discord.js";
 import {
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
+	type ColorResolvable,
+	type GuildMember,
+	MessageFlags,
+	type Role,
 } from "discord.js";
 import type { Command, ExecutableSubcommand } from "djs-slash-helper";
 import { config } from "../../Config.js";
 import { wrapInTransaction } from "../../sentry.js";
 import { ColourRoles } from "../../store/models/ColourRoles.js";
-import { EPHEMERAL_FLAG } from "../../util/message.js";
 
 const ResetSubcommand: ExecutableSubcommand = {
 	type: ApplicationCommandOptionType.Subcommand,
 	name: "reset",
 	description: "Reset your role colour",
 	async handle(interaction) {
-		await interaction.deferReply({ flags: EPHEMERAL_FLAG });
+		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 		const user = interaction.user;
 		const member = interaction.member as GuildMember;
 		const roleInfo = await ColourRoles.findOne({
@@ -76,12 +78,12 @@ const SetSubcommand: ExecutableSubcommand = {
 		if (!colour.startsWith("#") || colour.length !== 7) {
 			await interaction.reply({
 				content: "Not a valid colour",
-				flags: EPHEMERAL_FLAG,
+				flags: MessageFlags.Ephemeral,
 			});
 			return;
 		}
 
-		await interaction.deferReply({ flags: EPHEMERAL_FLAG });
+		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 		const user = interaction.user;
 		const member = interaction.member as GuildMember;
 		const roleInfo = await ColourRoles.findOne({
