@@ -3,6 +3,7 @@ import {
 	ApplicationCommandType,
 	type Client,
 	type GuildMember,
+	MessageFlags,
 	PermissionFlagsBits,
 	type User,
 } from "discord.js";
@@ -11,6 +12,7 @@ import { moduleManager } from "../../index.js";
 import { logger } from "../../logging.js";
 import { createStandardEmbed, standardFooter } from "../../util/embeds.js";
 import { getEmoji, stringifyEmoji } from "../../util/emojis.js";
+
 import { fakeMention } from "../../util/users.js";
 import type { LearningResource } from "./learningResource.model.js";
 import {
@@ -132,12 +134,14 @@ const LearningUpdateSubcommand: ExecutableSubcommand = {
 		const member = interaction.member as GuildMember;
 		if (!member.permissions.has(PermissionFlagsBits.ManageMessages)) {
 			return await interaction.reply({
-				flags: ["Ephemeral"],
+				flags: MessageFlags.Ephemeral,
 				content: "No permission",
 			});
 		}
 
-		await interaction.deferReply({ flags: "Ephemeral" });
+		await interaction.deferReply({
+			flags: MessageFlags.Ephemeral,
+		});
 		await updateResourcesForCommands();
 		await moduleManager.refreshCommands();
 		await interaction.followUp("Updated learning resources cache");
@@ -167,7 +171,7 @@ const LearningListSubcommand: ExecutableSubcommand = {
 			});
 
 		await interaction.reply({
-			flags: ["Ephemeral"],
+			flags: MessageFlags.Ephemeral,
 			embeds: [embed],
 		});
 	},

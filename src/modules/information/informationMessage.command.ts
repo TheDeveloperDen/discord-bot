@@ -3,6 +3,7 @@ import {
 	type APIEmbed,
 	ApplicationCommandType,
 	ButtonBuilder,
+	MessageFlags,
 } from "discord.js";
 import type { Command } from "djs-slash-helper";
 import { config } from "../../Config.js";
@@ -30,7 +31,7 @@ export const InformationMessageCommand: Command<ApplicationCommandType.Message> 
 		async handle(interaction) {
 			if (!interaction.targetMessage.editable) {
 				await interaction.reply({
-					flags: ["Ephemeral"],
+					flags: MessageFlags.Ephemeral,
 					content: "I can't edit that message.",
 				});
 				return;
@@ -38,7 +39,7 @@ export const InformationMessageCommand: Command<ApplicationCommandType.Message> 
 
 			if (config.informationMessage == null) {
 				await interaction.reply({
-					flags: ["Ephemeral"],
+					flags: MessageFlags.Ephemeral,
 					content: "There is no information message configured.",
 				});
 				return;
@@ -67,7 +68,7 @@ export const InformationMessageCommand: Command<ApplicationCommandType.Message> 
 				)}`,
 			);
 			await interaction.reply({
-				flags: ["Ephemeral"],
+				flags: MessageFlags.Ephemeral,
 				content: "Information message set.",
 			});
 		},

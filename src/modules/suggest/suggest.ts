@@ -1,11 +1,19 @@
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
+	type ButtonInteraction,
 	ButtonStyle,
 	type Client,
 	type EmbedBuilder,
 	type GuildMember,
 	type Message,
+	MessageFlags,
+	ModalBuilder,
+	type ModalSubmitInteraction,
+	type OmitPartialGroupDMChannel,
+	type SendableChannels,
+	TextInputBuilder,
+	TextInputStyle,
 	type UserResolvable,
 } from "discord.js";
 import { config } from "../../Config.js";
@@ -331,3 +339,88 @@ export const createSuggestionManageButtons: () => ActionRowBuilder<ButtonBuilder
 				.setLabel("Reject/Close"),
 		);
 	};
+
+export function generateVoteMessage(
+	votingValue: SuggestionVoteType,
+	previousVoteValue?: SuggestionVoteType,
+): string {
+	const voteText = votingValue === 1 ? "**Yes**" : "**No**";
+
+	if (!previousVoteValue) {
+		return `You voted ${voteText} on this suggestion`;
+	}
+
+	if (previousVoteValue === votingValue) {
+		return `You already voted ${voteText} on this suggestion`;
+	}
+
+	const previousVoteText = previousVoteValue === 1 ? "**Yes**" : "**No**";
+	return `You changed your vote from ${previousVoteText} to ${voteText} on this suggestion`;
+}
+
+export function createReasonModal(
+	customId: string,
+	title: string,
+	placeholder: string,
+): ModalBuilder {
+	const reasonInput = new TextInputBuilder()
+		.setCustomId(SUGGESTION_REASON_INPUT_ID)
+		.setLabel("Reason (Optional)")
+		.setStyle(TextInputStyle.Paragraph)
+		.setPlaceholder(placeholder)
+		.setRequired(false)
+		.setMaxLength(1024);
+
+	const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(
+		reasonInput,
+	);
+
+	return new ModalBuilder()
+		.setCustomId(customId)
+		.setTitle(title)
+		.addComponents(actionRow);
+}
+
+export async function respondToSuggestionInteraction(
+	interaction: ButtonInteraction | ModalSubmitInteraction,
+	suggestion: Suggestion,
+	suggestionArchive: SendableChannels,
+	initialMessage: OmitPartialGroupDMChannel<Message>,
+	moderatorReason?: string,
+): Promise<void> {
+	if (!interaction.guild) {
+		await interaction.followUp({
+			content: "This can only be done in a guild!",
+			flags: MessageFlags.Ephemeral,
+		});
+		return;
+	}
+
+	const threadUrl = initialMessage.thread?.url;
+	const embed = await createSuggestionEmbedFromEntity(
+		interaction.client,
+		suggestion,
+		moderatorReason,
+		threadUrl,
+	);
+
+	const newMessage = await suggestionArchive.send({
+		embeds: [embed],
+		components: [
+			new ActionRowBuilder<ButtonBuilder>().addComponents(
+				new ButtonBuilder()
+					.setCustomId(SUGGESTION_VIEW_VOTES_ID)
+					.setStyle(ButtonStyle.Secondary)
+					.setEmoji("👁")
+					.setLabel("View Votes"),
+			),
+		],
+	});
+
+	if (initialMessage.deletable) {
+		await initialMessage.delete();
+	}
+
+	suggestion.messageId = BigInt(newMessage.id);
+	await suggestion.save();
+}
