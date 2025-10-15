@@ -51,7 +51,7 @@ export function levelForXp(xp: bigint) {
 	return level;
 }
 
-async function applyTierRoles(
+export async function applyTierRoles(
 	client: Client,
 	user: GuildMember,
 	ddUser: DDUser,
