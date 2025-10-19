@@ -4,7 +4,6 @@ import { Bump } from "./Bump.js";
 import type { DDUser } from "./DDUser.js";
 
 /**
-
  * @returns All bumps in ascending order of timestamp.
  */
 export const getAllBumps = async (): Promise<Bump[]> =>
@@ -103,13 +102,14 @@ export function extractStreaks<T extends { userId: bigint }>(
 	const streaks: T[][] = [];
 
 	for (const bump of bumps) {
+		const lastStreak = streaks.at(-1);
 		if (
 			streaks.length === 0 ||
-			streaks[streaks.length - 1][0].userId !== bump.userId
+			(lastStreak && lastStreak[0].userId !== bump.userId)
 		) {
 			streaks.push([bump]);
 		} else {
-			streaks[streaks.length - 1].push(bump);
+			lastStreak?.push(bump);
 		}
 	}
 	return streaks;
