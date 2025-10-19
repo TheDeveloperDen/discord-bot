@@ -3,7 +3,6 @@ import * as schedule from "node-schedule";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
 import { actualMention } from "../../util/users.js";
-import { format } from "../core/info.command.js";
 import type { EventListener } from "../module.js";
 import { getUserAndBumpsAggregated, medal } from "./leaderboard.js";
 
@@ -65,9 +64,9 @@ export const LeaderboardListener: EventListener = {
 		const guild = await client.guilds.fetch(config.guildId);
 		schedule.scheduleJob(
 			{
-				hour: 0,
+				hour: 6,
 				minute: 0,
-				second: 0,
+				dayOfWeek: 1, // 0 = Sunday, 1 = Monday, etc.
 			},
 			async () => {
 				await postLeaderboard(guild);
