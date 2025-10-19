@@ -20,6 +20,7 @@ import fn = sql.fn;
 import col = sql.col;
 
 import { Includeable } from "@sequelize/core/_non-semver-use-at-your-own-risk_/model.js";
+import { getUserAndBumpsAggregated, medal } from "./leaderboard.js";
 
 type KeysMatching<T, V> = {
 	[K in keyof T]-?: T[K] extends V ? K : never;
@@ -198,66 +199,9 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
 	}),
 };
 
-function medal(index: number): string {
-	switch (index) {
-		case 0:
-			return "🥇";
-		case 1:
-			return "🥈";
-		case 2:
-			return "🥉";
-		default:
-			return "";
-	}
-}
-
 function formatDays(days: number | bigint) {
 	if (days === 1) {
 		return "1 day";
 	}
 	return `${days} days`;
-}
-
-function getUserAndBumpsAggregated(after?: Date | null): Promise<
-	Array<{
-		id: string | bigint;
-		bumpsCount: string | number;
-	}>
-> {
-	// Build the timestamp filter SQL
-	const timestampFilter = after
-		? sql`AND "Bumps"."timestamp" >=
-          ${after}`
-		: sql``;
-
-	// Only add historical bumps if we're not filtering by date (i.e., showing all-time bumps)
-	const historicalBumps = after
-		? sql`0`
-		: sql`"DDUser"
-  .
-  "bumps"`;
-
-	return DDUser.findAll({
-		attributes: [
-			"id",
-			[
-				sql`(SELECT COALESCE(COUNT(*), 0) + ${historicalBumps}
-             FROM "Bumps"
-             WHERE "Bumps"."userId" = "DDUser"."id"
-                 ${timestampFilter})`,
-				"bumpsCount",
-			],
-		],
-		order: [
-			[
-				sql`(SELECT COALESCE(COUNT(*), 0) + ${historicalBumps}
-                  FROM "Bumps"
-                  WHERE "Bumps"."userId" = "DDUser"."id"
-                      ${timestampFilter})`,
-				"DESC",
-			],
-		],
-		limit: 10,
-		raw: true,
-	});
 }

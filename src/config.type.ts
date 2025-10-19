@@ -20,6 +20,7 @@ export interface Config {
 		modLog: string;
 		introductions?: string;
 		general: string;
+		leaderboard?: string;
 	};
 	starboard: {
 		emojiId: string;

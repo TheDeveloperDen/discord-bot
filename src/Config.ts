@@ -12,6 +12,7 @@ export const config: Config = {
 		auditLog: "994623474557538415",
 		modLog: "994623474557538415",
 		general: "904478147351806015",
+		leaderboard: "904478147351806015",
 	},
 	starboard: {
 		emojiId: "⭐",
