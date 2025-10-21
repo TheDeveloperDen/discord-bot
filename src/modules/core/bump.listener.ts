@@ -4,7 +4,6 @@ import {
 	type EmojiIdentifierResolvable,
 	InteractionType,
 	type Message,
-	type MessageInteraction,
 	type MessageInteractionMetadata,
 	type PartialTextBasedChannelFields,
 } from "discord.js";

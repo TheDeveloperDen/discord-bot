@@ -9,18 +9,19 @@ import {
 } from "discord.js";
 import type { Command } from "djs-slash-helper";
 import { wrapInTransaction } from "../../sentry.js";
-import { Bump } from "../../store/models/Bump.js";
 import { DDUser } from "../../store/models/DDUser.js";
 import { branding } from "../../util/branding.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { actualMention } from "../../util/users.js";
 import { getActualDailyStreak } from "../xp/dailyReward.command.js";
 
-import fn = sql.fn;
-import col = sql.col;
-
-import { Includeable } from "@sequelize/core/_non-semver-use-at-your-own-risk_/model.js";
 import { getUserAndBumpsAggregated, medal } from "./leaderboard.js";
+
+// For Bump Leaderboard
+interface MappedUser {
+	userId: string;
+	count: number;
+}
 
 type KeysMatching<T, V> = {
 	[K in keyof T]-?: T[K] extends V ? K : never;
@@ -82,6 +83,79 @@ const info: LeaderboardType[] = [
 	},
 ];
 
+async function getAggregatedLeaderboardUsers(
+	traitInfo: LeaderboardType,
+): Promise<MappedUser[]> {
+	const { value } = traitInfo;
+	const weekCutoff =
+		value === "weeklyBumps"
+			? new Date(Date.now() - 1000 * 60 * 60 * 24 * 7)
+			: null;
+
+	const aggregatedUsers = await getUserAndBumpsAggregated(weekCutoff);
+	const mappedUsers: MappedUser[] = [];
+
+	for (const userData of aggregatedUsers) {
+		const userId =
+			typeof userData.id === "string" ? BigInt(userData.id) : userData.id;
+		const user = await DDUser.findOne({
+			where: {
+				id: userId,
+			},
+		});
+		if (!user) continue;
+
+		const count = Number(userData.bumpsCount);
+		if (count === 0) continue;
+
+		mappedUsers.push({
+			userId: user.id.toString(),
+			count,
+		});
+	}
+
+	return mappedUsers;
+}
+
+async function getStandardLeaderboardUsers(
+	traitInfo: LeaderboardType,
+): Promise<MappedUser[]> {
+	const { select, sortingValue, value } = traitInfo;
+	const calculate: (user: DDUser) => Promise<number | bigint> =
+		select instanceof Function ? select : async (user: DDUser) => user[select];
+
+	const users = await DDUser.findAll({
+		order: [[sortingValue ?? value, "DESC"]],
+		limit: 10,
+	});
+
+	const mappedUsers: MappedUser[] = [];
+	for (const userToBeMapped of users) {
+		const count = Number(await calculate(userToBeMapped));
+		if (count === 0) {
+			continue;
+		}
+		mappedUsers.push({
+			userId: userToBeMapped.id.toString(),
+			count: count,
+		});
+	}
+
+	return mappedUsers;
+}
+
+async function getLeaderboardUsers(
+	traitInfo: LeaderboardType,
+): Promise<MappedUser[]> {
+	const { value, useAggregation } = traitInfo;
+	// handle if the user is trying to get bumps or weekly bumps
+	if (useAggregation && (value === "bumps" || value === "weeklyBumps")) {
+		return await getAggregatedLeaderboardUsers(traitInfo);
+	} else {
+		return await getStandardLeaderboardUsers(traitInfo);
+	}
+}
+
 export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
 	type: ApplicationCommandType.ChatInput,
 	name: "leaderboard",
@@ -114,64 +188,9 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
 			const all = await DDUser.findAll();
 			await Promise.all(all.map(getActualDailyStreak));
 		}
-		const { format, value, sortingValue, select, name, useAggregation } =
-			traitInfo;
+		const { format, name } = traitInfo;
 
-		const mappedUsers: {
-			userId: string;
-			count: number;
-		}[] = [];
-
-		// Use aggregation for bump-related leaderboards
-		if (useAggregation && (value === "bumps" || value === "weeklyBumps")) {
-			const weekCutoff =
-				value === "weeklyBumps"
-					? new Date(Date.now() - 1000 * 60 * 60 * 24 * 7)
-					: null;
-
-			const aggregatedUsers = await getUserAndBumpsAggregated(weekCutoff);
-
-			for (const userData of aggregatedUsers) {
-				const userId =
-					typeof userData.id === "string" ? BigInt(userData.id) : userData.id;
-				const user = await DDUser.findOne({
-					where: {
-						id: userId,
-					},
-				});
-				if (!user) continue;
-
-				const count = Number(userData.bumpsCount);
-				if (count === 0) continue;
-
-				mappedUsers.push({
-					userId: user.id.toString(),
-					count,
-				});
-			}
-		} else {
-			// Original logic for non-aggregation leaderboards
-			const calculate: (user: DDUser) => Promise<number | bigint> =
-				select instanceof Function
-					? select
-					: async (user: DDUser) => user[select];
-
-			const users = await DDUser.findAll({
-				order: [[sortingValue ?? value, "DESC"]],
-				limit: 10,
-			});
-
-			for (const userToBeMapped of users) {
-				const count = Number(await calculate(userToBeMapped));
-				if (count === 0) {
-					continue;
-				}
-				mappedUsers.push({
-					userId: userToBeMapped.id.toString(),
-					count: count,
-				});
-			}
-		}
+		const mappedUsers = await getLeaderboardUsers(traitInfo);
 
 		if (mappedUsers.length === 0) {
 			await interaction.followUp("No applicable users");
