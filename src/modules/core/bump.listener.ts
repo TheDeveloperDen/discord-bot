@@ -154,30 +154,28 @@ export const BumpListener: EventListener = {
 		if (!interaction || interaction.type !== InteractionType.ApplicationCommand)
 			return;
 		if (message.author.id !== "302050872383242240") return; // /disboard user id
-		const interactionOld = message.interactionMetadata;
 
 		// instead of checking the command name, we check the description
-		if (
-			interactionOld?.type !== InteractionType.ApplicationCommand ||
-			!message.embeds[0]?.description?.includes("Bump done")
-		)
+		if (!interaction || interaction.type !== InteractionType.ApplicationCommand)
 			return;
-
+		// noinspection JSDeprecatedSymbols don't think there's another way of doing this ( yes there is )
+		const interactionOld = message.interaction;
+		if (interactionOld?.commandName !== "bump") return;
 		// since the bump failed message is ephemeral, we know if we can see the message then the bump succeeded!
-		const ddUser = await getOrCreateUserById(BigInt(interactionOld.user.id));
+		const ddUser = await getOrCreateUserById(BigInt(interaction.user.id));
 
 		// Bump
 		await Bump.create({
 			messageId: BigInt(message.id),
-			userId: BigInt(interactionOld.user.id),
+			userId: BigInt(interaction.user.id),
 			timestamp: new Date(),
 		});
 		logger.info(
-			`User ${interactionOld.user.id} bumped! Total bumps: ${await ddUser.countBumps()}`,
+			`User ${interaction.user.id} bumped! Total bumps: ${await ddUser.countBumps()}`,
 		);
 		clearBumpsCache();
 		await ddUser.save();
-		await handleBump(client, ddUser, interactionOld, message);
+		await handleBump(client, ddUser, interaction, message);
 	},
 };
 const streakReacts: EmojiIdentifierResolvable[] = [
