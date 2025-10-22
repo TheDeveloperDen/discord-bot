@@ -154,9 +154,6 @@ export const BumpListener: EventListener = {
 			return;
 		if (message.author.id !== "302050872383242240") return; // /disboard user id
 
-		// instead of checking the command name, we check the description
-		if (!interaction || interaction.type !== InteractionType.ApplicationCommand)
-			return;
 		// noinspection JSDeprecatedSymbols don't think there's another way of doing this ( yes there is )
 		const interactionOld = message.interaction;
 		if (interactionOld?.commandName !== "bump") return;

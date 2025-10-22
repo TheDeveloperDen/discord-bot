@@ -37,6 +37,8 @@ interface LeaderboardType extends APIApplicationCommandOptionChoice<string> {
 	sortingValue?: keyof DDUser;
 	filter?: (user: DDUser, count: number) => Promise<boolean>;
 	format: (value: number | bigint) => string;
+	// The select function is a placeholder when useAggregation is true and is not used when useAggregation is true.
+	// The actual count comes from aggregation in getAggregatedLeaderboardUsers.
 	useAggregation?: boolean;
 }
 
