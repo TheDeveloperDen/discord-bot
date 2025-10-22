@@ -6,7 +6,6 @@ export const LeaderboardModule: Module = {
 	name: "leaderboard",
 	commands: [LeaderboardCommand],
 	listeners: [LeaderboardListener],
-	onInit: async (manager) => {},
 };
 
 export default LeaderboardModule;
