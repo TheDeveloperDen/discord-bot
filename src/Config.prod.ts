@@ -22,6 +22,7 @@ export const config: Config = {
 	commands: {
 		daily: "1059214166075912225",
 	},
+
 	roles: {
 		tiers: [
 			"821743100203368458", // @everyone (tier 0)

@@ -15,6 +15,7 @@ import ImageForwarderModule from "./modules/imageForwarder.module.js";
 import { InformationModule } from "./modules/information/information.module.js";
 import JoinLeaveMessageModule from "./modules/joinLeaveMessage.module.js";
 import { LanguageStatusModule } from "./modules/languageStatus.module.js";
+import LeaderboardModule from "./modules/leaderboard/leaderboard.module.js";
 import { LearningModule } from "./modules/learning/learning.module.js";
 import { ModerationModule } from "./modules/moderation/moderation.module.js";
 import { ModmailModule } from "./modules/modmail/modmail.module.js";
@@ -65,6 +66,7 @@ export const moduleManager = new ModuleManager(
 		ModerationModule,
 		StarboardModule,
 		ModmailModule,
+		LeaderboardModule,
 	],
 );
 
