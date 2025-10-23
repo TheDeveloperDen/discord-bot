@@ -1,9 +1,10 @@
-import type {
-	Embed,
-	GuildMember,
-	Message,
-	SendableChannels,
-	Snowflake,
+import {
+	DiscordAPIError,
+	type Embed,
+	type GuildMember,
+	type Message,
+	type SendableChannels,
+	type Snowflake,
 } from "discord.js";
 import * as schedule from "node-schedule";
 import { config } from "../../Config.js";
@@ -156,10 +157,19 @@ export const StarboardListener: EventListener = {
 							);
 							return;
 						}
+						let message: Message | null = null;
+						try {
+							message = await channel.messages.fetch(
+								dbStarboardMessage.originalMessageId.toString(),
+							);
+						} catch (e) {
+							logger.error(
+								"There was an error fetching the original Starboard message: ",
+								e,
+							);
+							continue;
+						}
 
-						const message = await channel.messages.fetch(
-							dbStarboardMessage.originalMessageId.toString(),
-						);
 						const member = await getMember(message);
 						if (!member) {
 							logger.error(
