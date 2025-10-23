@@ -182,12 +182,6 @@ export const StarboardListener: EventListener = {
 							dbStarboardMessage.starboardMessageId.toString(),
 						);
 
-						if (!message) {
-							await starboardMessage.delete();
-							await dbStarboardMessage.destroy();
-							continue;
-						}
-
 						if (!starboardMessage) {
 							await dbStarboardMessage.destroy();
 							continue;
