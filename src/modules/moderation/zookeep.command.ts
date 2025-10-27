@@ -102,17 +102,18 @@ export const ZookeepCommand: Command<ApplicationCommandType.User> = {
 		}
 		const applicableChannel = interaction.channel;
 
+		// if the command is being done in a private or special channel...
 		if (
 			applicableChannel &&
-			!applicableChannel.permissionsFor(guild.roles.everyone).has("ViewChannel")
+			!applicableChannel
+				.permissionsFor(guild.roles.everyone)
+				.has("SendMessages")
 		) {
 			// send it in general instead
 			const generalChannel = guild.channels.cache.get(config.channels.general);
 			if (
 				generalChannel?.isTextBased() &&
-				generalChannel
-					.permissionsFor(interaction.client.user)
-					?.has("SendMessages")
+				generalChannel.permissionsFor(interaction.user.id)?.has("SendMessages")
 			) {
 				await interaction.reply({
 					content: `Zookept successfully executed! Posting the result in <#${config.channels.general}>.`,
