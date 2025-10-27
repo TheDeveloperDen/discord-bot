@@ -65,6 +65,17 @@ export const ZookeepCommand: Command<ApplicationCommandType.User> = {
 			return;
 		}
 
+		const interactionMember = await interaction.guild.members.fetch(
+			interaction.user.id,
+		);
+		if (member.roles.highest >= interactionMember.roles.highest) {
+			await interaction.reply({
+				content: `You cannot send ${actualMention(user)} to the zoo because they have an equal or higher role than you.`,
+				flags: "Ephemeral",
+			});
+			return;
+		}
+
 		if (member.roles.cache.has(config.roles.zooExhibit)) {
 			await interaction.reply({
 				content: `${actualMention(user)} is already in the zoo!`,
