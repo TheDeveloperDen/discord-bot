@@ -11,6 +11,7 @@ const zooGifs = [
 	"https://c.tenor.com/rVp0HbYphkEAAAAd/tenor.gif",
 	"https://c.tenor.com/xD622Ai2sLMAAAAC/tenor.gif",
 	"https://c.tenor.com/3fuiv47KDrkAAAAd/tenor.gif",
+	"https://images-ext-1.discordapp.net/external/6YzW5IqUn2yPzaKOWpXLw4Za2GXLmEJl2Ky_ubFU-04/https/media.tenor.com/bySzwVy_BWEAAAPo/manul-pallas-cat.mp4",
 ];
 
 const zooMessages: ((user: UserMentionable) => string)[] = [
