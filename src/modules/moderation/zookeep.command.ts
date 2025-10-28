@@ -26,6 +26,8 @@ const zooMessages: ((user: UserMentionable) => string)[] = [
 		`The zookeepers have successfully captured ${actualMention(user)}! 🦊`,
 	(user) =>
 		`${actualMention(user)} couldn't behave and has been placed in the zoo! 🐸`,
+	(user) =>
+		`${actualMention(user)} is now part of our exclusive zoo collection! 🦓`,
 ];
 
 export const ZookeepCommand: Command<ApplicationCommandType.User> = {
@@ -40,7 +42,7 @@ export const ZookeepCommand: Command<ApplicationCommandType.User> = {
 			});
 			return;
 		}
-		const user = interaction.targetUser;
+		const targetUser = interaction.targetUser;
 
 		const guild = interaction.guild;
 		if (!guild) {
@@ -50,15 +52,15 @@ export const ZookeepCommand: Command<ApplicationCommandType.User> = {
 			});
 			return;
 		}
-		const member = await guild?.members.fetch(user.id);
-		if (!member) {
+		const targetMember = await guild?.members.fetch(targetUser.id);
+		if (!targetMember) {
 			await interaction.reply({
 				content: "User not found in this guild.",
 				flags: "Ephemeral",
 			});
 			return;
 		}
-		if (member.user.bot) {
+		if (targetMember.user.bot) {
 			await interaction.reply({
 				content: `Bots can't be sent to the zoo!`,
 				flags: "Ephemeral",
@@ -69,39 +71,46 @@ export const ZookeepCommand: Command<ApplicationCommandType.User> = {
 		const interactionMember = await interaction.guild.members.fetch(
 			interaction.user.id,
 		);
-		if (member.roles.highest >= interactionMember.roles.highest) {
+		console.debug(
+			targetMember.roles.highest.position,
+			interactionMember.roles.highest.position,
+		);
+		if (
+			targetMember.roles.highest.position >=
+			interactionMember.roles.highest.position
+		) {
 			await interaction.reply({
-				content: `You cannot send ${actualMention(user)} to the zoo because they have an equal or higher role than you.`,
+				content: `You cannot send ${actualMention(targetUser)} to the zoo because they have an equal or higher role than you.`,
 				flags: "Ephemeral",
 			});
 			return;
 		}
 
-		if (member.roles.cache.has(config.roles.zooExhibit)) {
+		if (targetMember.roles.cache.has(config.roles.zooExhibit)) {
 			await interaction.reply({
-				content: `${actualMention(user)} is already in the zoo!`,
+				content: `${actualMention(targetUser)} is already in the zoo!`,
 				flags: "Ephemeral",
 			});
 			return;
 		}
 		try {
-			await member.roles.add(
+			await targetMember.roles.add(
 				config.roles.zooExhibit,
 				`Zookeep command used by ${interaction.user.tag}`,
 			);
 		} catch (error) {
 			Sentry.captureException(error);
 			await interaction.reply({
-				content: `Failed to send ${actualMention(user)} to the zoo. Do I have the correct permissions?`,
+				content: `Failed to send ${actualMention(targetUser)} to the zoo. Do I have the correct permissions?`,
 				flags: "Ephemeral",
 			});
 			return;
 		}
 
 		const gif = randomElementFromArray(zooGifs);
-		const message = randomElementFromArray(zooMessages)(user);
+		const message = randomElementFromArray(zooMessages)(targetUser);
 
-		const embed = createStandardEmbed(user)
+		const embed = createStandardEmbed(targetUser)
 			.setTitle("Zoo Exhibit Captured!")
 			.setDescription(message)
 			.setColor("Purple")
@@ -128,7 +137,7 @@ export const ZookeepCommand: Command<ApplicationCommandType.User> = {
 				generalChannel.permissionsFor(interaction.user.id)?.has("SendMessages")
 			) {
 				await interaction.reply({
-					content: `Zookept successfully executed! Posting the result in <#${config.channels.general}>.`,
+					content: `Zookeep successfully executed! Posting the result in <#${config.channels.general}>.`,
 					flags: "Ephemeral",
 				});
 				embed.setDescription(
