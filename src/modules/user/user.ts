@@ -1,15 +1,6 @@
 import * as fs from "node:fs";
-import {
-	type CanvasRenderingContext2D,
-	CanvasTextBaseline,
-	registerFont,
-} from "canvas";
-import {
-	type GuildMember,
-	ImageSize,
-	SlashCommandStringOption,
-} from "discord.js";
-import { Bump } from "../../store/models/Bump.js";
+import { type CanvasRenderingContext2D, registerFont } from "canvas";
+import type { GuildMember } from "discord.js";
 import { getBumpStreak } from "../../store/models/bumps.js";
 import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import {
