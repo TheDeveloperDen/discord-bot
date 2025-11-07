@@ -22,6 +22,7 @@ export const config: Config = {
 	commands: {
 		daily: "1059214166075912225",
 	},
+
 	roles: {
 		tiers: [
 			"821743100203368458", // @everyone (tier 0)
@@ -47,6 +48,7 @@ export const config: Config = {
 		},
 		noPing: "848197427617595393",
 		bumpNotifications: "1300915104568705107",
+		zooExhibit: "1390639320599232662",
 	},
 	clientId: "904478222455029821",
 	guildId: "821743100203368458",

@@ -3,6 +3,7 @@ import type {
 	Client,
 	Message,
 	MessageInteraction,
+	MessageInteractionMetadata,
 	PartialTextBasedChannelFields,
 	User,
 } from "discord.js";
@@ -67,7 +68,7 @@ test("simple bump", async () => {
 	const { ddUser, fakeUser, mockReact, mockChannel } = await setupMocks();
 	await handleBumpStreak(
 		ddUser,
-		{ user: fakeUser } as unknown as MessageInteraction,
+		{ user: fakeUser } as unknown as MessageInteractionMetadata,
 		{ channel: mockChannel, react: mockReact } as unknown as Message & {
 			channel: PartialTextBasedChannelFields;
 		},
@@ -88,7 +89,7 @@ test("simple bump with streak", async () => {
 
 	await handleBumpStreak(
 		ddUser,
-		{ user: fakeUser } as unknown as MessageInteraction,
+		{ user: fakeUser } as unknown as MessageInteractionMetadata,
 		{ channel: mockChannel, react: mockReact } as unknown as Message & {
 			channel: PartialTextBasedChannelFields;
 		},
@@ -113,7 +114,7 @@ test("simple bump with big streak", async () => {
 	}
 	await handleBumpStreak(
 		ddUser,
-		{ user: fakeUser } as unknown as MessageInteraction,
+		{ user: fakeUser } as unknown as MessageInteractionMetadata,
 		{ channel: mockChannel, react: mockReact } as unknown as Message & {
 			channel: PartialTextBasedChannelFields;
 		},
@@ -137,7 +138,7 @@ test("speedy bump ", async () => {
 	setLastBumpNotificationTime(new Date(Date.now() - 1000));
 	await handleBumpStreak(
 		ddUser,
-		{ user: fakeUser } as unknown as MessageInteraction,
+		{ user: fakeUser } as unknown as MessageInteractionMetadata,
 		{ channel: mockChannel, react: mockReact } as unknown as Message & {
 			channel: PartialTextBasedChannelFields;
 		},
@@ -170,7 +171,9 @@ test("End other user's streak", async () => {
 	});
 	await handleBumpStreak(
 		otherUser,
-		{ user: createFakeUser(otherUserId) } as unknown as MessageInteraction,
+		{
+			user: createFakeUser(otherUserId),
+		} as unknown as MessageInteractionMetadata,
 		{ channel: mockChannel, react: mockReact } as unknown as Message & {
 			channel: PartialTextBasedChannelFields;
 		},
@@ -243,7 +246,9 @@ test("End other user's streak with real data", async () => {
 
 	await handleBumpStreak(
 		otherUser,
-		{ user: createFakeUser(otherUserId) } as unknown as MessageInteraction,
+		{
+			user: createFakeUser(otherUserId),
+		} as unknown as MessageInteractionMetadata,
 		{ channel: mockChannel, react: mockReact } as unknown as Message & {
 			channel: PartialTextBasedChannelFields;
 		},

@@ -73,6 +73,7 @@ export const extractEmbedAndFilesFromMessage: (
 			url: `https://discord.com/users/${member.id}`,
 		})
 		.setURL(message.url)
+		.setTimestamp(message.editedTimestamp ?? message.createdTimestamp)
 		.setDescription(message.content.length > 0 ? message.content : null);
 	const files: AttachmentBuilder[] = [];
 	const imageOrGif = await getImageOrGifEmbed(message);

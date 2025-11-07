@@ -82,6 +82,10 @@ export async function initStorage() {
 		as: "user",
 	});
 
+	DDUser.hasMany(Bump, {
+		foreignKey: "userId",
+		as: "Bumps",
+	});
 	await sequelize.sync();
 
 	sequelizeInstance = sequelize;

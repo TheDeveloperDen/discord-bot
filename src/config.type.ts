@@ -20,6 +20,7 @@ export interface Config {
 		modLog: string;
 		introductions?: string;
 		general: string;
+		leaderboard?: string;
 	};
 	starboard: {
 		emojiId: string;
@@ -43,6 +44,7 @@ export interface Config {
 		separators: { general: Snowflake; tags: Snowflake; langs: Snowflake };
 		noPing: Snowflake;
 		bumpNotifications?: Snowflake;
+		zooExhibit?: Snowflake;
 	};
 	modmail: {
 		channel: string;

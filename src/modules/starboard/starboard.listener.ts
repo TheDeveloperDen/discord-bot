@@ -1,9 +1,10 @@
-import type {
-	Embed,
-	GuildMember,
-	Message,
-	SendableChannels,
-	Snowflake,
+import {
+	DiscordAPIError,
+	type Embed,
+	type GuildMember,
+	type Message,
+	type SendableChannels,
+	type Snowflake,
 } from "discord.js";
 import * as schedule from "node-schedule";
 import { config } from "../../Config.js";
@@ -88,7 +89,7 @@ const getStarsFromEmbed: (embed: Embed) => number = (embed) => {
 	if (split.length < 2) return 0;
 	const stars = split[0]?.split(":")[1]?.trim();
 	if (!stars) return 0;
-	return parseInt(stars, 10);
+	return Number.parseInt(stars, 10);
 };
 
 export const StarboardListener: EventListener = {
@@ -141,7 +142,7 @@ export const StarboardListener: EventListener = {
 						const channel = await guild.channels.fetch(
 							dbStarboardMessage.originalMessageChannelId.toString(),
 						);
-						if (!channel || !channel.isTextBased()) return; // Channel is not available? ( Either we can hope it comes back or we can delete the entry from the database )
+						if (!channel?.isTextBased()) return; // Channel is not available? ( Either we can hope it comes back or we can delete the entry from the database )
 
 						const starboardChannel = await guild.channels.fetch(
 							config.starboard.channel,
@@ -156,10 +157,19 @@ export const StarboardListener: EventListener = {
 							);
 							return;
 						}
+						let message: Message | null = null;
+						try {
+							message = await channel.messages.fetch(
+								dbStarboardMessage.originalMessageId.toString(),
+							);
+						} catch (e) {
+							logger.error(
+								"There was an error fetching the original Starboard message: ",
+								e,
+							);
+							continue;
+						}
 
-						const message = await channel.messages.fetch(
-							dbStarboardMessage.originalMessageId.toString(),
-						);
 						const member = await getMember(message);
 						if (!member) {
 							logger.error(
@@ -171,12 +181,6 @@ export const StarboardListener: EventListener = {
 						const starboardMessage = await starboardChannel.messages.fetch(
 							dbStarboardMessage.starboardMessageId.toString(),
 						);
-
-						if (!message) {
-							await starboardMessage.delete();
-							await dbStarboardMessage.destroy();
-							continue;
-						}
 
 						if (!starboardMessage) {
 							await dbStarboardMessage.destroy();
@@ -218,8 +222,33 @@ export const StarboardListener: EventListener = {
 		);
 	},
 	async messageReactionAdd(_, reaction) {
+		if (reaction.partial) {
+			// If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
+			try {
+				await reaction.fetch();
+			} catch (error) {
+				console.error(
+					"Starboard: Something went wrong when fetching the reaction:",
+					error,
+				);
+				// Return as `reaction.message.author` may be undefined/null
+				return;
+			}
+		}
+
 		let message = reaction.message;
-		if (message.partial) message = await message.fetch();
+		if (message.partial) {
+			// If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
+			try {
+				message = await message.fetch();
+			} catch (error) {
+				console.error(
+					"Starboard: Something went wrong when fetching the message:",
+					error,
+				);
+				return;
+			}
+		}
 		if (
 			!message.inGuild() ||
 			message.author.bot ||
@@ -299,8 +328,33 @@ export const StarboardListener: EventListener = {
 	},
 
 	async messageReactionRemove(_, reaction) {
+		if (reaction.partial) {
+			// If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
+			try {
+				await reaction.fetch();
+			} catch (error) {
+				console.error(
+					"Starboard: Something went wrong when fetching the reaction:",
+					error,
+				);
+				// Return as `reaction.message.author` may be undefined/null
+				return;
+			}
+		}
+
 		let message = reaction.message;
-		if (message.partial) message = await reaction.message.fetch();
+		if (message.partial) {
+			// If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
+			try {
+				message = await message.fetch();
+			} catch (error) {
+				console.error(
+					"Starboard: Something went wrong when fetching the message:",
+					error,
+				);
+				return;
+			}
+		}
 		if (
 			!message.inGuild() ||
 			message.author.bot ||
