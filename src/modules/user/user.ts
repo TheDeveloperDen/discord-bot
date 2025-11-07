@@ -4,7 +4,11 @@ import {
 	CanvasTextBaseline,
 	registerFont,
 } from "canvas";
-import { type GuildMember, SlashCommandStringOption } from "discord.js";
+import {
+	type GuildMember,
+	ImageSize,
+	SlashCommandStringOption,
+} from "discord.js";
 import { Bump } from "../../store/models/Bump.js";
 import { getBumpStreak } from "../../store/models/bumps.js";
 import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
@@ -163,18 +167,25 @@ export async function generateUserProfileImage(
 
 	const displayNameSize = getTextSize(ctx, user.displayName);
 
-	const debugImage =
-		"https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Fwww.quickmeme.com%2Fimg%2F46%2F468394fc32d72c2bdc04abd04834782a2de7fee5834b5df2fa3b9295262db4cb.jpg&f=1&nofb=1&ipt=be4cd3afa2da068f2bb6b0639cb2ada1402241214afa20a08be89b7c7ee71485";
-	// Draw user's role icon
-	const roleIconSize = 32;
-	await loadAndDrawImage(
-		ctx,
-		debugImage,
-		displayNameX + displayNameSize.width + 8,
-		displayNameY - displayNameSize.height - 4,
-		roleIconSize,
-		roleIconSize,
-	);
+	//const debugImage =
+	//	"https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Fwww.quickmeme.com%2Fimg%2F46%2F468394fc32d72c2bdc04abd04834782a2de7fee5834b5df2fa3b9295262db4cb.jpg&f=1&nofb=1&ipt=be4cd3afa2da068f2bb6b0639cb2ada1402241214afa20a08be89b7c7ee71485";
+	const roleIcon = user.roles.highest.iconURL({
+		size: 256,
+		extension: "jpg",
+		forceStatic: true,
+	});
+	if (roleIcon) {
+		// Draw user's role icon
+		const roleIconSize = 32;
+		await loadAndDrawImage(
+			ctx,
+			roleIcon,
+			displayNameX + displayNameSize.width + 8,
+			displayNameY - displayNameSize.height - 4,
+			roleIconSize,
+			roleIconSize,
+		);
+	}
 
 	// Draw user's avatar (scaled)
 	const avatarUrl = user.displayAvatarURL({ size: 256 });
