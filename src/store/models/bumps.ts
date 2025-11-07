@@ -4,7 +4,6 @@ import { Bump } from "./Bump.js";
 import type { DDUser } from "./DDUser.js";
 
 /**
-
  * @returns All bumps in ascending order of timestamp.
  */
 export const getAllBumps = async (): Promise<Bump[]> =>
