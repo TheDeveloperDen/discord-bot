@@ -1,4 +1,3 @@
-import * as fs from "node:fs";
 import { type CanvasRenderingContext2D, registerFont } from "canvas";
 import type { GuildMember } from "discord.js";
 import { getBumpStreak } from "../../store/models/bumps.js";
