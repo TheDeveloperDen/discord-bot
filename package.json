@@ -4,7 +4,7 @@
 	"type": "module",
 	"main": "src/index.ts",
 	"engines": {
-		"node": "22"
+		"node": "24"
 	},
 	"scripts": {
 		"version": "echo $npm_package_version",
