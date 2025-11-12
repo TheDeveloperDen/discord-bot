@@ -26,6 +26,7 @@ import { ShowcaseModule } from "./modules/showcase.module.js";
 import { StarboardModule } from "./modules/starboard/starboard.module.js";
 import SuggestModule from "./modules/suggest/suggest.module.js";
 import { TokenScannerModule } from "./modules/tokenScanner.module.js";
+import { UserModule } from "./modules/user/user.module.js";
 import { XpModule } from "./modules/xp/xp.module.js";
 import { initSentry } from "./sentry.js";
 import { initStorage } from "./store/storage.js";
@@ -67,6 +68,7 @@ export const moduleManager = new ModuleManager(
 		StarboardModule,
 		ModmailModule,
 		LeaderboardModule,
+		UserModule,
 	],
 );
 
