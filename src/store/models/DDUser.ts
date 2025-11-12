@@ -9,6 +9,7 @@ import {
 import {
 	AllowNull,
 	Attribute,
+	HasMany,
 	NotNull,
 	PrimaryKey,
 	Table,
@@ -16,6 +17,7 @@ import {
 import { logger } from "../../logging.js";
 import { RealBigInt } from "../RealBigInt.js";
 import { Bump } from "./Bump.js";
+import { DDUserAchievements } from "./DDUserAchievements.js";
 
 @Table({ tableName: "Users" })
 export class DDUser extends Model<
@@ -46,6 +48,9 @@ export class DDUser extends Model<
 	@AllowNull
 	@Attribute(DataTypes.DATE)
 	public declare lastDailyTime: Date | null;
+
+	@HasMany(() => DDUserAchievements, "ddUserId")
+	public declare ddUserAchievements?: DDUserAchievements[];
 
 	override async save(options?: SaveOptions): Promise<this> {
 		return await Sentry.startSpan(

@@ -9,6 +9,7 @@ import { logger } from "../logging.js";
 import { Bump } from "./models/Bump.js";
 import { ColourRoles } from "./models/ColourRoles.js";
 import { DDUser } from "./models/DDUser.js";
+import { DDUserAchievements } from "./models/DDUserAchievements.js";
 import { FAQ } from "./models/FAQ.js";
 import { ModeratorActions } from "./models/ModeratorActions.js";
 import { ModMailNote } from "./models/ModMailNote.js";
@@ -74,6 +75,7 @@ export async function initStorage() {
 		SuggestionVote,
 		ModMailTicket,
 		ModMailNote,
+		DDUserAchievements,
 	];
 	sequelize.addModels(models);
 
@@ -82,6 +84,10 @@ export async function initStorage() {
 		as: "user",
 	});
 
+	DDUser.hasMany(Bump, {
+		foreignKey: "userId",
+		as: "Bumps",
+	});
 	await sequelize.sync();
 
 	sequelizeInstance = sequelize;
