@@ -1,5 +1,7 @@
 import { type CanvasRenderingContext2D, createCanvas, loadImage } from "canvas";
+import { logger } from "../logging.js";
 import { profileFont } from "../modules/user/user.js";
+import { font } from "./imageUtils.js";
 
 export function createCanvasContext(
 	width: number,
@@ -21,8 +23,7 @@ export async function loadAndDrawImage(
 		const image = await loadImage(imageUrl);
 		ctx.drawImage(image, x, y, width, height);
 	} catch (error) {
-		console.error("Failed to load and draw image:", error);
-		// Optionally draw a placeholder or fallback
+		throw new Error(`Failed to load image from ${imageUrl}: ${error}`);
 	}
 }
 

@@ -2,18 +2,19 @@ import { type CanvasRenderingContext2D, registerFont } from "canvas";
 import type { GuildMember } from "discord.js";
 import { getBumpStreak } from "../../store/models/bumps.js";
 import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
+import { branding } from "../../util/branding.js";
 import {
 	createCanvasContext,
 	getTextSize,
 	loadAndDrawImage,
 	setFont,
 } from "../../util/canvas.js";
-
-const fontPath = "src/modules/user/fonts/CascadiaCode.ttf"; // Update this path to your font file
-registerFont(fontPath, { family: "Cascadia Code" });
+import { xpForLevel } from "../xp/xpForMessage.util.js";
 
 export const profileFont = "Cascadia Code";
-
+registerFont(branding.font, {
+	family: profileFont,
+});
 export function getDDColorGradiant(
 	ctx: CanvasRenderingContext2D,
 	startX: number,
@@ -42,15 +43,19 @@ export function createLevelAndXPField(
 	const barX = x; // After avatar and padding
 	const barY = y; // Slightly above name
 
-	const xpForNextLevel = (level + 1) * 100 * 1.5;
-	const xpProgress = Math.min(Number(xp) / xpForNextLevel, 1);
+	const xpForNextLevel = xpForLevel(ddUser.level + 1);
+	const xpProgress = Math.min(Number(xp) / Number(xpForNextLevel), 1);
 
 	// Draw XP bar background
 	canvas.fillStyle = "#444444";
 	canvas.fillRect(barX, barY, barWidth, barHeight);
-
+	let userRoleColor = user.roles.highest.hexColor;
+	if (userRoleColor === "#000000" || userRoleColor === "#444444") {
+		// green
+		userRoleColor = "#FF52F9FF";
+	}
 	// Draw XP bar progress
-	canvas.fillStyle = "#4CAF50";
+	canvas.fillStyle = userRoleColor;
 	canvas.fillRect(barX, barY, barWidth * xpProgress, barHeight);
 
 	// Draw XP text
