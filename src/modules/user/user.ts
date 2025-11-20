@@ -1,4 +1,4 @@
-import { type CanvasRenderingContext2D, registerFont } from "canvas";
+import Canvas from "@napi-rs/canvas";
 import type { GuildMember } from "discord.js";
 import { getBumpStreak } from "../../store/models/bumps.js";
 import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
@@ -12,11 +12,9 @@ import {
 import { xpForLevel } from "../xp/xpForMessage.util.js";
 
 export const profileFont = "Cascadia Code";
-registerFont(branding.font, {
-	family: profileFont,
-});
+Canvas.GlobalFonts.registerFromPath(branding.font, profileFont);
 export function getDDColorGradiant(
-	ctx: CanvasRenderingContext2D,
+	ctx: Canvas.SKRSContext2D,
 	startX: number,
 	width: number,
 ) {
@@ -29,7 +27,7 @@ export function getDDColorGradiant(
 }
 
 export function createLevelAndXPField(
-	canvas: CanvasRenderingContext2D,
+	canvas: Canvas.SKRSContext2D,
 	user: GuildMember,
 	ddUser: DDUser,
 	x: number,
@@ -70,7 +68,7 @@ export function createLevelAndXPField(
 }
 
 export async function createUserBumpFields(
-	canvas: CanvasRenderingContext2D,
+	canvas: Canvas.SKRSContext2D,
 	user: GuildMember,
 	ddUser: DDUser,
 	x: number,
@@ -105,7 +103,7 @@ export async function createUserBumpFields(
 	);
 }
 export function drawDivider(
-	ctx: CanvasRenderingContext2D,
+	ctx: Canvas.SKRSContext2D,
 	x: number,
 	y: number,
 	length: number,
@@ -212,7 +210,7 @@ export async function generateUserProfileImage(
 }
 
 export function drawDeveloperDenText(
-	ctx: CanvasRenderingContext2D,
+	ctx: Canvas.SKRSContext2D,
 	x: number,
 	y: number,
 ) {

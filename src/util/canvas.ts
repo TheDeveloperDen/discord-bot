@@ -1,18 +1,15 @@
-import { type CanvasRenderingContext2D, createCanvas, loadImage } from "canvas";
-import { logger } from "../logging.js";
+import Canvas from "@napi-rs/canvas";
 import { profileFont } from "../modules/user/user.js";
-import { font } from "./imageUtils.js";
-
 export function createCanvasContext(
 	width: number,
 	height: number,
-): CanvasRenderingContext2D {
-	const canvas = createCanvas(width, height);
+): Canvas.SKRSContext2D {
+	const canvas = Canvas.createCanvas(width, height);
 	return canvas.getContext("2d");
 }
 
 export async function loadAndDrawImage(
-	ctx: CanvasRenderingContext2D,
+	ctx: Canvas.SKRSContext2D,
 	imageUrl: string,
 	x: number,
 	y: number,
@@ -20,7 +17,7 @@ export async function loadAndDrawImage(
 	height: number,
 ): Promise<void> {
 	try {
-		const image = await loadImage(imageUrl);
+		const image = await Canvas.loadImage(imageUrl);
 		ctx.drawImage(image, x, y, width, height);
 	} catch (error) {
 		throw new Error(`Failed to load image from ${imageUrl}: ${error}`);
@@ -28,7 +25,7 @@ export async function loadAndDrawImage(
 }
 
 export function setFont(
-	ctx: CanvasRenderingContext2D,
+	ctx: Canvas.SKRSContext2D,
 	size: number,
 	fontFamily: string = profileFont,
 ): void {
@@ -36,7 +33,7 @@ export function setFont(
 }
 
 export function getTextSize(
-	ctx: CanvasRenderingContext2D,
+	ctx: Canvas.SKRSContext2D,
 	text: string,
 ): {
 	width: number;

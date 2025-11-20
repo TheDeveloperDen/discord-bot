@@ -29,6 +29,7 @@
 	"author": "Developer Den",
 	"license": "MIT",
 	"dependencies": {
+		"@napi-rs/canvas": "^0.1.82",
 		"@sentry/bun": "^10.26.0",
 		"@sentry/cli": "^2.58.2",
 		"@sequelize/core": "^7.0.0-alpha.47",
@@ -36,7 +37,7 @@
 		"@sequelize/sqlite3": "^7.0.0-alpha.47",
 		"@types/fluent-ffmpeg": "^2.1.28",
 		"bufferutil": "^4.0.9",
-		"canvas": "3.2.0",
+
 		"discord.js": "^14.25.0",
 		"djs-slash-helper": "git+https://github.com/bristermitten/djs-slash-helper.git#97726a356be094f4d187637734b116e4e1c89be5",
 		"expiry-map": "^2.0.0",
@@ -60,7 +61,6 @@
 	"trustedDependencies": [
 		"@sentry/cli",
 		"bufferutil",
-		"canvas",
 		"sqlite3",
 		"utf-8-validate"
 	],
