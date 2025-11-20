@@ -256,14 +256,14 @@ export const getVoteForMemberAndSuggestion: (
 	});
 };
 
-export const upsertVote: (
+export const upsertOrRemoveVote: (
 	suggestionId: bigint,
 	memberId: bigint,
 	vote: SuggestionVoteType,
-) => Promise<SuggestionVoteType | undefined> = async (
-	suggestionId: bigint,
-	memberId: bigint,
-	vote: SuggestionVoteType,
+) => Promise<SuggestionVoteType | undefined | null> = async (
+	suggestionId,
+	memberId,
+	vote,
 ) => {
 	// insert or update vote
 	const existingVote = await getVoteForMemberAndSuggestion(
@@ -273,7 +273,8 @@ export const upsertVote: (
 	if (existingVote) {
 		const previousVote = existingVote.vote;
 		if (existingVote.vote === vote) {
-			return previousVote as SuggestionVoteType;
+			await existingVote.destroy();
+			return null;
 		}
 
 		existingVote.vote = vote;
@@ -342,20 +343,24 @@ export const createSuggestionManageButtons: () => ActionRowBuilder<ButtonBuilder
 
 export function generateVoteMessage(
 	votingValue: SuggestionVoteType,
-	previousVoteValue?: SuggestionVoteType,
+	previousVoteValue?: SuggestionVoteType | null,
 ): string {
 	const voteText = votingValue === 1 ? "**Yes**" : "**No**";
 
-	if (!previousVoteValue) {
-		return `You voted ${voteText} on this suggestion`;
+	if (previousVoteValue === null) {
+		return `You removed your ${voteText} vote from this suggestion.`;
+	}
+
+	if (previousVoteValue === undefined) {
+		return `You voted ${voteText} on this suggestion.`;
 	}
 
 	if (previousVoteValue === votingValue) {
-		return `You already voted ${voteText} on this suggestion`;
+		return `You already voted ${voteText} on this suggestion.`;
 	}
 
 	const previousVoteText = previousVoteValue === 1 ? "**Yes**" : "**No**";
-	return `You changed your vote from ${previousVoteText} to ${voteText} on this suggestion`;
+	return `You changed your vote from ${previousVoteText} to ${voteText} on this suggestion.`;
 }
 
 export function createReasonModal(
