@@ -1,6 +1,5 @@
 import {
 	ApplicationCommandType,
-	Attachment,
 	AttachmentBuilder,
 	type GuildMember,
 	MessageFlags,

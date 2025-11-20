@@ -9,7 +9,6 @@ import {
 import {
 	AllowNull,
 	Attribute,
-	HasMany,
 	NotNull,
 	PrimaryKey,
 	Table,

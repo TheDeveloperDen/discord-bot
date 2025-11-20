@@ -69,7 +69,6 @@ export function createLevelAndXPField(
 
 export async function createUserBumpFields(
 	canvas: Canvas.SKRSContext2D,
-	user: GuildMember,
 	ddUser: DDUser,
 	x: number,
 	y: number,
@@ -186,13 +185,7 @@ export async function generateUserProfileImage(
 
 	createLevelAndXPField(ctx, user, ddUser, 128 + 6 + padding, 52 + 25);
 
-	await createUserBumpFields(
-		ctx,
-		user,
-		ddUser,
-		128 + 6 + padding,
-		52 + 25 + 40,
-	);
+	await createUserBumpFields(ctx, ddUser, 128 + 6 + padding, 52 + 25 + 40);
 
 	const dividerWidth = w;
 

@@ -1,10 +1,9 @@
-import {
-	DiscordAPIError,
-	type Embed,
-	type GuildMember,
-	type Message,
-	type SendableChannels,
-	type Snowflake,
+import type {
+	Embed,
+	GuildMember,
+	Message,
+	SendableChannels,
+	Snowflake,
 } from "discord.js";
 import * as schedule from "node-schedule";
 import { config } from "../../Config.js";
