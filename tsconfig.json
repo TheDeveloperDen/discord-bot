@@ -10,7 +10,7 @@
 		"forceConsistentCasingInFileNames": true,
 		"resolveJsonModule": true,
 
-		"experimentalDecorators": true,
+		"experimentalDecorators": false,
 		"emitDecoratorMetadata": false,
 
 		"incremental": true,
