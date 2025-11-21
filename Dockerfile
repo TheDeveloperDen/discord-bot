@@ -48,8 +48,8 @@ COPY --from=prerelease /usr/src/app/package.json .
 # hadolint ignore=DL3008
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
-       libcairo2-dev libpango1.0-dev libgif7 librsvg2-2 curl \
-    && rm -rf /var/lib/apt/lists/* \
+       libcairo2-dev libpango1.0-dev libgif7 librsvg2-2 curl fonts-noto-color-emoji \
+    && rm -rf /var/lib/apt/lists/* \ 
     && chown -R bun:bun /usr/src/app
 
 # run the app
