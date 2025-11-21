@@ -13,7 +13,7 @@ import { xpForLevel } from "../xp/xpForMessage.util.js";
 
 export const profileFont = "Cascadia Code";
 Canvas.GlobalFonts.registerFromPath(branding.font, profileFont);
-export function getDDColorGradiant(
+export function getDDColorGradient(
 	ctx: Canvas.SKRSContext2D,
 	startX: number,
 	width: number,
@@ -163,7 +163,7 @@ export async function generateUserProfileImage(
 	//	"https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Fwww.quickmeme.com%2Fimg%2F46%2F468394fc32d72c2bdc04abd04834782a2de7fee5834b5df2fa3b9295262db4cb.jpg&f=1&nofb=1&ipt=be4cd3afa2da068f2bb6b0639cb2ada1402241214afa20a08be89b7c7ee71485";
 	const roleIcon = user.roles.highest.iconURL({
 		size: 256,
-		extension: "jpg",
+		extension: "png",
 		forceStatic: true,
 	});
 	if (roleIcon) {
@@ -195,7 +195,7 @@ export async function generateUserProfileImage(
 		h - 5,
 		dividerWidth,
 		"horizontal",
-		getDDColorGradiant(ctx, padding, dividerWidth),
+		getDDColorGradient(ctx, padding, dividerWidth),
 		2,
 	);
 	drawDeveloperDenText(ctx, w - padding, padding);
@@ -219,7 +219,7 @@ export function drawDeveloperDenText(
 		y + textHeight - 8,
 		textWidth,
 		"horizontal",
-		getDDColorGradiant(ctx, x - textWidth, textWidth),
+		getDDColorGradient(ctx, x - textWidth, textWidth),
 		5,
 	);
 	ctx.fillStyle = "#ffffff";
