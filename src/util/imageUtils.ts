@@ -1,8 +1,4 @@
-import {
-	type Canvas,
-	type CanvasRenderingContext2D,
-	createCanvas,
-} from "canvas";
+import { type Canvas, createCanvas, type SKRSContext2D } from "@napi-rs/canvas";
 import { loadSync } from "opentype.js";
 import { branding } from "./branding.js";
 
@@ -23,7 +19,7 @@ export function createImage(
 export function getCanvasContext(
 	width: number,
 	height: number,
-): [Canvas, CanvasRenderingContext2D] {
+): [Canvas, SKRSContext2D] {
 	const canvas = createCanvas(width, height);
 	const ctx = canvas.getContext("2d", { alpha: false });
 	return [canvas, ctx];
