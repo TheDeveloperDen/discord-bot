@@ -14,5 +14,7 @@ Sentry.init({
 		Sentry.onUnhandledRejectionIntegration(),
 		Sentry.fsIntegration(),
 		Sentry.postgresIntegration(),
+		Sentry.contextLinesIntegration(),
+		Sentry.requestDataIntegration(),
 	],
 });

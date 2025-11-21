@@ -3,7 +3,7 @@ import { Client, GatewayIntentBits, Partials } from "discord.js";
 import { config } from "./Config.js";
 import { setupBranding } from "./util/branding.js";
 import "./util/random.js";
-import * as Sentry from "@sentry/node";
+import * as Sentry from "@sentry/bun";
 import * as schedule from "node-schedule";
 import { startHealthCheck } from "./healthcheck.js";
 import { logger } from "./logging.js";

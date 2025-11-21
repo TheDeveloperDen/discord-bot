@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/node";
+import * as Sentry from "@sentry/bun";
 import type { Client } from "discord.js";
 import { logger } from "./logging.js";
 
