@@ -2,11 +2,11 @@
 	"compilerOptions": {
 		"target": "es2022",
 		"lib": ["ESNext"],
-		"module": "Node16",
+		"module": "nodenext",
 		"outDir": "./bin",
 		"rootDir": "./src",
 		"esModuleInterop": true,
-		"moduleResolution": "Node16",
+		"moduleResolution": "nodenext",
 		"forceConsistentCasingInFileNames": true,
 		"resolveJsonModule": true,
 

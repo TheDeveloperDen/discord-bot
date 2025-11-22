@@ -24,7 +24,7 @@ test("getStreak", () => {
 	});
 });
 
-import * as bumps from "./bumpData.json";
+import * as bumps from "./bumpData.json" with { type: "json" };
 
 test("getStreak with real data", () => {
 	const streaks = extractStreaks(
