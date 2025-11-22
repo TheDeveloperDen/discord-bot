@@ -80,6 +80,20 @@ export async function shouldCountForStats(
 		return true; // this probably won't happen
 	}
 	for (const msg of messages) {
+		if (!msg) {
+			logger.warn(
+				`Message in cache is undefined, skipping similarity check`,
+				messages,
+			);
+			continue;
+		}
+		if (!msg.author) {
+			logger.warn(
+				`Message in cache has no author, skipping similarity check`,
+				msg,
+			);
+			continue;
+		}
 		if (msg.author.id !== author.id || msg.id === message.id) continue;
 		if (similarityProportion(msg.content, message.content) > maxSimilarity) {
 			logger.debug(
