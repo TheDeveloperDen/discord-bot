@@ -1,7 +1,6 @@
+# base image with system dependencies
 FROM oven/bun:canary AS base
 WORKDIR /usr/src/app
-
-# Install system dependencies needed for runtime
 # hadolint ignore=DL3008
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
@@ -10,14 +9,16 @@ RUN apt-get update \
        libgif7 librsvg2-2 curl fonts-noto-color-emoji \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy over project files
-COPY package.json bun.lock tsconfig.json tsconfig.production.json ./
-COPY instrument.js CascadiaCode.ttf ./
-COPY src ./src
-
-# Install production dependencies
+# Install node modules.
+FROM base AS deps
+COPY package.json bun.lock ./
 ENV HUSKY=0
 RUN bun install --frozen-lockfile --production
+
+# create final release image
+FROM base AS release
+COPY --from=deps /usr/src/app/node_modules ./node_modules
+COPY . .
 
 # Set permissions for non-root user
 RUN chown -R bun:bun /usr/src/app
