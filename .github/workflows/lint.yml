@@ -60,7 +60,7 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
       - name: Upload node_modules artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: node-modules-${{ runner.os }}-${{ hashFiles('bun.lock') }}
           path: node_modules
@@ -83,7 +83,7 @@ jobs:
         with:
           bun-version: latest
       - name: Download node_modules artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: node-modules-${{ runner.os }}-${{ hashFiles('bun.lock') }}
           path: node_modules
@@ -103,7 +103,7 @@ jobs:
         with:
           bun-version: latest
       - name: Download node_modules artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: node-modules-${{ runner.os }}-${{ hashFiles('bun.lock') }}
           path: node_modules
@@ -123,7 +123,7 @@ jobs:
         with:
           bun-version: latest
       - name: Download node_modules artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: node-modules-${{ runner.os }}-${{ hashFiles('bun.lock') }}
           path: node_modules
@@ -131,7 +131,7 @@ jobs:
         run: bun run build
       - name: Upload build artifact (bin)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: build-bin-${{ github.sha }}
           path: bin
@@ -152,7 +152,7 @@ jobs:
         with:
           bun-version: latest
       - name: Download node_modules artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: node-modules-${{ runner.os }}-${{ hashFiles('bun.lock') }}
           path: node_modules
@@ -161,7 +161,7 @@ jobs:
         run: CLICOLOR=1 bun test:retry --coverage --coverage-reporter=lcov
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: coverage-${{ runner.os }}-${{ github.run_id }}
           path: |

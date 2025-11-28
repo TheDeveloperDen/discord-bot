@@ -4,7 +4,7 @@ import {
 	type EmojiIdentifierResolvable,
 	InteractionType,
 	type Message,
-	type MessageInteraction,
+	type MessageInteractionMetadata,
 	type PartialTextBasedChannelFields,
 } from "discord.js";
 import { config } from "../../Config.js";
@@ -16,6 +16,7 @@ import {
 	getAllBumps,
 	getBumpStreak,
 	getStreaks,
+	type Streak,
 } from "../../store/models/bumps.js";
 import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { fakeMention, mentionIfPingable } from "../../util/users.js";
@@ -42,10 +43,9 @@ export function setLastBumpNotificationTime(date: Date) {
 	lastBumpNotificationTime = date;
 }
 
-// noinspection JSDeprecatedSymbols
 export async function handleBumpStreak(
 	bumper: DDUser,
-	interactionOld: MessageInteraction,
+	interactionOld: MessageInteractionMetadata,
 	message: Message & {
 		channel: PartialTextBasedChannelFields;
 	},
@@ -69,15 +69,14 @@ export async function handleBumpStreak(
 		streak.current === 1 // just started a new streak
 	) {
 		// allStreaks[-1] will be the current streak
-		const mostRecent = allStreaks[allStreaks.length - 2]; // so check the one before that
+		const mostRecent = allStreaks.at(-2) as {
+			userId: bigint;
+		} & Streak; // so check the one before that
 		logger.debug(`Most recent streak:`, mostRecent);
-		logger.debug(
-			"Most recent streaks:",
-			allStreaks.slice(allStreaks.length - 5),
-		);
+		logger.debug("Most recent streaks:", allStreaks.slice(-5));
 		if (mostRecent.userId !== bumper.id && mostRecent.current > 2) {
 			const user = await client.users.fetch(mostRecent.userId.toString());
-			message.channel.send(
+			await message.channel.send(
 				`☠️ ${mentionIfPingable(interactionOld.user)} ended ${fakeMention(user)}'s bump streak of ${mostRecent.current}!`,
 			);
 		}
@@ -88,7 +87,7 @@ export async function handleBumpStreak(
 		const timeSinceLastBump = Date.now() - lastBumpNotificationTime.getTime();
 		if (timeSinceLastBump < 30000) {
 			// this might seem generous, but in reality when you factor in the discord delay, even if you react instantaneously on your screen you can still be too slow
-			message.channel.send(
+			await message.channel.send(
 				`⚡⚡⚡ ${fakeMention(interactionOld.user)} bumped in just **${timeSinceLastBump / 1000}s**!`,
 			);
 		} else {
@@ -104,12 +103,14 @@ export async function handleBumpStreak(
 
 	if (streak.current === streak.highest) {
 		// new high score!
-		message.channel.send(
+		await message.channel.send(
 			`${mentionIfPingable(interactionOld.user)}, you beat your max bump streak and are now on a streak of ${streak.current}! Keep it up!`,
 		);
 	}
 
-	const highestStreakEver = allStreaks.sort((a, b) => b.highest - a.highest)[0];
+	const highestStreakEver = allStreaks.toSorted(
+		(a, b) => b.highest - a.highest,
+	)[0];
 	logger.debug("Highest streak ever: %O", highestStreakEver);
 	logger.debug("This streak: %O", streak);
 	if (
@@ -121,17 +122,16 @@ export async function handleBumpStreak(
 	) {
 		// if they currently have the highest streak
 		logger.debug("User has the highest streak");
-		message.channel.send(
+		await message.channel.send(
 			`🔥🔥🔥🔥🔥 ${mentionIfPingable(interactionOld.user)}, you have the highest EVER bump streak in the server of ${highestStreakEver.highest}! Keep it up!`,
 		);
 	}
 }
 
-// noinspection JSDeprecatedSymbols
 export async function handleBump(
 	client: Client,
 	bumper: DDUser,
-	interactionOld: MessageInteraction,
+	interactionOld: MessageInteractionMetadata,
 	message: Message & {
 		channel: PartialTextBasedChannelFields;
 	},
@@ -144,37 +144,34 @@ export async function handleBump(
 }
 
 export const BumpListener: EventListener = {
-	ready: async (client) => {
+	clientReady: async (client) => {
 		scheduleBumpReminder(client);
 	},
 	messageCreate: async (client, message) => {
 		const interaction = message.interactionMetadata;
 
-		if (
-			!interaction ||
-			!(interaction.type === InteractionType.ApplicationCommand)
-		)
+		if (!interaction || interaction.type !== InteractionType.ApplicationCommand)
 			return;
 		if (message.author.id !== "302050872383242240") return; // /disboard user id
-		// noinspection JSDeprecatedSymbols don't think there's another way of doing this
+
+		// noinspection JSDeprecatedSymbols don't think there's another way of doing this ( yes there is )
 		const interactionOld = message.interaction;
 		if (interactionOld?.commandName !== "bump") return;
-
 		// since the bump failed message is ephemeral, we know if we can see the message then the bump succeeded!
-		const ddUser = await getOrCreateUserById(BigInt(interactionOld.user.id));
+		const ddUser = await getOrCreateUserById(BigInt(interaction.user.id));
 
 		// Bump
 		await Bump.create({
 			messageId: BigInt(message.id),
-			userId: BigInt(interactionOld.user.id),
+			userId: BigInt(interaction.user.id),
 			timestamp: new Date(),
 		});
 		logger.info(
-			`User ${interactionOld.user.id} bumped! Total bumps: ${await ddUser.countBumps()}`,
+			`User ${interaction.user.id} bumped! Total bumps: ${await ddUser.countBumps()}`,
 		);
 		clearBumpsCache();
 		await ddUser.save();
-		await handleBump(client, ddUser, interactionOld, message);
+		await handleBump(client, ddUser, interaction, message);
 	},
 };
 const streakReacts: EmojiIdentifierResolvable[] = [

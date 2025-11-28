@@ -12,6 +12,7 @@ export const config: Config = {
 		auditLog: "994623474557538415",
 		modLog: "994623474557538415",
 		general: "904478147351806015",
+		leaderboard: "904478147351806015",
 	},
 	starboard: {
 		emojiId: "⭐",
@@ -35,6 +36,7 @@ export const config: Config = {
 			langs: "932638149618835466",
 		},
 		noPing: "932637353263128577",
+		zooExhibit: "1432483356393734194",
 	},
 	clientId: "932387188585398353",
 	guildId: "904478147351806012",

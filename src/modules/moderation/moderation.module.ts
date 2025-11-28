@@ -6,6 +6,7 @@ import { SoftBanCommand } from "./softBan.command.js";
 import { TempBanCommand } from "./tempBan.command.js";
 import { TempBanListener } from "./tempBan.listener.js";
 import { UnbanCommand } from "./unban.command.js";
+import { ZookeepCommand } from "./zookeep.command.js";
 
 export const ModerationModule: Module = {
 	name: "moderation",
@@ -15,6 +16,7 @@ export const ModerationModule: Module = {
 		SoftBanCommand,
 		TempBanCommand,
 		KickCommand,
+		ZookeepCommand,
 	],
 	listeners: [...InviteListeners, TempBanListener],
 };
