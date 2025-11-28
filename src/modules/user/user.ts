@@ -198,36 +198,58 @@ export async function generateUserProfileImage(
 		getDDColorGradient(ctx, padding, dividerWidth),
 		2,
 	);
-	drawDeveloperDenText(ctx, w - padding, padding);
+	drawDeveloperDenText(ctx, w - padding, padding + 12);
 	return ctx.canvas.toDataURL("image/png");
 }
-
 export function drawDeveloperDenText(
 	ctx: Canvas.SKRSContext2D,
 	x: number,
 	y: number,
 ) {
-	const text = "developer den";
-	setFont(ctx, 64);
-	const textSize = getTextSize(ctx, text);
-	const textWidth = textSize.width;
-	const textHeight = textSize.height;
+	const lineOneText = "dev";
+	const lineTwoText = "den";
+
+	setFont(ctx, 64, undefined, false);
+
+	// Draw first line
+	const lineOneSize = getTextSize(ctx, lineOneText);
+	const lineOneWidth = lineOneSize.width;
+	const lineOneHeight = lineOneSize.height;
 
 	drawDivider(
 		ctx,
-		x - textWidth,
-		y + textHeight - 8,
-		textWidth,
+		x - lineOneWidth,
+		y + lineOneHeight - 8,
+		lineOneWidth,
 		"horizontal",
-		getDDColorGradient(ctx, x - textWidth, textWidth),
+		getDDColorGradient(ctx, x - lineOneWidth, lineOneWidth),
 		5,
 	);
 	ctx.fillStyle = "#ffffff";
 	ctx.textAlign = "right";
 	ctx.textBaseline = "bottom";
-	ctx.fillText(text, x, y + textHeight);
+	ctx.fillText(lineOneText, x, y + lineOneHeight);
 
-	return textWidth;
+	// Draw second line
+	const lineTwoSize = getTextSize(ctx, lineTwoText);
+	const lineTwoWidth = lineTwoSize.width;
+	const lineTwoHeight = lineTwoSize.height;
+
+	drawDivider(
+		ctx,
+		x - lineTwoWidth,
+		y + lineOneHeight + lineTwoHeight - 4,
+		lineTwoWidth,
+		"horizontal",
+		getDDColorGradient(ctx, x - lineTwoWidth, lineTwoWidth),
+		5,
+	);
+	ctx.fillStyle = "#ffffff";
+	ctx.textAlign = "right";
+	ctx.textBaseline = "bottom";
+	ctx.fillText(lineTwoText, x, y + lineOneHeight + lineTwoHeight + 4);
+
+	return lineOneWidth; // or return Math.max(lineOneWidth, lineTwoWidth) if you need the maximum width
 }
 
 export async function getProfileEmbed(user: GuildMember) {
