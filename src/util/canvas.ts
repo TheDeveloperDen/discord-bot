@@ -28,8 +28,9 @@ export function setFont(
 	ctx: Canvas.SKRSContext2D,
 	size: number,
 	fontFamily: string = profileFont,
+	bold: boolean = true,
 ): void {
-	ctx.font = `bold ${size}px ${fontFamily}`;
+	ctx.font = `${bold ? "bold " : ""}${size}px ${fontFamily}`;
 }
 
 export function getTextSize(
