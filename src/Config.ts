@@ -3,7 +3,7 @@ import type { Config } from "./config.type.js";
 import { actualMention } from "./util/users.js";
 
 // Config file for the DevDen Testing server
-export const config: Config = {
+const devConfig: Config = {
 	channels: {
 		welcome: "932633680634081301",
 		botCommands: "906954540039938048",
@@ -72,3 +72,7 @@ export const config: Config = {
 
 	informationMessage: prodConfig.informationMessage,
 };
+
+const isProd = process.env.NODE_ENV === "production";
+
+export const config: Config = isProd ? prodConfig : devConfig;

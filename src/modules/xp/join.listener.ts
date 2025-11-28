@@ -1,4 +1,4 @@
-import { DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
+import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import type { EventListener } from "../module.js";
 import { applyTierRoles } from "./xpRoles.util.js";
 export const RoleJoinListener: EventListener = {

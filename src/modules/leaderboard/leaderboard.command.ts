@@ -1,4 +1,3 @@
-import { Op, Sequelize, sql } from "@sequelize/core";
 import type {
 	APIApplicationCommandOptionChoice,
 	GuildMember,

@@ -110,33 +110,6 @@ jobs:
       - name: Run TypeScript type check
         run: bunx tsc --noEmit -p tsconfig.json
 
-  build:
-    name: Build
-    needs: deps
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - name: Download node_modules artifact
-        uses: actions/download-artifact@v6
-        with:
-          name: node-modules-${{ runner.os }}-${{ hashFiles('bun.lock') }}
-          path: node_modules
-      - name: Build TypeScript
-        run: bun run build
-      - name: Upload build artifact (bin)
-        if: always()
-        uses: actions/upload-artifact@v5
-        with:
-          name: build-bin-${{ github.sha }}
-          path: bin
-          if-no-files-found: ignore
-
   test:
     name: Unit Tests
     needs: deps

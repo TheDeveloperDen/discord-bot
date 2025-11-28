@@ -1,11 +1,9 @@
 import {
 	type ButtonInteraction,
-	ButtonStyle,
 	type GuildMember,
 	type Interaction,
 	MessageFlags,
 	type ModalSubmitInteraction,
-	TextInputStyle,
 } from "discord.js";
 import { config } from "../../Config.js";
 import { SuggestionStatus } from "../../store/models/Suggestion.js";
@@ -27,7 +25,7 @@ import {
 	SUGGESTION_VIEW_VOTES_ID,
 	SUGGESTION_YES_ID,
 	type SuggestionVoteType,
-	upsertVote,
+	upsertOrRemoveVote,
 } from "./suggest.js";
 
 const SUGGESTION_BUTTON_MAP: {
@@ -74,7 +72,7 @@ async function handleVoteButtonInteraction(
 		return;
 	}
 
-	const previousVoteValue = await upsertVote(
+	const previousVoteValue = await upsertOrRemoveVote(
 		suggestion.id,
 		BigInt(member.id),
 		votingValue,

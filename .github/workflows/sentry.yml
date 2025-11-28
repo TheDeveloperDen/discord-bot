@@ -58,38 +58,6 @@ jobs:
       - name: Run install
         run: bun install --frozen-lockfile
 
-      - name: Download CI build artifact
-        uses: dawidd6/action-download-artifact@v11
-        with:
-          run_id: ${{ github.event.workflow_run.id }}
-          name: build-bin-${{ github.event.workflow_run.head_sha }}
-          path: .
-          if_no_artifact_found: warn
-
-      - name: Adopt downloaded bin if present
-        shell: bash
-        env:
-          SHA: ${{ github.event.workflow_run.head_sha }}
-        run: |
-          if [ -d "build-bin-$SHA" ]; then
-            rm -rf bin
-            mv "build-bin-$SHA" bin
-          fi
-
-      - name: Build production bundle if needed
-        run: |
-          if [ ! -d bin ] || [ ! -f bin/index.js ]; then
-            bun run build-prod
-          fi
-
-      - name: Upload build artifact (bin)
-        if: always()
-        uses: actions/upload-artifact@v5
-        with:
-          name: bin-${{ github.sha }}
-          path: bin
-          if-no-files-found: warn
-
       - name: Get version from NPM
         id: package-version
         uses: martinbeentjes/npm-get-version-action@v1.3.1
@@ -102,9 +70,9 @@ jobs:
           SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
         with:
           environment: production
-          sourcemaps: ./bin
+          sourcemaps: ./src
           inject: true
           set_commits: auto
-          version: ${{ steps.package-version.outputs.current-version }}
+          release: ${{ steps.package-version.outputs.current-version }}
           dist: ${{ github.event.workflow_run.head_sha }}
-          url_prefix: app:///bin/
+          url_prefix: app:///src/

@@ -2,7 +2,6 @@ import { afterEach, beforeAll, expect, mock, test } from "bun:test";
 import type {
 	Client,
 	Message,
-	MessageInteraction,
 	MessageInteractionMetadata,
 	PartialTextBasedChannelFields,
 	User,

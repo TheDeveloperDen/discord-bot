@@ -89,7 +89,7 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
 			embeds: [embedBuilder],
 			files: [
 				{
-					attachment: image.createPNGStream(),
+					attachment: image.toBuffer("image/png"),
 					name: "xp.png",
 				},
 			],

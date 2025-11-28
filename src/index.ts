@@ -3,7 +3,7 @@ import { Client, GatewayIntentBits, Partials } from "discord.js";
 import { config } from "./Config.js";
 import { setupBranding } from "./util/branding.js";
 import "./util/random.js";
-import * as Sentry from "@sentry/node";
+import * as Sentry from "@sentry/bun";
 import * as schedule from "node-schedule";
 import { startHealthCheck } from "./healthcheck.js";
 import { logger } from "./logging.js";
@@ -26,6 +26,7 @@ import { ShowcaseModule } from "./modules/showcase.module.js";
 import { StarboardModule } from "./modules/starboard/starboard.module.js";
 import SuggestModule from "./modules/suggest/suggest.module.js";
 import { TokenScannerModule } from "./modules/tokenScanner.module.js";
+import { UserModule } from "./modules/user/user.module.js";
 import { XpModule } from "./modules/xp/xp.module.js";
 import { initSentry } from "./sentry.js";
 import { initStorage } from "./store/storage.js";
@@ -67,6 +68,7 @@ export const moduleManager = new ModuleManager(
 		StarboardModule,
 		ModmailModule,
 		LeaderboardModule,
+		UserModule,
 	],
 );
 
