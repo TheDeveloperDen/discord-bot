@@ -1,4 +1,4 @@
-import Canvas from "@napi-rs/canvas";
+import Canvas, { type Image } from "@napi-rs/canvas";
 import { profileFont } from "../modules/user/user.js";
 export function createCanvasContext(
 	width: number,
@@ -10,7 +10,14 @@ export function createCanvasContext(
 
 export async function loadAndDrawImage(
 	ctx: Canvas.SKRSContext2D,
-	imageUrl: string,
+	imageUrl:
+		| string
+		| URL
+		| Buffer
+		| ArrayBufferLike
+		| Uint8Array
+		| Image
+		| import("stream").Readable,
 	x: number,
 	y: number,
 	width: number,

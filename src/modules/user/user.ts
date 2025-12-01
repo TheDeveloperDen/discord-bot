@@ -1,5 +1,7 @@
-import Canvas from "@napi-rs/canvas";
+import * as fs from "node:fs";
+import Canvas, { createCanvas, Image } from "@napi-rs/canvas";
 import type { GuildMember } from "discord.js";
+import sharp from "sharp";
 import { getBumpStreak } from "../../store/models/bumps.js";
 import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { branding } from "../../util/branding.js";
@@ -11,6 +13,7 @@ import {
 } from "../../util/canvas.js";
 import { xpForLevel } from "../xp/xpForMessage.util.js";
 
+const svgContent = fs.readFileSync("./devden_logo_short.svg", "utf8");
 export const profileFont = "Cascadia Code";
 Canvas.GlobalFonts.registerFromPath(branding.font, profileFont);
 export function getDDColorGradient(
@@ -207,7 +210,19 @@ export async function drawDeveloperDenText(
 	y: number,
 	size: number,
 ) {
-	await loadAndDrawImage(ctx, "devden_logo_short.svg", x, y, size, size);
+	try {
+		// Read SVG file
+
+		// Import canvg
+		const pngBuffer = await sharp(Buffer.from(svgContent))
+			.resize(size, size)
+			.png()
+			.toBuffer();
+
+		await loadAndDrawImage(ctx, pngBuffer, x, y, size, size);
+	} catch (error) {
+		console.error("Error drawing SVG:", error);
+	}
 }
 
 export async function getProfileEmbed(user: GuildMember) {
