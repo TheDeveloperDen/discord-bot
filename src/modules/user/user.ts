@@ -45,14 +45,21 @@ export function createLevelAndXPField(
 	const barY = y; // Slightly above name
 
 	const xpForNextLevel = xpForLevel(ddUser.level + 1);
-	const xpProgress = Math.min(Number(xp) / Number(xpForNextLevel), 1);
+	const xpForCurrentLevel = xpForLevel(ddUser.level);
+
+	const relativeXp = xp - xpForCurrentLevel;
+	const relativeXpForNextLevel = xpForNextLevel - xpForCurrentLevel;
+
+	const xpProgress = Math.min(
+		Number(relativeXp) / Number(relativeXpForNextLevel),
+		1,
+	);
 
 	// Draw XP bar background
 	canvas.fillStyle = "#444444";
 	canvas.fillRect(barX, barY, barWidth, barHeight);
 	let userRoleColor = user.roles.highest.hexColor;
 	if (userRoleColor === "#000000" || userRoleColor === "#444444") {
-		// green
 		userRoleColor = "#FF52F9FF";
 	}
 	// Draw XP bar progress
