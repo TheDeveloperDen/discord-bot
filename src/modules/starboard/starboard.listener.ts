@@ -1,4 +1,5 @@
 import type {
+	Channel,
 	Embed,
 	GuildMember,
 	Message,
@@ -91,6 +92,10 @@ const getStarsFromEmbed: (embed: Embed) => number = (embed) => {
 	return Number.parseInt(stars, 10);
 };
 
+const isChannelBlacklisted = (channel: Channel): boolean => {
+	return config.starboard.blacklistChannelIds?.includes(channel.id) || false;
+};
+
 export const StarboardListener: EventListener = {
 	async clientReady(client) {
 		for (const guild of client.guilds.cache.values()) {
@@ -99,7 +104,8 @@ export const StarboardListener: EventListener = {
 				for (const channel of channels.values()) {
 					if (
 						channel?.isTextBased() &&
-						channel.id !== config.starboard.channel
+						channel.id !== config.starboard.channel &&
+						!isChannelBlacklisted(channel)
 					) {
 						// Add to rate-limited queue
 						await messageFetcher.addToQueue(async () => {
@@ -141,7 +147,8 @@ export const StarboardListener: EventListener = {
 						const channel = await guild.channels.fetch(
 							dbStarboardMessage.originalMessageChannelId.toString(),
 						);
-						if (!channel?.isTextBased()) return; // Channel is not available? ( Either we can hope it comes back or we can delete the entry from the database )
+						if (!channel?.isTextBased() || isChannelBlacklisted(channel))
+							return;
 
 						const starboardChannel = await guild.channels.fetch(
 							config.starboard.channel,
@@ -221,6 +228,7 @@ export const StarboardListener: EventListener = {
 		);
 	},
 	async messageReactionAdd(_, reaction) {
+		if (isChannelBlacklisted(reaction.message.channel)) return;
 		if (reaction.partial) {
 			// If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
 			try {
@@ -327,6 +335,7 @@ export const StarboardListener: EventListener = {
 	},
 
 	async messageReactionRemove(_, reaction) {
+		if (isChannelBlacklisted(reaction.message.channel)) return;
 		if (reaction.partial) {
 			// If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
 			try {

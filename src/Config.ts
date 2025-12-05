@@ -18,6 +18,7 @@ const devConfig: Config = {
 		emojiId: "⭐",
 		channel: "1407366658552631296",
 		threshold: 1,
+		blacklistChannelIds: ["904478147351806015"],
 	},
 	commands: {
 		daily: "1029850807794937949",

@@ -26,6 +26,7 @@ export interface Config {
 		emojiId: string;
 		channel: string;
 		threshold: number;
+		blacklistChannelIds?: Snowflake[];
 	};
 	suggest: {
 		suggestionsChannel: string;
