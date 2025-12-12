@@ -18,6 +18,7 @@ export const config: Config = {
 		emojiId: "⭐",
 		channel: "975786395211816980",
 		threshold: 2,
+		blacklistChannelIds: [],
 	},
 	commands: {
 		daily: "1059214166075912225",
