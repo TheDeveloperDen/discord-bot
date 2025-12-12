@@ -83,7 +83,7 @@ jobs:
         with:
           bun-version: latest
       - name: Download node_modules artifact
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: node-modules-${{ runner.os }}-${{ hashFiles('bun.lock') }}
           path: node_modules
@@ -103,7 +103,7 @@ jobs:
         with:
           bun-version: latest
       - name: Download node_modules artifact
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: node-modules-${{ runner.os }}-${{ hashFiles('bun.lock') }}
           path: node_modules
@@ -125,7 +125,7 @@ jobs:
         with:
           bun-version: latest
       - name: Download node_modules artifact
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: node-modules-${{ runner.os }}-${{ hashFiles('bun.lock') }}
           path: node_modules
