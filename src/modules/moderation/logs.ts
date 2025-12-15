@@ -142,7 +142,11 @@ export async function logModerationAction(
 		description += `**Deleted Messages**: ${action.deleteMessages ? "`Yes`" : "`No`"}\n`;
 	}
 
-	description += embedReasons[action.kind] ?? "";
+	const embedReason = embedReasons[action.kind];
+	if (embedReason) {
+		// biome-ignore lint/suspicious/noExplicitAny: we know it's safe, fixing would be too complicated
+		description += embedReason(action as any);
+	}
 	embed.setDescription(description);
 
 	await modLogChannel.send({
