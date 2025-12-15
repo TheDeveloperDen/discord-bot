@@ -29,7 +29,7 @@
 	"dependencies": {
 		"@napi-rs/canvas": "^0.1.82",
 		"@sentry/bun": "^10.26.0",
-		"@sentry/cli": "^2.58.2",
+		"@sentry/cli": "^3.0.0",
 		"@sequelize/core": "^7.0.0-alpha.47",
 		"@sequelize/postgres": "^7.0.0-alpha.47",
 		"@sequelize/sqlite3": "^7.0.0-alpha.47",
