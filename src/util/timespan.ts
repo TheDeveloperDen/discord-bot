@@ -24,12 +24,10 @@ function getDuration(duration: string): number {
 		case "minute":
 		case "m":
 			return 1000 * 60;
-
 		case "seconds":
 		case "second":
 		case "s":
 			return 1000;
-
 		default:
 			return 0;
 	}
@@ -52,9 +50,9 @@ export function parseTimespan(span: string): number {
 	let out = 0;
 
 	for (const element of inputSplit) {
-		const number = parseInt(element.groups?.[1] ?? "0", 10);
+		const number = Number.parseInt(element[1], 10);
 		if (Number.isNaN(number)) continue;
-		out += number * getDuration(element.groups?.[2] ?? "");
+		out += number * getDuration(element[2]);
 	}
 	return out;
 }
