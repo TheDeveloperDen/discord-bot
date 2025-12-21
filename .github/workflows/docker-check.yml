@@ -28,6 +28,7 @@ jobs:
   build:
     name: Build Docker image
     runs-on: ubuntu-latest
+    permissions: write-all
     needs: dockerfile-lint
     permissions:
       contents: read
