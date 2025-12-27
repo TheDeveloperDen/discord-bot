@@ -11,6 +11,16 @@ import { logger } from "../../logging.js";
 import { prettyPrintDuration } from "../../util/timespan.js";
 import { actualMention, fakeMention } from "../../util/users.js";
 
+export interface CachedMessage {
+	id: Snowflake;
+	content: string;
+	authorId: Snowflake;
+	authorTag: string;
+	channelId: Snowflake;
+	createdTimestamp: number;
+	attachmentUrls: string[];
+}
+
 export type ModerationLog =
 	| BanLog
 	| UnbanLog
@@ -152,4 +162,87 @@ export async function logModerationAction(
 	await modLogChannel.send({
 		embeds: [embed],
 	});
+}
+
+export async function logDeletedMessage(
+	client: Client,
+	message: CachedMessage,
+) {
+	const modLogChannel = await client.channels.fetch(config.channels.modLog);
+	if (!modLogChannel?.isSendable()) {
+		logger.error("Moderation log channel not sendable");
+		return;
+	}
+
+	const contentDisplay =
+		message.content.slice(0, 1024) || "*[No text content]*";
+
+	const embed = new EmbedBuilder()
+		.setTitle("Message Deleted")
+		.setColor("Grey")
+		.setDescription(
+			`**Author**: <@${message.authorId}> (${message.authorTag})\n` +
+				`**Channel**: <#${message.channelId}>\n` +
+				`**Created**: <t:${Math.round(message.createdTimestamp / 1000)}:R>\n\n` +
+				`**Content**:\n${contentDisplay}`,
+		)
+		.setFooter({ text: `Message ID: ${message.id}` })
+		.setTimestamp();
+
+	if (message.attachmentUrls.length > 0) {
+		const attachmentList =
+			message.attachmentUrls.slice(0, 5).join("\n") +
+			(message.attachmentUrls.length > 5
+				? `\n... and ${message.attachmentUrls.length - 5} more`
+				: "");
+		embed.addFields({
+			name: "Attachments",
+			value: attachmentList,
+		});
+	}
+
+	await modLogChannel.send({ embeds: [embed] });
+}
+
+export async function logBulkDeletedMessages(
+	client: Client,
+	messages: CachedMessage[],
+	channelId: Snowflake,
+) {
+	const modLogChannel = await client.channels.fetch(config.channels.modLog);
+	if (!modLogChannel?.isSendable()) {
+		logger.error("Moderation log channel not sendable");
+		return;
+	}
+
+	// Sort by timestamp
+	messages.sort((a, b) => a.createdTimestamp - b.createdTimestamp);
+
+	// Build a summary - truncate if too many
+	const maxDisplayed = 10;
+	const displayed = messages.slice(0, maxDisplayed);
+	const remaining = messages.length - maxDisplayed;
+
+	let messageList = displayed
+		.map(
+			(m) =>
+				`**${m.authorTag}** (<t:${Math.round(m.createdTimestamp / 1000)}:t>): ${m.content.slice(0, 100) || "*[No text]*"}`,
+		)
+		.join("\n");
+
+	if (remaining > 0) {
+		messageList += `\n... and ${remaining} more messages`;
+	}
+
+	const embed = new EmbedBuilder()
+		.setTitle("Bulk Messages Deleted")
+		.setColor("DarkGrey")
+		.setDescription(
+			`**Channel**: <#${channelId}>\n` +
+				`**Count**: ${messages.length} messages\n\n` +
+				`**Messages**:\n${messageList.slice(0, 2000)}`,
+		)
+		.setTimestamp();
+
+	await modLogChannel.send({ embeds: [embed] });
 }
