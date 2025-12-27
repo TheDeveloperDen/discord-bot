@@ -1,0 +1,5 @@
+[test]
+preload = ["./tests/setup.ts"]
+
+[test.env-file]
+path = ".env.test"
