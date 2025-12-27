@@ -52,6 +52,12 @@ export interface Config {
 		archiveChannel: string;
 		pingRole?: Snowflake;
 	};
+	deletedMessageLog?: {
+		/** Cache TTL in milliseconds (default: 24 hours) */
+		cacheTtlMs?: number;
+		/** Additional channel IDs to exclude from tracking (mod channels auto-excluded) */
+		excludedChannels?: Snowflake[];
+	};
 	branding: BrandingConfig;
 	informationMessage?: InformationMessage;
 }

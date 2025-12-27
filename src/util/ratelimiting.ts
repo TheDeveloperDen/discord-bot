@@ -32,3 +32,6 @@ export class MessageFetcher {
 		this.processing = false;
 	}
 }
+
+/** Shared singleton instance for rate-limited message fetching */
+export const messageFetcher = new MessageFetcher();
