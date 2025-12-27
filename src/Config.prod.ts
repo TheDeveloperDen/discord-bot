@@ -23,7 +23,10 @@ export const config: Config = {
 	commands: {
 		daily: "1059214166075912225",
 	},
-
+	deletedMessageLog: {
+		cacheTtlMs: 1000 * 60 * 60 * 24,
+		excludedChannels: [],
+	},
 	roles: {
 		tiers: [
 			"821743100203368458", // @everyone (tier 0)

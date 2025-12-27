@@ -9,7 +9,7 @@
 	"scripts": {
 		"version": "echo $npm_package_version",
 		"lint": "bunx biome check --fix",
-		"typecheck": "bunx tsc --noEmit --build tsconfig.json",
+		"typecheck": "bunx tsc  --build --noEmit tsconfig.json",
 		"typecheck:prod": "bunx tsc --noEmit -p tsconfig.production.json",
 		"watch-dev": "bun --watch src/index.ts",
 		"start": "bun --trace-warnings src/index.ts",
