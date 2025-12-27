@@ -1,14 +1,11 @@
 import * as Sentry from "@sentry/bun";
-import type { Message, Snowflake } from "discord.js";
+import type { Collection, Message, Snowflake, TextBasedChannel } from "discord.js";
 import ExpiryMap from "expiry-map";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
+import { messageFetcher } from "../../util/ratelimiting.js";
 import type { EventListener } from "../module.js";
-import {
-	type CachedMessage,
-	logBulkDeletedMessages,
-	logDeletedMessage,
-} from "./logs.js";
+import { type CachedMessage, logBulkDeletedMessages, logDeletedMessage } from "./logs.js";
 
 // Configurable TTL - default 24 hours
 const CACHE_TTL_MS =
@@ -47,7 +44,55 @@ function cacheMessage(message: Message): void {
 	});
 }
 
+function cacheMessages(messages: Collection<string, Message>): number {
+  for (const message of messages.values()) {
+    cacheMessage(message);
+  }
+  return messages.size;
+}
+
+async function fetchAndCacheMessages(
+  channel: TextBasedChannel,
+  limit: number
+): Promise<number> {
+  let cached = 0;
+  let before: Snowflake | undefined;
+
+  while (cached < limit) {
+    const batch = await channel.messages.fetch({
+      limit: Math.min(100, limit - cached),
+      before
+    });
+    if (batch.size === 0) break;
+
+    cached += cacheMessages(batch);
+    before = batch.last()?.id;
+
+    if (batch.size < 100) break;
+  }
+
+  return cached;
+}
+
 export const DeletedMessagesListener: EventListener = {
+  async clientReady(client) {
+    const guild = await client.guilds.fetch(config.guildId);
+    const channels = await guild.channels.fetch();
+
+    for (const channel of channels.values()) {
+      if (!channel?.isTextBased() || isExcludedChannel(channel.id)) continue;
+
+      await messageFetcher.addToQueue(async () => {
+        try {
+          const cached = await fetchAndCacheMessages(channel, 200);
+          logger.info(`Cached ${cached} messages from #${channel.name}`);
+        } catch {
+          // Skip channels we can't read (permissions)
+        }
+      });
+    }
+  },
+
 	messageCreate(_, message) {
 		if (!message.inGuild()) return;
 		cacheMessage(message);
