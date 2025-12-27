@@ -22,7 +22,7 @@ const isAllowedToSendDiscordInvites = async (member: GuildMember) => {
 	return getTierByLevel(ddUser.level) >= 2;
 };
 
-function parseInvites(message: Message<true>) {
+export function parseInvites(message: Message<true>) {
 	// Check if message contains any Discord invite
 	const matches = invitePatterns
 		.map((pattern) => message.content.match(pattern))

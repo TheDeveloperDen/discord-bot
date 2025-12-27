@@ -1,0 +1,18 @@
+services:
+  postgres-test:
+    image: postgres:18
+    container_name: postgres-test
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: database_test
+    ports:
+      - "5444:5432"
+    tmpfs:
+      - /var/lib/postgresql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U root -d database_test" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
