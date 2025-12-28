@@ -6,6 +6,10 @@ import type { Config } from "../../config.type.js";
 import { logger } from "../../logging.js";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import { compose } from "../../util/functions.js";
+import {
+	getReputationTier,
+	getXpModifier,
+} from "../moderation/reputation.service.js";
 import { levelUp } from "./xpRoles.util.js";
 
 const pingRegex = /<[a-zA-Z0-9@:&!#]+?[0-9]+>/g;
@@ -119,17 +123,19 @@ export function tierRoleId(level: number): string {
  * Result of giving a member XP
  * @param xpGiven The amount of XP given
  * @param multiplier The multiplier used. If undefined, no multiplier was used, i.e. the multiplier was 1
+ * @param reputationModifier The reputation-based modifier applied
  */
 export interface XPResult {
 	xpGiven: number;
 	multiplier?: number;
+	reputationModifier?: number;
 }
 
 /**
  * Gives XP to a member
  * @param user the member to give XP to
  * @param xp the amount of XP to give
- * @returns How much XP was given. This may be affected by perks such as boosting. If something went wrong, -1 will be returned.
+ * @returns How much XP was given. This may be affected by perks such as boosting or reputation. If something went wrong, -1 will be returned.
  */
 export const giveXp = async (
 	user: GuildMember,
@@ -142,13 +148,35 @@ export const giveXp = async (
 			const client = user.client;
 			const ddUser = await getOrCreateUserById(BigInt(user.id));
 
-			const multiplier = user.premiumSince != null ? 2 : 1;
-			ddUser.xp += BigInt(xp * multiplier);
+			// Calculate reputation-based XP modifier
+			const reputationTier = getReputationTier(ddUser.reputationScore);
+			const reputationModifier = getXpModifier(reputationTier);
+
+			// If reputation modifier is 0 (Restricted tier), no XP is given
+			if (reputationModifier === 0) {
+				logger.debug(
+					`User ${user.id} is in Restricted reputation tier, no XP given`,
+				);
+				return {
+					xpGiven: 0,
+					reputationModifier: 0,
+				};
+			}
+
+			const boostMultiplier = user.premiumSince != null ? 2 : 1;
+			const totalMultiplier = boostMultiplier * reputationModifier;
+			const finalXp = Math.round(xp * totalMultiplier);
+
+			ddUser.xp += BigInt(finalXp);
 			await Promise.all([levelUp(client, user, ddUser), ddUser.save()]);
-			logger.info(`Gave ${xp} XP to user ${user.id}`);
+			logger.info(
+				`Gave ${finalXp} XP to user ${user.id} (base: ${xp}, boost: ${boostMultiplier}x, rep: ${reputationModifier}x)`,
+			);
 			return {
-				xpGiven: xp,
-				multiplier: multiplier === 1 ? undefined : multiplier,
-			}; // A multiplier of 1 means no multiplier was used
+				xpGiven: finalXp,
+				multiplier: boostMultiplier === 1 ? undefined : boostMultiplier,
+				reputationModifier:
+					reputationModifier === 1 ? undefined : reputationModifier,
+			};
 		},
 	);
