@@ -9,9 +9,11 @@ import type {
 import * as schedule from "node-schedule";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
+import { ReputationEventType } from "../../store/models/ReputationEvent.js";
 import { StarboardMessage } from "../../store/models/StarboardMessage.js";
 import { getMember } from "../../util/member.js";
 import { MessageFetcher } from "../../util/ratelimiting.js";
+import { grantReputation } from "../moderation/reputation.service.js";
 import type { EventListener } from "../module.js";
 import {
 	createStarboardMessage,
@@ -326,6 +328,21 @@ export const StarboardListener: EventListener = {
 							message.channelId,
 							starboardMessage.id,
 						);
+
+						// Grant reputation for reaching starboard
+						try {
+							await grantReputation(
+								BigInt(message.author.id),
+								ReputationEventType.STARBOARD_MESSAGE,
+								BigInt(message.author.id), // Self-granted via starboard
+								`Message reached starboard with ${count} stars`,
+							);
+							logger.debug(
+								`Granted starboard reputation to user ${message.author.id}`,
+							);
+						} catch (error) {
+							logger.error("Failed to grant starboard reputation:", error);
+						}
 					}
 				} catch (error) {
 					logger.error("Error sending starboard message", error);

@@ -18,7 +18,10 @@ export type ModerationLog =
 	| TempBanExpiredLog
 	| SoftBanLog
 	| KickLog
-	| InviteDeletedLog;
+	| InviteDeletedLog
+	| WarningLog
+	| WarningPardonedLog
+	| ReputationGrantedLog;
 
 interface BanLog {
 	kind: "Ban";
@@ -71,6 +74,35 @@ interface InviteDeletedLog {
 	matches: string[];
 }
 
+interface WarningLog {
+	kind: "Warning";
+	moderator: User;
+	target: UserResolvable;
+	reason: string;
+	severity: number;
+	warningId: number;
+	warningCount: number;
+	expiresAt: Date | null;
+}
+
+interface WarningPardonedLog {
+	kind: "WarningPardoned";
+	moderator: User;
+	target: UserResolvable;
+	warningId: number;
+	reason: string;
+}
+
+interface ReputationGrantedLog {
+	kind: "ReputationGranted";
+	moderator: User;
+	target: UserResolvable;
+	eventType: string;
+	scoreChange: number;
+	newScore: number;
+	reason: string;
+}
+
 type ModerationKindMapping<T> = {
 	[f in ModerationLog["kind"]]: T;
 };
@@ -83,6 +115,9 @@ const embedTitles: ModerationKindMapping<string> = {
 	TempBan: "Member Tempbanned",
 	Kick: "Member Kicked",
 	TempBanEnded: "Tempban Expired",
+	Warning: "Member Warned",
+	WarningPardoned: "Warning Pardoned",
+	ReputationGranted: "Reputation Granted",
 };
 
 const embedColors: ModerationKindMapping<keyof typeof Colors> = {
@@ -93,6 +128,15 @@ const embedColors: ModerationKindMapping<keyof typeof Colors> = {
 	Unban: "Green",
 	TempBanEnded: "DarkGreen",
 	InviteDeleted: "Blurple",
+	Warning: "Gold",
+	WarningPardoned: "Aqua",
+	ReputationGranted: "Green",
+};
+
+const SEVERITY_LABELS: Record<number, string> = {
+	1: "Minor",
+	2: "Moderate",
+	3: "Severe",
 };
 
 const embedReasons: {
@@ -108,6 +152,23 @@ const embedReasons: {
 
 	TempBan: (tempBan) =>
 		`**Ban duration**: \`${prettyPrintDuration(tempBan.banDuration)}\``,
+
+	Warning: (warning) =>
+		`**Severity:** ${SEVERITY_LABELS[warning.severity] || "Unknown"}\n` +
+		`**Warning ID:** #${warning.warningId}\n` +
+		`**Total Active Warnings:** ${warning.warningCount}\n` +
+		(warning.expiresAt
+			? `**Expires:** <t:${Math.floor(warning.expiresAt.getTime() / 1000)}:R>`
+			: "**Expires:** Never"),
+
+	WarningPardoned: (pardon) =>
+		`**Warning ID:** #${pardon.warningId}\n` +
+		`**Pardon Reason:** ${pardon.reason}`,
+
+	ReputationGranted: (rep) =>
+		`**Type:** ${rep.eventType}\n` +
+		`**Score Change:** +${rep.scoreChange}\n` +
+		`**New Score:** ${rep.newScore >= 0 ? "+" : ""}${rep.newScore}`,
 };
 
 export async function logModerationAction(
