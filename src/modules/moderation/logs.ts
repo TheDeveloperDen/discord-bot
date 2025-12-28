@@ -191,7 +191,8 @@ export async function logModerationAction(
 	embed.setColor(embedColors[action.kind]);
 
 	const targetUser = await client.users.fetch(action.target).catch(() => null);
-	let description = `**Offender**: ${targetUser && fakeMention(targetUser)} ${actualMention(action.target)}\n`;
+	const targetLabel = action.kind === "ReputationGranted" ? "Recipient" : "Offender";
+	let description = `**${targetLabel}**: ${targetUser && fakeMention(targetUser)} ${actualMention(action.target)}\n`;
 	if ("reason" in action && action.reason) {
 		description += `**Reason**:  ${action.reason}\n`;
 	}
