@@ -8,8 +8,20 @@ import {
 } from "discord.js";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
+import { createStandardEmbed } from "../../util/embeds.js";
 import { prettyPrintDuration } from "../../util/timespan.js";
 import { actualMention, fakeMention } from "../../util/users.js";
+import { upload } from "../pastify/pastify.js";
+
+export interface CachedMessage {
+	id: Snowflake;
+	content: string;
+	authorId: Snowflake;
+	authorTag: string;
+	channelId: Snowflake;
+	createdTimestamp: number;
+	attachmentUrls: string[];
+}
 
 export type ModerationLog =
 	| BanLog
@@ -214,4 +226,84 @@ export async function logModerationAction(
 	await modLogChannel.send({
 		embeds: [embed],
 	});
+}
+
+function formatMessageForPaste(message: CachedMessage): string {
+	const timestamp = new Date(message.createdTimestamp).toISOString();
+	const attachments =
+		message.attachmentUrls.length > 0
+			? `\nAttachments:\n${message.attachmentUrls.map((url) => `  - ${url}`).join("\n")}`
+			: "";
+
+	return `Author: ${message.authorTag} (${message.authorId})
+Created: ${timestamp}
+Message ID: ${message.id}
+
+Content:
+${message.content || "[No text content]"}${attachments}`;
+}
+
+export async function logDeletedMessage(
+	client: Client,
+	message: CachedMessage,
+) {
+	const modLogChannel = await client.channels.fetch(config.channels.modLog);
+	if (!modLogChannel?.isSendable()) {
+		logger.error("Moderation log channel not sendable");
+		return;
+	}
+
+	const pasteContent = formatMessageForPaste(message);
+	const pasteUrl = await upload({ content: pasteContent });
+
+	const embed = createStandardEmbed(message.authorId)
+		.setTitle("Message Deleted")
+		.setColor("Grey")
+		.setDescription(
+			`**Author**: <@${message.authorId}> (${message.authorTag})\n` +
+				`**Channel**: <#${message.channelId}>\n` +
+				`**Created**: <t:${Math.round(message.createdTimestamp / 1000)}:R>\n\n` +
+				`**Content**: [View on Paste](${pasteUrl})`,
+		)
+		.setFooter({ text: `Message ID: ${message.id}` })
+		.setTimestamp();
+
+	await modLogChannel.send({ embeds: [embed] });
+}
+
+export async function logBulkDeletedMessages(
+	client: Client,
+	messages: CachedMessage[],
+	channelId: Snowflake,
+) {
+	const modLogChannel = await client.channels.fetch(config.channels.modLog);
+	if (!modLogChannel?.isSendable()) {
+		logger.error("Moderation log channel not sendable");
+		return;
+	}
+
+	// Sort by timestamp
+	messages.sort((a, b) => a.createdTimestamp - b.createdTimestamp);
+
+	// Format all messages for paste
+	const pasteContent = messages
+		.map((m, i) => {
+			const separator = i > 0 ? "\n" + "─".repeat(50) + "\n\n" : "";
+			return separator + formatMessageForPaste(m);
+		})
+		.join("\n");
+
+	const pasteUrl = await upload({ content: pasteContent });
+
+	const embed = new EmbedBuilder()
+		.setTitle("Bulk Messages Deleted")
+		.setColor("DarkGrey")
+		.setDescription(
+			`**Channel**: <#${channelId}>\n` +
+				`**Count**: ${messages.length} messages\n\n` +
+				`**Messages**: [View on Paste](${pasteUrl})`,
+		)
+		.setTimestamp();
+
+	await modLogChannel.send({ embeds: [embed] });
 }

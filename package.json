@@ -9,7 +9,7 @@
 	"scripts": {
 		"version": "echo $npm_package_version",
 		"lint": "bunx biome check --fix",
-		"typecheck": "bunx tsc --noEmit --build tsconfig.json",
+		"typecheck": "bunx tsc  --build --noEmit tsconfig.json",
 		"typecheck:prod": "bunx tsc --noEmit -p tsconfig.production.json",
 		"watch-dev": "bun --watch src/index.ts",
 		"start": "bun --trace-warnings src/index.ts",
@@ -80,7 +80,7 @@
 		"@types/sqlite3": "^5.1.0",
 		"@types/string-similarity": "^4.0.2",
 		"@types/validator": "^13.15.10",
-		"globals": "^16.5.0",
+		"globals": "^17.0.0",
 		"husky": "^9.1.7",
 		"lint-staged": "^16.2.7",
 		"nodemon": "^3.1.11",

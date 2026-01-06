@@ -23,6 +23,10 @@ const devConfig: Config = {
 	commands: {
 		daily: "1029850807794937949",
 	},
+	deletedMessageLog: {
+		cacheTtlMs: 1000 * 60 * 60 * 24,
+		excludedChannels: [],
+	},
 	roles: {
 		tiers: [
 			"904478147351806012", // @everyone (tier 0)

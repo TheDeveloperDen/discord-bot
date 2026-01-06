@@ -1,5 +1,6 @@
 import type Module from "../module.js";
 import { BanCommand } from "./ban.command.js";
+import { DeletedMessagesListener } from "./deletedMessages.listener.js";
 import { InviteListeners } from "./discordInvitesMonitor.listener.js";
 import { KickCommand } from "./kick.command.js";
 import { PardonCommand } from "./pardon.command.js";
@@ -29,5 +30,5 @@ export const ModerationModule: Module = {
 		WordlistCommand,
 		ReputationCommand,
 	],
-	listeners: [...InviteListeners, TempBanListener, WarningSchedulerListener],
+	listeners: [...InviteListeners, TempBanListener, WarningSchedulerListener DeletedMessagesListener],
 };

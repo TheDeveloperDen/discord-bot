@@ -81,8 +81,6 @@ export const debounceStarboardReaction = (
 	}, DEBOUNCE_DELAY);
 };
 
-const messageFetcher = new MessageFetcher();
-
 const getStarsFromEmbed: (embed: Embed) => number = (embed) => {
 	const field = embed.fields.find((field) => field.name === "Details:");
 	if (!field) return 0;
@@ -100,34 +98,7 @@ const isChannelBlacklisted = (channel: Channel): boolean => {
 
 export const StarboardListener: EventListener = {
 	async clientReady(client) {
-		for (const guild of client.guilds.cache.values()) {
-			try {
-				const channels = await guild.channels.fetch();
-				for (const channel of channels.values()) {
-					if (
-						channel?.isTextBased() &&
-						channel.id !== config.starboard.channel &&
-						!isChannelBlacklisted(channel)
-					) {
-						// Add to rate-limited queue
-						await messageFetcher.addToQueue(async () => {
-							try {
-								await channel.messages.fetch({ limit: 100 }); // 100 is the maximum allowed by Discord API
-								logger.info(`Fetched recent messages from #%s`, channel.name);
-							} catch (error) {
-								logger.error(
-									`Error fetching messages from #%s`,
-									channel.name,
-									error,
-								);
-							}
-						});
-					}
-				}
-			} catch (error) {
-				logger.error(`Error processing guild %s:`, guild.name, error);
-			}
-		}
+		// Message fetching handled by DeletedMessagesListener - messages will be in Discord.js cache
 		let isRunningStarboardCheck = false;
 		schedule.scheduleJob(
 			{
