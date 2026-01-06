@@ -30,5 +30,5 @@ export const ModerationModule: Module = {
 		WordlistCommand,
 		ReputationCommand,
 	],
-	listeners: [...InviteListeners, TempBanListener, WarningSchedulerListener DeletedMessagesListener],
+	listeners: [...InviteListeners, TempBanListener, WarningSchedulerListener, DeletedMessagesListener],
 };
