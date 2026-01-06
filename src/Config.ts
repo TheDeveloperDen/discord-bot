@@ -56,6 +56,15 @@ const devConfig: Config = {
 		yesEmojiId: "👍",
 		noEmojiId: "👎",
 	},
+	threatDetection: {
+		enabled: true,
+		alertChannel: "1432483525155623063",
+		scamLinks: {
+			enabled: true,
+			blockShorteners: true,
+			useExternalApi: true,
+		},
+	},
 	modmail: {
 		pingRole: "1412470653050818724",
 		archiveChannel: "1412470199495561338",

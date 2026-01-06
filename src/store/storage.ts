@@ -2,6 +2,7 @@ import { type AbstractDialect, type DialectName, Sequelize } from "@sequelize/co
 import { SqliteDialect } from "@sequelize/sqlite3";
 import type { ConnectionConfig } from "pg";
 import { logger } from "../logging.js";
+import { BlockedWord } from "./models/BlockedWord.js";
 import { Bump } from "./models/Bump.js";
 import { ColourRoles } from "./models/ColourRoles.js";
 import { DDUser } from "./models/DDUser.js";
@@ -9,9 +10,13 @@ import { FAQ } from "./models/FAQ.js";
 import { ModeratorActions } from "./models/ModeratorActions.js";
 import { ModMailNote } from "./models/ModMailNote.js";
 import { ModMailTicket } from "./models/ModMailTicket.js";
+import { ReputationEvent } from "./models/ReputationEvent.js";
+import { ScamDomain } from "./models/ScamDomain.js";
 import { StarboardMessage } from "./models/StarboardMessage.js";
 import { Suggestion } from "./models/Suggestion.js";
 import { SuggestionVote } from "./models/SuggestionVote.js";
+import { ThreatLog } from "./models/ThreatLog.js";
+import { Warning } from "./models/Warning.js";
 
 function sequelizeLog(sql: string, timing?: number) {
 	if (timing) {
@@ -47,7 +52,7 @@ export async function initStorage() {
 			user: username,
 			password,
 			host,
-			port: parseInt(port, 10),
+			port: Number.parseInt(port, 10),
 			logging: sequelizeLog,
 			benchmark: true,
 		});
@@ -77,6 +82,11 @@ export async function initStorage() {
 		SuggestionVote,
 		ModMailTicket,
 		ModMailNote,
+		ThreatLog,
+		ScamDomain,
+		Warning,
+		BlockedWord,
+		ReputationEvent,
 	];
 	sequelize.addModels(models);
 
