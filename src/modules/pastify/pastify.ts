@@ -97,11 +97,13 @@ export async function pastify<force extends boolean = false>(
 	const split = splitMessage(message.content, threshold);
 
 	// if it's just a string, do nothing
-	if (!forcePaste && !split.some((part) => "content" in part)) {
+	if (!forcePaste || !split.some((part) => "content" in part)) {
 		return null as PastifyReturn<force>;
 	}
 
 	const lines = await Promise.all(split.map(upload));
+
+	pastifiedMessages.add(BigInt(message.id));
 
 	await message.delete();
 	return {
@@ -117,4 +119,10 @@ export async function pastify<force extends boolean = false>(
 			},
 		],
 	};
+}
+
+const pastifiedMessages = new Set<bigint>();
+
+export function isPastified(messageId: bigint): boolean {
+	return pastifiedMessages.has(messageId);
 }
