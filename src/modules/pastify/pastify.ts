@@ -19,7 +19,7 @@ type SplitMessageComponent =
 
 export function splitMessage(
 	message: string,
-  threshold: number = config.devbin.threshold
+	threshold: number = config.devbin.threshold,
 ) {
 	const matches = message.matchAll(codeBlockPattern);
 
@@ -46,18 +46,18 @@ export async function upload(component: SplitMessageComponent) {
 	if ("text" in component) {
 		return component.text;
 	}
-  const header: { [key: string]: string } = {
-    "Content-Type": "application/json",
-    "Accept": "application/json"
-  };
+	const header: { [key: string]: string } = {
+		"Content-Type": "application/json",
+		Accept: "application/json",
+	};
 
-  if (BYPASS_TOKEN) {
-    header.Authorization = BYPASS_TOKEN;
-  }
+	if (BYPASS_TOKEN) {
+		header.Authorization = BYPASS_TOKEN;
+	}
 
-  const response = await fetch(`${config.devbin.api_url}/documents`, {
+	const response = await fetch(`${config.devbin.api_url}/pastes`, {
 		method: "POST",
-    headers: header,
+		headers: header,
 		body: component.content,
 	});
 
@@ -68,14 +68,14 @@ export async function upload(component: SplitMessageComponent) {
 		return "Pasting failed";
 	}
 
-  const id = ((await response.json()) as { id: string }).id;
+	const id = ((await response.json()) as { id: string }).id;
 
-  if (!id) {
-    logger.warn("Id was missing from pastebin response");
+	if (!id) {
+		logger.warn("Id was missing from pastebin response");
 		return "Pasting failed";
 	}
 
-  return `${config.devbin.url}/paste/${id}`;
+	return `${config.devbin.url}/paste/${id}`;
 }
 
 type PastifyReturn<T extends boolean> = T extends true
