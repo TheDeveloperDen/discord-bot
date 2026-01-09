@@ -58,7 +58,11 @@ export async function upload(component: SplitMessageComponent) {
 	const response = await fetch(`${config.devbin.api_url}/pastes`, {
 		method: "POST",
 		headers: header,
-		body: component.content,
+		body: JSON.stringify({
+			title: `Pasted via DevDenBot`,
+			content: component.content,
+			language: component.language,
+		}),
 	});
 
 	if (!response.ok) {
