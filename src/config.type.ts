@@ -62,7 +62,11 @@ export interface Config {
 		yesEmojiId: string;
 		noEmojiId: string;
 	};
-	pastebin: { url: string; threshold: number };
+  devbin: {
+    url: string;
+    api_url: string;
+    threshold: number
+  };
 	channels: {
 		welcome: string;
 		botCommands: string;

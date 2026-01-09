@@ -70,7 +70,7 @@ const devConfig: Config = {
 		archiveChannel: "1412470199495561338",
 		channel: "1412470223004766268",
 	},
-	pastebin: prodConfig.pastebin,
+	devbin: prodConfig.devbin,
 	branding: {
 		color: "#ffffff",
 		font: "CascadiaCode.ttf",
