@@ -1,0 +1,21 @@
+{
+  "name": "commandkit-basic-ts",
+  "description": "A CommandKit project using TypeScript",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "commandkit dev",
+    "build": "commandkit build",
+    "start": "commandkit start"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "commandkit": "^1.2.0-dev.20251125125452",
+    "discord.js": "^14.25.1"
+  }
+}
