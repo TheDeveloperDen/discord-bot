@@ -74,7 +74,7 @@ export const config: Config = {
 	},
 	devbin: {
 		url: "https://devbin.developerden.org",
-    api_url: "add-me",
+    api_url: "https://devbin-api.developerden.org",
 		threshold: 20,
 	},
 	branding: {
