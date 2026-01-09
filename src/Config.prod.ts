@@ -72,8 +72,9 @@ export const config: Config = {
 		archiveChannel: "1415283787440328836",
 		channel: "1415283659350741062",
 	},
-	pastebin: {
-		url: "https://paste.developerden.org",
+	devbin: {
+		url: "https://devbin.developerden.org",
+    api_url: "add-me",
 		threshold: 20,
 	},
 	branding: {
