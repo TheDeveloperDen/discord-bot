@@ -61,7 +61,7 @@ export async function upload(component: SplitMessageComponent) {
 		body: JSON.stringify({
 			title: `Pasted via DevDenBot`,
 			content: component.content,
-			language: component.language,
+      content_language: "plain_text" // Currently only accepts this
 		}),
 	});
 
