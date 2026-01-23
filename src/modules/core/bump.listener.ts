@@ -20,6 +20,8 @@ import {
 } from "../../store/models/bumps.js";
 import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { fakeMention, mentionIfPingable } from "../../util/users.js";
+import { notifyMultipleAchievements } from "../achievements/achievementNotifier.js";
+import { checkAndAwardAchievements } from "../achievements/achievementService.js";
 import type { EventListener } from "../module.js";
 
 /**
@@ -172,6 +174,31 @@ export const BumpListener: EventListener = {
 		clearBumpsCache();
 		await ddUser.save();
 		await handleBump(client, ddUser, interaction, message);
+
+		// Check and award achievements
+		try {
+			const streak = await getBumpStreak(ddUser);
+			const totalBumps = await ddUser.countBumps();
+			const newAchievements = await checkAndAwardAchievements(
+				ddUser,
+				{ type: "bump", event: "bump_recorded" },
+				{ totalBumps, bumpStreak: streak.current },
+			);
+
+			if (newAchievements.length > 0) {
+				const member = await message.guild?.members.fetch(interaction.user.id);
+				if (member) {
+					await notifyMultipleAchievements(
+						client,
+						member,
+						newAchievements.map((a) => a.definition),
+						message.channel,
+					);
+				}
+			}
+		} catch (error) {
+			logger.error("Failed to check bump achievements:", error);
+		}
 	},
 };
 const streakReacts: EmojiIdentifierResolvable[] = [

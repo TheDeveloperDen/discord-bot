@@ -176,4 +176,9 @@ https://discord.gg/devden`),
 			],
 		],
 	},
+
+	achievements: {
+		notificationMode: "trigger",
+		fallbackChannel: "821820015917006868", // botCommands
+	},
 };

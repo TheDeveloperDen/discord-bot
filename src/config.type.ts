@@ -2,6 +2,15 @@ import type { Snowflake } from "discord.js";
 import type { InformationMessage } from "./modules/information/information.js";
 import type { BrandingConfig } from "./util/branding.js";
 
+export interface AchievementsConfig {
+	/** Where to send achievement notifications */
+	notificationMode: "channel" | "dm" | "trigger";
+	/** Dedicated channel for notifications (required if mode is "channel") */
+	notificationChannel?: string;
+	/** Fallback channel if trigger location unavailable (for "trigger" mode) */
+	fallbackChannel?: string;
+}
+
 export interface Config {
 	guildId: string;
 	clientId: string;
@@ -53,4 +62,5 @@ export interface Config {
 	};
 	branding: BrandingConfig;
 	informationMessage?: InformationMessage;
+	achievements?: AchievementsConfig;
 }

@@ -1,4 +1,5 @@
 import {
+	type CreationOptional,
 	DataTypes,
 	type InferAttributes,
 	type InferCreationAttributes,
@@ -48,4 +49,9 @@ export class DDUserAchievements extends Model<
 
 	@BelongsTo(() => DDUser, "ddUserId")
 	public declare ddUser?: DDUser;
+
+	// Sequelize automatically manages these timestamps with paranoid: true
+	public declare createdAt: CreationOptional<Date>;
+	public declare updatedAt: CreationOptional<Date>;
+	public declare deletedAt: CreationOptional<Date | null>;
 }
