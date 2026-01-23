@@ -18,11 +18,15 @@ export const config: Config = {
 		emojiId: "⭐",
 		channel: "975786395211816980",
 		threshold: 2,
+		blacklistChannelIds: [],
 	},
 	commands: {
 		daily: "1059214166075912225",
 	},
-
+	deletedMessageLog: {
+		cacheTtlMs: 1000 * 60 * 60 * 24,
+		excludedChannels: [],
+	},
 	roles: {
 		tiers: [
 			"821743100203368458", // @everyone (tier 0)
@@ -68,8 +72,9 @@ export const config: Config = {
 		archiveChannel: "1415283787440328836",
 		channel: "1415283659350741062",
 	},
-	pastebin: {
-		url: "https://paste.developerden.org",
+	devbin: {
+		url: "https://devbin.developerden.org",
+    api_url: "https://devbin-api.developerden.org",
 		threshold: 20,
 	},
 	branding: {

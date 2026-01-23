@@ -5,6 +5,8 @@ import { logger } from "../../logging.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { mentionIfPingable } from "../../util/users.js";
 
+const BYPASS_TOKEN = process.env.DDB_PASTE_BYPASS_TOKEN;
+
 const codeBlockPattern =
 	/```(?:(?<lang>[a-zA-Z]+)?\n)?(?<content>(?:.|\n)*?)```|(?:(?:.|\n)(?!```))+/g;
 
@@ -17,7 +19,7 @@ type SplitMessageComponent =
 
 export function splitMessage(
 	message: string,
-	threshold: number = config.pastebin.threshold,
+	threshold: number = config.devbin.threshold,
 ) {
 	const matches = message.matchAll(codeBlockPattern);
 
@@ -44,10 +46,23 @@ export async function upload(component: SplitMessageComponent) {
 	if ("text" in component) {
 		return component.text;
 	}
+	const header: { [key: string]: string } = {
+		"Content-Type": "application/json",
+		Accept: "application/json",
+	};
 
-	const response = await fetch(`${config.pastebin.url}/documents`, {
+	if (BYPASS_TOKEN) {
+		header.Authorization = BYPASS_TOKEN;
+	}
+
+	const response = await fetch(`${config.devbin.api_url}/pastes`, {
 		method: "POST",
-		body: component.content,
+		headers: header,
+		body: JSON.stringify({
+			title: `Pasted via DevDenBot`,
+			content: component.content,
+			language: component.language,
+		}),
 	});
 
 	if (!response.ok) {
@@ -57,16 +72,14 @@ export async function upload(component: SplitMessageComponent) {
 		return "Pasting failed";
 	}
 
-	const key = ((await response.json()) as { key: string }).key;
+	const id = ((await response.json()) as { id: string }).id;
 
-	if (!key) {
-		logger.warn("Key was missing from pastebin response");
+	if (!id) {
+		logger.warn("Id was missing from pastebin response");
 		return "Pasting failed";
 	}
 
-	return `${config.pastebin.url}/${key}${
-		component.language ? `.${component.language}` : ""
-	}`;
+	return `${config.devbin.url}/paste/${id}`;
 }
 
 type PastifyReturn<T extends boolean> = T extends true
@@ -88,11 +101,13 @@ export async function pastify<force extends boolean = false>(
 	const split = splitMessage(message.content, threshold);
 
 	// if it's just a string, do nothing
-	if (!forcePaste && !split.some((part) => "content" in part)) {
+	if (!forcePaste || !split.some((part) => "content" in part)) {
 		return null as PastifyReturn<force>;
 	}
 
 	const lines = await Promise.all(split.map(upload));
+
+	pastifiedMessages.add(BigInt(message.id));
 
 	await message.delete();
 	return {
@@ -108,4 +123,10 @@ export async function pastify<force extends boolean = false>(
 			},
 		],
 	};
+}
+
+const pastifiedMessages = new Set<bigint>();
+
+export function isPastified(messageId: bigint): boolean {
+	return pastifiedMessages.has(messageId);
 }

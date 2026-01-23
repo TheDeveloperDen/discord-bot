@@ -1,19 +1,20 @@
 import {
-	type CreationOptional,
-	DataTypes,
-	type InferAttributes,
-	type InferCreationAttributes,
-	Model,
+  type CreationOptional,
+  DataTypes,
+  type InferAttributes,
+  type InferCreationAttributes,
+  Model
 } from "@sequelize/core";
 import {
-	AllowNull,
-	Attribute,
-	BelongsTo,
-	ColumnName,
-	Default,
-	NotNull,
-	PrimaryKey,
-	Table,
+  AllowNull,
+  Attribute,
+  AutoIncrement,
+  BelongsTo,
+  ColumnName,
+  Default,
+  NotNull,
+  PrimaryKey,
+  Table
 } from "@sequelize/core/decorators-legacy";
 import { RealBigInt } from "../RealBigInt.js";
 import { DDUser } from "./DDUser.js";
@@ -29,6 +30,7 @@ export class ModeratorActions extends Model<
 > {
 	@Attribute(DataTypes.INTEGER)
 	@PrimaryKey
+  @AutoIncrement
 	public declare id: CreationOptional<number>;
 
 	@Attribute(RealBigInt)

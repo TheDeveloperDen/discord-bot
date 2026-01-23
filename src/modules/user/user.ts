@@ -1,5 +1,7 @@
-import Canvas from "@napi-rs/canvas";
+import * as fs from "node:fs";
+import Canvas, { createCanvas, Image } from "@napi-rs/canvas";
 import type { GuildMember } from "discord.js";
+import sharp from "sharp";
 import { getBumpStreak } from "../../store/models/bumps.js";
 import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { branding } from "../../util/branding.js";
@@ -11,6 +13,7 @@ import {
 } from "../../util/canvas.js";
 import { xpForLevel } from "../xp/xpForMessage.util.js";
 
+const svgContent = fs.readFileSync("./devden_logo_short.svg", "utf8");
 export const profileFont = "Cascadia Code";
 Canvas.GlobalFonts.registerFromPath(branding.font, profileFont);
 export function getDDColorGradient(
@@ -42,14 +45,21 @@ export function createLevelAndXPField(
 	const barY = y; // Slightly above name
 
 	const xpForNextLevel = xpForLevel(ddUser.level + 1);
-	const xpProgress = Math.min(Number(xp) / Number(xpForNextLevel), 1);
+	const xpForCurrentLevel = xpForLevel(ddUser.level);
+
+	const relativeXp = xp - xpForCurrentLevel;
+	const relativeXpForNextLevel = xpForNextLevel - xpForCurrentLevel;
+
+	const xpProgress = Math.min(
+		Number(relativeXp) / Number(relativeXpForNextLevel),
+		1,
+	);
 
 	// Draw XP bar background
 	canvas.fillStyle = "#444444";
 	canvas.fillRect(barX, barY, barWidth, barHeight);
 	let userRoleColor = user.roles.highest.hexColor;
 	if (userRoleColor === "#000000" || userRoleColor === "#444444") {
-		// green
 		userRoleColor = "#FF52F9FF";
 	}
 	// Draw XP bar progress
@@ -198,36 +208,28 @@ export async function generateUserProfileImage(
 		getDDColorGradient(ctx, padding, dividerWidth),
 		2,
 	);
-	drawDeveloperDenText(ctx, w - padding, padding);
+	await drawDeveloperDenText(ctx, w - 124, -8, 124);
 	return ctx.canvas.toDataURL("image/png");
 }
-
-export function drawDeveloperDenText(
+export async function drawDeveloperDenText(
 	ctx: Canvas.SKRSContext2D,
 	x: number,
 	y: number,
+	size: number,
 ) {
-	const text = "developer den";
-	setFont(ctx, 64);
-	const textSize = getTextSize(ctx, text);
-	const textWidth = textSize.width;
-	const textHeight = textSize.height;
+	try {
+		// Read SVG file
 
-	drawDivider(
-		ctx,
-		x - textWidth,
-		y + textHeight - 8,
-		textWidth,
-		"horizontal",
-		getDDColorGradient(ctx, x - textWidth, textWidth),
-		5,
-	);
-	ctx.fillStyle = "#ffffff";
-	ctx.textAlign = "right";
-	ctx.textBaseline = "bottom";
-	ctx.fillText(text, x, y + textHeight);
+		// Import canvg
+		const pngBuffer = await sharp(Buffer.from(svgContent))
+			.resize(size, size)
+			.png()
+			.toBuffer();
 
-	return textWidth;
+		await loadAndDrawImage(ctx, pngBuffer, x, y, size, size);
+	} catch (error) {
+		console.error("Error drawing SVG:", error);
+	}
 }
 
 export async function getProfileEmbed(user: GuildMember) {

@@ -1,4 +1,5 @@
 import type {
+	Channel,
 	Embed,
 	GuildMember,
 	Message,
@@ -8,9 +9,11 @@ import type {
 import * as schedule from "node-schedule";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
+import { ReputationEventType } from "../../store/models/ReputationEvent.js";
 import { StarboardMessage } from "../../store/models/StarboardMessage.js";
 import { getMember } from "../../util/member.js";
 import { MessageFetcher } from "../../util/ratelimiting.js";
+import { grantReputation } from "../moderation/reputation.service.js";
 import type { EventListener } from "../module.js";
 import {
 	createStarboardMessage,
@@ -78,8 +81,6 @@ export const debounceStarboardReaction = (
 	}, DEBOUNCE_DELAY);
 };
 
-const messageFetcher = new MessageFetcher();
-
 const getStarsFromEmbed: (embed: Embed) => number = (embed) => {
 	const field = embed.fields.find((field) => field.name === "Details:");
 	if (!field) return 0;
@@ -91,35 +92,13 @@ const getStarsFromEmbed: (embed: Embed) => number = (embed) => {
 	return Number.parseInt(stars, 10);
 };
 
+const isChannelBlacklisted = (channel: Channel): boolean => {
+	return config.starboard.blacklistChannelIds?.includes(channel.id) || false;
+};
+
 export const StarboardListener: EventListener = {
 	async clientReady(client) {
-		for (const guild of client.guilds.cache.values()) {
-			try {
-				const channels = await guild.channels.fetch();
-				for (const channel of channels.values()) {
-					if (
-						channel?.isTextBased() &&
-						channel.id !== config.starboard.channel
-					) {
-						// Add to rate-limited queue
-						await messageFetcher.addToQueue(async () => {
-							try {
-								await channel.messages.fetch({ limit: 100 }); // 100 is the maximum allowed by Discord API
-								logger.info(`Fetched recent messages from #%s`, channel.name);
-							} catch (error) {
-								logger.error(
-									`Error fetching messages from #%s`,
-									channel.name,
-									error,
-								);
-							}
-						});
-					}
-				}
-			} catch (error) {
-				logger.error(`Error processing guild %s:`, guild.name, error);
-			}
-		}
+		// Message fetching handled by DeletedMessagesListener - messages will be in Discord.js cache
 		let isRunningStarboardCheck = false;
 		schedule.scheduleJob(
 			{
@@ -141,7 +120,8 @@ export const StarboardListener: EventListener = {
 						const channel = await guild.channels.fetch(
 							dbStarboardMessage.originalMessageChannelId.toString(),
 						);
-						if (!channel?.isTextBased()) return; // Channel is not available? ( Either we can hope it comes back or we can delete the entry from the database )
+						if (!channel?.isTextBased() || isChannelBlacklisted(channel))
+							return;
 
 						const starboardChannel = await guild.channels.fetch(
 							config.starboard.channel,
@@ -221,6 +201,7 @@ export const StarboardListener: EventListener = {
 		);
 	},
 	async messageReactionAdd(_, reaction) {
+		if (isChannelBlacklisted(reaction.message.channel)) return;
 		if (reaction.partial) {
 			// If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
 			try {
@@ -318,6 +299,21 @@ export const StarboardListener: EventListener = {
 							message.channelId,
 							starboardMessage.id,
 						);
+
+						// Grant reputation for reaching starboard
+						try {
+							await grantReputation(
+								BigInt(message.author.id),
+								ReputationEventType.STARBOARD_MESSAGE,
+								BigInt(message.author.id), // Self-granted via starboard
+								`Message reached starboard with ${count} stars`,
+							);
+							logger.debug(
+								`Granted starboard reputation to user ${message.author.id}`,
+							);
+						} catch (error) {
+							logger.error("Failed to grant starboard reputation:", error);
+						}
 					}
 				} catch (error) {
 					logger.error("Error sending starboard message", error);
@@ -327,6 +323,7 @@ export const StarboardListener: EventListener = {
 	},
 
 	async messageReactionRemove(_, reaction) {
+		if (isChannelBlacklisted(reaction.message.channel)) return;
 		if (reaction.partial) {
 			// If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
 			try {

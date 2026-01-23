@@ -18,9 +18,14 @@ const devConfig: Config = {
 		emojiId: "⭐",
 		channel: "1407366658552631296",
 		threshold: 1,
+		blacklistChannelIds: ["904478147351806015"],
 	},
 	commands: {
 		daily: "1029850807794937949",
+	},
+	deletedMessageLog: {
+		cacheTtlMs: 1000 * 60 * 60 * 24,
+		excludedChannels: [],
 	},
 	roles: {
 		tiers: [
@@ -51,12 +56,21 @@ const devConfig: Config = {
 		yesEmojiId: "👍",
 		noEmojiId: "👎",
 	},
+	threatDetection: {
+		enabled: true,
+		alertChannel: "1432483525155623063",
+		scamLinks: {
+			enabled: true,
+			blockShorteners: true,
+			useExternalApi: true,
+		},
+	},
 	modmail: {
 		pingRole: "1412470653050818724",
 		archiveChannel: "1412470199495561338",
 		channel: "1412470223004766268",
 	},
-	pastebin: prodConfig.pastebin,
+	devbin: prodConfig.devbin,
 	branding: {
 		color: "#ffffff",
 		font: "CascadiaCode.ttf",

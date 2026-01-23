@@ -26,6 +26,7 @@ import { RolesModule } from "./modules/roles/roles.module.js";
 import { ShowcaseModule } from "./modules/showcase.module.js";
 import { StarboardModule } from "./modules/starboard/starboard.module.js";
 import SuggestModule from "./modules/suggest/suggest.module.js";
+import { ThreatDetectionModule } from "./modules/threatDetection/threatDetection.module.js";
 import { TokenScannerModule } from "./modules/tokenScanner.module.js";
 import { UserModule } from "./modules/user/user.module.js";
 import { XpModule } from "./modules/xp/xp.module.js";
@@ -71,6 +72,7 @@ export const moduleManager = new ModuleManager(
 		LeaderboardModule,
 		UserModule,
 		AchievementsModule,
+		ThreatDetectionModule,
 	],
 );
 

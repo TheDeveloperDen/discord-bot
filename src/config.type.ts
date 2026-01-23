@@ -11,6 +11,58 @@ export interface AchievementsConfig {
 	fallbackChannel?: string;
 }
 
+export interface ThreatDetectionConfig {
+	enabled: boolean;
+	alertChannel?: Snowflake;
+	exemptRoles?: Snowflake[];
+	scamLinks?: {
+		enabled: boolean;
+		useExternalApi?: boolean;
+		blockShorteners?: boolean;
+		safeDomains?: string[];
+	};
+	spam?: {
+		enabled: boolean;
+		maxMessagesPerWindow: number;
+		windowSeconds: number;
+		duplicateThreshold: number;
+		action: "delete" | "mute";
+		muteDuration?: number;
+	};
+	raid?: {
+		enabled: boolean;
+		maxJoinsPerWindow: number;
+		windowSeconds: number;
+		action: "alert" | "lockdown" | "kick_new";
+		newAccountThreshold: number;
+	};
+	mentionSpam?: {
+		enabled: boolean;
+		maxMentionsPerMessage: number;
+		maxMentionsPerWindow: number;
+		windowSeconds: number;
+		action: "delete" | "mute";
+	};
+	toxicContent?: {
+		enabled: boolean;
+		detectBypasses: boolean;
+		action: "flag" | "delete";
+	};
+	suspiciousAccounts?: {
+		enabled: boolean;
+		minAgeDays: number;
+		flagDefaultAvatar: boolean;
+		flagSuspiciousNames: boolean;
+		suspiciousNamePatterns?: string[];
+		action: "flag" | "kick";
+	};
+	escalation?: {
+		warningsBeforeMute: number;
+		mutesBeforeKick: number;
+		scoreDecayRate: number;
+	};
+}
+
 export interface Config {
 	guildId: string;
 	clientId: string;
@@ -19,7 +71,11 @@ export interface Config {
 		yesEmojiId: string;
 		noEmojiId: string;
 	};
-	pastebin: { url: string; threshold: number };
+  devbin: {
+    url: string;
+    api_url: string;
+    threshold: number
+  };
 	channels: {
 		welcome: string;
 		botCommands: string;
@@ -35,6 +91,7 @@ export interface Config {
 		emojiId: string;
 		channel: string;
 		threshold: number;
+		blacklistChannelIds?: Snowflake[];
 	};
 	suggest: {
 		suggestionsChannel: string;
@@ -60,7 +117,30 @@ export interface Config {
 		archiveChannel: string;
 		pingRole?: Snowflake;
 	};
+	deletedMessageLog?: {
+		/** Cache TTL in milliseconds (default: 24 hours) */
+		cacheTtlMs?: number;
+		/** Additional channel IDs to exclude from tracking (mod channels auto-excluded) */
+		excludedChannels?: Snowflake[];
+	};
 	branding: BrandingConfig;
 	informationMessage?: InformationMessage;
+	threatDetection?: ThreatDetectionConfig;
+	reputation?: {
+		enabled: boolean;
+		warningThresholds: {
+			muteAt: number;
+			muteDuration: string;
+			banAt: number;
+		};
+		warningExpiration: {
+			minor: string;
+			moderate: string;
+			severe: string;
+		};
+		scoreVisibility: "public" | "mods-only" | "self-only";
+		allowAppeals: boolean;
+		appealCooldown: string;
+	};
 	achievements?: AchievementsConfig;
 }

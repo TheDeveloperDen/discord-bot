@@ -10,6 +10,7 @@ import {
 	AllowNull,
 	Attribute,
 	HasMany,
+	Default,
 	NotNull,
 	PrimaryKey,
 	Table,
@@ -48,6 +49,14 @@ export class DDUser extends Model<
 	@AllowNull
 	@Attribute(DataTypes.DATE)
 	public declare lastDailyTime: Date | null;
+
+	@Attribute(DataTypes.INTEGER)
+	@Default(0)
+	public declare reputationScore: number;
+
+	@AllowNull
+	@Attribute(DataTypes.DATE)
+	public declare lastReputationUpdate: Date | null;
 
 	@HasMany(() => DDUserAchievements, "ddUserId")
 	public declare ddUserAchievements?: DDUserAchievements[];
@@ -130,6 +139,7 @@ export const getOrCreateUserById = async (id: bigint) =>
 							bumps: 0,
 							currentDailyStreak: 0,
 							highestDailyStreak: 0,
+							reputationScore: 0,
 						},
 						benchmark: true,
 					});

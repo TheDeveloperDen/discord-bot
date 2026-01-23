@@ -10,5 +10,5 @@ export const PasteCommand: Command<ApplicationCommandType.ChatInput> = {
 	options: [],
 
 	handle: async (interaction: CommandInteraction) =>
-		await interaction.reply(config.pastebin.url),
+		await interaction.reply(config.devbin.url),
 };
