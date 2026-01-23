@@ -5,12 +5,13 @@
  * when relevant triggers occur (bump, daily, xp events).
  */
 
-export type AchievementCategory = "bump" | "daily" | "xp";
+export type AchievementCategory = "bump" | "daily" | "xp" | "special";
 
 export type AchievementTrigger =
 	| { type: "bump"; event: "bump_recorded" }
 	| { type: "daily"; event: "daily_claimed" }
-	| { type: "xp"; event: "xp_gained" };
+	| { type: "xp"; event: "xp_gained" }
+	| { type: "manual"; event: "manual_grant" };
 
 export interface AchievementContext {
 	// Bump context
@@ -23,6 +24,9 @@ export interface AchievementContext {
 	level?: number;
 }
 
+/** Notification mode for achievements */
+export type NotificationMode = "channel" | "dm" | "trigger";
+
 export interface AchievementDefinition {
 	id: string;
 	name: string;
@@ -33,6 +37,8 @@ export interface AchievementDefinition {
 	checkCondition: (context: AchievementContext) => boolean;
 	/** Whether the achievement is active. Inactive achievements cannot be awarded and are hidden from display. Defaults to true. */
 	active?: boolean;
+	/** Override the global notification mode for this specific achievement. If not set, uses the global config. */
+	notificationMode?: NotificationMode;
 }
 
 // ─────────────────────────────────────────────────
@@ -241,6 +247,22 @@ const XP_ACHIEVEMENTS: AchievementDefinition[] = [
 ];
 
 // ─────────────────────────────────────────────────
+// Special Achievements (Manual Grant Only)
+// ─────────────────────────────────────────────────
+
+const SPECIAL_ACHIEVEMENTS: AchievementDefinition[] = [
+	{
+		id: "project_contributor",
+		name: "Project Contributor",
+		description: "Contributed to community projects or the bot itself",
+		emoji: "🛠️",
+		category: "special",
+		trigger: { type: "manual", event: "manual_grant" },
+		checkCondition: () => false, // Never auto-awarded
+	},
+];
+
+// ─────────────────────────────────────────────────
 // Combined Export
 // ─────────────────────────────────────────────────
 
@@ -248,6 +270,7 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
 	...BUMP_ACHIEVEMENTS,
 	...DAILY_ACHIEVEMENTS,
 	...XP_ACHIEVEMENTS,
+	...SPECIAL_ACHIEVEMENTS,
 ];
 
 /**
@@ -298,6 +321,13 @@ export function getActiveAchievementsByTrigger(
 }
 
 /**
+ * Get all achievements that can be manually granted (manual trigger type)
+ */
+export function getManualAchievements(): AchievementDefinition[] {
+	return getActiveAchievements().filter((a) => a.trigger.type === "manual");
+}
+
+/**
  * Category display information
  */
 export const CATEGORY_INFO: Record<
@@ -307,4 +337,5 @@ export const CATEGORY_INFO: Record<
 	bump: { name: "Bump Achievements", emoji: "🎯" },
 	daily: { name: "Daily Achievements", emoji: "🌅" },
 	xp: { name: "XP Achievements", emoji: "📈" },
+	special: { name: "Special Achievements", emoji: "🛠️" },
 };

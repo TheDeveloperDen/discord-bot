@@ -15,10 +15,11 @@ import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { fakeMention } from "../../util/users.js";
-import type { AchievementDefinition } from "./achievementDefinitions.js";
+import type {
+	AchievementDefinition,
+	NotificationMode,
+} from "./achievementDefinitions.js";
 import { getAchievementProgress } from "./achievementService.js";
-
-type NotificationMode = "channel" | "dm" | "trigger";
 
 interface AchievementConfig {
 	notificationMode: NotificationMode;
@@ -62,8 +63,12 @@ export async function notifyAchievementUnlocked(
 			text: `${achievement.category.charAt(0).toUpperCase() + achievement.category.slice(1)} Achievements | ${progress.unlocked}/${progress.total} total`,
 		});
 
+	// Use per-achievement override if set, otherwise fall back to global config
+	const mode =
+		achievement.notificationMode ?? achievementConfig.notificationMode;
+
 	try {
-		switch (achievementConfig.notificationMode) {
+		switch (mode) {
 			case "dm":
 				await sendDM(client, member, embed, achievementConfig);
 				break;
@@ -165,7 +170,8 @@ async function sendToTriggerLocation(
 }
 
 /**
- * Notify multiple achievements at once (batches into single message).
+ * Notify multiple achievements at once.
+ * Groups achievements by their notification mode and sends each group appropriately.
  */
 export async function notifyMultipleAchievements(
 	client: Client,
@@ -175,19 +181,78 @@ export async function notifyMultipleAchievements(
 ): Promise<void> {
 	if (achievements.length === 0) return;
 
-	// For single achievement, use standard notification
-	if (achievements.length === 1) {
-		await notifyAchievementUnlocked(
+	const achievementConfig = getAchievementConfig();
+
+	// Group achievements by their effective notification mode
+	const byMode = new Map<NotificationMode, AchievementDefinition[]>();
+	for (const achievement of achievements) {
+		const mode =
+			achievement.notificationMode ?? achievementConfig.notificationMode;
+		const group = byMode.get(mode) ?? [];
+		group.push(achievement);
+		byMode.set(mode, group);
+	}
+
+	// If all achievements have the same mode, batch them together
+	if (byMode.size === 1) {
+		const [mode, groupedAchievements] = [...byMode.entries()][0];
+
+		// For single achievement, use standard notification
+		if (groupedAchievements.length === 1) {
+			await notifyAchievementUnlocked(
+				client,
+				member,
+				groupedAchievements[0],
+				triggerChannel,
+			);
+			return;
+		}
+
+		// For multiple achievements with same mode, create combined embed
+		await sendAchievementGroup(
 			client,
 			member,
-			achievements[0],
+			groupedAchievements,
+			mode,
+			achievementConfig,
 			triggerChannel,
 		);
 		return;
 	}
 
-	// For multiple achievements, create a combined embed
-	const achievementConfig = getAchievementConfig();
+	// For achievements with different modes, send each group separately
+	for (const [mode, groupedAchievements] of byMode) {
+		if (groupedAchievements.length === 1) {
+			await notifyAchievementUnlocked(
+				client,
+				member,
+				groupedAchievements[0],
+				triggerChannel,
+			);
+		} else {
+			await sendAchievementGroup(
+				client,
+				member,
+				groupedAchievements,
+				mode,
+				achievementConfig,
+				triggerChannel,
+			);
+		}
+	}
+}
+
+/**
+ * Send a group of achievements with a specific notification mode.
+ */
+async function sendAchievementGroup(
+	client: Client,
+	member: GuildMember,
+	achievements: AchievementDefinition[],
+	mode: NotificationMode,
+	achievementConfig: AchievementConfig,
+	triggerChannel?: TextBasedChannel,
+): Promise<void> {
 	const progress = await getAchievementProgress(BigInt(member.id));
 
 	const achievementList = achievements
@@ -203,7 +268,7 @@ export async function notifyMultipleAchievements(
 		});
 
 	try {
-		switch (achievementConfig.notificationMode) {
+		switch (mode) {
 			case "dm":
 				await sendDM(client, member, embed, achievementConfig);
 				break;
@@ -227,7 +292,7 @@ export async function notifyMultipleAchievements(
 		}
 	} catch (error) {
 		logger.error(
-			`Failed to send multiple achievement notifications to ${member.id}:`,
+			`Failed to send achievement group notifications to ${member.id}:`,
 			error,
 		);
 	}

@@ -6,9 +6,10 @@
 
 import type Module from "../module.js";
 import { AchievementsCommand } from "./achievements.command.js";
+import { GrantAchievementCommand } from "./grantAchievement.command.js";
 
 export const AchievementsModule: Module = {
 	name: "achievements",
-	commands: [AchievementsCommand],
+	commands: [AchievementsCommand, GrantAchievementCommand],
 	listeners: [],
 };

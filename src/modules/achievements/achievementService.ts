@@ -162,6 +162,52 @@ export async function hasAchievement(
 	return record !== null;
 }
 
+export interface GrantResult {
+	success: boolean;
+	alreadyHad: boolean;
+	error?: string;
+}
+
+/**
+ * Manually grant an achievement to a user.
+ * Used by moderation commands to award achievements that can't be earned automatically.
+ *
+ * @param userId The user ID to grant the achievement to
+ * @param achievementId The achievement ID to grant
+ * @returns Result indicating success, already had, or error
+ */
+export async function grantAchievement(
+	userId: bigint,
+	achievementId: string,
+): Promise<GrantResult> {
+	const achievement = getAchievementById(achievementId);
+	if (!achievement) {
+		return {
+			success: false,
+			alreadyHad: false,
+			error: "Achievement not found",
+		};
+	}
+
+	if (achievement.active === false) {
+		return {
+			success: false,
+			alreadyHad: false,
+			error: "Achievement is inactive",
+		};
+	}
+
+	const awarded = await awardAchievement(userId, achievementId);
+	if (!awarded) {
+		return { success: false, alreadyHad: true };
+	}
+
+	logger.info(
+		`Manually granted achievement "${achievement.name}" to user ${userId}`,
+	);
+	return { success: true, alreadyHad: false };
+}
+
 /**
  * Get achievement progress stats for a user.
  */
@@ -179,6 +225,7 @@ export async function getAchievementProgress(userId: bigint): Promise<{
 		bump: { total: 0, unlocked: 0 },
 		daily: { total: 0, unlocked: 0 },
 		xp: { total: 0, unlocked: 0 },
+		special: { total: 0, unlocked: 0 },
 	};
 
 	const activeAchievements = getActiveAchievements();

@@ -23,7 +23,12 @@ import {
 	getAchievementsWithStatus,
 } from "./achievementService.js";
 
-const CATEGORY_ORDER: AchievementCategory[] = ["bump", "daily", "xp"];
+const CATEGORY_ORDER: AchievementCategory[] = [
+	"bump",
+	"daily",
+	"xp",
+	"special",
+];
 
 export const AchievementsCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: "achievements",
@@ -45,6 +50,7 @@ export const AchievementsCommand: Command<ApplicationCommandType.ChatInput> = {
 				{ name: "Bump Achievements", value: "bump" },
 				{ name: "Daily Achievements", value: "daily" },
 				{ name: "XP Achievements", value: "xp" },
+				{ name: "Special Achievements", value: "special" },
 			],
 		},
 	],
