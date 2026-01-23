@@ -10,13 +10,13 @@ import { logger } from "../../logging.js";
 import type { DDUser } from "../../store/models/DDUser.js";
 import { DDUserAchievements } from "../../store/models/DDUserAchievements.js";
 import {
-	ACHIEVEMENTS,
 	type AchievementCategory,
 	type AchievementContext,
 	type AchievementDefinition,
 	type AchievementTrigger,
 	getAchievementById,
-	getAchievementsByTrigger,
+	getActiveAchievements,
+	getActiveAchievementsByTrigger,
 } from "./achievementDefinitions.js";
 
 export interface AwardedAchievement {
@@ -52,7 +52,7 @@ export async function checkAndAwardAchievements(
 			},
 		},
 		async () => {
-			const relevantAchievements = getAchievementsByTrigger(trigger);
+			const relevantAchievements = getActiveAchievementsByTrigger(trigger);
 			const newlyAwarded: AwardedAchievement[] = [];
 
 			// Get user's existing achievements
@@ -181,7 +181,8 @@ export async function getAchievementProgress(userId: bigint): Promise<{
 		xp: { total: 0, unlocked: 0 },
 	};
 
-	for (const achievement of ACHIEVEMENTS) {
+	const activeAchievements = getActiveAchievements();
+	for (const achievement of activeAchievements) {
 		byCategory[achievement.category].total++;
 		if (userAchievements.has(achievement.id)) {
 			byCategory[achievement.category].unlocked++;
@@ -189,7 +190,7 @@ export async function getAchievementProgress(userId: bigint): Promise<{
 	}
 
 	return {
-		total: ACHIEVEMENTS.length,
+		total: activeAchievements.length,
 		unlocked: userAchievements.size,
 		byCategory,
 	};
@@ -208,7 +209,7 @@ export async function getAchievementsWithStatus(userId: bigint): Promise<
 	const records = await getUserAchievements(userId);
 	const recordMap = new Map(records.map((r) => [r.achievementId, r.awardedAt]));
 
-	return ACHIEVEMENTS.map((definition) => {
+	return getActiveAchievements().map((definition) => {
 		const unlockedAt = recordMap.get(definition.id);
 		return {
 			definition,

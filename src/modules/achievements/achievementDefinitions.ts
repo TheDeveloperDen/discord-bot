@@ -31,6 +31,8 @@ export interface AchievementDefinition {
 	category: AchievementCategory;
 	trigger: AchievementTrigger;
 	checkCondition: (context: AchievementContext) => boolean;
+	/** Whether the achievement is active. Inactive achievements cannot be awarded and are hidden from display. Defaults to true. */
+	active?: boolean;
 }
 
 // ─────────────────────────────────────────────────
@@ -273,6 +275,24 @@ export function getAchievementsByTrigger(
 	trigger: AchievementTrigger,
 ): AchievementDefinition[] {
 	return ACHIEVEMENTS.filter(
+		(a) => a.trigger.type === trigger.type && a.trigger.event === trigger.event,
+	);
+}
+
+/**
+ * Get all active achievements (excludes achievements with active: false)
+ */
+export function getActiveAchievements(): AchievementDefinition[] {
+	return ACHIEVEMENTS.filter((a) => a.active !== false);
+}
+
+/**
+ * Get active achievements that match a specific trigger
+ */
+export function getActiveAchievementsByTrigger(
+	trigger: AchievementTrigger,
+): AchievementDefinition[] {
+	return getActiveAchievements().filter(
 		(a) => a.trigger.type === trigger.type && a.trigger.event === trigger.event,
 	);
 }
