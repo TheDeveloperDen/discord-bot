@@ -168,6 +168,12 @@ export interface GrantResult {
 	error?: string;
 }
 
+export interface RevokeResult {
+	success: boolean;
+	didNotHave: boolean;
+	error?: string;
+}
+
 /**
  * Manually grant an achievement to a user.
  * Used by moderation commands to award achievements that can't be earned automatically.
@@ -206,6 +212,43 @@ export async function grantAchievement(
 		`Manually granted achievement "${achievement.name}" to user ${userId}`,
 	);
 	return { success: true, alreadyHad: false };
+}
+
+/**
+ * Revoke an achievement from a user.
+ * Uses soft delete (paranoid mode) to maintain audit trail.
+ *
+ * @param userId The user ID to revoke the achievement from
+ * @param achievementId The achievement ID to revoke
+ * @returns Result indicating success, didn't have, or error
+ */
+export async function revokeAchievement(
+	userId: bigint,
+	achievementId: string,
+): Promise<RevokeResult> {
+	const achievement = getAchievementById(achievementId);
+	if (!achievement) {
+		return {
+			success: false,
+			didNotHave: false,
+			error: "Achievement not found",
+		};
+	}
+
+	const record = await DDUserAchievements.findOne({
+		where: {
+			ddUserId: userId,
+			achievementId,
+		},
+	});
+
+	if (!record) {
+		return { success: false, didNotHave: true };
+	}
+
+	await record.destroy(); // Soft delete (sets deletedAt)
+	logger.info(`Revoked achievement "${achievement.name}" from user ${userId}`);
+	return { success: true, didNotHave: false };
 }
 
 /**
