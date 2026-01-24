@@ -122,9 +122,7 @@ describe("getNextDailyTime", () => {
 		const result = getNextDailyTime(user);
 
 		expect(result).toBeDefined();
-		expect(result?.getTime()).toBe(
-			lastClaim.getTime() + 1000 * 60 * 60 * 24,
-		);
+		expect(result?.getTime()).toBe(lastClaim.getTime() + 1000 * 60 * 60 * 24);
 	});
 });
 

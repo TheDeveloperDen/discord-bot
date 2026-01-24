@@ -71,11 +71,11 @@ export interface Config {
 		yesEmojiId: string;
 		noEmojiId: string;
 	};
-  devbin: {
-    url: string;
-    api_url: string;
-    threshold: number
-  };
+	devbin: {
+		url: string;
+		api_url: string;
+		threshold: number;
+	};
 	channels: {
 		welcome: string;
 		botCommands: string;
