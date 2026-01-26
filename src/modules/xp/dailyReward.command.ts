@@ -12,6 +12,8 @@ import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 
 import { isSpecialUser } from "../../util/users.js";
+import { notifyMultipleAchievements } from "../achievements/achievementNotifier.js";
+import { checkAndAwardAchievements } from "../achievements/achievementService.js";
 import { scheduleReminder } from "./dailyReward.reminder.js";
 import { giveXp } from "./xpForMessage.util.js";
 
@@ -100,6 +102,31 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
 			);
 			if (isSpecialUser(user)) {
 				await scheduleReminder(user.client, user, ddUser);
+			}
+
+			// Check and award achievements
+			try {
+				const newAchievements = await checkAndAwardAchievements(
+					ddUser,
+					{ type: "daily", event: "daily_claimed" },
+					{
+						dailyStreak: Math.max(
+							ddUser.currentDailyStreak,
+							ddUser.highestDailyStreak,
+						),
+					},
+				);
+
+				if (newAchievements.length > 0) {
+					await notifyMultipleAchievements(
+						user.client,
+						user,
+						newAchievements.map((a) => a.definition),
+						interaction.channel ?? undefined,
+					);
+				}
+			} catch (error) {
+				logger.error("Failed to check daily achievements:", error);
 			}
 		} finally {
 			dailiesInProgress.delete(user.id);

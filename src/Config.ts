@@ -85,6 +85,11 @@ const devConfig: Config = {
 	},
 
 	informationMessage: prodConfig.informationMessage,
+
+	achievements: {
+		notificationMode: "trigger",
+		fallbackChannel: "906954540039938048", // botCommands
+	},
 };
 
 const isProd = process.env.NODE_ENV === "production";
