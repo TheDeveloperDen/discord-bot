@@ -109,7 +109,12 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
 				const newAchievements = await checkAndAwardAchievements(
 					ddUser,
 					{ type: "daily", event: "daily_claimed" },
-					{ dailyStreak: ddUser.currentDailyStreak },
+					{
+						dailyStreak: Math.max(
+							ddUser.currentDailyStreak,
+							ddUser.highestDailyStreak,
+						),
+					},
 				);
 
 				if (newAchievements.length > 0) {

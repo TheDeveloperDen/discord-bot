@@ -14,7 +14,7 @@ import type {
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
 import { createStandardEmbed } from "../../util/embeds.js";
-import { fakeMention } from "../../util/users.js";
+import { fakeMention, mentionIfPingable } from "../../util/users.js";
 import type {
 	AchievementDefinition,
 	NotificationMode,
@@ -56,7 +56,7 @@ export async function notifyAchievementUnlocked(
 	const embed = createStandardEmbed(member)
 		.setTitle("Achievement Unlocked!")
 		.setDescription(
-			`${fakeMention(member.user)} earned **${achievement.name}**!\n> ${achievement.description}`,
+			`${mentionIfPingable(member)} earned **${achievement.name}**!\n> ${achievement.description}`,
 		)
 		.setThumbnail(member.user.displayAvatarURL({ size: 128 }))
 		.setFooter({
@@ -261,7 +261,9 @@ async function sendAchievementGroup(
 
 	const embed = createStandardEmbed(member)
 		.setTitle(`${achievements.length} Achievements Unlocked!`)
-		.setDescription(`${fakeMention(member.user)} earned:\n\n${achievementList}`)
+		.setDescription(
+			`${mentionIfPingable(member)} earned:\n\n${achievementList}`,
+		)
 		.setThumbnail(member.user.displayAvatarURL({ size: 128 }))
 		.setFooter({
 			text: `${progress.unlocked}/${progress.total} achievements unlocked`,

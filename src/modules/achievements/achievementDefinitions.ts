@@ -111,15 +111,6 @@ const BUMP_ACHIEVEMENTS: AchievementDefinition[] = [
 		trigger: { type: "bump", event: "bump_recorded" },
 		checkCondition: (ctx) => (ctx.bumpStreak ?? 0) >= 14,
 	},
-	{
-		id: "bump_streak_30",
-		name: "Monthly Champion",
-		description: "Achieve a 30-bump streak",
-		emoji: "👑",
-		category: "bump",
-		trigger: { type: "bump", event: "bump_recorded" },
-		checkCondition: (ctx) => (ctx.bumpStreak ?? 0) >= 30,
-	},
 ];
 
 // ─────────────────────────────────────────────────
