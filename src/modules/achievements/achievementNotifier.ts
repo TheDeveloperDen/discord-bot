@@ -14,7 +14,7 @@ import type {
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
 import { createStandardEmbed } from "../../util/embeds.js";
-import { fakeMention, mentionIfPingable } from "../../util/users.js";
+import { mentionIfPingable } from "../../util/users.js";
 import type {
 	AchievementDefinition,
 	NotificationMode,
@@ -68,33 +68,51 @@ export async function notifyAchievementUnlocked(
 		achievement.notificationMode ?? achievementConfig.notificationMode;
 
 	try {
-		switch (mode) {
-			case "dm":
-				await sendDM(client, member, embed, achievementConfig);
-				break;
-			case "channel":
-				await sendToChannel(
-					client,
-					embed,
-					achievementConfig.notificationChannel,
-				);
-				break;
-			case "trigger":
-			default:
-				await sendToTriggerLocation(
-					client,
-					member,
-					embed,
-					triggerChannel,
-					achievementConfig,
-				);
-				break;
-		}
+		await sendByMode(
+			client,
+			member,
+			embed,
+			mode,
+			achievementConfig,
+			triggerChannel,
+		);
 	} catch (error) {
 		logger.error(
 			`Failed to send achievement notification for ${achievement.name} to ${member.id}:`,
 			error,
 		);
+	}
+}
+
+/**
+ * Send an embed using the specified notification mode.
+ * Centralizes the mode-based routing logic.
+ */
+async function sendByMode(
+	client: Client,
+	member: GuildMember,
+	embed: ReturnType<typeof createStandardEmbed>,
+	mode: NotificationMode,
+	achievementConfig: AchievementConfig,
+	triggerChannel?: TextBasedChannel,
+): Promise<void> {
+	switch (mode) {
+		case "dm":
+			await sendDM(client, member, embed, achievementConfig);
+			break;
+		case "channel":
+			await sendToChannel(client, embed, achievementConfig.notificationChannel);
+			break;
+		case "trigger":
+		default:
+			await sendToTriggerLocation(
+				client,
+				member,
+				embed,
+				triggerChannel,
+				achievementConfig,
+			);
+			break;
 	}
 }
 
@@ -270,28 +288,14 @@ async function sendAchievementGroup(
 		});
 
 	try {
-		switch (mode) {
-			case "dm":
-				await sendDM(client, member, embed, achievementConfig);
-				break;
-			case "channel":
-				await sendToChannel(
-					client,
-					embed,
-					achievementConfig.notificationChannel,
-				);
-				break;
-			case "trigger":
-			default:
-				await sendToTriggerLocation(
-					client,
-					member,
-					embed,
-					triggerChannel,
-					achievementConfig,
-				);
-				break;
-		}
+		await sendByMode(
+			client,
+			member,
+			embed,
+			mode,
+			achievementConfig,
+			triggerChannel,
+		);
 	} catch (error) {
 		logger.error(
 			`Failed to send achievement group notifications to ${member.id}:`,
