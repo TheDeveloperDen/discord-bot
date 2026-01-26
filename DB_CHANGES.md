@@ -18,7 +18,7 @@
 
 | Column          | Type         | Constraints                      | Description                                                |
 | --------------- | ------------ | -------------------------------- | ---------------------------------------------------------- |
-| `id`            | BIGINT       | PRIMARY KEY, UNIQUE, NOT NULL    | Unique record identifier                                   |
+| `id`            | INTEGER      | PRIMARY KEY, AUTO INCREMENT      | Unique record identifier (auto-generated)                  |
 | `achievementId` | VARCHAR(255) | NOT NULL                         | Achievement definition ID (e.g., "bump_first", "level_10") |
 | `ddUserId`      | BIGINT       | NOT NULL, FOREIGN KEY → Users.id | Reference to the user who earned the achievement           |
 | `createdAt`     | DATETIME     | NOT NULL                         | When the record was created                                |
@@ -52,7 +52,7 @@ Only a Sequelize relationship decorator was added (`@HasMany`), which creates a 
 ```sql
 -- Create DDUserAchievements table
 CREATE TABLE "DDUserAchievements" (
-    "id" BIGINT PRIMARY KEY NOT NULL UNIQUE,
+    "id" SERIAL PRIMARY KEY,
     "achievementId" VARCHAR(255) NOT NULL,
     "ddUserId" BIGINT NOT NULL REFERENCES "Users"("id") ON DELETE CASCADE ON UPDATE CASCADE,
     "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL,

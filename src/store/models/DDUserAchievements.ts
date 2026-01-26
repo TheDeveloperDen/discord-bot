@@ -7,12 +7,12 @@ import {
 } from "@sequelize/core";
 import {
 	Attribute,
+	AutoIncrement,
 	BelongsTo,
 	ColumnName,
 	NotNull,
 	PrimaryKey,
 	Table,
-	Unique,
 } from "@sequelize/core/decorators-legacy";
 import { RealBigInt } from "../RealBigInt.js";
 import { DDUser } from "./DDUser.js";
@@ -32,11 +32,10 @@ export class DDUserAchievements extends Model<
 	InferAttributes<DDUserAchievements>,
 	InferCreationAttributes<DDUserAchievements>
 > {
-	@Attribute(RealBigInt)
+	@Attribute(DataTypes.INTEGER)
 	@PrimaryKey
-	@Unique
-	@NotNull
-	public declare id: bigint;
+	@AutoIncrement
+	public declare id: CreationOptional<number>;
 
 	@Attribute(DataTypes.STRING)
 	@NotNull

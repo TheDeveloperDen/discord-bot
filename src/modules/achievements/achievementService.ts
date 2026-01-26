@@ -95,7 +95,6 @@ async function awardAchievement(
 ): Promise<boolean> {
 	try {
 		await DDUserAchievements.create({
-			id: generateAchievementRecordId(),
 			achievementId,
 			ddUserId: userId,
 		});
@@ -107,15 +106,6 @@ async function awardAchievement(
 		}
 		throw error;
 	}
-}
-
-/**
- * Generate a unique ID for achievement records using timestamp + random.
- */
-function generateAchievementRecordId(): bigint {
-	const timestamp = BigInt(Date.now()) * 1000000n;
-	const random = BigInt(Math.floor(Math.random() * 1000000));
-	return timestamp + random;
 }
 
 /**
