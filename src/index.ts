@@ -7,6 +7,7 @@ import * as Sentry from "@sentry/bun";
 import * as schedule from "node-schedule";
 import { startHealthCheck } from "./healthcheck.js";
 import { logger } from "./logging.js";
+import { AchievementsModule } from "./modules/achievements/achievements.module.js";
 import AskToAskModule from "./modules/askToAsk.module.js";
 import { CoreModule } from "./modules/core/core.module.js";
 import FaqModule from "./modules/faq/faq.module.js";
@@ -70,6 +71,7 @@ export const moduleManager = new ModuleManager(
 		ModmailModule,
 		LeaderboardModule,
 		UserModule,
+		AchievementsModule,
 		ThreatDetectionModule,
 	],
 );

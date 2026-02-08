@@ -1,4 +1,8 @@
-import { type AbstractDialect, type DialectName, Sequelize } from "@sequelize/core";
+import {
+	type AbstractDialect,
+	type DialectName,
+	Sequelize,
+} from "@sequelize/core";
 import { SqliteDialect } from "@sequelize/sqlite3";
 import type { ConnectionConfig } from "pg";
 import { logger } from "../logging.js";
@@ -6,6 +10,7 @@ import { BlockedWord } from "./models/BlockedWord.js";
 import { Bump } from "./models/Bump.js";
 import { ColourRoles } from "./models/ColourRoles.js";
 import { DDUser } from "./models/DDUser.js";
+import { DDUserAchievements } from "./models/DDUserAchievements.js";
 import { FAQ } from "./models/FAQ.js";
 import { ModeratorActions } from "./models/ModeratorActions.js";
 import { ModMailNote } from "./models/ModMailNote.js";
@@ -31,12 +36,12 @@ function sequelizeLog(sql: string, timing?: number) {
 let sequelizeInstance: Sequelize | null = null;
 
 export async function initStorage() {
-  // Make idempotent - only initialize once
-  if (sequelizeInstance) {
-    return;
-  }
+	// Make idempotent - only initialize once
+	if (sequelizeInstance) {
+		return;
+	}
 
-  const database = process.env.DDB_DATABASE ?? "database";
+	const database = process.env.DDB_DATABASE ?? "database";
 	const username = process.env.DDB_USERNAME ?? "root";
 	const password = process.env.DDB_PASSWORD ?? "password";
 	const host = process.env.DDB_HOST ?? "localhost";
@@ -82,6 +87,7 @@ export async function initStorage() {
 		SuggestionVote,
 		ModMailTicket,
 		ModMailNote,
+		DDUserAchievements,
 		ThreatLog,
 		ScamDomain,
 		Warning,
@@ -106,8 +112,8 @@ export async function initStorage() {
 }
 
 export const getSequelizeInstance = () => {
-  if (!sequelizeInstance) {
-    throw new Error("Storage not initialized. Call initStorage() first.");
-  }
+	if (!sequelizeInstance) {
+		throw new Error("Storage not initialized. Call initStorage() first.");
+	}
 	return sequelizeInstance;
 };

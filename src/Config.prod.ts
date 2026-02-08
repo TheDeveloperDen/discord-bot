@@ -74,7 +74,7 @@ export const config: Config = {
 	},
 	devbin: {
 		url: "https://devbin.developerden.org",
-    api_url: "https://devbin-api.developerden.org",
+		api_url: "https://devbin-api.developerden.org",
 		threshold: 20,
 	},
 	branding: {
@@ -180,5 +180,10 @@ https://discord.gg/devden`),
 				},
 			],
 		],
+	},
+
+	achievements: {
+		notificationMode: "trigger",
+		fallbackChannel: "821820015917006868", // botCommands
 	},
 };
