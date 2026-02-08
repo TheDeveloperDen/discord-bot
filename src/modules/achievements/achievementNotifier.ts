@@ -104,10 +104,8 @@ async function sendByMode(
 			await sendToChannel(client, embed, achievementConfig.notificationChannel);
 			break;
 		case "trigger":
-		default:
 			await sendToTriggerLocation(
 				client,
-				member,
 				embed,
 				triggerChannel,
 				achievementConfig,
@@ -165,7 +163,6 @@ async function sendToChannel(
  */
 async function sendToTriggerLocation(
 	client: Client,
-	member: GuildMember,
 	embed: ReturnType<typeof createStandardEmbed>,
 	triggerChannel: TextBasedChannel | undefined,
 	achievementConfig: AchievementConfig,

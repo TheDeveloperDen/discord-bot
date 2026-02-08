@@ -25,7 +25,11 @@ export interface AchievementContext {
 }
 
 /** Notification mode for achievements */
-export type NotificationMode = "channel" | "dm" | "trigger";
+export type NotificationMode =
+	| "channel" // Notify in a designated channel
+	| "dm" // Notify the user via direct message when the achievement is earned
+	| "trigger" // Notify in the channel where the achievement was triggered
+	| "silent"; // Do not send any notification
 
 export interface AchievementDefinition {
 	id: string;
@@ -55,6 +59,7 @@ const BUMP_ACHIEVEMENTS: AchievementDefinition[] = [
 		category: "bump",
 		trigger: { type: "bump", event: "bump_recorded" },
 		checkCondition: (ctx) => (ctx.totalBumps ?? 0) >= 1,
+		notificationMode: "trigger",
 	},
 	{
 		id: "bump_10",
@@ -64,6 +69,7 @@ const BUMP_ACHIEVEMENTS: AchievementDefinition[] = [
 		category: "bump",
 		trigger: { type: "bump", event: "bump_recorded" },
 		checkCondition: (ctx) => (ctx.totalBumps ?? 0) >= 10,
+		notificationMode: "trigger",
 	},
 	{
 		id: "bump_50",
@@ -73,6 +79,7 @@ const BUMP_ACHIEVEMENTS: AchievementDefinition[] = [
 		category: "bump",
 		trigger: { type: "bump", event: "bump_recorded" },
 		checkCondition: (ctx) => (ctx.totalBumps ?? 0) >= 50,
+		notificationMode: "trigger",
 	},
 	{
 		id: "bump_100",
@@ -82,6 +89,7 @@ const BUMP_ACHIEVEMENTS: AchievementDefinition[] = [
 		category: "bump",
 		trigger: { type: "bump", event: "bump_recorded" },
 		checkCondition: (ctx) => (ctx.totalBumps ?? 0) >= 100,
+		notificationMode: "channel",
 	},
 	// Bump streaks
 	{
@@ -92,6 +100,7 @@ const BUMP_ACHIEVEMENTS: AchievementDefinition[] = [
 		category: "bump",
 		trigger: { type: "bump", event: "bump_recorded" },
 		checkCondition: (ctx) => (ctx.bumpStreak ?? 0) >= 3,
+		notificationMode: "trigger",
 	},
 	{
 		id: "bump_streak_7",
@@ -101,6 +110,7 @@ const BUMP_ACHIEVEMENTS: AchievementDefinition[] = [
 		category: "bump",
 		trigger: { type: "bump", event: "bump_recorded" },
 		checkCondition: (ctx) => (ctx.bumpStreak ?? 0) >= 7,
+		notificationMode: "channel",
 	},
 	{
 		id: "bump_streak_14",
@@ -110,6 +120,7 @@ const BUMP_ACHIEVEMENTS: AchievementDefinition[] = [
 		category: "bump",
 		trigger: { type: "bump", event: "bump_recorded" },
 		checkCondition: (ctx) => (ctx.bumpStreak ?? 0) >= 14,
+		notificationMode: "channel",
 	},
 ];
 
@@ -126,6 +137,7 @@ const DAILY_ACHIEVEMENTS: AchievementDefinition[] = [
 		category: "daily",
 		trigger: { type: "daily", event: "daily_claimed" },
 		checkCondition: (ctx) => (ctx.dailyStreak ?? 0) >= 1,
+		notificationMode: "trigger",
 	},
 	{
 		id: "daily_streak_7",
@@ -135,6 +147,7 @@ const DAILY_ACHIEVEMENTS: AchievementDefinition[] = [
 		category: "daily",
 		trigger: { type: "daily", event: "daily_claimed" },
 		checkCondition: (ctx) => (ctx.dailyStreak ?? 0) >= 7,
+		notificationMode: "trigger",
 	},
 	{
 		id: "daily_streak_30",
@@ -144,6 +157,7 @@ const DAILY_ACHIEVEMENTS: AchievementDefinition[] = [
 		category: "daily",
 		trigger: { type: "daily", event: "daily_claimed" },
 		checkCondition: (ctx) => (ctx.dailyStreak ?? 0) >= 30,
+		notificationMode: "channel",
 	},
 	{
 		id: "daily_streak_100",
@@ -153,6 +167,7 @@ const DAILY_ACHIEVEMENTS: AchievementDefinition[] = [
 		category: "daily",
 		trigger: { type: "daily", event: "daily_claimed" },
 		checkCondition: (ctx) => (ctx.dailyStreak ?? 0) >= 100,
+		notificationMode: "channel",
 	},
 	{
 		id: "daily_streak_365",
@@ -162,6 +177,7 @@ const DAILY_ACHIEVEMENTS: AchievementDefinition[] = [
 		category: "daily",
 		trigger: { type: "daily", event: "daily_claimed" },
 		checkCondition: (ctx) => (ctx.dailyStreak ?? 0) >= 365,
+		notificationMode: "channel",
 	},
 ];
 
@@ -171,70 +187,72 @@ const DAILY_ACHIEVEMENTS: AchievementDefinition[] = [
 
 const XP_ACHIEVEMENTS: AchievementDefinition[] = [
 	// Level milestones
-	{
-		id: "level_1",
-		name: "First Steps",
-		description: "Reach level 1",
-		emoji: "🌱",
-		category: "xp",
-		trigger: { type: "xp", event: "xp_gained" },
-		checkCondition: (ctx) => (ctx.level ?? 0) >= 1,
-	},
-	{
-		id: "level_10",
-		name: "Rising Star",
-		description: "Reach level 10",
-		emoji: "⭐",
-		category: "xp",
-		trigger: { type: "xp", event: "xp_gained" },
-		checkCondition: (ctx) => (ctx.level ?? 0) >= 10,
-	},
-	{
-		id: "level_25",
-		name: "Experienced",
-		description: "Reach level 25",
-		emoji: "💎",
-		category: "xp",
-		trigger: { type: "xp", event: "xp_gained" },
-		checkCondition: (ctx) => (ctx.level ?? 0) >= 25,
-	},
-	{
-		id: "level_50",
-		name: "Veteran",
-		description: "Reach level 50",
-		emoji: "🔷",
-		category: "xp",
-		trigger: { type: "xp", event: "xp_gained" },
-		checkCondition: (ctx) => (ctx.level ?? 0) >= 50,
-	},
-	// XP milestones
-	{
-		id: "xp_1000",
-		name: "First Thousand",
-		description: "Earn 1,000 XP",
-		emoji: "📈",
-		category: "xp",
-		trigger: { type: "xp", event: "xp_gained" },
-		checkCondition: (ctx) => (ctx.totalXp ?? 0n) >= 1000n,
-	},
-	{
-		id: "xp_10000",
-		name: "Ten Thousand Club",
-		description: "Earn 10,000 XP",
-		emoji: "🚀",
-		category: "xp",
-		trigger: { type: "xp", event: "xp_gained" },
-		checkCondition: (ctx) => (ctx.totalXp ?? 0n) >= 10000n,
-	},
-	{
-		id: "xp_100000",
-		name: "XP Millionaire",
-		description: "Earn 1,000,000 XP",
-		emoji: "💰",
-		category: "xp",
-		trigger: { type: "xp", event: "xp_gained" },
-		checkCondition: (ctx) => (ctx.totalXp ?? 0n) >= 1_000_000n,
-	},
+	// {
+	// 	id: "level_1",
+	// 	name: "First Steps",
+	// 	description: "Reach level 1",
+	// 	emoji: "🌱",
+	// 	category: "xp",
+	// 	trigger: { type: "xp", event: "xp_gained" },
+	// 	checkCondition: (ctx) => (ctx.level ?? 0) >= 1,
+	// 	notificationMode: "silent",
+	// },
+	// {
+	// 	id: "level_10",
+	// 	name: "Rising Star",
+	// 	description: "Reach level 10",
+	// 	emoji: "⭐",
+	// 	category: "xp",
+	// 	trigger: { type: "xp", event: "xp_gained" },
+	// 	checkCondition: (ctx) => (ctx.level ?? 0) >= 10,
+	//
+	// },
+	// {
+	// 	id: "level_25",
+	// 	name: "Experienced",
+	// 	description: "Reach level 25",
+	// 	emoji: "💎",
+	// 	category: "xp",
+	// 	trigger: { type: "xp", event: "xp_gained" },
+	// 	checkCondition: (ctx) => (ctx.level ?? 0) >= 25,
+	// },
+	// {
+	// 	id: "level_50",
+	// 	name: "Veteran",
+	// 	description: "Reach level 50",
+	// 	emoji: "🔷",
+	// 	category: "xp",
+	// 	trigger: { type: "xp", event: "xp_gained" },
+	// 	checkCondition: (ctx) => (ctx.level ?? 0) >= 50,
+	// },
+	// // XP milestones
+	// {
+	// 	id: "xp_1000",
+	// 	name: "First Thousand",
+	// 	description: "Earn 1,000 XP",
+	// 	emoji: "📈",
+	// 	category: "xp",
+	// 	trigger: { type: "xp", event: "xp_gained" },
+	// 	checkCondition: (ctx) => (ctx.totalXp ?? 0n) >= 1000n,
+	// },
+	// {
+	// 	id: "xp_10000",
+	// 	name: "Ten Thousand Club",
+	// 	description: "Earn 10,000 XP",
+	// 	emoji: "🚀",
+	// 	category: "xp",
+	// 	trigger: { type: "xp", event: "xp_gained" },
+	// 	checkCondition: (ctx) => (ctx.totalXp ?? 0n) >= 10000n,
+	// },
+	// {
+	// 	id: "xp_100000",
+	// 	name: "XP Millionaire",
+	// 	description: "Earn 1,000,000 XP",
+	// 	emoji: "💰",
+	// 	category: "xp",
+	// 	trigger: { type: "xp", event: "xp_gained" },
+	// 	checkCondition: (ctx) => (ctx.totalXp ?? 0n) >= 1_000_000n,
+	// },
 ];
 
 // ─────────────────────────────────────────────────
