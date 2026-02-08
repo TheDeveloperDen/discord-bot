@@ -229,11 +229,11 @@ const XP_ACHIEVEMENTS: AchievementDefinition[] = [
 	{
 		id: "xp_100000",
 		name: "XP Millionaire",
-		description: "Earn 100,000 XP",
+		description: "Earn 1,000,000 XP",
 		emoji: "💰",
 		category: "xp",
 		trigger: { type: "xp", event: "xp_gained" },
-		checkCondition: (ctx) => (ctx.totalXp ?? 0n) >= 100000n,
+		checkCondition: (ctx) => (ctx.totalXp ?? 0n) >= 1_000_000n,
 	},
 ];
 
