@@ -18,16 +18,47 @@ const invitePatterns = [
 
 const whitelistDomains: string[] = []; // For any .gg domains that are not discord.gg
 
+interface InviteSpamConfig {
+	/** Max violations before auto-ban (default: 4) */
+	maxViolations: number;
+	/** Max unique channels before auto-ban (default: 3) */
+	maxChannels: number;
+	/** Time window in ms for tracking violations (default: 30s) */
+	violationWindowMs: number;
+	/** Only auto-ban accounts that joined the server less than X days ago. 0 = disabled (everyone is considered) */
+	accountAgeDays: number;
+}
+
+const inviteSpamConfig: InviteSpamConfig = {
+	maxViolations: 4,
+	maxChannels: 3,
+	violationWindowMs: 30_000,
+	accountAgeDays: 0,
+};
+
 interface InviteViolation {
 	count: number;
 	channels: Set<string>;
 }
 
-const inviteViolationCache = new ExpiryMap<string, InviteViolation>(30_000);
+const inviteViolationCache = new ExpiryMap<string, InviteViolation>(
+	inviteSpamConfig.violationWindowMs,
+);
 
 const isAllowedToSendDiscordInvites = async (member: GuildMember) => {
 	const ddUser = await getOrCreateUserById(BigInt(member.id));
 	return getTierByLevel(ddUser.level) >= 2;
+};
+
+const isSubjectToAutoban = (member: GuildMember): boolean => {
+	if (inviteSpamConfig.accountAgeDays === 0) return true;
+
+	const joinedAt = member.joinedAt;
+	if (!joinedAt) return true;
+
+	const daysSinceJoin =
+		(Date.now() - joinedAt.getTime()) / (1000 * 60 * 60 * 24);
+	return daysSinceJoin < inviteSpamConfig.accountAgeDays;
 };
 
 export function parseInvites(message: Message<true>) {
@@ -128,7 +159,11 @@ async function handleInvite(
 		violation.channels.add(message.channelId);
 		inviteViolationCache.set(member.id, violation);
 
-		if (violation.count >= 4 || violation.channels.size >= 3) {
+		const shouldBan =
+			violation.count >= inviteSpamConfig.maxViolations ||
+			violation.channels.size >= inviteSpamConfig.maxChannels;
+
+		if (shouldBan && isSubjectToAutoban(member)) {
 			await banForInviteSpam(message, member, violation);
 		}
 	} catch (error) {
