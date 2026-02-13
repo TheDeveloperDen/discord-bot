@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/bun";
 import type { GuildMember, Message } from "discord.js";
 import ExpiryMap from "expiry-map";
+import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import { getMember } from "../../util/member.js";
@@ -18,31 +19,13 @@ const invitePatterns = [
 
 const whitelistDomains: string[] = []; // For any .gg domains that are not discord.gg
 
-interface InviteSpamConfig {
-	/** Max violations before auto-ban (default: 4) */
-	maxViolations: number;
-	/** Max unique channels before auto-ban (default: 3) */
-	maxChannels: number;
-	/** Time window in ms for tracking violations (default: 30s) */
-	violationWindowMs: number;
-	/** Only auto-ban accounts that joined the server less than X days ago. 0 = disabled (everyone is considered) */
-	accountAgeDays: number;
-}
-
-const inviteSpamConfig: InviteSpamConfig = {
-	maxViolations: 4,
-	maxChannels: 3,
-	violationWindowMs: 30_000,
-	accountAgeDays: 0,
-};
-
 interface InviteViolation {
 	count: number;
 	channels: Set<string>;
 }
 
 const inviteViolationCache = new ExpiryMap<string, InviteViolation>(
-	inviteSpamConfig.violationWindowMs,
+	config.inviteSpam.violationWindowMs,
 );
 
 const isAllowedToSendDiscordInvites = async (member: GuildMember) => {
@@ -51,14 +34,14 @@ const isAllowedToSendDiscordInvites = async (member: GuildMember) => {
 };
 
 const isSubjectToAutoban = (member: GuildMember): boolean => {
-	if (inviteSpamConfig.accountAgeDays === 0) return true;
+	if (config.inviteSpam.accountAgeDays === 0) return true;
 
 	const joinedAt = member.joinedAt;
 	if (!joinedAt) return true;
 
 	const daysSinceJoin =
 		(Date.now() - joinedAt.getTime()) / (1000 * 60 * 60 * 24);
-	return daysSinceJoin < inviteSpamConfig.accountAgeDays;
+	return daysSinceJoin < config.inviteSpam.accountAgeDays;
 };
 
 export function parseInvites(message: Message<true>) {
@@ -101,7 +84,9 @@ async function banForInviteSpam(
 	violation: InviteViolation,
 ) {
 	const triggerReason =
-		violation.channels.size >= 3 ? "cross_channel" : "same_channel";
+		violation.channels.size >= config.inviteSpam.maxChannels
+			? "cross_channel"
+			: "same_channel";
 
 	try {
 		await member
@@ -160,8 +145,8 @@ async function handleInvite(
 		inviteViolationCache.set(member.id, violation);
 
 		const shouldBan =
-			violation.count >= inviteSpamConfig.maxViolations ||
-			violation.channels.size >= inviteSpamConfig.maxChannels;
+			violation.count >= config.inviteSpam.maxViolations ||
+			violation.channels.size >= config.inviteSpam.maxChannels;
 
 		if (shouldBan && isSubjectToAutoban(member)) {
 			await banForInviteSpam(message, member, violation);

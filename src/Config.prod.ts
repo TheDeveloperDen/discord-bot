@@ -72,9 +72,15 @@ export const config: Config = {
 		archiveChannel: "1415283787440328836",
 		channel: "1415283659350741062",
 	},
+	inviteSpam: {
+		maxViolations: 4,
+		maxChannels: 3,
+		violationWindowMs: 30_000,
+		accountAgeDays: 0,
+	},
 	devbin: {
 		url: "https://devbin.developerden.org",
-    api_url: "https://devbin-api.developerden.org",
+		api_url: "https://devbin-api.developerden.org",
 		threshold: 20,
 	},
 	branding: {
