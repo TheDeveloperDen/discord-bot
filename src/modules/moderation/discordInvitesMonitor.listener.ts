@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/bun";
 import type { GuildMember, Message } from "discord.js";
+import ExpiryMap from "expiry-map";
 import { logger } from "../../logging.js";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import { getMember } from "../../util/member.js";
@@ -16,6 +17,13 @@ const invitePatterns = [
 ];
 
 const whitelistDomains: string[] = []; // For any .gg domains that are not discord.gg
+
+interface InviteViolation {
+	count: number;
+	channels: Set<string>;
+}
+
+const inviteViolationCache = new ExpiryMap<string, InviteViolation>(30_000);
 
 const isAllowedToSendDiscordInvites = async (member: GuildMember) => {
 	const ddUser = await getOrCreateUserById(BigInt(member.id));
@@ -56,6 +64,42 @@ async function sendAuditMessage(
 const noInvitesAllowedMessage = (member: GuildMember) =>
 	`${actualMention(member)}, only Users with Tier 2 or over are allowed to send Discord invites.\nPlease remove the invite before sending it again.\nThank you!`;
 
+async function banForInviteSpam(
+	message: Message<true>,
+	member: GuildMember,
+	violation: InviteViolation,
+) {
+	const triggerReason =
+		violation.channels.size >= 3 ? "cross_channel" : "same_channel";
+
+	try {
+		await member
+			.send(
+				"You have been banned for spamming Discord invites. " +
+					"If you believe this was a mistake, please contact a moderator.",
+			)
+			.catch(() => {});
+
+		await message.guild.bans.create(member.user, {
+			reason: `Auto-ban: Invite spam (${violation.count} violations across ${violation.channels.size} channel(s) in 30s)`,
+			deleteMessageSeconds: 604800,
+		});
+
+		await logModerationAction(message.client, {
+			kind: "InviteSpamBan",
+			target: member.user,
+			violationCount: violation.count,
+			channelCount: violation.channels.size,
+			triggerReason,
+		});
+
+		inviteViolationCache.delete(member.id);
+	} catch (error) {
+		logger.error("Failed to ban invite spammer:", error);
+		Sentry.captureException(error);
+	}
+}
+
 async function handleInvite(
 	message: Message<true>,
 	member: GuildMember,
@@ -74,6 +118,19 @@ async function handleInvite(
 		}, 10000);
 
 		await sendAuditMessage(message, member, matches, wasEdit);
+
+		const existing = inviteViolationCache.get(member.id);
+		const violation: InviteViolation = existing ?? {
+			count: 0,
+			channels: new Set(),
+		};
+		violation.count++;
+		violation.channels.add(message.channelId);
+		inviteViolationCache.set(member.id, violation);
+
+		if (violation.count >= 4 || violation.channels.size >= 3) {
+			await banForInviteSpam(message, member, violation);
+		}
 	} catch (error) {
 		logger.error("Failed to delete message with Discord invite:", error);
 		Sentry.captureException(error);
