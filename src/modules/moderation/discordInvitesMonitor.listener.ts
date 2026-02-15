@@ -97,7 +97,7 @@ async function banForInviteSpam(
 			.catch(() => {});
 
 		await message.guild.bans.create(member.user, {
-			reason: `Auto-ban: Invite spam (${violation.count} violations across ${violation.channels.size} channel(s) in 30s)`,
+			reason: `Auto-ban: Invite spam (${violation.count} violations across ${violation.channels.size} channel(s) in ${config.inviteSpam.violationWindowMs / 1000}s)`,
 			deleteMessageSeconds: 604800,
 		});
 
@@ -106,6 +106,7 @@ async function banForInviteSpam(
 			target: member.user,
 			violationCount: violation.count,
 			channelCount: violation.channels.size,
+			violationWindowMs: config.inviteSpam.violationWindowMs,
 			triggerReason,
 		});
 

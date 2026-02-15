@@ -121,6 +121,7 @@ interface InviteSpamBanLog {
 	target: User;
 	violationCount: number;
 	channelCount: number;
+	violationWindowMs: number;
 	triggerReason: "same_channel" | "cross_channel";
 }
 
@@ -194,7 +195,7 @@ const embedReasons: {
 		`**New Score:** ${rep.newScore >= 0 ? "+" : ""}${rep.newScore}`,
 
 	InviteSpamBan: (ban) =>
-		`**Violations:** ${ban.violationCount} in 30s\n` +
+		`**Violations:** ${ban.violationCount} in ${ban.violationWindowMs / 1000}s\n` +
 		`**Channels:** ${ban.channelCount}\n` +
 		`**Trigger:** ${ban.triggerReason === "same_channel" ? "4+ violations in same channel" : "Violations across 3+ channels"}`,
 };
@@ -219,7 +220,8 @@ export async function logModerationAction(
 	embed.setColor(embedColors[action.kind]);
 
 	const targetUser = await client.users.fetch(action.target).catch(() => null);
-	const targetLabel = action.kind === "ReputationGranted" ? "Recipient" : "Offender";
+	const targetLabel =
+		action.kind === "ReputationGranted" ? "Recipient" : "Offender";
 	let description = `**${targetLabel}**: ${targetUser && fakeMention(targetUser)} ${actualMention(action.target)}\n`;
 	if ("reason" in action && action.reason) {
 		description += `**Reason**:  ${action.reason}\n`;
