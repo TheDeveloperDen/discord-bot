@@ -61,6 +61,17 @@ export interface ThreatDetectionConfig {
 	};
 }
 
+export interface InviteSpamConfig {
+	/** Max violations before auto-ban */
+	maxViolations: number;
+	/** Max unique channels before auto-ban */
+	maxChannels: number;
+	/** Time window in ms for tracking violations */
+	violationWindowMs: number;
+	/** Only auto-ban accounts that joined the server less than X days ago. 0 = disabled (everyone is considered) */
+	accountAgeDays: number;
+}
+
 export interface Config {
 	guildId: string;
 	clientId: string;
@@ -124,6 +135,7 @@ export interface Config {
 	branding: BrandingConfig;
 	informationMessage?: InformationMessage;
 	threatDetection?: ThreatDetectionConfig;
+	inviteSpam: InviteSpamConfig;
 	reputation?: {
 		enabled: boolean;
 		warningThresholds: {

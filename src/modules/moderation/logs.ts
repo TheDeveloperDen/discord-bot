@@ -31,6 +31,7 @@ export type ModerationLog =
 	| SoftBanLog
 	| KickLog
 	| InviteDeletedLog
+	| InviteSpamBanLog
 	| WarningLog
 	| WarningPardonedLog
 	| ReputationGrantedLog;
@@ -115,6 +116,15 @@ interface ReputationGrantedLog {
 	reason: string;
 }
 
+interface InviteSpamBanLog {
+	kind: "InviteSpamBan";
+	target: User;
+	violationCount: number;
+	channelCount: number;
+	violationWindowMs: number;
+	triggerReason: "same_channel" | "cross_channel";
+}
+
 type ModerationKindMapping<T> = {
 	[f in ModerationLog["kind"]]: T;
 };
@@ -124,6 +134,7 @@ const embedTitles: ModerationKindMapping<string> = {
 	Unban: "Member Unbanned",
 	SoftBan: "Member Softbanned",
 	InviteDeleted: "Discord Invite Removed",
+	InviteSpamBan: "Member Auto-Banned (Invite Spam)",
 	TempBan: "Member Tempbanned",
 	Kick: "Member Kicked",
 	TempBanEnded: "Tempban Expired",
@@ -140,6 +151,7 @@ const embedColors: ModerationKindMapping<keyof typeof Colors> = {
 	Unban: "Green",
 	TempBanEnded: "DarkGreen",
 	InviteDeleted: "Blurple",
+	InviteSpamBan: "DarkRed",
 	Warning: "Gold",
 	WarningPardoned: "Aqua",
 	ReputationGranted: "Green",
@@ -181,6 +193,11 @@ const embedReasons: {
 		`**Type:** ${rep.eventType}\n` +
 		`**Score Change:** +${rep.scoreChange}\n` +
 		`**New Score:** ${rep.newScore >= 0 ? "+" : ""}${rep.newScore}`,
+
+	InviteSpamBan: (ban) =>
+		`**Violations:** ${ban.violationCount} in ${ban.violationWindowMs / 1000}s\n` +
+		`**Channels:** ${ban.channelCount}\n` +
+		`**Trigger:** ${ban.triggerReason === "same_channel" ? "4+ violations in same channel" : "Violations across 3+ channels"}`,
 };
 
 export async function logModerationAction(

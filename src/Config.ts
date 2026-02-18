@@ -23,6 +23,12 @@ const devConfig: Config = {
 	commands: {
 		daily: "1029850807794937949",
 	},
+	inviteSpam: {
+		maxViolations: 4,
+		maxChannels: 3,
+		violationWindowMs: 30_000,
+		accountAgeDays: 0,
+	},
 	deletedMessageLog: {
 		cacheTtlMs: 1000 * 60 * 60 * 24,
 		excludedChannels: [],
