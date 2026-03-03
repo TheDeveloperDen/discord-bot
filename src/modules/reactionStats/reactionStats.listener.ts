@@ -1,4 +1,5 @@
 import { logger } from "../../logging.js";
+import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import { ReactionStat } from "../../store/models/ReactionStat.js";
 import type { EventListener } from "../module.js";
 
@@ -31,22 +32,41 @@ export const ReactionStatsListener: EventListener = {
 		const emoji = reaction.emoji;
 		const emojiName = emoji.id ? (emoji.name ?? emoji.id) : emoji.name;
 		if (!emojiName) return;
+		const isCustomEmoji = emoji.id !== null;
+		const userId = BigInt(user.id);
+		const messageId = BigInt(message.id);
+		const messageAuthorId = BigInt(message.author.id);
+		const emojiId = isCustomEmoji && emoji.id ? BigInt(emoji.id) : null;
+		const where = isCustomEmoji
+			? {
+					userId,
+					messageId,
+					isCustomEmoji,
+					emojiId,
+				}
+			: {
+					userId,
+					messageId,
+					isCustomEmoji,
+					emojiName,
+				};
 
 		try {
+			await Promise.all([
+				getOrCreateUserById(userId),
+				getOrCreateUserById(messageAuthorId),
+			]);
+
 			await ReactionStat.findOrCreate({
-				where: {
-					userId: BigInt(user.id),
-					messageId: BigInt(message.id),
-					emojiName: emojiName,
-				},
+				where,
 				defaults: {
-					userId: BigInt(user.id),
-					messageId: BigInt(message.id),
-					messageAuthorId: BigInt(message.author.id),
+					userId,
+					messageId,
+					messageAuthorId,
 					channelId: BigInt(message.channelId),
-					emojiName: emojiName,
-					emojiId: emoji.id ? BigInt(emoji.id) : null,
-					isCustomEmoji: emoji.id !== null,
+					emojiName,
+					emojiId,
+					isCustomEmoji,
 					reactedAt: new Date(),
 				},
 			});

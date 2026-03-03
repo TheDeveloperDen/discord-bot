@@ -1,9 +1,6 @@
 import { afterEach, beforeAll, describe, expect, mock, test } from "bun:test";
 import type { Client, MessageReaction, PartialUser, User } from "discord.js";
-import {
-	clearUserCache,
-	getOrCreateUserById,
-} from "../../store/models/DDUser.js";
+import { clearUserCache, DDUser } from "../../store/models/DDUser.js";
 import { ReactionStat } from "../../store/models/ReactionStat.js";
 import { getSequelizeInstance, initStorage } from "../../store/storage.js";
 import { createMockClient, createMockUser } from "../../tests/mocks/discord.js";
@@ -69,10 +66,6 @@ describe("ReactionStatsListener.messageReactionAdd", () => {
 
 	test("saves a reaction stat to the database", async () => {
 		const user = createMockUser({ id: "10" });
-		// Ensure DDUser exists for FK constraints
-		await getOrCreateUserById(10n);
-		await getOrCreateUserById(200n);
-
 		const reaction = createMockReaction();
 
 		await handler(mockClient, reaction, user);
@@ -88,6 +81,13 @@ describe("ReactionStatsListener.messageReactionAdd", () => {
 		expect(record?.emojiName).toBe("👍");
 		expect(record?.isCustomEmoji).toBe(false);
 		expect(record?.emojiId).toBeNull();
+
+		const [reactorUser, messageAuthor] = await Promise.all([
+			DDUser.findByPk(10n),
+			DDUser.findByPk(200n),
+		]);
+		expect(reactorUser).toBeDefined();
+		expect(messageAuthor).toBeDefined();
 	});
 
 	test("ignores bot users", async () => {
@@ -131,9 +131,6 @@ describe("ReactionStatsListener.messageReactionAdd", () => {
 
 	test("does not create duplicate for same user+message+emoji", async () => {
 		const user = createMockUser({ id: "10" });
-		await getOrCreateUserById(10n);
-		await getOrCreateUserById(200n);
-
 		const reaction = createMockReaction();
 
 		await handler(mockClient, reaction, user);
@@ -145,9 +142,6 @@ describe("ReactionStatsListener.messageReactionAdd", () => {
 
 	test("allows same user to react with different emojis on same message", async () => {
 		const user = createMockUser({ id: "10" });
-		await getOrCreateUserById(10n);
-		await getOrCreateUserById(200n);
-
 		await handler(mockClient, createMockReaction({ emojiName: "👍" }), user);
 		await handler(mockClient, createMockReaction({ emojiName: "❤️" }), user);
 
@@ -157,9 +151,6 @@ describe("ReactionStatsListener.messageReactionAdd", () => {
 
 	test("saves custom emoji correctly", async () => {
 		const user = createMockUser({ id: "10" });
-		await getOrCreateUserById(10n);
-		await getOrCreateUserById(200n);
-
 		const reaction = createMockReaction({
 			emojiName: "pepe",
 			emojiId: "999888777",
@@ -174,11 +165,44 @@ describe("ReactionStatsListener.messageReactionAdd", () => {
 		expect(record?.emojiId?.toString()).toBe("999888777");
 	});
 
+	test("allows custom emojis with same name but different ids", async () => {
+		const user = createMockUser({ id: "10" });
+
+		await handler(
+			mockClient,
+			createMockReaction({ emojiName: "pepe", emojiId: "111" }),
+			user,
+		);
+		await handler(
+			mockClient,
+			createMockReaction({ emojiName: "pepe", emojiId: "222" }),
+			user,
+		);
+
+		const count = await ReactionStat.count();
+		expect(count).toBe(2);
+	});
+
+	test("does not duplicate custom emoji when id matches", async () => {
+		const user = createMockUser({ id: "10" });
+
+		await handler(
+			mockClient,
+			createMockReaction({ emojiName: "pepe", emojiId: "111" }),
+			user,
+		);
+		await handler(
+			mockClient,
+			createMockReaction({ emojiName: "renamed", emojiId: "111" }),
+			user,
+		);
+
+		const count = await ReactionStat.count();
+		expect(count).toBe(1);
+	});
+
 	test("fetches partial reactions before processing", async () => {
 		const user = createMockUser({ id: "10" });
-		await getOrCreateUserById(10n);
-		await getOrCreateUserById(200n);
-
 		const reaction = createMockReaction({ partial: true });
 
 		await handler(mockClient, reaction, user);
@@ -190,9 +214,6 @@ describe("ReactionStatsListener.messageReactionAdd", () => {
 
 	test("stores reactedAt timestamp", async () => {
 		const user = createMockUser({ id: "10" });
-		await getOrCreateUserById(10n);
-		await getOrCreateUserById(200n);
-
 		const before = new Date();
 		const reaction = createMockReaction();
 		await handler(mockClient, reaction, user);

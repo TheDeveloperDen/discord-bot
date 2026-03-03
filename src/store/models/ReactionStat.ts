@@ -43,9 +43,20 @@ import { DDUser } from "./DDUser.js";
 			fields: ["reactedAt"],
 		},
 		{
-			name: "unique_user_message_emoji",
+			name: "unique_user_message_unicode_emoji",
 			unique: true,
 			fields: ["userId", "messageId", "emojiName"],
+			where: {
+				isCustomEmoji: false,
+			},
+		},
+		{
+			name: "unique_user_message_custom_emoji",
+			unique: true,
+			fields: ["userId", "messageId", "emojiId"],
+			where: {
+				isCustomEmoji: true,
+			},
 		},
 	],
 })

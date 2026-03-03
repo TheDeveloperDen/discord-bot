@@ -37,7 +37,8 @@
 
 | Index Name                      | Type   | Columns                        | Purpose                                              |
 | ------------------------------- | ------ | ------------------------------ | ---------------------------------------------------- |
-| `unique_user_message_emoji`     | UNIQUE | `userId`, `messageId`, `emojiName` | Prevents duplicate reaction records per user/message/emoji |
+| `unique_user_message_unicode_emoji` | UNIQUE | `userId`, `messageId`, `emojiName` | Prevents duplicate unicode emoji reactions per user/message |
+| `unique_user_message_custom_emoji` | UNIQUE | `userId`, `messageId`, `emojiId` | Prevents duplicate custom emoji reactions per user/message |
 | `idx_reactionstats_user_reacted`| INDEX  | `userId`, `reactedAt`          | Fast user stats with time filtering                  |
 | `idx_reactionstats_message`     | INDEX  | `messageId`                    | Fast message-level aggregation                       |
 | `idx_reactionstats_author_reacted` | INDEX | `messageAuthorId`, `reactedAt` | Fast "who receives most reactions" queries          |
@@ -79,9 +80,14 @@ CREATE TABLE "ReactionStats" (
     "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
--- Unique constraint: one record per user + message + emoji
-CREATE UNIQUE INDEX "unique_user_message_emoji"
-ON "ReactionStats" ("userId", "messageId", "emojiName");
+-- Unique constraints for unicode vs custom emoji identity
+CREATE UNIQUE INDEX "unique_user_message_unicode_emoji"
+ON "ReactionStats" ("userId", "messageId", "emojiName")
+WHERE "isCustomEmoji" = false;
+
+CREATE UNIQUE INDEX "unique_user_message_custom_emoji"
+ON "ReactionStats" ("userId", "messageId", "emojiId")
+WHERE "isCustomEmoji" = true;
 
 -- Performance indexes for common query patterns
 CREATE INDEX "idx_reactionstats_user_reacted"

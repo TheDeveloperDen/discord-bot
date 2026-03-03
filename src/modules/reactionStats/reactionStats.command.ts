@@ -8,6 +8,7 @@ import { wrapInTransaction } from "../../sentry.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { actualMention } from "../../util/users.js";
 import { medal } from "../leaderboard/leaderboard.js";
+import { chunkEmbedFieldValues } from "./reactionStats.embed.js";
 import {
 	formatEmoji,
 	getGlobalStats,
@@ -271,21 +272,26 @@ const MessagesSubcommand: ExecutableSubcommand = {
 					);
 				}),
 			);
+			const messageChunks = chunkEmbedFieldValues(messageLines);
 
-			const embed = createStandardEmbed(interaction.member as GuildMember)
-				.setTitle("Most Reacted Messages")
-				.addFields(
-					{
-						name: "Period",
-						value: periodLabel(period),
-						inline: true,
-					},
-					{
-						name: "Results",
-						value: messageLines.join("\n\n"),
-						inline: false,
-					},
-				);
+			const embed = createStandardEmbed(
+				interaction.member as GuildMember,
+			).setTitle("Most Reacted Messages");
+			embed.addFields({
+				name: "Period",
+				value: periodLabel(period),
+				inline: true,
+			});
+			for (const [index, chunk] of messageChunks.entries()) {
+				embed.addFields({
+					name:
+						messageChunks.length > 1
+							? `Results (${index + 1}/${messageChunks.length})`
+							: "Results",
+					value: chunk,
+					inline: false,
+				});
+			}
 
 			await interaction.followUp({ embeds: [embed] });
 		},
