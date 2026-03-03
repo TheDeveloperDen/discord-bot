@@ -5,7 +5,6 @@ import {
 	type GuildMember,
 } from "discord.js";
 import type { Command, ExecutableSubcommand } from "djs-slash-helper";
-import { wrapInTransaction } from "../../sentry.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { actualMention } from "../../util/users.js";
 import { medal } from "../leaderboard/leaderboard.js";
@@ -56,7 +55,7 @@ const UserSubcommand: ExecutableSubcommand = {
 			choices: periodChoices,
 		},
 	],
-	handle: wrapInTransaction("reactionstats-user", async (_, interaction) => {
+	handle: async (interaction) => {
 		await interaction.deferReply();
 		const guild = interaction.guild;
 		if (!guild) {
@@ -128,7 +127,7 @@ const UserSubcommand: ExecutableSubcommand = {
 		}
 
 		await interaction.followUp({ embeds: [embed] });
-	}),
+	},
 };
 
 const GlobalSubcommand: ExecutableSubcommand = {
@@ -144,7 +143,7 @@ const GlobalSubcommand: ExecutableSubcommand = {
 			choices: periodChoices,
 		},
 	],
-	handle: wrapInTransaction("reactionstats-global", async (_, interaction) => {
+	handle: async (interaction) => {
 		await interaction.deferReply();
 		const guild = interaction.guild;
 		if (!guild) {
@@ -239,7 +238,7 @@ const GlobalSubcommand: ExecutableSubcommand = {
 		}
 
 		await interaction.followUp({ embeds: [embed] });
-	}),
+	},
 };
 
 const MessagesSubcommand: ExecutableSubcommand = {
@@ -255,72 +254,65 @@ const MessagesSubcommand: ExecutableSubcommand = {
 			choices: periodChoices,
 		},
 	],
-	handle: wrapInTransaction(
-		"reactionstats-messages",
-		async (_, interaction) => {
-			await interaction.deferReply();
-			const guild = interaction.guild;
-			if (!guild) {
-				await interaction.followUp(
-					"This command can only be used in a server.",
-				);
-				return;
-			}
+	handle: async (interaction) => {
+		await interaction.deferReply();
+		const guild = interaction.guild;
+		if (!guild) {
+			await interaction.followUp("This command can only be used in a server.");
+			return;
+		}
 
-			const period = (interaction.options.getString("period") ??
-				"all") as TimePeriod;
-			const topMessages = await getTopMessages(period);
+		const period = (interaction.options.getString("period") ??
+			"all") as TimePeriod;
+		const topMessages = await getTopMessages(period);
 
-			if (topMessages.length === 0) {
-				await interaction.followUp({
-					embeds: [
-						createStandardEmbed(interaction.member as GuildMember)
-							.setTitle("Most Reacted Messages")
-							.setDescription(
-								`No reactions recorded (${periodLabel(period)}).`,
-							),
-					],
-				});
-				return;
-			}
-
-			const messageLines = await Promise.all(
-				topMessages.map(async (m, i) => {
-					const author = await guild.client.users
-						.fetch(m.messageAuthorId.toString())
-						.catch(() => null);
-					const authorName = author ? actualMention(author) : "Unknown User";
-					const messageLink = `https://discord.com/channels/${guild.id}/${m.channelId}/${m.messageId}`;
-					return (
-						`${medal(i)} **#${i + 1}** — [Jump to message](${messageLink})\n` +
-						`  By ${authorName} • **${m.reactionCount}** reaction${m.reactionCount !== 1 ? "s" : ""} from **${m.uniqueReactors}** user${m.uniqueReactors !== 1 ? "s" : ""}`
-					);
-				}),
-			);
-			const messageChunks = chunkEmbedFieldValues(messageLines);
-
-			const embed = createStandardEmbed(
-				interaction.member as GuildMember,
-			).setTitle("Most Reacted Messages");
-			embed.addFields({
-				name: "Period",
-				value: periodLabel(period),
-				inline: true,
+		if (topMessages.length === 0) {
+			await interaction.followUp({
+				embeds: [
+					createStandardEmbed(interaction.member as GuildMember)
+						.setTitle("Most Reacted Messages")
+						.setDescription(`No reactions recorded (${periodLabel(period)}).`),
+				],
 			});
-			for (const [index, chunk] of messageChunks.entries()) {
-				embed.addFields({
-					name:
-						messageChunks.length > 1
-							? `Results (${index + 1}/${messageChunks.length})`
-							: "Results",
-					value: chunk,
-					inline: false,
-				});
-			}
+			return;
+		}
 
-			await interaction.followUp({ embeds: [embed] });
-		},
-	),
+		const messageLines = await Promise.all(
+			topMessages.map(async (m, i) => {
+				const author = await guild.client.users
+					.fetch(m.messageAuthorId.toString())
+					.catch(() => null);
+				const authorName = author ? actualMention(author) : "Unknown User";
+				const messageLink = `https://discord.com/channels/${guild.id}/${m.channelId}/${m.messageId}`;
+				return (
+					`${medal(i)} **#${i + 1}** — [Jump to message](${messageLink})\n` +
+					`  By ${authorName} • **${m.reactionCount}** reaction${m.reactionCount !== 1 ? "s" : ""} from **${m.uniqueReactors}** user${m.uniqueReactors !== 1 ? "s" : ""}`
+				);
+			}),
+		);
+		const messageChunks = chunkEmbedFieldValues(messageLines);
+
+		const embed = createStandardEmbed(
+			interaction.member as GuildMember,
+		).setTitle("Most Reacted Messages");
+		embed.addFields({
+			name: "Period",
+			value: periodLabel(period),
+			inline: true,
+		});
+		for (const [index, chunk] of messageChunks.entries()) {
+			embed.addFields({
+				name:
+					messageChunks.length > 1
+						? `Results (${index + 1}/${messageChunks.length})`
+						: "Results",
+				value: chunk,
+				inline: false,
+			});
+		}
+
+		await interaction.followUp({ embeds: [embed] });
+	},
 };
 
 export const ReactionStatsCommand: Command<ApplicationCommandType.ChatInput> = {
