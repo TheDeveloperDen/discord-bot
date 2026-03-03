@@ -7,9 +7,22 @@ import {
 	type Snowflake,
 } from "discord.js";
 import { config } from "../../Config.js";
+import { AntiStarboardMessage } from "../../store/models/AntiStarboardMessage.js";
 import { StarboardMessage } from "../../store/models/StarboardMessage.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { convertVideoToGif } from "../../util/video.js";
+
+export interface StarboardRenderOptions {
+	emojiId: string;
+	threshold: number;
+	color: ColorResolvable;
+}
+
+const defaultRenderOptions: StarboardRenderOptions = {
+	emojiId: config.starboard.emojiId,
+	threshold: config.starboard.threshold,
+	color: config.starboard.color,
+};
 
 export const createStarboardMessage: (
 	originalMessageId: Snowflake,
@@ -37,14 +50,42 @@ export const getStarboardMessageForOriginalMessageId: (
 	});
 };
 
-const getColorForStars: (stars: number) => ColorResolvable = (
-	stars: number,
+export const createAntiStarboardMessage: (
+	originalMessageId: Snowflake,
+	originalMessageChannelId: Snowflake,
+	starboardMessageId: Snowflake,
+) => Promise<AntiStarboardMessage> = async (
+	originalMessageId,
+	originalMessageChannelId,
+	starboardMessageId,
 ) => {
+	return await AntiStarboardMessage.create({
+		originalMessageId: BigInt(originalMessageId),
+		originalMessageChannelId: BigInt(originalMessageChannelId),
+		starboardMessageId: BigInt(starboardMessageId),
+	});
+};
+
+export const getAntiStarboardMessageForOriginalMessageId: (
+	originalMessageId: Snowflake,
+) => Promise<AntiStarboardMessage | null> = async (originalMessageId) => {
+	return await AntiStarboardMessage.findOne({
+		where: {
+			originalMessageId: BigInt(originalMessageId),
+		},
+	});
+};
+
+const getColorForStars: (
+	stars: number,
+	threshold: number,
+	baseColor: ColorResolvable,
+) => ColorResolvable = (stars, threshold, baseColor) => {
 	if (stars === -1) {
 		return "DarkButNotBlack";
 	}
 
-	const overthreshold = stars - config.starboard.threshold;
+	const overthreshold = stars - threshold;
 	switch (overthreshold) {
 		case 2:
 			return "Red";
@@ -54,19 +95,27 @@ const getColorForStars: (stars: number) => ColorResolvable = (
 			return "Gold";
 
 		default:
-			return "Blue";
+			return baseColor;
 	}
 };
 export const extractEmbedAndFilesFromMessage: (
 	message: Message,
 	member: GuildMember,
 	stars: number,
+	renderOptions?: StarboardRenderOptions,
 ) => Promise<{
 	embed: EmbedBuilder;
 	files?: AttachmentBuilder[];
-}> = async (message: Message, member: GuildMember, stars: number) => {
+}> = async (
+	message: Message,
+	member: GuildMember,
+	stars: number,
+	renderOptions = defaultRenderOptions,
+) => {
 	const embed = createStandardEmbed(member)
-		.setColor(getColorForStars(stars))
+		.setColor(
+			getColorForStars(stars, renderOptions.threshold, renderOptions.color),
+		)
 		.setAuthor({
 			name: member.displayName,
 			iconURL: member.user.displayAvatarURL(),
@@ -101,14 +150,16 @@ export const createStarboardMessageFromMessage: (
 	member: GuildMember,
 	stars: number,
 	starboardMessage?: Message,
+	renderOptions?: StarboardRenderOptions,
 ) => Promise<{
 	embeds: EmbedBuilder[];
 	content: string;
 	files?: AttachmentBuilder[];
-}> = async (message, member, stars) => {
+}> = async (message, member, stars, _starboardMessage, renderOptions) => {
+	const settings = renderOptions ?? defaultRenderOptions;
 	const embeds: EmbedBuilder[] = [];
 	const files: AttachmentBuilder[] = [];
-	let content: string = `${config.starboard.emojiId}: ${stars} | ${message.url}`;
+	let content: string = `${settings.emojiId}: ${stars} | ${message.url}`;
 	if (message.reference) {
 		const referencedMessage = await message.fetchReference();
 
@@ -122,6 +173,7 @@ export const createStarboardMessageFromMessage: (
 					referencedMessage,
 					referencedMessage.member,
 					-1,
+					settings,
 				);
 
 			referencedEmbed.setAuthor({
@@ -138,7 +190,7 @@ export const createStarboardMessageFromMessage: (
 		}
 	}
 	const { embed, files: mainmessageFiles } =
-		await extractEmbedAndFilesFromMessage(message, member, stars);
+		await extractEmbedAndFilesFromMessage(message, member, stars, settings);
 	embeds.push(embed);
 	if (mainmessageFiles) {
 		files.push(...mainmessageFiles);

@@ -1,8 +1,10 @@
-import type { Snowflake } from "discord.js";
+import type { ColorResolvable, Snowflake } from "discord.js";
 import type { InformationMessage } from "./modules/information/information.js";
 import type { BrandingConfig } from "./util/branding.js";
 
 export interface AchievementsConfig {
+	/** Where achievement notifications are sent by default */
+	notificationMode?: "trigger" | "channel" | "dm";
 	/** Dedicated channel for notifications (required if mode is "channel") */
 	notificationChannel?: string;
 	/** Fallback channel if trigger location unavailable (for "trigger" mode) */
@@ -100,6 +102,14 @@ export interface Config {
 		emojiId: string;
 		channel: string;
 		threshold: number;
+		color: ColorResolvable;
+		blacklistChannelIds?: Snowflake[];
+	};
+	antiStarboard?: {
+		emojiId: string;
+		channel: string;
+		threshold: number;
+		color: ColorResolvable;
 		blacklistChannelIds?: Snowflake[];
 	};
 	suggest: {
