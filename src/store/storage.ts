@@ -15,6 +15,7 @@ import { FAQ } from "./models/FAQ.js";
 import { ModeratorActions } from "./models/ModeratorActions.js";
 import { ModMailNote } from "./models/ModMailNote.js";
 import { ModMailTicket } from "./models/ModMailTicket.js";
+import { ReactionStat } from "./models/ReactionStat.js";
 import { ReputationEvent } from "./models/ReputationEvent.js";
 import { ScamDomain } from "./models/ScamDomain.js";
 import { StarboardMessage } from "./models/StarboardMessage.js";
@@ -93,6 +94,7 @@ export async function initStorage() {
 		Warning,
 		BlockedWord,
 		ReputationEvent,
+		ReactionStat,
 	];
 	sequelize.addModels(models);
 
