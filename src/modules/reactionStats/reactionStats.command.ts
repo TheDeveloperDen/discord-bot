@@ -1,6 +1,7 @@
 import {
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
+	type Guild,
 	type GuildMember,
 } from "discord.js";
 import type { Command, ExecutableSubcommand } from "djs-slash-helper";
@@ -8,15 +9,25 @@ import { wrapInTransaction } from "../../sentry.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { actualMention } from "../../util/users.js";
 import { medal } from "../leaderboard/leaderboard.js";
-import { chunkEmbedFieldValues } from "./reactionStats.embed.js";
 import {
-	formatEmoji,
+	chunkEmbedFieldValues,
+	formatEmojiForEmbed,
+} from "./reactionStats.embed.js";
+import {
 	getGlobalStats,
 	getTopMessages,
 	getUserStats,
 	periodLabel,
 	type TimePeriod,
 } from "./reactionStats.service.js";
+
+function canRenderCustomEmoji(
+	guild: Guild,
+	emojiId: bigint | null,
+): boolean | undefined {
+	if (!emojiId) return undefined;
+	return guild.client.emojis.resolve(emojiId.toString()) !== null;
+}
 
 const periodChoices = [
 	{ name: "All Time", value: "all" },
@@ -76,7 +87,14 @@ const UserSubcommand: ExecutableSubcommand = {
 
 		const emojiLines = stats.topEmojis.map(
 			(e, i) =>
-				`${medal(i)} ${formatEmoji(e.emojiName, e.isCustomEmoji, e.emojiId)} — **${e.count}** time${e.count !== 1 ? "s" : ""}`,
+				`${medal(i)} ${formatEmojiForEmbed(
+					e.emojiName,
+					e.isCustomEmoji,
+					e.emojiId,
+					{
+						canRenderCustomEmoji: canRenderCustomEmoji(guild, e.emojiId),
+					},
+				)} — **${e.count}** time${e.count !== 1 ? "s" : ""}`,
 		);
 
 		const embed = createStandardEmbed(interaction.member as GuildMember)
@@ -161,7 +179,14 @@ const GlobalSubcommand: ExecutableSubcommand = {
 
 		const emojiLines = stats.topEmojis.map(
 			(e, i) =>
-				`${medal(i)} ${formatEmoji(e.emojiName, e.isCustomEmoji, e.emojiId)} — **${e.count}** time${e.count !== 1 ? "s" : ""}`,
+				`${medal(i)} ${formatEmojiForEmbed(
+					e.emojiName,
+					e.isCustomEmoji,
+					e.emojiId,
+					{
+						canRenderCustomEmoji: canRenderCustomEmoji(guild, e.emojiId),
+					},
+				)} — **${e.count}** time${e.count !== 1 ? "s" : ""}`,
 		);
 
 		const receiverLines = await Promise.all(

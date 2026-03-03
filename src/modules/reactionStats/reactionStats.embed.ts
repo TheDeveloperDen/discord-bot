@@ -1,4 +1,5 @@
 export const EMBED_FIELD_VALUE_LIMIT = 1024;
+const CUSTOM_EMOJI_ALIAS_PATTERN = /^a?:[A-Za-z0-9_]+:$/;
 
 export function chunkEmbedFieldValues(
 	lines: string[],
@@ -35,4 +36,52 @@ export function chunkEmbedFieldValues(
 	}
 
 	return chunks;
+}
+
+function normalizeCustomEmojiName(emojiName: string): string {
+	const trimmed = emojiName.trim();
+	const withoutAnimatedPrefix = trimmed.replace(/^a:/, "");
+	const withoutLeadingColon = withoutAnimatedPrefix.replace(/^:/, "");
+	const withoutTrailingColon = withoutLeadingColon.replace(/:$/, "");
+	return withoutTrailingColon || "custom_emoji";
+}
+
+function customEmojiAlias(emojiName: string): string {
+	return `:${normalizeCustomEmojiName(emojiName)}:`;
+}
+
+function customEmojiImageUrl(emojiId: bigint): string {
+	return `https://cdn.discordapp.com/emojis/${emojiId.toString()}.webp?size=32&quality=lossless`;
+}
+
+export interface EmojiDisplayOptions {
+	canRenderCustomEmoji?: boolean;
+}
+
+export function formatEmojiForEmbed(
+	emojiName: string,
+	isCustomEmoji: boolean,
+	emojiId: bigint | null,
+	options: EmojiDisplayOptions = {},
+): string {
+	if (isCustomEmoji) {
+		const normalizedName = normalizeCustomEmojiName(emojiName);
+		const alias = `:${normalizedName}:`;
+		if (emojiId && options.canRenderCustomEmoji !== false) {
+			return `<:${normalizedName}:${emojiId.toString()}>`;
+		}
+
+		if (emojiId) {
+			const imageUrl = customEmojiImageUrl(emojiId);
+			return `\`${alias}\` ([image](${imageUrl}), external)`;
+		}
+
+		return `\`${alias}\` (external)`;
+	}
+
+	if (CUSTOM_EMOJI_ALIAS_PATTERN.test(emojiName)) {
+		return `\`${customEmojiAlias(emojiName)}\` (external)`;
+	}
+
+	return emojiName;
 }
