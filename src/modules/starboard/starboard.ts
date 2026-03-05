@@ -11,12 +11,12 @@ import { AntiStarboardMessage } from "../../store/models/AntiStarboardMessage.js
 import { StarboardMessage } from "../../store/models/StarboardMessage.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { convertVideoToGif } from "../../util/video.js";
+import {
+	buildStarboardMessageContent,
+	type StarboardContentRenderOptions,
+} from "./starboard.content.js";
 
-export interface StarboardRenderOptions {
-	emojiId: string;
-	threshold: number;
-	color: ColorResolvable;
-}
+export interface StarboardRenderOptions extends StarboardContentRenderOptions {}
 
 const defaultRenderOptions: StarboardRenderOptions = {
 	emojiId: config.starboard.emojiId,
@@ -151,15 +151,27 @@ export const createStarboardMessageFromMessage: (
 	stars: number,
 	starboardMessage?: Message,
 	renderOptions?: StarboardRenderOptions,
+	contentStars?: number,
 ) => Promise<{
 	embeds: EmbedBuilder[];
 	content: string;
 	files?: AttachmentBuilder[];
-}> = async (message, member, stars, _starboardMessage, renderOptions) => {
+}> = async (
+	message,
+	member,
+	stars,
+	_starboardMessage,
+	renderOptions,
+	contentStars,
+) => {
 	const settings = renderOptions ?? defaultRenderOptions;
 	const embeds: EmbedBuilder[] = [];
 	const files: AttachmentBuilder[] = [];
-	let content: string = `${settings.emojiId}: ${stars} | ${message.url}`;
+	let content = buildStarboardMessageContent(
+		message,
+		contentStars ?? stars,
+		settings,
+	);
 	if (message.reference) {
 		const referencedMessage = await message.fetchReference();
 

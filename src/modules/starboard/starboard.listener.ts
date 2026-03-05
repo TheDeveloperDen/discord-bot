@@ -22,6 +22,11 @@ import {
 	getStarboardMessageForOriginalMessageId,
 	type StarboardRenderOptions,
 } from "./starboard.js";
+import {
+	getReactionCountForEmoji,
+	getThresholdReactionCount,
+	matchesConfiguredEmoji,
+} from "./starboard.reaction-utils.js";
 
 interface ReactionDebounceEntry {
 	timeoutId: NodeJS.Timeout;
@@ -98,24 +103,6 @@ const boardDefinitions = buildBoardDefinitions();
 const reactionDebounceMap = new Map<string, ReactionDebounceEntry>();
 const DEBOUNCE_DELAY = 2000;
 
-const extractCustomEmojiId = (emojiConfig: string): string | null => {
-	const match = emojiConfig.match(/^<a?:\w+:(\d+)>$/u);
-	return match?.[1] ?? null;
-};
-
-const getConfiguredEmojiId = (emojiConfig: string): string => {
-	return extractCustomEmojiId(emojiConfig) ?? emojiConfig;
-};
-
-const matchesConfiguredEmoji = (
-	emojiName: string | null,
-	emojiId: string | null,
-	emojiConfig: string,
-): boolean => {
-	const configuredEmojiId = getConfiguredEmojiId(emojiConfig);
-	return emojiName === emojiConfig || emojiId === configuredEmojiId;
-};
-
 const getDebounceKey = (boardKey: BoardKey, messageId: Snowflake): string => {
 	return `${boardKey}:${messageId}`;
 };
@@ -185,20 +172,6 @@ export const debounceStarboardReaction = (
 	}, DEBOUNCE_DELAY);
 };
 
-const getStarsFromMessageContent = (content: string): number => {
-	const match = content.match(/:\s*(\d+)\s*\|/u);
-	if (!match || !match[1]) {
-		return 0;
-	}
-
-	const count = Number.parseInt(match[1], 10);
-	if (Number.isNaN(count)) {
-		return 0;
-	}
-
-	return count;
-};
-
 const isChannelBlacklisted = (
 	channel: Channel,
 	board: BoardDefinition,
@@ -210,13 +183,36 @@ const getReactionCountForBoard = (
 	message: Message,
 	board: BoardDefinition,
 ): number => {
-	const configuredEmojiId = getConfiguredEmojiId(board.config.emojiId);
-	const reaction = message.reactions.cache.find(
-		(item) =>
-			item.emoji.name === board.config.emojiId ||
-			item.emoji.id === configuredEmojiId,
-	);
-	return reaction?.count ?? 0;
+	return getReactionCountForEmoji(message, board.config.emojiId);
+};
+
+const getBoardByKey = (key: BoardKey): BoardDefinition | undefined => {
+	return boardDefinitions.find((board) => board.key === key);
+};
+
+const getDisplayCountForBoard = (
+	message: Message,
+	board: BoardDefinition,
+): number => {
+	const boardCount = getReactionCountForBoard(message, board);
+	if (board.key !== "starboard") {
+		return boardCount;
+	}
+
+	const antiStarboard = getBoardByKey("antiStarboard");
+	if (!antiStarboard) {
+		return boardCount;
+	}
+
+	const antiStarCount = getReactionCountForBoard(message, antiStarboard);
+	return Math.max(boardCount - antiStarCount, 0);
+};
+
+const getContentCountForBoard = (
+	message: Message,
+	board: BoardDefinition,
+): number => {
+	return getReactionCountForBoard(message, board);
 };
 
 export const StarboardListener: EventListener = {
@@ -299,19 +295,21 @@ export const StarboardListener: EventListener = {
 								continue;
 							}
 
-							const messageStarCount = getReactionCountForBoard(message, board);
-							const boardStarCount = getStarsFromMessageContent(
-								boardMessage.content,
+							const effectiveStarCount = getDisplayCountForBoard(
+								message,
+								board,
 							);
-							if (messageStarCount !== boardStarCount) {
-								const boardMessageContent =
-									await createStarboardMessageFromMessage(
-										message,
-										member,
-										messageStarCount,
-										undefined,
-										board.config,
-									);
+							const contentStarCount = getContentCountForBoard(message, board);
+							const boardMessageContent =
+								await createStarboardMessageFromMessage(
+									message,
+									member,
+									effectiveStarCount,
+									undefined,
+									board.config,
+									contentStarCount,
+								);
+							if (boardMessage.content !== boardMessageContent.content) {
 								await boardMessage.edit(boardMessageContent);
 								logger.info(
 									`${board.name} message %s for message %s has been updated`,
@@ -381,15 +379,24 @@ export const StarboardListener: EventListener = {
 
 		debounceStarboardReaction(board.key, message.id, true, async () => {
 			reaction = await reaction.fetch();
-			const count = reaction.count || 1;
+			const refreshedMessage = await message.fetch();
+			if (board.key === "antiStarboard") {
+				await syncStarboardMessageScore(refreshedMessage);
+			}
+
+			const count = getThresholdReactionCount(
+				refreshedMessage,
+				board.config.emojiId,
+				reaction.count,
+			);
 			if (count < board.config.threshold) {
 				logger.debug(
-					`Skipping ${board.name} post for message ${message.id}: ${count}/${board.config.threshold} reactions`,
+					`Skipping ${board.name} post for message ${refreshedMessage.id}: ${count}/${board.config.threshold} reactions`,
 				);
 				return;
 			}
 
-			const boardChannel = await message.guild.channels.fetch(
+			const boardChannel = await refreshedMessage.guild.channels.fetch(
 				board.config.channel,
 			);
 			if (!boardChannel?.isTextBased() || !boardChannel.isSendable()) {
@@ -400,36 +407,41 @@ export const StarboardListener: EventListener = {
 			}
 
 			const existingBoardMessage = await board.getMessageForOriginalMessageId(
-				message.id,
+				refreshedMessage.id,
 			);
 			try {
-				const member = await getMember(message);
+				const member = await getMember(refreshedMessage);
 				if (!member) {
 					logger.info(
 						"Member not found for reaction message id %s, skipping",
-						message.id,
+						refreshedMessage.id,
 					);
 					return;
 				}
+
+				const displayCount = getDisplayCountForBoard(refreshedMessage, board);
+				const contentCount = getContentCountForBoard(refreshedMessage, board);
 
 				if (existingBoardMessage) {
 					await updateBoardMessage(
 						board,
 						boardChannel,
 						existingBoardMessage,
-						message,
+						refreshedMessage,
 						member,
-						count,
+						displayCount,
+						contentCount,
 					);
 					return;
 				}
 
 				const boardMessageContent = await createStarboardMessageFromMessage(
-					message,
+					refreshedMessage,
 					member,
-					count,
+					displayCount,
 					undefined,
 					board.config,
+					contentCount,
 				);
 
 				const boardMessage = await boardChannel.send({
@@ -440,21 +452,21 @@ export const StarboardListener: EventListener = {
 				});
 
 				await board.createMessage(
-					message.id,
-					message.channelId,
+					refreshedMessage.id,
+					refreshedMessage.channelId,
 					boardMessage.id,
 				);
 
 				if (board.grantReputation) {
 					try {
 						await grantReputation(
-							BigInt(message.author.id),
+							BigInt(refreshedMessage.author.id),
 							ReputationEventType.STARBOARD_MESSAGE,
-							BigInt(message.author.id),
-							`Message reached starboard with ${count} stars`,
+							BigInt(refreshedMessage.author.id),
+							`Message reached starboard with ${displayCount} stars`,
 						);
 						logger.debug(
-							`Granted starboard reputation to user ${message.author.id}`,
+							`Granted starboard reputation to user ${refreshedMessage.author.id}`,
 						);
 					} catch (error) {
 						logger.error("Failed to grant starboard reputation", error);
@@ -511,26 +523,29 @@ export const StarboardListener: EventListener = {
 
 		debounceStarboardReaction(board.key, message.id, false, async () => {
 			reaction = await reaction.fetch();
-			const count = reaction.count || 0;
+			const refreshedMessage = await message.fetch();
+			if (board.key === "antiStarboard") {
+				await syncStarboardMessageScore(refreshedMessage);
+			}
 
 			const existingBoardMessage = await board.getMessageForOriginalMessageId(
-				message.id,
+				refreshedMessage.id,
 			);
 			if (!existingBoardMessage) {
 				return;
 			}
 
 			try {
-				const member = await getMember(message);
+				const member = await getMember(refreshedMessage);
 				if (!member) {
 					logger.info(
 						"Member not found for reaction message id: %s",
-						reaction.message.id,
+						refreshedMessage.id,
 					);
 					return;
 				}
 
-				const boardChannel = await message.guild.channels.fetch(
+				const boardChannel = await refreshedMessage.guild.channels.fetch(
 					board.config.channel,
 				);
 				if (!boardChannel?.isTextBased() || !boardChannel.isSendable()) {
@@ -544,9 +559,10 @@ export const StarboardListener: EventListener = {
 					board,
 					boardChannel,
 					existingBoardMessage,
-					message,
+					refreshedMessage,
 					member,
-					count,
+					getDisplayCountForBoard(refreshedMessage, board),
+					getContentCountForBoard(refreshedMessage, board),
 				);
 			} catch (error) {
 				logger.error(`Error updating ${board.name} message`, error);
@@ -555,6 +571,48 @@ export const StarboardListener: EventListener = {
 	},
 };
 
+async function syncStarboardMessageScore(message: Message<true>) {
+	const starboard = getBoardByKey("starboard");
+	if (!starboard) {
+		return;
+	}
+
+	const existingStarboardMessage =
+		await starboard.getMessageForOriginalMessageId(message.id);
+	if (!existingStarboardMessage) {
+		return;
+	}
+
+	const member = await getMember(message);
+	if (!member) {
+		logger.info(
+			"Member not found while syncing starboard score for message id %s",
+			message.id,
+		);
+		return;
+	}
+
+	const boardChannel = await message.guild.channels.fetch(
+		starboard.config.channel,
+	);
+	if (!boardChannel?.isTextBased() || !boardChannel.isSendable()) {
+		logger.error(
+			"starboard channel not found, not a text channel or not sendable",
+		);
+		return;
+	}
+
+	await updateBoardMessage(
+		starboard,
+		boardChannel,
+		existingStarboardMessage,
+		message,
+		member,
+		getDisplayCountForBoard(message, starboard),
+		getContentCountForBoard(message, starboard),
+	);
+}
+
 async function updateBoardMessage(
 	board: BoardDefinition,
 	boardChannel: SendableChannels,
@@ -562,6 +620,7 @@ async function updateBoardMessage(
 	reactionMessage: Message<true>,
 	member: GuildMember,
 	starCount: number,
+	contentStarCount: number,
 ) {
 	try {
 		let boardMessage: Message | null;
@@ -584,6 +643,7 @@ async function updateBoardMessage(
 			starCount,
 			undefined,
 			board.config,
+			contentStarCount,
 		);
 		await boardMessage.edit(boardMessageFromMessage);
 	} catch (error) {
