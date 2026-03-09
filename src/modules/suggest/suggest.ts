@@ -1,3 +1,4 @@
+import { Op } from "@sequelize/core";
 import {
 	ActionRowBuilder,
 	ButtonBuilder,
@@ -12,6 +13,7 @@ import {
 	type ModalSubmitInteraction,
 	type OmitPartialGroupDMChannel,
 	type SendableChannels,
+	type TextBasedChannel,
 	TextInputBuilder,
 	TextInputStyle,
 	type UserResolvable,
@@ -158,6 +160,188 @@ export const getSuggestionByMessageId: (
 		include: [SuggestionVote],
 	});
 };
+
+async function getSuggestionChannels(
+	client: Client,
+): Promise<TextBasedChannel[]> {
+	const channels = await Promise.all(
+		[config.suggest.suggestionsChannel, config.suggest.archiveChannel].map(
+			async (channelId) => {
+				try {
+					const channel = await client.channels.fetch(channelId);
+					if (!channel?.isTextBased()) {
+						return null;
+					}
+					return channel;
+				} catch (error) {
+					logger.error(
+						"Failed to fetch suggestion channel %s",
+						channelId,
+						error,
+					);
+					return null;
+				}
+			},
+		),
+	);
+
+	return channels.filter(
+		(channel): channel is TextBasedChannel => channel !== null,
+	);
+}
+
+async function getSuggestionMessage(
+	channels: TextBasedChannel[],
+	messageId: bigint,
+): Promise<Message | null> {
+	for (const channel of channels) {
+		try {
+			return await channel.messages.fetch(messageId.toString());
+		} catch {
+			// Try the next suggestion channel.
+		}
+	}
+
+	return null;
+}
+
+export async function refreshSuggestionMessage(
+	client: Client,
+	suggestion: Suggestion,
+	suggestionChannels?: TextBasedChannel[],
+): Promise<boolean> {
+	const channels = suggestionChannels ?? (await getSuggestionChannels(client));
+	const message = await getSuggestionMessage(channels, suggestion.messageId);
+
+	if (!message) {
+		logger.warn(
+			"Could not find suggestion message %s for suggestion %s",
+			suggestion.messageId,
+			suggestion.id,
+		);
+		return false;
+	}
+
+	if (!message.editable) {
+		logger.warn(
+			"Suggestion message %s for suggestion %s is not editable",
+			suggestion.messageId,
+			suggestion.id,
+		);
+		return false;
+	}
+
+	await message.edit({
+		embeds: [await createSuggestionEmbedFromEntity(client, suggestion)],
+	});
+	return true;
+}
+
+export interface RemovedSuggestionVotesResult {
+	removedVotes: number;
+	updatedSuggestions: number;
+}
+
+export interface RemovedSuggestionVotesForMembersResult
+	extends RemovedSuggestionVotesResult {
+	affectedMembers: number;
+}
+
+export async function removeSuggestionVotesForMembers(
+	client: Client,
+	memberIds: Iterable<bigint>,
+): Promise<RemovedSuggestionVotesForMembersResult> {
+	const uniqueMemberIds = Array.from(
+		new Set(Array.from(memberIds, (memberId) => memberId.toString())),
+	).map((memberId) => BigInt(memberId));
+
+	if (uniqueMemberIds.length === 0) {
+		return {
+			removedVotes: 0,
+			updatedSuggestions: 0,
+			affectedMembers: 0,
+		};
+	}
+
+	const votes = await SuggestionVote.findAll({
+		where: {
+			memberId: {
+				[Op.in]: uniqueMemberIds,
+			},
+		},
+	});
+
+	if (votes.length === 0) {
+		return {
+			removedVotes: 0,
+			updatedSuggestions: 0,
+			affectedMembers: 0,
+		};
+	}
+
+	const affectedMemberIds = new Set(
+		votes.map((vote) => vote.memberId.toString()),
+	);
+	const suggestionIds = Array.from(
+		new Set(votes.map((vote) => vote.suggestionId.toString())),
+	).map((suggestionId) => BigInt(suggestionId));
+
+	await SuggestionVote.destroy({
+		where: {
+			memberId: {
+				[Op.in]: uniqueMemberIds,
+			},
+		},
+	});
+
+	const suggestionChannels = await getSuggestionChannels(client);
+	let updatedSuggestions = 0;
+
+	for (const suggestionId of suggestionIds) {
+		const suggestion = await Suggestion.findOne({
+			where: {
+				id: suggestionId,
+			},
+			include: [SuggestionVote],
+		});
+
+		if (!suggestion) {
+			continue;
+		}
+
+		try {
+			if (
+				await refreshSuggestionMessage(client, suggestion, suggestionChannels)
+			) {
+				updatedSuggestions++;
+			}
+		} catch (error) {
+			logger.error(
+				"Failed to refresh suggestion %s after removing votes from banned users",
+				suggestionId,
+				error,
+			);
+		}
+	}
+
+	return {
+		removedVotes: votes.length,
+		updatedSuggestions,
+		affectedMembers: affectedMemberIds.size,
+	};
+}
+
+export async function removeSuggestionVotesForMember(
+	client: Client,
+	memberId: bigint,
+): Promise<RemovedSuggestionVotesResult> {
+	const { removedVotes, updatedSuggestions } =
+		await removeSuggestionVotesForMembers(client, [memberId]);
+	return {
+		removedVotes,
+		updatedSuggestions,
+	};
+}
 
 export async function getSuggestionByMessageIdOrRecoverFromMessage(
 	embedMessage: Message,
