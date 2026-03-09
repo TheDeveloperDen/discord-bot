@@ -46,7 +46,7 @@ export class ModeratorActions extends Model<
 	@ColumnName("action")
 	public declare action: ModeratorAction;
 
-	@Attribute(DataTypes.STRING)
+	@Attribute(DataTypes.STRING({ length: 10000 }))
 	@AllowNull
 	public declare reason: string | null;
 
