@@ -24,6 +24,15 @@ export const SyncSuggestionVotesCommand: Command<ApplicationCommandType.ChatInpu
 				return;
 			}
 
+			const member = interaction.member as GuildMember;
+			if (!member.permissions.has(PermissionFlagsBits.Administrator)) {
+				await interaction.reply({
+					content: "You don't have permission to run this command.",
+					flags: MessageFlags.Ephemeral,
+				});
+				return;
+			}
+
 			await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
 			try {
