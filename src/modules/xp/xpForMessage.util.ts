@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/node";
+import * as Sentry from "@sentry/bun";
 import { type Channel, type GuildMember, Message, type User } from "discord.js";
 import { compareTwoStrings as distance } from "string-similarity";
 import { config } from "../../Config.js";
@@ -142,7 +142,7 @@ export const giveXp = async (
 	xp: number,
 ): Promise<XPResult> =>
 	await Sentry.startSpan(
-		{ name: "giveXP", attributes: { user: user.id, xp } },
+		{ name: "giveXP", op: "db", attributes: { user: user.id, xp } },
 
 		async (): Promise<XPResult> => {
 			const client = user.client;

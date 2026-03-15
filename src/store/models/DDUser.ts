@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/node";
+import * as Sentry from "@sentry/bun";
 import {
 	DataTypes,
 	type InferAttributes,
@@ -65,6 +65,7 @@ export class DDUser extends Model<
 		return await Sentry.startSpan(
 			{
 				name: "DDUser#save",
+				op: "db",
 				attributes: {
 					id: this.id.toString(),
 				},
@@ -79,6 +80,7 @@ export class DDUser extends Model<
 		return await Sentry.startSpan(
 			{
 				name: "DDUser#reload",
+				op: "db",
 				attributes: {
 					id: this.id.toString(),
 				},
@@ -91,7 +93,11 @@ export class DDUser extends Model<
 
 	async countBumps(): Promise<number> {
 		return await Sentry.startSpan(
-			{ name: "DDUser#bumps", attributes: { id: this.id.toString() } },
+			{
+				name: "DDUser#bumps",
+				op: "db",
+				attributes: { id: this.id.toString() },
+			},
 			async () => {
 				logger.debug(`Getting bumps for user ${this.id}`);
 				const newBumpCount = await Bump.count({
@@ -107,7 +113,11 @@ export class DDUser extends Model<
 
 export const getOrCreateUserById = async (id: bigint) =>
 	await Sentry.startSpan(
-		{ name: "getOrCreateUserById", attributes: { id: id.toString() } },
+		{
+			name: "getOrCreateUserById",
+			op: "db",
+			attributes: { id: id.toString() },
+		},
 		async () => {
 			const inCache = userCache.get(id);
 			if (inCache != null) {
@@ -126,7 +136,11 @@ export const getOrCreateUserById = async (id: bigint) =>
 
 			logger.debug(`User ${id} not found in cache, querying database`);
 			return await Sentry.startSpan(
-				{ name: "DDUser.findOrCreate", attributes: { id: id.toString() } },
+				{
+					name: "DDUser.findOrCreate",
+					op: "db",
+					attributes: { id: id.toString() },
+				},
 				async () => {
 					const [user] = await DDUser.findOrCreate<DDUser>({
 						where: {

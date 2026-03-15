@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/node";
+import * as Sentry from "@sentry/bun";
 import { ApplicationCommandType } from "discord.js";
 import type { Command } from "djs-slash-helper";
 import { config } from "../../Config.js";

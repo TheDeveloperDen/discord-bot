@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/node";
+import * as Sentry from "@sentry/bun";
 import { logger } from "../../logging.js";
 import { Bump } from "./Bump.js";
 import type { DDUser } from "./DDUser.js";
@@ -7,7 +7,7 @@ import type { DDUser } from "./DDUser.js";
  * @returns All bumps in ascending order of timestamp.
  */
 export const getAllBumps = async (): Promise<Bump[]> =>
-	await Sentry.startSpan({ name: "getAllBumps" }, async () => {
+	await Sentry.startSpan({ name: "getAllBumps", op: "db" }, async () => {
 		if (
 			bumpsCache.bumps.length > 0 &&
 			Date.now() - bumpsCache.lastUpdated.getTime() < 1000 * 60 * 60 // 1 hour to be safe
@@ -37,7 +37,7 @@ const bumpsCache: {
 };
 
 export const getBumpStreak = async (user: DDUser): Promise<Streak> =>
-	await Sentry.startSpan({ name: "getBumpStreak" }, async () => {
+	await Sentry.startSpan({ name: "getBumpStreak", op: "db" }, async () => {
 		// query every bump. TODO optimise
 		const bumps = await getAllBumps();
 
