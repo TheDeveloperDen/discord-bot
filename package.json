@@ -34,7 +34,7 @@
 		"@sequelize/postgres": "^7.0.0-alpha.47",
 		"@sequelize/sqlite3": "^7.0.0-alpha.47",
 		"@types/fluent-ffmpeg": "^2.1.28",
-		"@types/jsdom": "^27.0.0",
+		"@types/jsdom": "^28.0.0",
 		"bufferutil": "^4.0.9",
 		"discord.js": "^14.25.1",
 		"djs-slash-helper": "git+https://github.com/bristermitten/djs-slash-helper.git#97726a356be094f4d187637734b116e4e1c89be5",
