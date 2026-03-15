@@ -86,7 +86,7 @@ async function sendLearningResourcesPicker(interaction: ButtonInteraction) {
 		.setOptions(
 			getAllCachedResources().map(([file, res]) => {
 				const builder = new StringSelectMenuOptionBuilder()
-					.setLabel(res.name)
+					.setLabel(res.name.toString())
 					.setValue(file)
 					.setDescription(truncateTo(res.description, 100));
 				if (res.emoji) {
