@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/bun";
 import {
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
@@ -8,7 +9,6 @@ import {
 } from "discord.js";
 import type { Command, ExecutableSubcommand } from "djs-slash-helper";
 import { config } from "../../Config.js";
-import { wrapInTransaction } from "../../sentry.js";
 import { ColourRoles } from "../../store/models/ColourRoles.js";
 
 const ResetSubcommand: ExecutableSubcommand = {
@@ -73,56 +73,61 @@ const SetSubcommand: ExecutableSubcommand = {
 			required: true,
 		},
 	],
-	handle: wrapInTransaction("rolecolour/set", async (_, interaction) => {
-		const colour = interaction.options.get("colour", true).value as string;
-		if (!colour.startsWith("#") || colour.length !== 7) {
-			await interaction.reply({
-				content: "Not a valid colour",
-				flags: MessageFlags.Ephemeral,
-			});
-			return;
-		}
+	async handle(interaction) {
+		await Sentry.startSpan(
+			{ name: "rolecolour/set", op: "command" },
+			async () => {
+				const colour = interaction.options.get("colour", true).value as string;
+				if (!colour.startsWith("#") || colour.length !== 7) {
+					await interaction.reply({
+						content: "Not a valid colour",
+						flags: MessageFlags.Ephemeral,
+					});
+					return;
+				}
 
-		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-		const user = interaction.user;
-		const member = interaction.member as GuildMember;
-		const roleInfo = await ColourRoles.findOne({
-			where: {
-				id: BigInt(user.id),
+				await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+				const user = interaction.user;
+				const member = interaction.member as GuildMember;
+				const roleInfo = await ColourRoles.findOne({
+					where: {
+						id: BigInt(user.id),
+					},
+				});
+				let role: Role | null = null;
+				if (roleInfo != null) {
+					const roleId = roleInfo.getDataValue("role"); // no idea why normal property lookup doesnt work
+					if (!roleId) {
+						throw new Error("No colour role found, database call failed?");
+					}
+					role = member.roles.resolve(roleId.toString());
+					await role?.setColors({ primaryColor: colour as ColorResolvable });
+				}
+
+				if (role == null) {
+					const position =
+						interaction.guild?.roles.resolve(config.roles.separators.general)
+							?.position ?? 0;
+					role = await member.guild.roles.create({
+						colors: { primaryColor: colour as ColorResolvable },
+						permissions: [],
+						name: member.user.username,
+						position,
+					});
+					await ColourRoles.upsert({
+						id: BigInt(user.id),
+						role: BigInt(role.id),
+					});
+				}
+
+				await member.roles.add(role);
+
+				await interaction.editReply({
+					content: `Set your colour to ${colour}`,
+				});
 			},
-		});
-		let role: Role | null = null;
-		if (roleInfo != null) {
-			const roleId = roleInfo.getDataValue("role"); // no idea why normal property lookup doesnt work
-			if (!roleId) {
-				throw new Error("No colour role found, database call failed?");
-			}
-			role = member.roles.resolve(roleId.toString());
-			await role?.setColors({ primaryColor: colour as ColorResolvable });
-		}
-
-		if (role == null) {
-			const position =
-				interaction.guild?.roles.resolve(config.roles.separators.general)
-					?.position ?? 0;
-			role = await member.guild.roles.create({
-				colors: { primaryColor: colour as ColorResolvable },
-				permissions: [],
-				name: member.user.username,
-				position,
-			});
-			await ColourRoles.upsert({
-				id: BigInt(user.id),
-				role: BigInt(role.id),
-			});
-		}
-
-		await member.roles.add(role);
-
-		await interaction.editReply({
-			content: `Set your colour to ${colour}`,
-		});
-	}),
+		);
+	},
 };
 
 export const RoleColourCommand: Command<ApplicationCommandType.ChatInput> = {
