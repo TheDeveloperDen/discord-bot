@@ -4,6 +4,17 @@ import { ReactionStat } from "../../store/models/ReactionStat.js";
 export type TimePeriod = "day" | "week" | "month" | "year" | "all";
 
 /**
+ * Normalize a raw BigInt value from Sequelize.
+ * SQLite stores bigints as strings with an "n" suffix (e.g. "10n"),
+ * while PostgreSQL returns actual bigints. This handles both.
+ */
+function rawBigInt(value: bigint | string | number): bigint {
+	if (typeof value === "bigint") return value;
+	const s = String(value);
+	return BigInt(s.endsWith("n") ? s.slice(0, -1) : s);
+}
+
+/**
  * Returns a Date cutoff for the given period, or null for "all".
  */
 export function getDateCutoff(period: TimePeriod): Date | null {
@@ -83,7 +94,7 @@ export async function getUserStats(
 		topEmojis: topEmojis.map((row) => ({
 			emojiName: row.emojiName,
 			isCustomEmoji: row.isCustomEmoji,
-			emojiId: row.emojiId,
+			emojiId: row.emojiId ? rawBigInt(row.emojiId) : null,
 			count: Number(row.count),
 		})),
 	};
@@ -172,17 +183,17 @@ export async function getGlobalStats(
 	return {
 		totalReactions,
 		topReactors: topReactors.map((r) => ({
-			userId: r.userId,
+			userId: rawBigInt(r.userId),
 			count: Number(r.count),
 		})),
 		topEmojis: topEmojis.map((e) => ({
 			emojiName: e.emojiName,
 			isCustomEmoji: e.isCustomEmoji,
-			emojiId: e.emojiId,
+			emojiId: e.emojiId ? rawBigInt(e.emojiId) : null,
 			count: Number(e.count),
 		})),
 		topReceivers: topReceivers.map((r) => ({
-			messageAuthorId: r.messageAuthorId,
+			messageAuthorId: rawBigInt(r.messageAuthorId),
 			count: Number(r.count),
 		})),
 	};
@@ -230,9 +241,9 @@ export async function getTopMessages(
 	}>;
 
 	return rows.map((row) => ({
-		messageId: row.messageId,
-		messageAuthorId: row.messageAuthorId,
-		channelId: row.channelId,
+		messageId: rawBigInt(row.messageId),
+		messageAuthorId: rawBigInt(row.messageAuthorId),
+		channelId: rawBigInt(row.channelId),
 		reactionCount: Number(row.reactionCount),
 		uniqueReactors: Number(row.uniqueReactors),
 	}));
