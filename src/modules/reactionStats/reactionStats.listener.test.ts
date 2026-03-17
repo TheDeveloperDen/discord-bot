@@ -75,9 +75,9 @@ describe("ReactionStatsListener.messageReactionAdd", () => {
 
 		const record = await ReactionStat.findOne({ where: { userId: 10n } });
 		expect(record).toBeDefined();
-		expect(record?.messageId.toString()).toBe("100");
-		expect(record?.messageAuthorId.toString()).toBe("200");
-		expect(record?.channelId.toString()).toBe("500");
+		expect(record?.messageId).toBe(100n);
+		expect(record?.messageAuthorId).toBe(200n);
+		expect(record?.channelId).toBe(500n);
 		expect(record?.emojiName).toBe("👍");
 		expect(record?.isCustomEmoji).toBe(false);
 		expect(record?.emojiId).toBeNull();
@@ -162,7 +162,7 @@ describe("ReactionStatsListener.messageReactionAdd", () => {
 		expect(record).toBeDefined();
 		expect(record?.emojiName).toBe("pepe");
 		expect(record?.isCustomEmoji).toBe(true);
-		expect(record?.emojiId?.toString()).toBe("999888777");
+		expect(record?.emojiId).toBe(999888777n);
 	});
 
 	test("allows custom emojis with same name but different ids", async () => {

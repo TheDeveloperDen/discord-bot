@@ -57,6 +57,14 @@ async function createReaction(
 	});
 }
 
+function expectDate(value: Date | null): Date {
+	expect(value).not.toBeNull();
+	if (value === null) {
+		throw new Error("Expected date cutoff to be defined");
+	}
+	return value;
+}
+
 // ── getDateCutoff ───────────────────────────────────────
 
 describe("getDateCutoff", () => {
@@ -65,34 +73,30 @@ describe("getDateCutoff", () => {
 	});
 
 	test("returns a date in the past for 'day'", () => {
-		const cutoff = getDateCutoff("day");
-		expect(cutoff).not.toBeNull();
-		const diff = Date.now() - cutoff?.getTime();
+		const cutoff = expectDate(getDateCutoff("day"));
+		const diff = Date.now() - cutoff.getTime();
 		// Should be approximately 24h (allow 1s tolerance)
 		expect(diff).toBeGreaterThan(1000 * 60 * 60 * 23);
 		expect(diff).toBeLessThan(1000 * 60 * 60 * 25);
 	});
 
 	test("returns a date in the past for 'week'", () => {
-		const cutoff = getDateCutoff("week");
-		expect(cutoff).not.toBeNull();
-		const diff = Date.now() - cutoff?.getTime();
+		const cutoff = expectDate(getDateCutoff("week"));
+		const diff = Date.now() - cutoff.getTime();
 		expect(diff).toBeGreaterThan(1000 * 60 * 60 * 24 * 6);
 		expect(diff).toBeLessThan(1000 * 60 * 60 * 24 * 8);
 	});
 
 	test("returns a date in the past for 'month'", () => {
-		const cutoff = getDateCutoff("month");
-		expect(cutoff).not.toBeNull();
-		const diff = Date.now() - cutoff?.getTime();
+		const cutoff = expectDate(getDateCutoff("month"));
+		const diff = Date.now() - cutoff.getTime();
 		expect(diff).toBeGreaterThan(1000 * 60 * 60 * 24 * 29);
 		expect(diff).toBeLessThan(1000 * 60 * 60 * 24 * 31);
 	});
 
 	test("returns a date in the past for 'year'", () => {
-		const cutoff = getDateCutoff("year");
-		expect(cutoff).not.toBeNull();
-		const diff = Date.now() - cutoff?.getTime();
+		const cutoff = expectDate(getDateCutoff("year"));
+		const diff = Date.now() - cutoff.getTime();
 		expect(diff).toBeGreaterThan(1000 * 60 * 60 * 24 * 364);
 		expect(diff).toBeLessThan(1000 * 60 * 60 * 24 * 366);
 	});
@@ -236,8 +240,8 @@ describe("getGlobalStats", () => {
 		expect(stats.totalReactions).toBe(4);
 		expect(stats.topReactors.length).toBeGreaterThanOrEqual(2);
 
-		const user10 = stats.topReactors.find((r) => r.userId.toString() === "10");
-		const user11 = stats.topReactors.find((r) => r.userId.toString() === "11");
+		const user10 = stats.topReactors.find((r) => r.userId === 10n);
+		const user11 = stats.topReactors.find((r) => r.userId === 11n);
 		expect(user10).toBeDefined();
 		expect(user10?.count).toBe(3);
 		expect(user11).toBeDefined();
@@ -270,9 +274,7 @@ describe("getGlobalStats", () => {
 
 		const stats = await getGlobalStats("all");
 
-		const author2 = stats.topReceivers.find(
-			(r) => r.messageAuthorId.toString() === "2",
-		);
+		const author2 = stats.topReceivers.find((r) => r.messageAuthorId === 2n);
 		expect(author2).toBeDefined();
 		expect(author2?.count).toBe(3);
 	});
@@ -315,10 +317,10 @@ describe("getTopMessages", () => {
 		const result = await getTopMessages("all");
 
 		expect(result.length).toBeGreaterThanOrEqual(2);
-		expect(result[0].messageId.toString()).toBe("1");
+		expect(result[0].messageId).toBe(1n);
 		expect(result[0].reactionCount).toBe(3);
 		expect(result[0].uniqueReactors).toBe(3);
-		expect(result[1].messageId.toString()).toBe("2");
+		expect(result[1].messageId).toBe(2n);
 		expect(result[1].reactionCount).toBe(1);
 	});
 
@@ -348,7 +350,7 @@ describe("getTopMessages", () => {
 
 		const monthResult = await getTopMessages("month");
 		expect(monthResult).toHaveLength(1);
-		expect(monthResult[0].messageId.toString()).toBe("1");
+		expect(monthResult[0].messageId).toBe(1n);
 
 		const allResult = await getTopMessages("all");
 		expect(allResult).toHaveLength(2);
