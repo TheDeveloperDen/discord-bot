@@ -6,6 +6,7 @@ import {
 	type ModalSubmitInteraction,
 } from "discord.js";
 import { config } from "../../Config.js";
+import { logger } from "../../logging.js";
 import { SuggestionStatus } from "../../store/models/Suggestion.js";
 
 import type { EventListener } from "../module.js";
@@ -15,6 +16,7 @@ import {
 	createVotesEmbed,
 	generateVoteMessage,
 	getSuggestionByMessageIdOrRecoverFromMessage,
+	removeSuggestionVotesForMember,
 	respondToSuggestionInteraction,
 	SUGGESTION_MANAGE_APPROVE_ID,
 	SUGGESTION_MANAGE_APPROVE_MODAL_ID,
@@ -254,6 +256,27 @@ export const SuggestionButtonListener: EventListener = {
 					);
 					break;
 			}
+		}
+	},
+	async guildBanAdd(client, ban) {
+		try {
+			const { removedVotes, updatedSuggestions } =
+				await removeSuggestionVotesForMember(client, BigInt(ban.user.id));
+
+			if (removedVotes > 0) {
+				logger.info(
+					"Removed %d suggestion votes from banned user %s and refreshed %d suggestion messages",
+					removedVotes,
+					ban.user.id,
+					updatedSuggestions,
+				);
+			}
+		} catch (error) {
+			logger.error(
+				"Failed to remove suggestion votes for banned user %s",
+				ban.user.id,
+				error,
+			);
 		}
 	},
 };
