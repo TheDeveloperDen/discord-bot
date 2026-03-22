@@ -1,30 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import type { Message } from "discord.js";
 import {
 	getReactionCountForEmoji,
 	getThresholdReactionCount,
 	matchesConfiguredEmoji,
 } from "./starboard.reaction-utils.js";
-
-interface ReactionStub {
-	emoji: {
-		name: string | null;
-		id: string | null;
-	};
-	count: number | null;
-}
-
-const createMessageWithReactions = (reactions: ReactionStub[]): Message => {
-	return {
-		reactions: {
-			cache: {
-				find: (
-					predicate: (reaction: ReactionStub) => boolean,
-				): ReactionStub | undefined => reactions.find(predicate),
-			},
-		},
-	} as unknown as Message;
-};
+import { createMessageWithReactions } from "./starboard.test-utils.js";
 
 describe("matchesConfiguredEmoji", () => {
 	test("matches unicode emoji with and without variation selector", () => {

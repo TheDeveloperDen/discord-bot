@@ -1,34 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import type { Message } from "discord.js";
 import { config } from "../../Config.js";
 import {
 	buildStarboardMessageContent,
 	type StarboardContentRenderOptions,
 } from "./starboard.content.js";
-
-interface ReactionStub {
-	emoji: {
-		name: string | null;
-		id: string | null;
-	};
-	count: number | null;
-}
-
-const createMessageWithReactions = (
-	url: string,
-	reactions: ReactionStub[],
-): Pick<Message, "url" | "reactions"> => {
-	return {
-		url,
-		reactions: {
-			cache: {
-				find: (
-					predicate: (reaction: ReactionStub) => boolean,
-				): ReactionStub | undefined => reactions.find(predicate),
-			},
-		},
-	} as Pick<Message, "url" | "reactions">;
-};
+import { createMessageWithUrlAndReactions } from "./starboard.test-utils.js";
 
 const starboardRenderOptions: StarboardContentRenderOptions = {
 	emojiId: config.starboard.emojiId,
@@ -43,15 +19,18 @@ describe("buildStarboardMessageContent", () => {
 			throw new Error("antiStarboard config is required for this test");
 		}
 
-		const message = createMessageWithReactions("https://discord.test/message", [
-			{
-				emoji: {
-					name: antiStarboard.emojiId,
-					id: null,
+		const message = createMessageWithUrlAndReactions(
+			"https://discord.test/message",
+			[
+				{
+					emoji: {
+						name: antiStarboard.emojiId,
+						id: null,
+					},
+					count: 2,
 				},
-				count: 2,
-			},
-		]);
+			],
+		);
 
 		expect(
 			buildStarboardMessageContent(message, 5, starboardRenderOptions),
@@ -61,7 +40,7 @@ describe("buildStarboardMessageContent", () => {
 	});
 
 	test("omits the anti-star hint when there are no anti-stars", () => {
-		const message = createMessageWithReactions(
+		const message = createMessageWithUrlAndReactions(
 			"https://discord.test/message",
 			[],
 		);
@@ -77,15 +56,18 @@ describe("buildStarboardMessageContent", () => {
 			throw new Error("antiStarboard config is required for this test");
 		}
 
-		const message = createMessageWithReactions("https://discord.test/message", [
-			{
-				emoji: {
-					name: antiStarboard.emojiId,
-					id: null,
+		const message = createMessageWithUrlAndReactions(
+			"https://discord.test/message",
+			[
+				{
+					emoji: {
+						name: antiStarboard.emojiId,
+						id: null,
+					},
+					count: 2,
 				},
-				count: 2,
-			},
-		]);
+			],
+		);
 
 		expect(
 			buildStarboardMessageContent(message, 2, {

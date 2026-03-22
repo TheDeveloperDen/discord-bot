@@ -149,21 +149,13 @@ export const createStarboardMessageFromMessage: (
 	message: Message,
 	member: GuildMember,
 	stars: number,
-	starboardMessage?: Message,
 	renderOptions?: StarboardRenderOptions,
 	contentStars?: number,
 ) => Promise<{
 	embeds: EmbedBuilder[];
 	content: string;
 	files?: AttachmentBuilder[];
-}> = async (
-	message,
-	member,
-	stars,
-	_starboardMessage,
-	renderOptions,
-	contentStars,
-) => {
+}> = async (message, member, stars, renderOptions, contentStars) => {
 	const settings = renderOptions ?? defaultRenderOptions;
 	const embeds: EmbedBuilder[] = [];
 	const files: AttachmentBuilder[] = [];

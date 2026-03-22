@@ -305,7 +305,6 @@ export const StarboardListener: EventListener = {
 									message,
 									member,
 									effectiveStarCount,
-									undefined,
 									board.config,
 									contentStarCount,
 								);
@@ -439,7 +438,6 @@ export const StarboardListener: EventListener = {
 					refreshedMessage,
 					member,
 					displayCount,
-					undefined,
 					board.config,
 					contentCount,
 				);
@@ -641,7 +639,6 @@ async function updateBoardMessage(
 			reactionMessage,
 			member,
 			starCount,
-			undefined,
 			board.config,
 			contentStarCount,
 		);
