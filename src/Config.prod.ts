@@ -22,7 +22,7 @@ export const config: Config = {
 		blacklistChannelIds: [],
 	},
 	antiStarboard: {
-		emojiId: "💀",
+		emojiId: "👎",
 		channel: "1486328029293838458",
 		threshold: 2,
 		color: "DarkRed",
