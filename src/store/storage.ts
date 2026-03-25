@@ -6,6 +6,7 @@ import {
 import { SqliteDialect } from "@sequelize/sqlite3";
 import type { ConnectionConfig } from "pg";
 import { logger } from "../logging.js";
+import { AntiStarboardMessage } from "./models/AntiStarboardMessage.js";
 import { BlockedWord } from "./models/BlockedWord.js";
 import { Bump } from "./models/Bump.js";
 import { ColourRoles } from "./models/ColourRoles.js";
@@ -83,6 +84,7 @@ export async function initStorage() {
 		FAQ,
 		Bump,
 		StarboardMessage,
+		AntiStarboardMessage,
 		ModeratorActions,
 		Suggestion,
 		SuggestionVote,

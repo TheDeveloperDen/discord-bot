@@ -1,6 +1,5 @@
 import type {
 	Channel,
-	Embed,
 	GuildMember,
 	Message,
 	SendableChannels,
@@ -9,97 +8,217 @@ import type {
 import * as schedule from "node-schedule";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
+import { AntiStarboardMessage } from "../../store/models/AntiStarboardMessage.js";
 import { ReputationEventType } from "../../store/models/ReputationEvent.js";
 import { StarboardMessage } from "../../store/models/StarboardMessage.js";
 import { getMember } from "../../util/member.js";
-import { MessageFetcher } from "../../util/ratelimiting.js";
 import { grantReputation } from "../moderation/reputation.service.js";
 import type { EventListener } from "../module.js";
 import {
+	createAntiStarboardMessage,
 	createStarboardMessage,
 	createStarboardMessageFromMessage,
+	getAntiStarboardMessageForOriginalMessageId,
 	getStarboardMessageForOriginalMessageId,
-} from "./starboard.js"; // Debounce system for starboard reactions
+	type StarboardRenderOptions,
+} from "./starboard.js";
+import {
+	getReactionCountForEmoji,
+	getThresholdReactionCount,
+	matchesConfiguredEmoji,
+} from "./starboard.reaction-utils.js";
 
-// Debounce system for starboard reactions
 interface ReactionDebounceEntry {
 	timeoutId: NodeJS.Timeout;
 	addCount: number;
 	removeCount: number;
 }
 
-const reactionDebounceMap = new Map<Snowflake, ReactionDebounceEntry>();
-const DEBOUNCE_DELAY = 2000; // 2 seconds
+type BoardKey = "starboard" | "antiStarboard";
+type BoardMessageRecord = StarboardMessage | AntiStarboardMessage;
+
+interface BoardRuntimeConfig extends StarboardRenderOptions {
+	channel: Snowflake;
+	blacklistChannelIds?: Snowflake[];
+}
+
+interface BoardDefinition {
+	key: BoardKey;
+	name: string;
+	config: BoardRuntimeConfig;
+	model: typeof StarboardMessage | typeof AntiStarboardMessage;
+	getMessageForOriginalMessageId: (
+		originalMessageId: Snowflake,
+	) => Promise<BoardMessageRecord | null>;
+	createMessage: (
+		originalMessageId: Snowflake,
+		originalMessageChannelId: Snowflake,
+		starboardMessageId: Snowflake,
+	) => Promise<BoardMessageRecord>;
+	grantReputation: boolean;
+}
+
+function buildBoardDefinitions(): BoardDefinition[] {
+	const boards: BoardDefinition[] = [
+		{
+			key: "starboard",
+			name: "starboard",
+			config: {
+				emojiId: config.starboard.emojiId,
+				channel: config.starboard.channel,
+				threshold: config.starboard.threshold,
+				color: config.starboard.color,
+				blacklistChannelIds: config.starboard.blacklistChannelIds,
+			},
+			model: StarboardMessage,
+			getMessageForOriginalMessageId: getStarboardMessageForOriginalMessageId,
+			createMessage: createStarboardMessage,
+			grantReputation: true,
+		},
+	];
+
+	if (config.antiStarboard) {
+		boards.push({
+			key: "antiStarboard",
+			name: "anti-starboard",
+			config: {
+				emojiId: config.antiStarboard.emojiId,
+				channel: config.antiStarboard.channel,
+				threshold: config.antiStarboard.threshold,
+				color: config.antiStarboard.color,
+				blacklistChannelIds: config.antiStarboard.blacklistChannelIds,
+			},
+			model: AntiStarboardMessage,
+			getMessageForOriginalMessageId:
+				getAntiStarboardMessageForOriginalMessageId,
+			createMessage: createAntiStarboardMessage,
+			grantReputation: false,
+		});
+	}
+
+	return boards;
+}
+
+const boardDefinitions = buildBoardDefinitions();
+const reactionDebounceMap = new Map<string, ReactionDebounceEntry>();
+const DEBOUNCE_DELAY = 2000;
+
+const getDebounceKey = (boardKey: BoardKey, messageId: Snowflake): string => {
+	return `${boardKey}:${messageId}`;
+};
+
+const getBoardForReaction = (
+	emojiName: string | null,
+	emojiId: string | null,
+): BoardDefinition | null => {
+	if (!emojiName && !emojiId) {
+		return null;
+	}
+
+	for (const board of boardDefinitions) {
+		if (matchesConfiguredEmoji(emojiName, emojiId, board.config.emojiId)) {
+			return board;
+		}
+	}
+
+	return null;
+};
+
+const isBoardChannel = (channelId: Snowflake): boolean => {
+	return boardDefinitions.some((board) => board.config.channel === channelId);
+};
 
 export const debounceStarboardReaction = (
+	boardKey: BoardKey,
 	messageId: Snowflake,
 	isAdd: boolean,
 	callback: () => Promise<void>,
 ): void => {
-	const existing = reactionDebounceMap.get(messageId);
+	const key = getDebounceKey(boardKey, messageId);
+	const existing = reactionDebounceMap.get(key);
 
 	if (existing) {
-		// Clear the existing timeout
 		clearTimeout(existing.timeoutId);
 
-		// Update counters
 		if (isAdd) {
 			existing.addCount++;
 		} else {
 			existing.removeCount++;
 		}
 
-		// Check if we should cancel execution (equal adds and removes)
-		const shouldCancel = existing.addCount === existing.removeCount;
-
-		if (shouldCancel) {
-			// Remove from map and don't execute
-			reactionDebounceMap.delete(messageId);
+		if (existing.addCount === existing.removeCount) {
+			reactionDebounceMap.delete(key);
 			return;
 		}
 	} else {
-		// Create new entry
-		reactionDebounceMap.set(messageId, {
-			timeoutId: setTimeout(() => {}, 0), // Placeholder, will be replaced immediately
+		reactionDebounceMap.set(key, {
+			timeoutId: setTimeout(() => {}, 0),
 			addCount: isAdd ? 1 : 0,
 			removeCount: isAdd ? 0 : 1,
 		});
 	}
 
-	const entry = reactionDebounceMap.get(messageId);
+	const entry = reactionDebounceMap.get(key);
 	if (!entry) {
 		return;
 	}
 
-	// Set new timeout
 	entry.timeoutId = setTimeout(async () => {
 		try {
 			await callback();
 		} finally {
-			reactionDebounceMap.delete(messageId);
+			reactionDebounceMap.delete(key);
 		}
 	}, DEBOUNCE_DELAY);
 };
 
-const getStarsFromEmbed: (embed: Embed) => number = (embed) => {
-	const field = embed.fields.find((field) => field.name === "Details:");
-	if (!field) return 0;
-
-	const split = field.value.split("|");
-	if (split.length < 2) return 0;
-	const stars = split[0]?.split(":")[1]?.trim();
-	if (!stars) return 0;
-	return Number.parseInt(stars, 10);
+const isChannelBlacklisted = (
+	channel: Channel,
+	board: BoardDefinition,
+): boolean => {
+	return board.config.blacklistChannelIds?.includes(channel.id) || false;
 };
 
-const isChannelBlacklisted = (channel: Channel): boolean => {
-	return config.starboard.blacklistChannelIds?.includes(channel.id) || false;
+const getReactionCountForBoard = (
+	message: Message,
+	board: BoardDefinition,
+): number => {
+	return getReactionCountForEmoji(message, board.config.emojiId);
+};
+
+const getBoardByKey = (key: BoardKey): BoardDefinition | undefined => {
+	return boardDefinitions.find((board) => board.key === key);
+};
+
+const getDisplayCountForBoard = (
+	message: Message,
+	board: BoardDefinition,
+): number => {
+	const boardCount = getReactionCountForBoard(message, board);
+	if (board.key !== "starboard") {
+		return boardCount;
+	}
+
+	const antiStarboard = getBoardByKey("antiStarboard");
+	if (!antiStarboard) {
+		return boardCount;
+	}
+
+	const antiStarCount = getReactionCountForBoard(message, antiStarboard);
+	return Math.max(boardCount - antiStarCount, 0);
+};
+
+const getContentCountForBoard = (
+	message: Message,
+	board: BoardDefinition,
+): number => {
+	return getReactionCountForBoard(message, board);
 };
 
 export const StarboardListener: EventListener = {
 	async clientReady(client) {
-		// Message fetching handled by DeletedMessagesListener - messages will be in Discord.js cache
 		let isRunningStarboardCheck = false;
+
 		schedule.scheduleJob(
 			{
 				hour: 0,
@@ -111,88 +230,101 @@ export const StarboardListener: EventListener = {
 					return;
 				}
 				isRunningStarboardCheck = true;
+
 				try {
-					logger.info("Starting daily starboard check...");
-					const starboardMessages = await StarboardMessage.findAll();
-					for (const dbStarboardMessage of starboardMessages) {
-						const guild = await client.guilds.fetch(config.guildId);
+					const guild = await client.guilds.fetch(config.guildId);
 
-						const channel = await guild.channels.fetch(
-							dbStarboardMessage.originalMessageChannelId.toString(),
-						);
-						if (!channel?.isTextBased() || isChannelBlacklisted(channel))
-							return;
+					for (const board of boardDefinitions) {
+						logger.info(`Starting daily ${board.name} check...`);
+						const boardMessages = await board.model.findAll();
 
-						const starboardChannel = await guild.channels.fetch(
-							config.starboard.channel,
-						);
-						if (
-							!starboardChannel ||
-							!starboardChannel.isTextBased() ||
-							!starboardChannel.isSendable()
-						) {
-							logger.error(
-								"Starboard channel not found, not a text channel or not sendable",
+						for (const dbBoardMessage of boardMessages) {
+							const channel = await guild.channels.fetch(
+								dbBoardMessage.originalMessageChannelId.toString(),
 							);
-							return;
-						}
-						let message: Message | null = null;
-						try {
-							message = await channel.messages.fetch(
-								dbStarboardMessage.originalMessageId.toString(),
-							);
-						} catch (e) {
-							logger.error(
-								"There was an error fetching the original Starboard message: ",
-								e,
-							);
-							continue;
-						}
+							if (
+								!channel?.isTextBased() ||
+								isChannelBlacklisted(channel, board)
+							) {
+								continue;
+							}
 
-						const member = await getMember(message);
-						if (!member) {
-							logger.error(
-								"Member not found for message %s",
-								dbStarboardMessage.originalMessageId,
+							const boardChannel = await guild.channels.fetch(
+								board.config.channel,
 							);
-							continue;
-						}
-						const starboardMessage = await starboardChannel.messages.fetch(
-							dbStarboardMessage.starboardMessageId.toString(),
-						);
+							if (
+								!boardChannel ||
+								!boardChannel.isTextBased() ||
+								!boardChannel.isSendable()
+							) {
+								logger.error(
+									`${board.name} channel not found, not a text channel or not sendable`,
+								);
+								continue;
+							}
 
-						if (!starboardMessage) {
-							await dbStarboardMessage.destroy();
-							continue;
-						}
+							let message: Message | null = null;
+							try {
+								message = await channel.messages.fetch(
+									dbBoardMessage.originalMessageId.toString(),
+								);
+							} catch (error) {
+								logger.error(
+									`There was an error fetching the original ${board.name} message`,
+									error,
+								);
+								continue;
+							}
 
-						const messageStarCount =
-							message.reactions.cache.get(config.starboard.emojiId)?.count || 0;
-						const starboardStarCount = getStarsFromEmbed(
-							starboardMessage.embeds[0],
-						);
-						if (messageStarCount !== starboardStarCount) {
-							const starboardMessageContent =
+							const member = await getMember(message);
+							if (!member) {
+								logger.error(
+									"Member not found for message %s",
+									dbBoardMessage.originalMessageId,
+								);
+								continue;
+							}
+
+							let boardMessage: Message | null;
+							try {
+								boardMessage = await boardChannel.messages.fetch(
+									dbBoardMessage.starboardMessageId.toString(),
+								);
+							} catch (error) {
+								logger.error(`Error fetching ${board.name} message`, error);
+								continue;
+							}
+
+							const effectiveStarCount = getDisplayCountForBoard(
+								message,
+								board,
+							);
+							const contentStarCount = getContentCountForBoard(message, board);
+							const boardMessageContent =
 								await createStarboardMessageFromMessage(
 									message,
 									member,
-									messageStarCount,
+									effectiveStarCount,
+									board.config,
+									contentStarCount,
 								);
-							await starboardMessage.edit(starboardMessageContent);
+							if (boardMessage.content !== boardMessageContent.content) {
+								await boardMessage.edit(boardMessageContent);
+								logger.info(
+									`${board.name} message %s for message %s has been updated`,
+									dbBoardMessage.starboardMessageId,
+									dbBoardMessage.originalMessageId,
+								);
+							}
+
 							logger.info(
-								`Starboard message %s for message %s has been updated`,
-								dbStarboardMessage.starboardMessageId,
-								dbStarboardMessage.originalMessageId,
+								`${board.name} message %s for message %s has been checked`,
+								dbBoardMessage.starboardMessageId,
+								dbBoardMessage.originalMessageId,
 							);
+
+							await new Promise((resolve) => setTimeout(resolve, 1000));
 						}
-
-						logger.info(
-							`Starboard message %s for message %s has been checked`,
-							dbStarboardMessage.starboardMessageId,
-							dbStarboardMessage.originalMessageId,
-						);
-
-						await new Promise((resolve) => setTimeout(resolve, 1000));
 					}
 				} finally {
 					isRunningStarboardCheck = false;
@@ -200,247 +332,318 @@ export const StarboardListener: EventListener = {
 			},
 		);
 	},
+
 	async messageReactionAdd(_, reaction) {
-		if (isChannelBlacklisted(reaction.message.channel)) return;
 		if (reaction.partial) {
-			// If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
 			try {
 				await reaction.fetch();
 			} catch (error) {
-				console.error(
-					"Starboard: Something went wrong when fetching the reaction:",
+				logger.error(
+					"Board: Something went wrong when fetching the reaction",
 					error,
 				);
-				// Return as `reaction.message.author` may be undefined/null
 				return;
 			}
 		}
 
 		let message = reaction.message;
 		if (message.partial) {
-			// If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
 			try {
 				message = await message.fetch();
 			} catch (error) {
-				console.error(
-					"Starboard: Something went wrong when fetching the message:",
+				logger.error(
+					"Board: Something went wrong when fetching the message",
 					error,
 				);
 				return;
 			}
 		}
-		if (
-			!message.inGuild() ||
-			message.author.bot ||
-			message.author.system ||
-			message.channel.id === config.starboard.channel ||
-			reaction.emoji.name !== config.starboard.emojiId
-		)
+
+		if (!message.inGuild() || message.author.bot || message.author.system) {
 			return;
+		}
 
-		debounceStarboardReaction(message.id, true, async () => {
+		if (isBoardChannel(message.channel.id)) {
+			return;
+		}
+
+		const board = getBoardForReaction(reaction.emoji.name, reaction.emoji.id);
+		if (!board) {
+			return;
+		}
+
+		if (isChannelBlacklisted(message.channel, board)) {
+			return;
+		}
+
+		debounceStarboardReaction(board.key, message.id, true, async () => {
 			reaction = await reaction.fetch();
-			const count = reaction.count || 1;
-			console.log(count, count >= config.starboard.threshold);
+			const refreshedMessage = await message.fetch();
+			if (board.key === "antiStarboard") {
+				await syncStarboardMessageScore(refreshedMessage);
+			}
 
-			if (count >= config.starboard.threshold) {
-				const starboardChannel = await message.guild.channels.fetch(
-					config.starboard.channel,
+			const count = getThresholdReactionCount(
+				refreshedMessage,
+				board.config.emojiId,
+				reaction.count,
+			);
+			if (count < board.config.threshold) {
+				logger.debug(
+					`Skipping ${board.name} post for message ${refreshedMessage.id}: ${count}/${board.config.threshold} reactions`,
 				);
+				return;
+			}
 
-				if (
-					!starboardChannel?.isTextBased() ||
-					!starboardChannel.isSendable()
-				) {
-					logger.error(
-						"Starboard channel not found, not a text channel or not sendable",
+			const boardChannel = await refreshedMessage.guild.channels.fetch(
+				board.config.channel,
+			);
+			if (!boardChannel?.isTextBased() || !boardChannel.isSendable()) {
+				logger.error(
+					`${board.name} channel not found, not a text channel or not sendable`,
+				);
+				return;
+			}
+
+			const existingBoardMessage = await board.getMessageForOriginalMessageId(
+				refreshedMessage.id,
+			);
+			try {
+				const member = await getMember(refreshedMessage);
+				if (!member) {
+					logger.info(
+						"Member not found for reaction message id %s, skipping",
+						refreshedMessage.id,
 					);
 					return;
 				}
 
-				const existingStarboardMessage =
-					await getStarboardMessageForOriginalMessageId(message.id);
-				try {
-					const member = await getMember(message);
+				const displayCount = getDisplayCountForBoard(refreshedMessage, board);
+				const contentCount = getContentCountForBoard(refreshedMessage, board);
 
-					if (!member) {
-						logger.info(
-							"Member not found for reaction message id %s, skipping",
-							message.id,
-						);
-						return;
-					}
-
-					if (existingStarboardMessage) {
-						// Already on the starboard so update it
-						await updateStarboardMessage(
-							starboardChannel,
-							existingStarboardMessage,
-							message,
-							member,
-							count,
-						);
-						return;
-					}
-
-					const starboardMessageContent =
-						await createStarboardMessageFromMessage(message, member, count);
-
-					const starboardMessage = await starboardChannel.send({
-						...starboardMessageContent,
-						allowedMentions: {
-							parse: [],
-						},
-					});
-
-					if (!existingStarboardMessage) {
-						await createStarboardMessage(
-							message.id,
-							message.channelId,
-							starboardMessage.id,
-						);
-
-						// Grant reputation for reaching starboard
-						try {
-							await grantReputation(
-								BigInt(message.author.id),
-								ReputationEventType.STARBOARD_MESSAGE,
-								BigInt(message.author.id), // Self-granted via starboard
-								`Message reached starboard with ${count} stars`,
-							);
-							logger.debug(
-								`Granted starboard reputation to user ${message.author.id}`,
-							);
-						} catch (error) {
-							logger.error("Failed to grant starboard reputation:", error);
-						}
-					}
-				} catch (error) {
-					logger.error("Error sending starboard message", error);
+				if (existingBoardMessage) {
+					await updateBoardMessage(
+						board,
+						boardChannel,
+						existingBoardMessage,
+						refreshedMessage,
+						member,
+						displayCount,
+						contentCount,
+					);
+					return;
 				}
+
+				const boardMessageContent = await createStarboardMessageFromMessage(
+					refreshedMessage,
+					member,
+					displayCount,
+					board.config,
+					contentCount,
+				);
+
+				const boardMessage = await boardChannel.send({
+					...boardMessageContent,
+					allowedMentions: {
+						parse: [],
+					},
+				});
+
+				await board.createMessage(
+					refreshedMessage.id,
+					refreshedMessage.channelId,
+					boardMessage.id,
+				);
+
+				if (board.grantReputation) {
+					try {
+						await grantReputation(
+							BigInt(refreshedMessage.author.id),
+							ReputationEventType.STARBOARD_MESSAGE,
+							BigInt(refreshedMessage.author.id),
+							`Message reached starboard with ${displayCount} stars`,
+						);
+						logger.debug(
+							`Granted starboard reputation to user ${refreshedMessage.author.id}`,
+						);
+					} catch (error) {
+						logger.error("Failed to grant starboard reputation", error);
+					}
+				}
+			} catch (error) {
+				logger.error(`Error sending ${board.name} message`, error);
 			}
 		});
 	},
 
 	async messageReactionRemove(_, reaction) {
-		if (isChannelBlacklisted(reaction.message.channel)) return;
 		if (reaction.partial) {
-			// If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
 			try {
 				await reaction.fetch();
 			} catch (error) {
-				console.error(
-					"Starboard: Something went wrong when fetching the reaction:",
+				logger.error(
+					"Board: Something went wrong when fetching the reaction",
 					error,
 				);
-				// Return as `reaction.message.author` may be undefined/null
 				return;
 			}
 		}
 
 		let message = reaction.message;
 		if (message.partial) {
-			// If the message this reaction belongs to was removed, the fetching might result in an API error which should be handled
 			try {
 				message = await message.fetch();
 			} catch (error) {
-				console.error(
-					"Starboard: Something went wrong when fetching the message:",
+				logger.error(
+					"Board: Something went wrong when fetching the message",
 					error,
 				);
 				return;
 			}
 		}
-		if (
-			!message.inGuild() ||
-			message.author.bot ||
-			message.author.system ||
-			message.channel.id === config.starboard.channel ||
-			reaction.emoji.name !== config.starboard.emojiId
-		)
+
+		if (!message.inGuild() || message.author.bot || message.author.system) {
 			return;
+		}
 
-		debounceStarboardReaction(message.id, false, async () => {
+		if (isBoardChannel(message.channel.id)) {
+			return;
+		}
+
+		const board = getBoardForReaction(reaction.emoji.name, reaction.emoji.id);
+		if (!board) {
+			return;
+		}
+
+		if (isChannelBlacklisted(message.channel, board)) {
+			return;
+		}
+
+		debounceStarboardReaction(board.key, message.id, false, async () => {
 			reaction = await reaction.fetch();
-			const count = reaction.count || 0;
+			const refreshedMessage = await message.fetch();
+			if (board.key === "antiStarboard") {
+				await syncStarboardMessageScore(refreshedMessage);
+			}
 
-			const existingStarboardMessage =
-				await getStarboardMessageForOriginalMessageId(message.id);
-			if (!existingStarboardMessage) return;
+			const existingBoardMessage = await board.getMessageForOriginalMessageId(
+				refreshedMessage.id,
+			);
+			if (!existingBoardMessage) {
+				return;
+			}
 
 			try {
-				const member = await getMember(message);
-
+				const member = await getMember(refreshedMessage);
 				if (!member) {
 					logger.info(
 						"Member not found for reaction message id: %s",
-						reaction.message.id,
+						refreshedMessage.id,
 					);
 					return;
 				}
 
-				if (existingStarboardMessage) {
-					const starboardChannel = await message.guild.channels.fetch(
-						config.starboard.channel,
+				const boardChannel = await refreshedMessage.guild.channels.fetch(
+					board.config.channel,
+				);
+				if (!boardChannel?.isTextBased() || !boardChannel.isSendable()) {
+					logger.error(
+						`${board.name} channel not found, not a text channel or not sendable`,
 					);
-					if (
-						!starboardChannel?.isTextBased() ||
-						!starboardChannel.isSendable()
-					) {
-						logger.error(
-							"Starboard channel not found, not a text channel or not sendable",
-						);
-						return;
-					}
-
-					await updateStarboardMessage(
-						starboardChannel,
-						existingStarboardMessage,
-						message,
-						member,
-						count,
-					);
+					return;
 				}
+
+				await updateBoardMessage(
+					board,
+					boardChannel,
+					existingBoardMessage,
+					refreshedMessage,
+					member,
+					getDisplayCountForBoard(refreshedMessage, board),
+					getContentCountForBoard(refreshedMessage, board),
+				);
 			} catch (error) {
-				logger.error("Error sending starboard message", error);
+				logger.error(`Error updating ${board.name} message`, error);
 			}
 		});
 	},
 };
 
-async function updateStarboardMessage(
-	starboardChannel: SendableChannels,
-	starboardMessageEntity: StarboardMessage,
+async function syncStarboardMessageScore(message: Message<true>) {
+	const starboard = getBoardByKey("starboard");
+	if (!starboard) {
+		return;
+	}
+
+	const existingStarboardMessage =
+		await starboard.getMessageForOriginalMessageId(message.id);
+	if (!existingStarboardMessage) {
+		return;
+	}
+
+	const member = await getMember(message);
+	if (!member) {
+		logger.info(
+			"Member not found while syncing starboard score for message id %s",
+			message.id,
+		);
+		return;
+	}
+
+	const boardChannel = await message.guild.channels.fetch(
+		starboard.config.channel,
+	);
+	if (!boardChannel?.isTextBased() || !boardChannel.isSendable()) {
+		logger.error(
+			"starboard channel not found, not a text channel or not sendable",
+		);
+		return;
+	}
+
+	await updateBoardMessage(
+		starboard,
+		boardChannel,
+		existingStarboardMessage,
+		message,
+		member,
+		getDisplayCountForBoard(message, starboard),
+		getContentCountForBoard(message, starboard),
+	);
+}
+
+async function updateBoardMessage(
+	board: BoardDefinition,
+	boardChannel: SendableChannels,
+	boardMessageEntity: BoardMessageRecord,
 	reactionMessage: Message<true>,
 	member: GuildMember,
 	starCount: number,
+	contentStarCount: number,
 ) {
 	try {
-		let starboardMessage: Message | null;
+		let boardMessage: Message | null;
 		try {
-			starboardMessage = await starboardChannel.messages.fetch(
-				starboardMessageEntity.starboardMessageId.toString(),
+			boardMessage = await boardChannel.messages.fetch(
+				boardMessageEntity.starboardMessageId.toString(),
 			);
 		} catch (error) {
-			// we can't find the message on discord, but it's not necessarily deleted. keep it in database in case of connection issues
-			// or just for archiving
-			starboardMessage = null;
-			logger.error("Error fetching the starboard message", error);
+			boardMessage = null;
+			logger.error(`Error fetching the ${board.name} message`, error);
 		}
 
-		if (!starboardMessage) {
-			return; // nothing to do for now
+		if (!boardMessage) {
+			return;
 		}
-		// create a new database entry
-		const starboardMessageFromMessage = await createStarboardMessageFromMessage(
+
+		const boardMessageFromMessage = await createStarboardMessageFromMessage(
 			reactionMessage,
 			member,
 			starCount,
+			board.config,
+			contentStarCount,
 		);
-		await starboardMessage.edit(starboardMessageFromMessage);
-		return;
+		await boardMessage.edit(boardMessageFromMessage);
 	} catch (error) {
-		logger.error("Error updating the starboard message", error);
-		return;
+		logger.error(`Error updating the ${board.name} message`, error);
 	}
 }

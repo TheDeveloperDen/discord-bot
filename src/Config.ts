@@ -18,6 +18,14 @@ const devConfig: Config = {
 		emojiId: "⭐",
 		channel: "1407366658552631296",
 		threshold: 1,
+		color: "Blue",
+		blacklistChannelIds: ["904478147351806015"],
+	},
+	antiStarboard: {
+		emojiId: "💀",
+		channel: "1478460342550921237",
+		threshold: 1,
+		color: "DarkRed",
 		blacklistChannelIds: ["904478147351806015"],
 	},
 	commands: {
