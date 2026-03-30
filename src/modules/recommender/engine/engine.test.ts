@@ -61,13 +61,6 @@ describe("engine types and data", () => {
 		}
 	});
 
-	test("questions are sorted by phase when accessed", () => {
-		const phases = questions.map((q) => q.phase);
-		const sorted = [...phases].sort((a, b) => a - b);
-		// Questions should be roughly ordered by phase (may have same phase)
-		expect(phases).toEqual(sorted);
-	});
-
 	test("language IDs are unique", () => {
 		const ids = languages.map((l) => l.id);
 		expect(new Set(ids).size).toBe(ids.length);
@@ -94,6 +87,44 @@ describe("quiz state machine", () => {
 		const question = getNextQuestion(session);
 		expect(question).not.toBeNull();
 		expect(question!.id).toBe("specific_goal");
+		expect(question!.skippable).toBe(false);
+	});
+
+	test("questions are presented in non-decreasing phase order via the engine", () => {
+		let session = createQuizSession();
+		const phases: number[] = [];
+
+		while (true) {
+			const question = getNextQuestion(session);
+			if (!question) break;
+
+			phases.push(question.phase);
+
+			if (question.id === "specific_goal") {
+				session = applyAnswer(session, {
+					questionId: question.id,
+					selectedOptionIds: ["none"],
+				});
+				continue;
+			}
+
+			if (question.type === "scale") {
+				session = applyAnswer(session, {
+					questionId: question.id,
+					selectedOptionIds: ["3"],
+				});
+				continue;
+			}
+
+			session = applyAnswer(session, {
+				questionId: question.id,
+				selectedOptionIds: [question.options[0]!.id],
+			});
+		}
+
+		for (let i = 1; i < phases.length; i++) {
+			expect(phases[i]).toBeGreaterThanOrEqual(phases[i - 1]!);
+		}
 	});
 
 	test("answering 'none' to fast-track leads to main_goal", () => {
@@ -156,15 +187,14 @@ describe("quiz state machine", () => {
 		expect(getNextQuestion(session)).toBeNull();
 	});
 
-	test("skipping all questions marks session as completed", () => {
+	test("non-skippable questions cannot be skipped", () => {
 		let session = createQuizSession();
 
-		// Skip fast-track (skippable)
 		session = skipQuestion(session, "specific_goal");
 
-		// main_goal condition requires specific_goal answered "none", but we skipped
-		// so main_goal won't appear — quiz should complete with no applicable questions
-		expect(session.completed).toBe(true);
+		expect(session.answers).toEqual([]);
+		expect(session.completed).toBe(false);
+		expect(getNextQuestion(session)?.id).toBe("specific_goal");
 	});
 });
 

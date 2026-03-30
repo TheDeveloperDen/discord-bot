@@ -95,6 +95,13 @@ export function skipQuestion(
 	session: QuizSession,
 	questionId: string,
 ): QuizSession {
+	const question = getSortedQuestions().find(
+		(candidate) => candidate.id === questionId,
+	);
+	if (!question || !question.skippable) {
+		return session;
+	}
+
 	// Record the skip as an answer with no selections (for condition tracking)
 	const skipAnswer: QuizAnswer = {
 		questionId,

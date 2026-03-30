@@ -7,7 +7,7 @@ export const questions: Question[] = [
 		text: "Do you already have something specific in mind?",
 		type: "single",
 		phase: 0,
-		skippable: true,
+		skippable: false,
 		options: [
 			{
 				id: "minecraft_plugins",

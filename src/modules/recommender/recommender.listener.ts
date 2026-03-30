@@ -1,5 +1,4 @@
 import { type GuildMember, type Interaction, MessageFlags } from "discord.js";
-import { getResourceEmbed } from "../learning/learning.command.js";
 import { getResource } from "../learning/resourcesCache.util.js";
 import type { EventListener } from "../module.js";
 import {
@@ -110,14 +109,12 @@ export const RecommenderListener: EventListener = {
 
 		const stored = sessions.get(parsed.sessionKey);
 		if (!stored) {
-			if (interaction.isButton()) {
-				await interaction.reply({
-					content:
-						"This quiz session has expired. Use `/whatlang` to start a new one!",
-					flags: MessageFlags.Ephemeral,
-					withResponse: false,
-				});
-			}
+			await interaction.reply({
+				content:
+					"This quiz session has expired. Use `/whatlang` to start a new one!",
+				flags: MessageFlags.Ephemeral,
+				withResponse: false,
+			});
 			return;
 		}
 
@@ -301,6 +298,7 @@ async function handleLearnPick(
 		return;
 	}
 
+	const { getResourceEmbed } = await import("../learning/learning.command.js");
 	const embed = getResourceEmbed(
 		interaction.client,
 		resource,
