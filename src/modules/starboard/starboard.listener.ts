@@ -9,9 +9,12 @@ import * as schedule from "node-schedule";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
 import { AntiStarboardMessage } from "../../store/models/AntiStarboardMessage.js";
+import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import { ReputationEventType } from "../../store/models/ReputationEvent.js";
 import { StarboardMessage } from "../../store/models/StarboardMessage.js";
 import { getMember } from "../../util/member.js";
+import { notifyMultipleAchievements } from "../achievements/achievementNotifier.js";
+import { checkAndAwardAchievements } from "../achievements/achievementService.js";
 import { grantReputation } from "../moderation/reputation.service.js";
 import type { EventListener } from "../module.js";
 import {
@@ -333,7 +336,7 @@ export const StarboardListener: EventListener = {
 		);
 	},
 
-	async messageReactionAdd(_, reaction) {
+	async messageReactionAdd(client, reaction) {
 		if (reaction.partial) {
 			try {
 				await reaction.fetch();
@@ -468,6 +471,38 @@ export const StarboardListener: EventListener = {
 						);
 					} catch (error) {
 						logger.error("Failed to grant starboard reputation", error);
+					}
+				}
+
+				if (board.key === "starboard") {
+					try {
+						const ddUser = await getOrCreateUserById(
+							BigInt(refreshedMessage.author.id),
+						);
+						ddUser.starboardCount = (ddUser.starboardCount ?? 0) + 1;
+						await ddUser.save();
+
+						const newAchievements = await checkAndAwardAchievements(
+							ddUser,
+							{ type: "starboard", event: "starboard_reached" },
+							{ starboardCount: ddUser.starboardCount },
+						);
+
+						if (newAchievements.length > 0) {
+							const member = await refreshedMessage.guild?.members.fetch(
+								refreshedMessage.author.id,
+							);
+							if (member) {
+								await notifyMultipleAchievements(
+									client,
+									member,
+									newAchievements.map((a) => a.definition),
+									refreshedMessage.channel,
+								);
+							}
+						}
+					} catch (error) {
+						logger.error("Failed to check starboard achievements", error);
 					}
 				}
 			} catch (error) {

@@ -54,6 +54,10 @@ export class DDUser extends Model<
 	@Default(0)
 	public declare reputationScore: number;
 
+	@Attribute(DataTypes.INTEGER)
+	@Default(0)
+	public declare starboardCount: number;
+
 	@AllowNull
 	@Attribute(DataTypes.DATE)
 	public declare lastReputationUpdate: Date | null;
@@ -140,6 +144,7 @@ export const getOrCreateUserById = async (id: bigint) =>
 							currentDailyStreak: 0,
 							highestDailyStreak: 0,
 							reputationScore: 0,
+							starboardCount: 0,
 						},
 						benchmark: true,
 					});
