@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/node";
+import * as Sentry from "@sentry/bun";
 import type { Client, ClientEvents, Snowflake } from "discord.js";
 import { CommandManager } from "djs-slash-helper";
 import { logger } from "../logging.js";

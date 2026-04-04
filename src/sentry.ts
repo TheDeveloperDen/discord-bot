@@ -13,15 +13,3 @@ export function initSentry(client: Client) {
 		Sentry.captureException(error);
 	});
 }
-
-// TODO remove
-export function wrapInTransaction<A extends Array<Item>, Item, T>(
-	name: string,
-	f: (trans: Sentry.Span, ...a: A) => T,
-): (...a: A) => T {
-	return (...a: A) => {
-		return Sentry.startSpan({ name }, (span) => {
-			return f(span, ...a);
-		});
-	};
-}

@@ -16,6 +16,7 @@ export type AchievementCategory =
 export type AchievementTrigger =
 	| { type: "bump"; event: "bump_recorded" }
 	| { type: "daily"; event: "daily_claimed" }
+	| { type: "xp"; event: "xp_gained" }
 	| { type: "starboard"; event: "starboard_reached" }
 	| { type: "introduction"; event: "intro_posted" }
 	| {
@@ -30,6 +31,9 @@ export interface AchievementContext {
 	bumpStreak?: number;
 	// Daily context
 	dailyStreak?: number;
+	// XP context
+	totalXp?: bigint;
+	level?: number;
 	// Starboard context
 	starboardCount?: number;
 	// Suggestion context

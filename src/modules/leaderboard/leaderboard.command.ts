@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/bun";
 import type {
 	APIApplicationCommandOptionChoice,
 	GuildMember,
@@ -7,7 +8,6 @@ import {
 	ApplicationCommandType,
 } from "discord.js";
 import type { Command } from "djs-slash-helper";
-import { wrapInTransaction } from "../../sentry.js";
 import { DDUser } from "../../store/models/DDUser.js";
 import { branding } from "../../util/branding.js";
 import { createStandardEmbed } from "../../util/embeds.js";
@@ -171,52 +171,56 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
 		},
 	],
 
-	handle: wrapInTransaction("leaderboard", async (_, interaction) => {
-		await interaction.deferReply();
-		const guild = interaction.guild;
-		if (guild == null) {
-			await interaction.followUp("This command can only be used in a server");
-			return;
-		}
-		const option = interaction.options.get("type", true).value as string;
-		const traitInfo = info.find((it) => it.value === option);
-		if (traitInfo == null) {
-			await interaction.followUp("Invalid leaderboard type");
-			return;
-		}
-		if (traitInfo.value === "currentDailyStreak") {
-			// manually refresh all the dailies. this is not very efficient
-			const all = await DDUser.findAll();
-			await Promise.all(all.map(getActualDailyStreak));
-		}
-		const { format, name } = traitInfo;
+	async handle(interaction) {
+		await Sentry.startSpan({ name: "leaderboard", op: "command" }, async () => {
+			await interaction.deferReply();
+			const guild = interaction.guild;
+			if (guild == null) {
+				await interaction.followUp("This command can only be used in a server");
+				return;
+			}
+			const option = interaction.options.get("type", true).value as string;
+			const traitInfo = info.find((it) => it.value === option);
+			if (traitInfo == null) {
+				await interaction.followUp("Invalid leaderboard type");
+				return;
+			}
+			if (traitInfo.value === "currentDailyStreak") {
+				// manually refresh all the dailies. this is not very efficient
+				const all = await DDUser.findAll();
+				await Promise.all(all.map(getActualDailyStreak));
+			}
+			const { format, name } = traitInfo;
 
-		const mappedUsers = await getLeaderboardUsers(traitInfo);
+			const mappedUsers = await getLeaderboardUsers(traitInfo);
 
-		if (mappedUsers.length === 0) {
-			await interaction.followUp("No applicable users");
-			return;
-		}
-		const embed = {
-			...createStandardEmbed(interaction.member as GuildMember),
-			title: `${branding.name} Leaderboard`,
-			description: `The top ${mappedUsers.length} users based on ${name}`,
-			fields: await Promise.all(
-				mappedUsers.map(async (userData, index) => {
-					const discordUser = await guild.client.users
-						.fetch(userData.userId)
-						.catch(() => null);
+			if (mappedUsers.length === 0) {
+				await interaction.followUp("No applicable users");
+				return;
+			}
+			const embed = {
+				...createStandardEmbed(interaction.member as GuildMember),
+				title: `${branding.name} Leaderboard`,
+				description: `The top ${mappedUsers.length} users based on ${name}`,
+				fields: await Promise.all(
+					mappedUsers.map(async (userData, index) => {
+						const discordUser = await guild.client.users
+							.fetch(userData.userId)
+							.catch(() => null);
 
-					return {
-						name: `${medal(index)} #${index + 1} - ${format(userData.count)}`.trimStart(),
-						value:
-							discordUser == null ? "Unknown User" : actualMention(discordUser),
-					};
-				}),
-			),
-		};
-		await interaction.followUp({ embeds: [embed] });
-	}),
+						return {
+							name: `${medal(index)} #${index + 1} - ${format(userData.count)}`.trimStart(),
+							value:
+								discordUser == null
+									? "Unknown User"
+									: actualMention(discordUser),
+						};
+					}),
+				),
+			};
+			await interaction.followUp({ embeds: [embed] });
+		});
+	},
 };
 
 function formatDays(days: number | bigint) {

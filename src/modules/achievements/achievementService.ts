@@ -4,7 +4,7 @@
  * Core logic for checking and awarding achievements to users.
  */
 
-import * as Sentry from "@sentry/node";
+import * as Sentry from "@sentry/bun";
 import { UniqueConstraintError } from "@sequelize/core";
 import { logger } from "../../logging.js";
 import type { DDUser } from "../../store/models/DDUser.js";
@@ -45,6 +45,7 @@ export async function checkAndAwardAchievements(
 	return await Sentry.startSpan(
 		{
 			name: "checkAndAwardAchievements",
+			op: "db",
 			attributes: {
 				userId: user.id.toString(),
 				triggerType: trigger.type,
