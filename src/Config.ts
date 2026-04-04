@@ -10,7 +10,7 @@ const devConfig: Config = {
 		hotTake: "904478147351806015",
 		showcase: "952536628533030942",
 		auditLog: "994623474557538415",
-    introductions: "904478147351806015",
+    introductions: "1489936217909755964",
     modLog: "994623474557538415",
 		general: "904478147351806015",
 		leaderboard: "904478147351806015",
