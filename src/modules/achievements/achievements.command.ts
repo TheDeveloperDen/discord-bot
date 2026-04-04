@@ -26,7 +26,9 @@ import {
 const CATEGORY_ORDER: AchievementCategory[] = [
 	"bump",
 	"daily",
-	"xp",
+	"starboard",
+	"introduction",
+	"suggestion",
 	"special",
 ];
 
@@ -49,7 +51,9 @@ export const AchievementsCommand: Command<ApplicationCommandType.ChatInput> = {
 			choices: [
 				{ name: "Bump Achievements", value: "bump" },
 				{ name: "Daily Achievements", value: "daily" },
-				{ name: "XP Achievements", value: "xp" },
+				{ name: "Starboard Achievements", value: "starboard" },
+				{ name: "Introduction Achievements", value: "introduction" },
+				{ name: "Suggestion Achievements", value: "suggestion" },
 				{ name: "Special Achievements", value: "special" },
 			],
 		},

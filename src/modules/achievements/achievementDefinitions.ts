@@ -5,12 +5,24 @@
  * when relevant triggers occur (bump, daily, xp events).
  */
 
-export type AchievementCategory = "bump" | "daily" | "xp" | "special";
+export type AchievementCategory =
+	| "bump"
+	| "daily"
+	| "starboard"
+	| "introduction"
+	| "suggestion"
+	| "special";
 
 export type AchievementTrigger =
 	| { type: "bump"; event: "bump_recorded" }
 	| { type: "daily"; event: "daily_claimed" }
 	| { type: "xp"; event: "xp_gained" }
+	| { type: "starboard"; event: "starboard_reached" }
+	| { type: "introduction"; event: "intro_posted" }
+	| {
+			type: "suggestion";
+			event: "suggestion_submitted" | "suggestion_approved";
+	  }
 	| { type: "manual"; event: "manual_grant" };
 
 export interface AchievementContext {
@@ -22,6 +34,11 @@ export interface AchievementContext {
 	// XP context
 	totalXp?: bigint;
 	level?: number;
+	// Starboard context
+	starboardCount?: number;
+	// Suggestion context
+	suggestionsSubmitted?: number;
+	suggestionsApproved?: number;
 }
 
 /** Notification mode for achievements */
@@ -182,77 +199,94 @@ const DAILY_ACHIEVEMENTS: AchievementDefinition[] = [
 ];
 
 // ─────────────────────────────────────────────────
-// XP/Chat Achievements
+// Starboard Achievements
 // ─────────────────────────────────────────────────
 
-const XP_ACHIEVEMENTS: AchievementDefinition[] = [
-	// Level milestones
-	// {
-	// 	id: "level_1",
-	// 	name: "First Steps",
-	// 	description: "Reach level 1",
-	// 	emoji: "🌱",
-	// 	category: "xp",
-	// 	trigger: { type: "xp", event: "xp_gained" },
-	// 	checkCondition: (ctx) => (ctx.level ?? 0) >= 1,
-	// 	notificationMode: "silent",
-	// },
-	// {
-	// 	id: "level_10",
-	// 	name: "Rising Star",
-	// 	description: "Reach level 10",
-	// 	emoji: "⭐",
-	// 	category: "xp",
-	// 	trigger: { type: "xp", event: "xp_gained" },
-	// 	checkCondition: (ctx) => (ctx.level ?? 0) >= 10,
-	//
-	// },
-	// {
-	// 	id: "level_25",
-	// 	name: "Experienced",
-	// 	description: "Reach level 25",
-	// 	emoji: "💎",
-	// 	category: "xp",
-	// 	trigger: { type: "xp", event: "xp_gained" },
-	// 	checkCondition: (ctx) => (ctx.level ?? 0) >= 25,
-	// },
-	// {
-	// 	id: "level_50",
-	// 	name: "Veteran",
-	// 	description: "Reach level 50",
-	// 	emoji: "🔷",
-	// 	category: "xp",
-	// 	trigger: { type: "xp", event: "xp_gained" },
-	// 	checkCondition: (ctx) => (ctx.level ?? 0) >= 50,
-	// },
-	// // XP milestones
-	// {
-	// 	id: "xp_1000",
-	// 	name: "First Thousand",
-	// 	description: "Earn 1,000 XP",
-	// 	emoji: "📈",
-	// 	category: "xp",
-	// 	trigger: { type: "xp", event: "xp_gained" },
-	// 	checkCondition: (ctx) => (ctx.totalXp ?? 0n) >= 1000n,
-	// },
-	// {
-	// 	id: "xp_10000",
-	// 	name: "Ten Thousand Club",
-	// 	description: "Earn 10,000 XP",
-	// 	emoji: "🚀",
-	// 	category: "xp",
-	// 	trigger: { type: "xp", event: "xp_gained" },
-	// 	checkCondition: (ctx) => (ctx.totalXp ?? 0n) >= 10000n,
-	// },
-	// {
-	// 	id: "xp_100000",
-	// 	name: "XP Millionaire",
-	// 	description: "Earn 1,000,000 XP",
-	// 	emoji: "💰",
-	// 	category: "xp",
-	// 	trigger: { type: "xp", event: "xp_gained" },
-	// 	checkCondition: (ctx) => (ctx.totalXp ?? 0n) >= 1_000_000n,
-	// },
+const STARBOARD_ACHIEVEMENTS: AchievementDefinition[] = [
+	{
+		id: "starboard_first",
+		name: "Starboard Debut",
+		description: "Get a message on the starboard",
+		emoji: "⭐",
+		category: "starboard",
+		trigger: { type: "starboard", event: "starboard_reached" },
+		checkCondition: (ctx) => (ctx.starboardCount ?? 0) >= 1,
+		notificationMode: "trigger",
+	},
+	{
+		id: "starboard_5",
+		name: "Crowd Pleaser",
+		description: "Get 5 messages on the starboard",
+		emoji: "🌟",
+		category: "starboard",
+		trigger: { type: "starboard", event: "starboard_reached" },
+		checkCondition: (ctx) => (ctx.starboardCount ?? 0) >= 5,
+		notificationMode: "trigger",
+	},
+	{
+		id: "starboard_25",
+		name: "Community Star",
+		description: "Get 25 messages on the starboard",
+		emoji: "🏅",
+		category: "starboard",
+		trigger: { type: "starboard", event: "starboard_reached" },
+		checkCondition: (ctx) => (ctx.starboardCount ?? 0) >= 25,
+		notificationMode: "channel",
+	},
+];
+
+// ─────────────────────────────────────────────────
+// Introduction Achievements
+// ─────────────────────────────────────────────────
+
+const INTRODUCTION_ACHIEVEMENTS: AchievementDefinition[] = [
+	{
+		id: "intro_posted",
+		name: "Hello World",
+		description: "Post an introduction to the community",
+		emoji: "👋",
+		category: "introduction",
+		trigger: { type: "introduction", event: "intro_posted" },
+		checkCondition: () => true,
+		notificationMode: "dm",
+	},
+];
+
+// ─────────────────────────────────────────────────
+// Suggestion Achievements
+// ─────────────────────────────────────────────────
+
+const SUGGESTION_ACHIEVEMENTS: AchievementDefinition[] = [
+	{
+		id: "suggestion_first",
+		name: "Idea Person",
+		description: "Submit your first suggestion",
+		emoji: "💡",
+		category: "suggestion",
+		trigger: { type: "suggestion", event: "suggestion_submitted" },
+		checkCondition: (ctx) => (ctx.suggestionsSubmitted ?? 0) >= 1,
+		notificationMode: "trigger",
+	},
+	{
+		id: "suggestion_approved",
+		name: "Approved!",
+		description: "Have a suggestion approved",
+		emoji: "✅",
+		category: "suggestion",
+		trigger: { type: "suggestion", event: "suggestion_approved" },
+		checkCondition: (ctx) => (ctx.suggestionsApproved ?? 0) >= 1,
+		notificationMode: "dm",
+	},
+	{
+		id: "suggestion_5_approved",
+		name: "Visionary",
+		description: "Have 5 suggestions approved",
+		emoji: "🔮",
+		category: "suggestion",
+		trigger: { type: "suggestion", event: "suggestion_approved" },
+		checkCondition: (ctx) => (ctx.suggestionsApproved ?? 0) >= 5,
+		notificationMode: "channel",
+	},
 ];
 
 // ─────────────────────────────────────────────────
@@ -278,7 +312,9 @@ const SPECIAL_ACHIEVEMENTS: AchievementDefinition[] = [
 export const ACHIEVEMENTS: AchievementDefinition[] = [
 	...BUMP_ACHIEVEMENTS,
 	...DAILY_ACHIEVEMENTS,
-	...XP_ACHIEVEMENTS,
+	...STARBOARD_ACHIEVEMENTS,
+	...INTRODUCTION_ACHIEVEMENTS,
+	...SUGGESTION_ACHIEVEMENTS,
 	...SPECIAL_ACHIEVEMENTS,
 ];
 
@@ -345,6 +381,8 @@ export const CATEGORY_INFO: Record<
 > = {
 	bump: { name: "Bump Achievements", emoji: "🎯" },
 	daily: { name: "Daily Achievements", emoji: "🌅" },
-	xp: { name: "XP Achievements", emoji: "📈" },
+	starboard: { name: "Starboard Achievements", emoji: "⭐" },
+	introduction: { name: "Introduction Achievements", emoji: "👋" },
+	suggestion: { name: "Suggestion Achievements", emoji: "💡" },
 	special: { name: "Special Achievements", emoji: "🛠️" },
 };

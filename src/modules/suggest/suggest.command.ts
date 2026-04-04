@@ -11,6 +11,11 @@ import {
 import type { Command } from "djs-slash-helper";
 import { config } from "../../Config.js";
 
+import { logger } from "../../logging.js";
+import { getOrCreateUserById } from "../../store/models/DDUser.js";
+import { Suggestion } from "../../store/models/Suggestion.js";
+import { notifyMultipleAchievements } from "../achievements/achievementNotifier.js";
+import { checkAndAwardAchievements } from "../achievements/achievementService.js";
 import {
 	createSuggestion,
 	createSuggestionEmbed,
@@ -112,5 +117,29 @@ export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
 			BigInt(response.id),
 			suggestionText,
 		);
+
+		try {
+			const userId = BigInt(member.id);
+			const ddUser = await getOrCreateUserById(userId);
+			const suggestionsSubmitted = await Suggestion.count({
+				where: { memberId: userId },
+			});
+			const newAchievements = await checkAndAwardAchievements(
+				ddUser,
+				{ type: "suggestion", event: "suggestion_submitted" },
+				{ suggestionsSubmitted },
+			);
+
+			if (newAchievements.length > 0) {
+				await notifyMultipleAchievements(
+					interaction.client,
+					member,
+					newAchievements.map((a) => a.definition),
+					suggestionChannel,
+				);
+			}
+		} catch (error) {
+			logger.error("Failed to check suggestion achievements", error);
+		}
 	},
 };

@@ -7,7 +7,10 @@ import {
 } from "discord.js";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
-import { SuggestionStatus } from "../../store/models/Suggestion.js";
+import { getOrCreateUserById } from "../../store/models/DDUser.js";
+import { Suggestion, SuggestionStatus } from "../../store/models/Suggestion.js";
+import { notifyMultipleAchievements } from "../achievements/achievementNotifier.js";
+import { checkAndAwardAchievements } from "../achievements/achievementService.js";
 
 import type { EventListener } from "../module.js";
 import {
@@ -155,6 +158,40 @@ async function handleManageModalSubmission(
 	suggestion.status = status;
 	suggestion.moderatorId = BigInt(member.id);
 	await suggestion.save();
+
+	if (status === SuggestionStatus.APPROVED) {
+		try {
+			const suggestionAuthorId = suggestion.memberId;
+			const ddUser = await getOrCreateUserById(suggestionAuthorId);
+			const suggestionsApproved = await Suggestion.count({
+				where: {
+					memberId: suggestionAuthorId,
+					status: SuggestionStatus.APPROVED,
+				},
+			});
+			const newAchievements = await checkAndAwardAchievements(
+				ddUser,
+				{ type: "suggestion", event: "suggestion_approved" },
+				{ suggestionsApproved },
+			);
+
+			if (newAchievements.length > 0) {
+				const suggestionMember = await interaction.guild?.members.fetch(
+					suggestionAuthorId.toString(),
+				);
+				if (suggestionMember) {
+					await notifyMultipleAchievements(
+						interaction.client,
+						suggestionMember,
+						newAchievements.map((a) => a.definition),
+						interaction.channel ?? undefined,
+					);
+				}
+			}
+		} catch (error) {
+			logger.error("Failed to check suggestion approval achievements", error);
+		}
+	}
 
 	const suggestionArchive = await interaction.client.channels.fetch(
 		config.suggest.archiveChannel,

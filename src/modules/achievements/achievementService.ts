@@ -258,7 +258,9 @@ export async function getAchievementProgress(userId: bigint): Promise<{
 	> = {
 		bump: { total: 0, unlocked: 0 },
 		daily: { total: 0, unlocked: 0 },
-		xp: { total: 0, unlocked: 0 },
+		starboard: { total: 0, unlocked: 0 },
+		introduction: { total: 0, unlocked: 0 },
+		suggestion: { total: 0, unlocked: 0 },
 		special: { total: 0, unlocked: 0 },
 	};
 
