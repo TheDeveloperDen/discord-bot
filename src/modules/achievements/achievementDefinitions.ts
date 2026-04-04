@@ -248,7 +248,7 @@ const INTRODUCTION_ACHIEVEMENTS: AchievementDefinition[] = [
 		category: "introduction",
 		trigger: { type: "introduction", event: "intro_posted" },
 		checkCondition: () => true,
-		notificationMode: "trigger",
+		notificationMode: "dm",
 	},
 ];
 
