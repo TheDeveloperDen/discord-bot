@@ -55,6 +55,14 @@ export class DDUser extends Model<
 	public declare reputationScore: number;
 
 	@AllowNull
+	@Attribute(DataTypes.STRING)
+	public declare githubId: string | null;
+
+	@AllowNull
+	@Attribute(DataTypes.STRING)
+	public declare githubUsername: string | null;
+
+	@AllowNull
 	@Attribute(DataTypes.DATE)
 	public declare lastReputationUpdate: Date | null;
 
