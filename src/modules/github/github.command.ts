@@ -72,10 +72,79 @@ const StatusSubcommand: ExecutableSubcommand = {
 	},
 };
 
+const UnlinkSubcommand: ExecutableSubcommand = {
+	type: ApplicationCommandOptionType.Subcommand,
+	name: "unlink",
+	description: "Unlink your GitHub account from your profile",
+	async handle(interaction) {
+		const ddUser = await getOrCreateUserById(BigInt(interaction.user.id));
+
+		if (!ddUser.githubId) {
+			return await interaction.reply({
+				flags: MessageFlags.Ephemeral,
+				content:
+					"❌ You don't have a GitHub account linked. Nothing to unlink.",
+			});
+		}
+
+		const previousUsername = ddUser.githubUsername || "Unknown";
+
+		ddUser.githubId = null;
+		ddUser.githubUsername = null;
+		await ddUser.save();
+
+		await interaction.reply({
+			flags: MessageFlags.Ephemeral,
+			content: `✅ Successfully unlinked GitHub account **${previousUsername}** from your profile.`,
+		});
+	},
+};
+
+const AdminUnlinkSubcommand: ExecutableSubcommand = {
+	type: ApplicationCommandOptionType.Subcommand,
+	name: "admin-unlink",
+	description: "Forcefully unlink a user's GitHub account (staff only)",
+	options: [
+		{
+			type: ApplicationCommandOptionType.User,
+			name: "user",
+			description: "The Discord user whose GitHub link to remove",
+			required: true,
+		},
+	],
+	async handle(interaction) {
+		const targetUser = interaction.options.getUser("user", true);
+		const ddUser = await getOrCreateUserById(BigInt(targetUser.id));
+
+		if (!ddUser.githubId) {
+			return await interaction.reply({
+				flags: MessageFlags.Ephemeral,
+				content: `❌ <@${targetUser.id}> doesn't have a GitHub account linked. Nothing to unlink.`,
+			});
+		}
+
+		const previousUsername = ddUser.githubUsername || "Unknown";
+
+		ddUser.githubId = null;
+		ddUser.githubUsername = null;
+		await ddUser.save();
+
+		await interaction.reply({
+			flags: MessageFlags.Ephemeral,
+			content: `✅ Successfully unlinked GitHub account **${previousUsername}** from <@${targetUser.id}>.`,
+		});
+	},
+};
+
 export const GitHubCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: "github",
 	description: "Manage your GitHub account linkage",
 	type: ApplicationCommandType.ChatInput,
-	options: [LinkSubcommand, StatusSubcommand],
+	options: [
+		LinkSubcommand,
+		StatusSubcommand,
+		UnlinkSubcommand,
+		AdminUnlinkSubcommand,
+	],
 	handle() {},
 };
