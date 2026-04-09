@@ -1,4 +1,10 @@
-import { AttachmentBuilder, MessageFlags } from "discord.js";
+import {
+	ActionRowBuilder,
+	AttachmentBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+	MessageFlags,
+} from "discord.js";
 import { defineCommand } from "../../commands/index.js";
 import { getProfileEmbed } from "./user.js";
 
@@ -7,6 +13,19 @@ export const ProfileCommand = defineCommand({
 	description: "Look at your profile",
 	async handle(interaction) {
 		const profile = await getProfileEmbed(interaction.member);
+
+		const components: ActionRowBuilder<ButtonBuilder>[] = [];
+		if (profile.githubUsername) {
+			components.push(
+				new ActionRowBuilder<ButtonBuilder>().addComponents(
+					new ButtonBuilder()
+						.setLabel("GitHub Profile")
+						.setStyle(ButtonStyle.Link)
+						.setURL(`https://github.com/${profile.githubUsername}`),
+				),
+			);
+		}
+
 		await interaction.reply({
 			flags: MessageFlags.Ephemeral,
 			files: [
@@ -21,6 +40,7 @@ export const ProfileCommand = defineCommand({
 					},
 				),
 			],
+			components,
 		});
 	},
 });
