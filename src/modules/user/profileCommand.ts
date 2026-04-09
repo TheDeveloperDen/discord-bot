@@ -1,6 +1,9 @@
 import {
+	ActionRowBuilder,
 	ApplicationCommandType,
 	AttachmentBuilder,
+	ButtonBuilder,
+	ButtonStyle,
 	type GuildMember,
 	MessageFlags,
 } from "discord.js";
@@ -22,6 +25,19 @@ export const ProfileCommand: Command<ApplicationCommandType.ChatInput> = {
 			return;
 		}
 		const profile = await getProfileEmbed(interaction.member as GuildMember);
+
+		const components: ActionRowBuilder<ButtonBuilder>[] = [];
+		if (profile.githubUsername) {
+			components.push(
+				new ActionRowBuilder<ButtonBuilder>().addComponents(
+					new ButtonBuilder()
+						.setLabel("GitHub Profile")
+						.setStyle(ButtonStyle.Link)
+						.setURL(`https://github.com/${profile.githubUsername}`),
+				),
+			);
+		}
+
 		await interaction.reply({
 			flags: MessageFlags.Ephemeral,
 			files: [
@@ -36,6 +52,7 @@ export const ProfileCommand: Command<ApplicationCommandType.ChatInput> = {
 					},
 				),
 			],
+			components,
 		});
 	},
 };
