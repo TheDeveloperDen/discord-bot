@@ -1,0 +1,165 @@
+import type { RecommendationTarget } from "../types.js";
+
+export const stacks: RecommendationTarget[] = [
+	{
+		id: "web-dev-stack",
+		kind: "stack",
+		name: "Web Development",
+		emoji: "🌍",
+		description: "Build websites and web applications from frontend to backend",
+		pros: [
+			"Massive job market",
+			"Immediate visual results",
+			"Huge community and resources",
+			"Can work as a freelancer easily",
+		],
+		cons: [
+			"Ecosystem changes rapidly",
+			"Many competing frameworks",
+			"Full-stack requires broad knowledge",
+		],
+		tags: ["web", "fullstack", "mainstream"],
+		components: [
+			"HTML",
+			"CSS",
+			"JavaScript",
+			"Node.js",
+			"React/Vue/Svelte",
+			"Nginx",
+		],
+		resources: [
+			{ label: "Frontend Roadmap", url: "https://roadmap.sh/frontend" },
+			{ label: "Backend Roadmap", url: "https://roadmap.sh/backend" },
+			{ label: "Full Stack Roadmap", url: "https://roadmap.sh/full-stack" },
+		],
+	},
+	{
+		id: "devops-stack",
+		kind: "stack",
+		name: "DevOps & Cloud",
+		emoji: "☁️",
+		description: "Automate infrastructure, deployments, and operations",
+		pros: [
+			"Very high demand and salaries",
+			"Infrastructure as Code",
+			"Cloud-native skills transfer well",
+			"Lots of automation",
+		],
+		cons: [
+			"Steep initial learning curve",
+			"Tools change very rapidly",
+			"Requires broad systems knowledge",
+		],
+		tags: ["infrastructure", "cloud", "automation", "mainstream"],
+		components: [
+			"Linux",
+			"Docker",
+			"Kubernetes",
+			"AWS/GCP/Azure",
+			"Terraform",
+			"Git",
+			"CI/CD",
+		],
+		resources: [
+			{ label: "DevOps Roadmap", url: "https://roadmap.sh/devops" },
+			{ label: "Docker Roadmap", url: "https://roadmap.sh/docker" },
+			{ label: "AWS Roadmap", url: "https://roadmap.sh/aws" },
+		],
+	},
+	{
+		id: "data-science-stack",
+		kind: "stack",
+		name: "Data Science & ML",
+		emoji: "🧠",
+		description: "Analyze data, build models, and create AI systems",
+		pros: [
+			"Rapidly growing field",
+			"High salaries",
+			"Cutting-edge technology",
+			"Impactful work",
+		],
+		cons: [
+			"Heavy math prerequisites",
+			"Requires large datasets",
+			"GPU costs can be high",
+		],
+		tags: ["ml", "data", "ai", "mainstream"],
+		components: [
+			"Python",
+			"Jupyter",
+			"pandas",
+			"scikit-learn",
+			"PyTorch/TensorFlow",
+			"SQL",
+		],
+		resources: [
+			{
+				label: "AI & Data Scientist Roadmap",
+				url: "https://roadmap.sh/ai-data-scientist",
+			},
+			{ label: "MLOps Roadmap", url: "https://roadmap.sh/mlops" },
+		],
+	},
+	{
+		id: "game-dev-stack",
+		kind: "stack",
+		name: "Game Development",
+		emoji: "🎮",
+		description: "Create games with engines, graphics, and game logic",
+		pros: [
+			"Incredibly rewarding creative work",
+			"Active indie community",
+			"Transferable skills (graphics, physics, AI)",
+			"Multiple engine choices",
+		],
+		cons: [
+			"Competitive and low-paying industry",
+			"Complex multidisciplinary skills needed",
+			"Crunch culture in AAA studios",
+		],
+		tags: ["games", "creative", "niche"],
+		components: [
+			"Unity (C#)",
+			"Godot (GDScript)",
+			"Unreal Engine (C++)",
+			"Blender",
+		],
+		resources: [
+			{ label: "Game Dev Roadmap", url: "https://roadmap.sh/game-developer" },
+		],
+	},
+	{
+		id: "security-stack",
+		kind: "stack",
+		name: "Cybersecurity & Ethical Hacking",
+		emoji: "🔒",
+		description:
+			"Protect systems, find vulnerabilities, and perform penetration testing",
+		pros: [
+			"Very high demand",
+			"Exciting, detective-like work",
+			"Great salaries",
+			"Always evolving challenges",
+		],
+		cons: [
+			"Requires deep systems knowledge",
+			"Certifications often expected",
+			"Constant study to stay current",
+		],
+		tags: ["security", "hacking", "niche"],
+		components: [
+			"Linux",
+			"Networking",
+			"Python",
+			"Wireshark",
+			"Burp Suite",
+			"Metasploit",
+		],
+		resources: [
+			{
+				label: "Cyber Security Roadmap",
+				url: "https://roadmap.sh/cyber-security",
+			},
+		],
+	},
+];
