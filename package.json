@@ -27,7 +27,7 @@
 	"author": "Developer Den",
 	"license": "MIT",
 	"dependencies": {
-		"@napi-rs/canvas": "^0.1.82",
+		"@napi-rs/canvas": "^1.0.0",
 		"@sentry/bun": "^10.26.0",
 		"@sentry/cli": "^3.0.0",
 		"@sequelize/core": "^7.0.0-alpha.47",
