@@ -1,11 +1,11 @@
 import {
-	type AbstractDialect,
-	type DialectName,
 	Sequelize,
+	type Dialect,
+	type SequelizeOptions,
 } from "@sequelize/core";
 import { SqliteDialect } from "@sequelize/sqlite3";
-import type { ConnectionConfig } from "pg";
 import { logger } from "../logging.js";
+
 import { AntiStarboardMessage } from "./models/AntiStarboardMessage.js";
 import { BlockedWord } from "./models/BlockedWord.js";
 import { Bump } from "./models/Bump.js";
@@ -26,7 +26,7 @@ import { ThreatLog } from "./models/ThreatLog.js";
 import { Warning } from "./models/Warning.js";
 
 function sequelizeLog(sql: string, timing?: number) {
-	if (timing) {
+	if (typeof timing === "number") {
 		if (timing >= 100) {
 			logger.warn(`Slow query (${timing}ms): ${sql}`);
 		}
@@ -38,45 +38,51 @@ function sequelizeLog(sql: string, timing?: number) {
 let sequelizeInstance: Sequelize | null = null;
 
 export async function initStorage() {
-	// Make idempotent - only initialize once
-	if (sequelizeInstance) {
-		return;
-	}
+	// idempotent init
+	if (sequelizeInstance) return;
 
 	const database = process.env.DDB_DATABASE ?? "database";
 	const username = process.env.DDB_USERNAME ?? "root";
 	const password = process.env.DDB_PASSWORD ?? "password";
-	const host = process.env.DDB_HOST ?? "localhost";
-	const port = process.env.DDB_PORT ?? "3306";
-	const dialect = process.env.DDB_DIALECT ?? "postgres";
+	const host = process.env.DDB_HOST;
+	const port = Number(process.env.DDB_PORT ?? 5432);
+	const dialect = (process.env.DDB_DIALECT ?? "postgres") as Dialect;
 
 	let sequelize: Sequelize;
 
-	if (process.env.DDB_HOST) {
-		sequelize = new Sequelize<AbstractDialect<object, ConnectionConfig>>({
-			dialect: dialect as DialectName,
-			database: database,
-			user: username,
+	if (host) {
+		// FIX: correct Sequelize constructor typing (no generic misuse)
+		const config: SequelizeOptions = {
+			dialect,
+			database,
+			username,
 			password,
 			host,
-			port: Number.parseInt(port, 10),
+			port,
 			logging: sequelizeLog,
 			benchmark: true,
-		});
+		};
+
+		sequelize = new Sequelize(config);
 	} else {
 		sequelize = new Sequelize({
 			dialect: SqliteDialect,
-
 			storage: ":memory:",
 			pool: {
-				idle: Infinity,
 				max: 1,
+				idle: Infinity,
 			},
 			logging: sequelizeLog,
 			benchmark: true,
 		});
 	}
-	await sequelize.authenticate();
+
+	try {
+		await sequelize.authenticate();
+	} catch (err) {
+		logger.error("Database authentication failed", err);
+		throw err;
+	}
 
 	const models = [
 		DDUser,
@@ -98,26 +104,36 @@ export async function initStorage() {
 		ReputationEvent,
 		ReactionStat,
 	];
+
 	sequelize.addModels(models);
 
-	Bump.belongsTo(DDUser, {
-		foreignKey: "userId",
-		as: "user",
-	});
+	// FIX: safe association handling (prevents silent crashes if models not loaded)
+	if (sequelize.models.DDUser && sequelize.models.Bump) {
+		sequelize.models.Bump.belongsTo(sequelize.models.DDUser, {
+			foreignKey: "userId",
+			as: "user",
+		});
 
-	DDUser.hasMany(Bump, {
-		foreignKey: "userId",
-		as: "Bumps",
-	});
-	await sequelize.sync();
+		sequelize.models.DDUser.hasMany(sequelize.models.Bump, {
+			foreignKey: "userId",
+			as: "Bumps",
+		});
+	}
+
+	try {
+		await sequelize.sync();
+	} catch (err) {
+		logger.error("Database sync failed", err);
+		throw err;
+	}
 
 	sequelizeInstance = sequelize;
 	logger.info("Initialised database");
 }
 
-export const getSequelizeInstance = () => {
+export function getSequelizeInstance() {
 	if (!sequelizeInstance) {
 		throw new Error("Storage not initialized. Call initStorage() first.");
 	}
 	return sequelizeInstance;
-};
+}
