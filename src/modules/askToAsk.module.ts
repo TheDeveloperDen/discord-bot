@@ -1,4 +1,4 @@
-import stringSimilarity from "string-similarity";
+import stringComparison from "string-comparison";
 import { logger } from "../logging.js";
 import { getOrCreateUserById } from "../store/models/DDUser.js";
 import { FAQ } from "../store/models/FAQ.js";
@@ -35,9 +35,13 @@ export const AskToAskModule: Module = {
 					.split(/ /)
 					.filter((s) => s.length > 1)
 					.join(" ");
-				const results = stringSimilarity.findBestMatch(words, targets);
+				const bestRating = Math.max(
+					...targets.map((t) =>
+						stringComparison.diceCoefficient.similarity(words, t),
+					),
+				);
 
-				if (results.bestMatch.rating > 0.5) {
+				if (bestRating > 0.5) {
 					const faq = await FAQ.findOne({ where: { name: "ask" } });
 					if (faq == null) {
 						logger.error("Could not find FAQ for ask");

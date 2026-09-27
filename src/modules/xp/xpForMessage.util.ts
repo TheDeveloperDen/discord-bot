@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/bun";
 import { type Channel, type GuildMember, Message, type User } from "discord.js";
-import { compareTwoStrings as distance } from "string-similarity";
+import stringComparison from "string-comparison";
 import { config } from "../../Config.js";
 import type { Config } from "../../config.type.js";
 import { logger } from "../../logging.js";
@@ -58,7 +58,8 @@ export function xpForMessage(message: string) {
 	);
 }
 
-const similarityProportion = (a: string, b: string) => distance(a, b);
+const similarityProportion = (a: string, b: string) =>
+	stringComparison.diceCoefficient.similarity(a, b);
 const minMessageLength = 6;
 const maxSimilarity = 0.6;
 
