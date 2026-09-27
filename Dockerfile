@@ -6,7 +6,7 @@ RUN apt-get update \
     && apt-get install --no-install-recommends -y \
        python3 make build-essential pkg-config libpixman-1-dev libcairo2-dev \
        libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev libstdc++6 \
-       libgif7 librsvg2-2 curl fonts-noto-color-emoji \
+       libgif7 librsvg2-2 curl fonts-noto-color-emoji ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # Install node modules.
