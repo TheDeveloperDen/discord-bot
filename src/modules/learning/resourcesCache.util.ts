@@ -1,4 +1,4 @@
-import fetch from "node-fetch";
+import { fetch } from "bun";
 import { parse } from "yaml";
 import { logger } from "../../logging.js";
 import type { LearningResource } from "./learningResource.model.js";

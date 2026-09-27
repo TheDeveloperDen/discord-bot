@@ -1,5 +1,5 @@
+import { fetch } from "bun";
 import type { InteractionReplyOptions, Message } from "discord.js";
-import fetch from "node-fetch";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
 import { createStandardEmbed } from "../../util/embeds.js";
