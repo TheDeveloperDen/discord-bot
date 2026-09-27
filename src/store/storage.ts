@@ -109,7 +109,7 @@ export async function initStorage() {
 		foreignKey: "userId",
 		as: "Bumps",
 	});
-	await sequelize.sync();
+	await sequelize.sync({alter:true]);
 
 	sequelizeInstance = sequelize;
 	logger.info("Initialised database");
