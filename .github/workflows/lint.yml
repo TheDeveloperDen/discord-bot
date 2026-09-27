@@ -3,18 +3,8 @@ name: Lint and Test
 on:
   push:
     branches: ["master"]
-    paths-ignore:
-      - "**/*.md"
-      - "docs/**"
-      - "logs/**"
-      - "result/**"
   pull_request:
     branches: ["master"]
-    paths-ignore:
-      - "**/*.md"
-      - "docs/**"
-      - "logs/**"
-      - "result/**"
   schedule:
     - cron: "29 4 * * 1"
 
@@ -73,7 +63,6 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
-      security-events: write
       actions: read
     steps:
       - name: Checkout code
