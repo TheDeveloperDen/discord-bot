@@ -1,5 +1,5 @@
 # base image with system dependencies
-FROM oven/bun:latest AS base
+FROM oven/bun:1.4.2 AS base
 WORKDIR /usr/src/app
 # hadolint ignore=DL3008
 RUN apt-get update \
@@ -21,10 +21,10 @@ COPY --from=deps /usr/src/app/node_modules ./node_modules
 COPY . .
 
 # Set permissions for non-root user
-RUN chown -R bun:bun /usr/src/app
-USER bun
+RUN chown -R 1000:1000 /usr/src/app
+USER 1000:1000
 
 # Expose port and set entrypoint
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s \
-    CMD curl -f http://localhost:3000/health || exit 1
+    CMD ["curl", "-fsS", "http://localhost:3000/health"]
 ENTRYPOINT [ "bun", "run", "start:prod" ]
