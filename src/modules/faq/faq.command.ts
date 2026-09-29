@@ -6,9 +6,9 @@ import {
 	PermissionFlagsBits,
 } from "discord.js";
 import type { Command, ExecutableSubcommand } from "djs-slash-helper";
-import { moduleManager } from "../../index.js";
 import { logger } from "../../logging.js";
 import { FAQ } from "../../store/models/FAQ.js";
+import { getModuleManager } from "../moduleManager.js";
 
 import createFaqModal from "./faq.modal.js";
 import { createFaqEmbed } from "./faq.util.js";
@@ -104,7 +104,7 @@ const EditSubcommand: ExecutableSubcommand = {
 		});
 
 		await updateChoices();
-		return await moduleManager.refreshCommands();
+		return await getModuleManager().refreshCommands();
 	},
 };
 
@@ -146,7 +146,7 @@ const DeleteSubcommand: ExecutableSubcommand = {
 		}
 		await faq.destroy();
 		await updateChoices();
-		await moduleManager.refreshCommands();
+		await getModuleManager().refreshCommands();
 		return await interaction.reply({
 			flags: MessageFlags.Ephemeral,
 			content: `FAQ named ${name} deleted`,

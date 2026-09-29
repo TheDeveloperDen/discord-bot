@@ -37,12 +37,17 @@ export function getAllCachedResources(): Array<[FileName, LearningResource]> {
 }
 
 const baseUrl = "https://learningresources.developerden.org";
+const FETCH_TIMEOUT_MS = 10_000;
 
 async function queryResource(
 	fileName: FileName,
 ): Promise<LearningResource | null> {
 	logger.debug(`Querying resource ${fileName}...`);
-	const resource = (await fetch(`${baseUrl}/${fileName}`))
+	const resource = (
+		await fetch(`${baseUrl}/${fileName}`, {
+			signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+		})
+	)
 		.text()
 		.then((r) => parse(r))
 		.catch(() => null);
@@ -52,7 +57,7 @@ async function queryResource(
 
 async function queryAll(): Promise<Array<Awaited<[string, LearningResource]>>> {
 	const resources: ResourceIndex[] = (await (
-		await fetch(baseUrl)
+		await fetch(baseUrl, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
 	).json()) as ResourceIndex[];
 
 	const hm: Array<Promise<[FileName, LearningResource]>> = resources

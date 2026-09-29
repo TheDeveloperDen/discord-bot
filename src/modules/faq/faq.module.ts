@@ -7,9 +7,6 @@ export const FaqModule: Module = {
 	commands: [FaqCommand],
 	listeners: [FaqCommandListener],
 	onCommandInit: updateChoices,
-	onInit: async (manager) => {
-		await manager.refreshCommands();
-	},
 };
 
 export default FaqModule;

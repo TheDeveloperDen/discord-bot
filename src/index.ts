@@ -20,7 +20,7 @@ import LeaderboardModule from "./modules/leaderboard/leaderboard.module.js";
 import { LearningModule } from "./modules/learning/learning.module.js";
 import { ModerationModule } from "./modules/moderation/moderation.module.js";
 import { ModmailModule } from "./modules/modmail/modmail.module.js";
-import ModuleManager from "./modules/moduleManager.js";
+import ModuleManager, { setModuleManager } from "./modules/moduleManager.js";
 import PastifyModule from "./modules/pastify/pastify.module.js";
 import { ReactionStatsModule } from "./modules/reactionStats/reactionStats.module.js";
 import { RolesModule } from "./modules/roles/roles.module.js";
@@ -46,7 +46,7 @@ const client = new Client({
 	partials: [Partials.Message, Partials.Channel, Partials.Reaction],
 });
 
-export const moduleManager = new ModuleManager(
+const moduleManager = new ModuleManager(
 	client,
 	config.clientId,
 	config.guildId,
@@ -77,6 +77,8 @@ export const moduleManager = new ModuleManager(
 	],
 );
 
+setModuleManager(moduleManager);
+
 async function logIn() {
 	initSentry(client);
 	const token = process.env.DDB_BOT_TOKEN;
@@ -92,18 +94,14 @@ async function logIn() {
 
 async function main() {
 	await initStorage();
+	await moduleManager.preInit();
 	await logIn();
 	const guild = await client.guilds.fetch(config.guildId);
 	await setupBranding(guild);
 
 	await moduleManager.refreshCommands();
-
-	for (const module of moduleManager.getModules()) {
-		module.onInit?.(moduleManager, client)?.catch((e) => {
-			Sentry.captureException(e);
-			logger.error(`Error initializing module ${module.name}`, e);
-		});
-	}
+	await moduleManager.init();
+	logger.info("Startup complete");
 }
 
 // Clean up jobs on application shutdown
