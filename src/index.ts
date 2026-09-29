@@ -1,4 +1,4 @@
-import "../instrument.js"; // Import the instrumentation module first
+import "../instrument.js";
 import { Client, GatewayIntentBits, Partials } from "discord.js";
 import { config } from "./Config.js";
 import { setupBranding } from "./util/branding.js";
@@ -7,6 +7,7 @@ import * as Sentry from "@sentry/bun";
 import * as schedule from "node-schedule";
 import { startHealthCheck } from "./healthcheck.js";
 import { logger } from "./logging.js";
+
 import { AchievementsModule } from "./modules/achievements/achievements.module.js";
 import AskToAskModule from "./modules/askToAsk.module.js";
 import { CoreModule } from "./modules/core/core.module.js";
@@ -31,8 +32,9 @@ import { ThreatDetectionModule } from "./modules/threatDetection/threatDetection
 import { TokenScannerModule } from "./modules/tokenScanner.module.js";
 import { UserModule } from "./modules/user/user.module.js";
 import { XpModule } from "./modules/xp/xp.module.js";
-import { initSentry } from "./sentry.js";
+
 import { initStorage } from "./store/storage.js";
+import { initSentry } from "./sentry.js";
 
 const client = new Client({
 	intents: [
@@ -79,44 +81,77 @@ export const moduleManager = new ModuleManager(
 
 async function logIn() {
 	initSentry(client);
+
 	const token = process.env.DDB_BOT_TOKEN;
 	if (!token) {
 		logger.error("No token found");
 		process.exit(1);
 	}
-	logger.info("Logging in");
+
+	logger.info("Logging in...");
 	await client.login(token);
-	logger.info("Logged in");
+
+	// ensure bot is fully ready
+	await new Promise((resolve) => client.once("ready", resolve));
+
+	logger.info("Logged in and ready");
 	return client;
+}
+
+async function initModules() {
+	for (const module of moduleManager.getModules()) {
+		try {
+			const result = module.onInit?.(moduleManager, client);
+
+			if (result instanceof Promise) {
+				await result;
+			}
+		} catch (e) {
+			Sentry.captureException(e);
+			logger.error(`Error initializing module ${module.name}`, e);
+		}
+	}
 }
 
 async function main() {
 	await initStorage();
+
 	await logIn();
+
 	const guild = await client.guilds.fetch(config.guildId);
 	await setupBranding(guild);
 
 	await moduleManager.refreshCommands();
 
-	for (const module of moduleManager.getModules()) {
-		module.onInit?.(moduleManager, client)?.catch((e) => {
-			Sentry.captureException(e);
-			logger.error(`Error initializing module ${module.name}`, e);
-		});
+	await initModules();
+}
+
+// Graceful shutdown
+async function shutdown() {
+	console.log("Gracefully shutting down scheduled jobs");
+
+	try {
+		await schedule.gracefulShutdown();
+		await client.destroy();
+	} catch (e) {
+		Sentry.captureException(e);
+		logger.error("Error during shutdown", e);
+	} finally {
+		process.exit(0);
 	}
 }
 
-// Clean up jobs on application shutdown
-process.on("SIGINT", () => {
-	console.log("Gracefully shutting down scheduled jobs");
-	schedule.gracefulShutdown();
-	process.exit(0);
-});
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
 
-try {
-	startHealthCheck();
-	await main();
-} catch (e) {
-	Sentry.captureException(e);
-	throw e;
-}
+// Bootstrap
+(async () => {
+	try {
+		startHealthCheck();
+		await main();
+	} catch (e) {
+		Sentry.captureException(e);
+		logger.error("Fatal error in main()", e);
+		throw e;
+	}
+})();
