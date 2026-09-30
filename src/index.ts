@@ -104,12 +104,19 @@ async function main() {
 	logger.info("Startup complete");
 }
 
-// Clean up jobs on application shutdown
-process.on("SIGINT", () => {
-	console.log("Gracefully shutting down scheduled jobs");
-	schedule.gracefulShutdown();
+const processEvents: NodeJS.EventEmitter = process;
+
+async function shutdown(signal: NodeJS.Signals) {
+	logger.info(`Received ${signal}, shutting down`);
+	await schedule.gracefulShutdown();
+	await client.destroy();
+	await Sentry.close(2000);
 	process.exit(0);
-});
+}
+
+for (const signal of ["SIGINT", "SIGTERM"] as const) {
+	processEvents.once(signal, () => void shutdown(signal));
+}
 
 try {
 	startHealthCheck();
