@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Check out the repo at CI commit
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           # Full history so Sentry can associate commits with the release
           fetch-depth: 0
