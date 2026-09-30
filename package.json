@@ -65,7 +65,7 @@
 		"@types/pg": "^8.15.6",
 		"@types/sinonjs__fake-timers": "^15.0.1",
 		"husky": "^9.1.7",
-		"lint-staged": "^16.2.7",
+		"lint-staged": "^17.0.0",
 		"typescript": "^7.0.0"
 	}
 }
