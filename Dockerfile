@@ -22,6 +22,10 @@ COPY . .
 
 # Set permissions for non-root user
 RUN chown -R 1000:1000 /usr/src/app
+
+# Git commit SHA, used as the Sentry release
+ARG SENTRY_RELEASE
+ENV SENTRY_RELEASE=${SENTRY_RELEASE}
 USER 1000:1000
 
 # Expose port and set entrypoint

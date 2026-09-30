@@ -50,7 +50,6 @@
 		"yaml": "^2.8.1"
 	},
 	"trustedDependencies": [
-		"@sentry/cli",
 		"bufferutil",
 		"sqlite3",
 		"utf-8-validate"
@@ -58,9 +57,8 @@
 	"repository": "https://github.com/TheDeveloperDen/DevDenBot.git",
 	"devDependencies": {
 		"@biomejs/biome": "^2.3.7",
-		"@sentry/cli": "^3.8.0",
 		"@sinonjs/fake-timers": "^15.0.0",
-		"@types/bun": "^1.3.11",
+		"@types/bun": "^1.4.2",
 		"@types/node": "^25.0.0",
 		"@types/node-schedule": "^2.1.8",
 		"@types/opentype.js": "^1.3.8",
