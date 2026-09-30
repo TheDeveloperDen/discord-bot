@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/bun";
 import {
+	type CreationOptional,
 	DataTypes,
 	type InferAttributes,
 	type InferCreationAttributes,
@@ -52,11 +53,11 @@ export class DDUser extends Model<
 
 	@Attribute(DataTypes.INTEGER)
 	@Default(0)
-	public declare reputationScore: number;
+	public declare reputationScore: CreationOptional<number>;
 
 	@Attribute(DataTypes.INTEGER)
 	@Default(0)
-	public declare starboardCount: number;
+	public declare starboardCount: CreationOptional<number>;
 
 	@AllowNull
 	@Attribute(DataTypes.DATE)

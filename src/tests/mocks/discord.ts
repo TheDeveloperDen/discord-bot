@@ -136,7 +136,7 @@ export function createMockGuildMember(
 export function createMockTextChannel(
 	overrides?: Partial<{
 		id: string;
-		send: (content: unknown) => Promise<Message>;
+		send: (content: never) => Promise<unknown>;
 		isSendable: () => boolean;
 	}>,
 ): TextChannel & PartialTextBasedChannelFields {
