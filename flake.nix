@@ -40,11 +40,12 @@
               with pkgs;
               [
                 bun
+                nodejs_24 # some tools insist on running via node
 
                 nixfmt-rfc-style
 
-                nodePackages.typescript
-                nodePackages.typescript-language-server
+                typescript
+                typescript-language-server
 
                 sentry-cli
                 gccStdenv
@@ -56,7 +57,7 @@
                 cairo
                 pango
                 pkg-config
-                nodePackages.node-gyp
+                node-gyp
                 libpng
                 librsvg
                 pixman
