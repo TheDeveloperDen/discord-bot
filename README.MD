@@ -69,6 +69,16 @@ following environment variables:
   valid [Sequelize](https://sequelize.org/) dialect. You may need to install
   additional dependencies to use some dialects.
 
+### GitHub Account Linking
+
+GitHub account linking requires `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, and
+`GITHUB_REDIRECT_URI`. The OAuth callback server listens on `OAUTH_PORT`, which
+defaults to `3000`.
+
+The affected Discord user receives a direct message after their GitHub account
+is linked or unlinked, including administrator-initiated unlinks. Notification
+delivery is best-effort; disabled DMs do not roll back the status change.
+
 ## Contributing Guidelines
 
 - All code will be under the MIT License
