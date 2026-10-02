@@ -1,9 +1,9 @@
+import type { Client } from "discord.js";
 import express from "express";
 import { logger } from "../logging.js";
+import { notifyGitHubLinkStatusChange } from "../modules/github/github.notification.js";
 import { GitHubService } from "../modules/github/github.service.js";
 import { DDUser, getOrCreateUserById } from "../store/models/DDUser.js";
-
-const app = express();
 
 function renderPage(
 	res: express.Response,
@@ -82,8 +82,11 @@ function renderPage(
 	res.status(status).send(html);
 }
 
-export async function startOAuthServer() {
-	const port = parseInt(process.env.OAUTH_PORT || "3000", 10);
+export function createOAuthApp(
+	client: Pick<Client, "users">,
+	fetchImpl: typeof fetch = fetch,
+) {
+	const app = express();
 
 	app.get("/auth/github/callback", async (req, res) => {
 		const { code, state } = req.query;
@@ -136,7 +139,7 @@ export async function startOAuthServer() {
 
 		try {
 			// 1. Exchange code for access token
-			const tokenResponse = await fetch(
+			const tokenResponse = await fetchImpl(
 				"https://github.com/login/oauth/access_token",
 				{
 					method: "POST",
@@ -160,7 +163,7 @@ export async function startOAuthServer() {
 			}
 
 			// 2. Fetch user profile
-			const userResponse = await fetch("https://api.github.com/user", {
+			const userResponse = await fetchImpl("https://api.github.com/user", {
 				headers: {
 					Authorization: `token ${accessToken}`,
 					"User-Agent": "DevDenBot-OAuth-Integration",
@@ -197,9 +200,33 @@ export async function startOAuthServer() {
 				);
 			}
 
+			const previousGithubId = user.githubId;
+			const previousGithubUsername = user.githubUsername;
+			const linkStatusChanged =
+				!existingUser || existingUser.githubUsername !== githubUsername;
 			user.githubId = githubId;
 			user.githubUsername = githubUsername;
-			await user.save();
+			try {
+				await user.save();
+			} catch (error) {
+				user.githubId = previousGithubId;
+				user.githubUsername = previousGithubUsername;
+				throw error;
+			}
+
+			if (linkStatusChanged) {
+				try {
+					const discordUser = await client.users.fetch(discordUserId);
+					await notifyGitHubLinkStatusChange(discordUser, {
+						kind: "linked",
+						githubUsername,
+					});
+				} catch (error) {
+					logger.error(
+						`Could not notify Discord user ${discordUserId} of GitHub link change: ${error}`,
+					);
+				}
+			}
 
 			GitHubService.removeState(state);
 
@@ -230,6 +257,13 @@ export async function startOAuthServer() {
 			);
 		}
 	});
+
+	return app;
+}
+
+export async function startOAuthServer(client: Client) {
+	const port = parseInt(process.env.OAUTH_PORT || "3000", 10);
+	const app = createOAuthApp(client);
 
 	const server = app.listen(port, () => {
 		logger.info(`OAuth server listening on port ${port}`);

@@ -97,9 +97,9 @@ async function logIn() {
 
 async function main() {
 	await initStorage();
-	await startOAuthServer();
 	await moduleManager.preInit();
 	await logIn();
+	await startOAuthServer(client);
 	const guild = await client.guilds.fetch(config.guildId);
 	await setupBranding(guild);
 
