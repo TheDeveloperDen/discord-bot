@@ -6,6 +6,7 @@ import {
 } from "discord.js";
 import type { Command, ExecutableSubcommand } from "djs-slash-helper";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
+import { notifyGitHubLinkStatusChange } from "./github.notification.js";
 import { GitHubService } from "./github.service.js";
 
 const LinkSubcommand: ExecutableSubcommand = {
@@ -93,10 +94,18 @@ const UnlinkSubcommand: ExecutableSubcommand = {
 		ddUser.githubUsername = null;
 		await ddUser.save();
 
-		await interaction.reply({
-			flags: MessageFlags.Ephemeral,
-			content: `✅ Successfully unlinked GitHub account **${previousUsername}** from your profile.`,
-		});
+		try {
+			await interaction.reply({
+				flags: MessageFlags.Ephemeral,
+				content: `✅ Successfully unlinked GitHub account **${previousUsername}** from your profile.`,
+			});
+		} finally {
+			await notifyGitHubLinkStatusChange(interaction.user, {
+				kind: "unlinked",
+				githubUsername: previousUsername,
+				actor: "self",
+			});
+		}
 	},
 };
 
@@ -129,10 +138,18 @@ const AdminUnlinkSubcommand: ExecutableSubcommand = {
 		ddUser.githubUsername = null;
 		await ddUser.save();
 
-		await interaction.reply({
-			flags: MessageFlags.Ephemeral,
-			content: `✅ Successfully unlinked GitHub account **${previousUsername}** from <@${targetUser.id}>.`,
-		});
+		try {
+			await interaction.reply({
+				flags: MessageFlags.Ephemeral,
+				content: `✅ Successfully unlinked GitHub account **${previousUsername}** from <@${targetUser.id}>.`,
+			});
+		} finally {
+			await notifyGitHubLinkStatusChange(targetUser, {
+				kind: "unlinked",
+				githubUsername: previousUsername,
+				actor: "administrator",
+			});
+		}
 	},
 };
 
