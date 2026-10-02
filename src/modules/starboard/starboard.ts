@@ -228,7 +228,6 @@ export const getImageOrGifEmbed: (message: Message) => Promise<
 	const embeds = message.embeds.filter(
 		(emb) => emb.data.type === "image" || emb.data.type === "gifv",
 	);
-	console.log(embeds);
 	if (embeds.length > 0) {
 		const embed = embeds[0];
 

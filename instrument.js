@@ -1,20 +1,16 @@
 import * as Sentry from "@sentry/bun";
 
-console.log("Starting Sentry Profiling Integration");
-// Ensure to call this before importing any other modules!
+// Must run before any other module is imported
 Sentry.init({
 	dsn: process.env.DDB_SENTRY_DSN,
+	environment:
+		process.env.NODE_ENV === "production" ? "production" : "development",
+	// Git commit SHA, provided by Docker build
+	release: process.env.SENTRY_RELEASE || undefined,
 	sendDefaultPii: true,
-	release: process.env.npm_package_version ?? process.env.VERSION ?? "unknown",
 	tracesSampleRate: 1.0,
-	profilesSampleRate: 0.2,
 	integrations: [
 		Sentry.extraErrorDataIntegration(),
-		Sentry.onUncaughtExceptionIntegration(),
-		Sentry.onUnhandledRejectionIntegration(),
-		Sentry.fsIntegration(),
 		Sentry.postgresIntegration(),
-		Sentry.contextLinesIntegration(),
-		Sentry.requestDataIntegration(),
 	],
 });

@@ -30,6 +30,7 @@ export type ModerationLog =
 	| TempBanExpiredLog
 	| SoftBanLog
 	| KickLog
+	| TimeoutLog
 	| InviteDeletedLog
 	| InviteSpamBanLog
 	| WarningLog
@@ -76,6 +77,14 @@ interface KickLog {
 	moderator: User;
 	target: UserResolvable;
 	reason: string | null;
+}
+
+interface TimeoutLog {
+	kind: "Timeout";
+	moderator: User;
+	target: UserResolvable;
+	duration: number;
+	reason: string;
 }
 
 interface InviteDeletedLog {
@@ -137,6 +146,7 @@ const embedTitles: ModerationKindMapping<string> = {
 	InviteSpamBan: "Member Auto-Banned (Invite Spam)",
 	TempBan: "Member Tempbanned",
 	Kick: "Member Kicked",
+	Timeout: "Member Timed Out",
 	TempBanEnded: "Tempban Expired",
 	Warning: "Member Warned",
 	WarningPardoned: "Warning Pardoned",
@@ -148,6 +158,7 @@ const embedColors: ModerationKindMapping<keyof typeof Colors> = {
 	TempBan: "Orange",
 	SoftBan: "DarkOrange",
 	Kick: "Yellow",
+	Timeout: "LightGrey",
 	Unban: "Green",
 	TempBanEnded: "DarkGreen",
 	InviteDeleted: "Blurple",
@@ -176,6 +187,9 @@ const embedReasons: {
 
 	TempBan: (tempBan) =>
 		`**Ban duration**: \`${prettyPrintDuration(tempBan.banDuration)}\``,
+
+	Timeout: (timeout) =>
+		`**Timeout duration**: \`${prettyPrintDuration(timeout.duration)}\``,
 
 	Warning: (warning) =>
 		`**Severity:** ${SEVERITY_LABELS[warning.severity] || "Unknown"}\n` +

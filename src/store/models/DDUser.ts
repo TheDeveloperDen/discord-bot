@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/bun";
 import {
+	type CreationOptional,
 	DataTypes,
 	type InferAttributes,
 	type InferCreationAttributes,
@@ -52,7 +53,11 @@ export class DDUser extends Model<
 
 	@Attribute(DataTypes.INTEGER)
 	@Default(0)
-	public declare reputationScore: number;
+	public declare reputationScore: CreationOptional<number>;
+
+	@Attribute(DataTypes.INTEGER)
+	@Default(0)
+	public declare starboardCount: CreationOptional<number>;
 
 	@AllowNull
 	@Attribute(DataTypes.STRING)
@@ -162,6 +167,7 @@ export const getOrCreateUserById = async (id: bigint) =>
 							currentDailyStreak: 0,
 							highestDailyStreak: 0,
 							reputationScore: 0,
+							starboardCount: 0,
 						},
 						benchmark: true,
 					});

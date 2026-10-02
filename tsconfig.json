@@ -2,10 +2,9 @@
 	"compilerOptions": {
 		"target": "es2022",
 		"lib": ["ESNext"],
-    "types": ["bun"],
 		"module": "nodenext",
 		"outDir": "./bin",
-		"rootDir": "./src",
+		"rootDir": ".",
 		"esModuleInterop": true,
 		"moduleResolution": "nodenext",
 		"forceConsistentCasingInFileNames": true,
@@ -33,9 +32,5 @@
 		// This improves issue grouping in Sentry.
 		"sourceRoot": "/"
 	},
-  "exclude": [
-    "node_modules/",
-    "tests/",
-    "**/*.test.ts"
-  ]
+	"exclude": ["node_modules/"]
 }

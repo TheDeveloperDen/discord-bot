@@ -1,5 +1,11 @@
 import { afterEach, beforeAll, describe, expect, mock, test } from "bun:test";
-import type { Client, MessageReaction, PartialUser, User } from "discord.js";
+import {
+	type Client,
+	type MessageReaction,
+	type PartialUser,
+	ReactionType,
+	type User,
+} from "discord.js";
 import { clearUserCache, DDUser } from "../../store/models/DDUser.js";
 import { ReactionStat } from "../../store/models/ReactionStat.js";
 import { getSequelizeInstance, initStorage } from "../../store/storage.js";
@@ -60,8 +66,17 @@ function createMockReaction(
 }
 
 describe("ReactionStatsListener.messageReactionAdd", () => {
-	const handler = ReactionStatsListener.messageReactionAdd;
-	if (!handler) throw new Error("messageReactionAdd handler not defined");
+	const listener = ReactionStatsListener.messageReactionAdd;
+	if (!listener) throw new Error("messageReactionAdd handler not defined");
+	const handler = (
+		client: Client,
+		reaction: MessageReaction,
+		user: User | PartialUser,
+	) =>
+		listener(client, reaction, user, {
+			type: ReactionType.Normal,
+			burst: false,
+		});
 	const mockClient = createMockClient() as unknown as Client;
 
 	test("saves a reaction stat to the database", async () => {

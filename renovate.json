@@ -1,0 +1,70 @@
+{
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"extends": [
+		"config:recommended",
+		":semanticCommitTypeAll(chore)",
+		"customManagers:biomeVersions"
+	],
+	"labels": ["dependencies"],
+	"schedule": ["before 6am on monday"],
+	"prConcurrentLimit": 10,
+	"minimumReleaseAge": "3 days",
+	"osvVulnerabilityAlerts": true,
+	"vulnerabilityAlerts": {
+		"labels": ["dependencies", "security"],
+		"automerge": true
+	},
+	"lockFileMaintenance": {
+		"enabled": true,
+		"automerge": true,
+		"schedule": ["before 6am on monday"]
+	},
+	"packageRules": [
+		{
+			"description": "Automerge non-major dev dependency updates once CI passes",
+			"matchDepTypes": ["devDependencies"],
+			"matchUpdateTypes": ["minor", "patch"],
+			"automerge": true
+		},
+		{
+			"description": "Automerge patch updates of stable (>=1.0) runtime dependencies",
+			"matchDepTypes": ["dependencies"],
+			"matchUpdateTypes": ["patch"],
+			"matchCurrentVersion": "!/^0/",
+			"automerge": true
+		},
+		{
+			"description": "One PR for all GitHub Actions updates",
+			"matchManagers": ["github-actions"],
+			"groupName": "GitHub Actions"
+		},
+		{
+			"description": "Automerge non-major GitHub Actions updates",
+			"matchManagers": ["github-actions"],
+			"matchUpdateTypes": ["minor", "patch", "digest"],
+			"automerge": true
+		},
+		{
+			"description": "Sentry packages must move in lockstep",
+			"matchPackageNames": ["@sentry/**"],
+			"groupName": "Sentry"
+		},
+		{
+			"description": "Sequelize packages must move in lockstep",
+			"matchPackageNames": ["@sequelize/**"],
+			"groupName": "Sequelize"
+		},
+		{
+			"description": "Group non-major type definition updates",
+			"matchPackageNames": ["@types/**"],
+			"matchUpdateTypes": ["minor", "patch"],
+			"groupName": "type definitions"
+		},
+		{
+			"description": "Keep git-pinned dependencies up to date, grouped",
+			"matchDatasources": ["git-refs", "github-tags"],
+			"matchUpdateTypes": ["digest"],
+			"groupName": "git dependencies"
+		}
+	]
+}

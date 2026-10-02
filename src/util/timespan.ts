@@ -3,7 +3,7 @@ function getDuration(duration: string): number {
 		case "years":
 		case "year":
 		case "y":
-			return 1000 * 60 * 60 * 24 * 7 * 4.3 * 365;
+			return 1000 * 60 * 60 * 24 * 365;
 		case "months":
 		case "month":
 		case "M":
@@ -45,21 +45,21 @@ function getDuration(duration: string): number {
  *    - s for seconds
  */
 export function parseTimespan(span: string): number {
-	const inputSplit = span.matchAll(/(\d+)(\D+)/g);
+	const inputSplit = span.trim().matchAll(/(\d+)(\D+)/g);
 	if (!inputSplit) throw new Error("Invalid timespan");
 	let out = 0;
 
 	for (const element of inputSplit) {
-		const number = Number.parseInt(element[1], 10);
+		const number = Number.parseInt(element[1].trim(), 10);
 		if (Number.isNaN(number)) continue;
-		out += number * getDuration(element[2]);
+		out += number * getDuration(element[2].trim());
 	}
 	return out;
 }
 
 export function prettyPrintDuration(duration: number): string {
 	const units = [
-		{ label: "year", millis: 1000 * 60 * 60 * 24 * 7 * 4.3 * 365 },
+		{ label: "year", millis: 1000 * 60 * 60 * 24 * 365 },
 		{ label: "month", millis: 1000 * 60 * 60 * 24 * 7 * 4.3 },
 		{ label: "week", millis: 1000 * 60 * 60 * 24 * 7 },
 		{ label: "day", millis: 1000 * 60 * 60 * 24 },

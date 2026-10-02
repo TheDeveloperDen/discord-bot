@@ -7,5 +7,5 @@
 		"noEmitOnError": true,
 		"importHelpers": true
 	},
-	"exclude": ["node_modules", "src/test", "src/**/*.test.ts"]
+	"exclude": ["node_modules", "tests", "src/tests", "src/**/*.test.ts"]
 }

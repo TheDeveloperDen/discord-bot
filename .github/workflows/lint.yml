@@ -3,18 +3,8 @@ name: Lint and Test
 on:
   push:
     branches: ["master"]
-    paths-ignore:
-      - "**/*.md"
-      - "docs/**"
-      - "logs/**"
-      - "result/**"
   pull_request:
     branches: ["master"]
-    paths-ignore:
-      - "**/*.md"
-      - "docs/**"
-      - "logs/**"
-      - "result/**"
   schedule:
     - cron: "29 4 * * 1"
 
@@ -38,7 +28,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version-file: package.json
       - name: Cache Bun package downloads
         id: bun-cache
         uses: actions/cache@v5
@@ -73,7 +63,6 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
-      security-events: write
       actions: read
     steps:
       - name: Checkout code
@@ -81,7 +70,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version-file: package.json
       - name: Download node_modules artifact
         uses: actions/download-artifact@v7
         with:
@@ -101,7 +90,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version-file: package.json
       - name: Download node_modules artifact
         uses: actions/download-artifact@v7
         with:
@@ -123,7 +112,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version-file: package.json
       - name: Download node_modules artifact
         uses: actions/download-artifact@v7
         with:

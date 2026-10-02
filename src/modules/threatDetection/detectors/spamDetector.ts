@@ -1,6 +1,6 @@
 import type { Message } from "discord.js";
 import ExpiryMap from "expiry-map";
-import { compareTwoStrings } from "string-similarity";
+import stringComparison from "string-comparison";
 import { ThreatAction, ThreatType } from "../../../store/models/ThreatLog.js";
 
 export interface SpamDetectionResult {
@@ -47,7 +47,7 @@ function calculateMaxSimilarity(
 
 	let maxSimilarity = 0;
 	for (const msg of existingMessages) {
-		const similarity = compareTwoStrings(
+		const similarity = stringComparison.diceCoefficient.similarity(
 			newContent.toLowerCase(),
 			msg.content.toLowerCase(),
 		);

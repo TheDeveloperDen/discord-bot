@@ -92,7 +92,7 @@ describe("removeSuggestionVotesForMember", () => {
 			}) => {
 				const embed = payload.embeds[0];
 				liveEditPayloads.push({
-					embeds: [embed?.toJSON?.() ?? embed?.data ?? embed ?? {}],
+					embeds: [embed?.toJSON?.() ?? embed?.data ?? {}],
 				});
 				return {};
 			},
@@ -116,7 +116,7 @@ describe("removeSuggestionVotesForMember", () => {
 			}) => {
 				const embed = payload.embeds[0];
 				archivedEditPayloads.push({
-					embeds: [embed?.toJSON?.() ?? embed?.data ?? embed ?? {}],
+					embeds: [embed?.toJSON?.() ?? embed?.data ?? {}],
 				});
 				return {};
 			},
