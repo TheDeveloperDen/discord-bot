@@ -1179,40 +1179,6 @@ export async function handleModmailUserDetails(interaction: ButtonInteraction) {
 			row: ActionRowBuilder<ButtonBuilder>;
 		};
 
-		// Add additional details for the user
-		ticketDetails.embed.addFields([
-			{
-				name: "Status",
-				value: modMail.status,
-				inline: true,
-			},
-		]);
-
-		if (modMail.assignedUserId) {
-			try {
-				const assignedUser = await interaction.client.users.fetch(
-					modMail.assignedUserId.toString(),
-				);
-				ticketDetails.embed.addFields({
-					name: "Assigned Moderator",
-					value: assignedUser.displayName,
-					inline: true,
-				});
-			} catch {
-				ticketDetails.embed.addFields({
-					name: "Assigned Moderator",
-					value: "Unknown",
-					inline: true,
-				});
-			}
-		} else {
-			ticketDetails.embed.addFields({
-				name: "Assigned Moderator",
-				value: "Unassigned",
-				inline: true,
-			});
-		}
-
 		await interaction.followUp({
 			embeds: [ticketDetails.embed],
 			components: [ticketDetails.row],
