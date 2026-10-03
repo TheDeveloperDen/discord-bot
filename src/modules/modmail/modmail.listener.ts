@@ -60,6 +60,10 @@ import {
 	MODMAIL_USER_CLOSE_ID,
 	MODMAIL_USER_DETAILS_ID,
 } from "./modmail.js";
+import {
+	isModMailThreadSealedForRemoval,
+	withModMailThreadLock,
+} from "./modmailThreadLock.js";
 
 interface PendingModmailSelection {
 	category: ModMailTicketCategory;
@@ -86,24 +90,11 @@ const cleanupPendingSelection = (userId: string) => {
 	pendingModmailSelections.delete(userId);
 };
 
-const handleDMMessage = async (
+const handleDMMessageForTicket = async (
 	client: Client,
 	message: OmitPartialGroupDMChannel<Message>,
+	modMail: ModMailTicket,
 ) => {
-	const modMail = await getActiveModMailByUser(BigInt(message.author.id));
-
-	if (!modMail) {
-		const initializationMessage = createModMailInitializationEmbed(
-			message.author,
-		);
-		if (message.channel.isSendable())
-			await message.channel.send({
-				embeds: [initializationMessage.embed],
-				components: initializationMessage.components,
-			});
-		return;
-	}
-
 	if (!modMail.threadId) {
 		await closeModMailTicketByModMail(modMail);
 		return;
@@ -208,7 +199,61 @@ const handleDMMessage = async (
 	}
 };
 
-const handleThreadMessage = async (client: Client, message: Message<true>) => {
+const sendTicketRemovalInProgressNotice = async (
+	message: OmitPartialGroupDMChannel<Message>,
+) => {
+	if (message.channel.isSendable()) {
+		await message.channel.send({
+			content:
+				"Your message was not delivered because this ticket is currently being removed or is no longer active. Please wait for the removal to finish, then open a new ticket if you still need help.",
+		});
+	}
+};
+
+const handleDMMessage = async (
+	client: Client,
+	message: OmitPartialGroupDMChannel<Message>,
+) => {
+	const modMail = await getActiveModMailByUser(BigInt(message.author.id));
+
+	if (!modMail) {
+		const initializationMessage = createModMailInitializationEmbed(
+			message.author,
+		);
+		if (message.channel.isSendable()) {
+			await message.channel.send({
+				embeds: [initializationMessage.embed],
+				components: initializationMessage.components,
+			});
+		}
+		return;
+	}
+
+	if (!modMail.threadId) {
+		await closeModMailTicketByModMail(modMail);
+		return;
+	}
+
+	const threadId = modMail.threadId.toString();
+	if (isModMailThreadSealedForRemoval(threadId)) {
+		await sendTicketRemovalInProgressNotice(message);
+		return;
+	}
+	await withModMailThreadLock(threadId, async () => {
+		const activeModMail = await getActiveModMailByChannel(BigInt(threadId));
+		if (activeModMail?.id !== modMail.id) {
+			await sendTicketRemovalInProgressNotice(message);
+			return;
+		}
+
+		await handleDMMessageForTicket(client, message, activeModMail);
+	});
+};
+
+const handleThreadMessageUnlocked = async (
+	client: Client,
+	message: Message<true>,
+) => {
 	try {
 		const modMail = await getActiveModMailByChannel(BigInt(message.channelId));
 		if (!modMail) return;
@@ -292,6 +337,13 @@ const handleThreadMessage = async (client: Client, message: Message<true>) => {
 			logger.error(`Failed to send error message in thread:`, innerError);
 		}
 	}
+};
+
+const handleThreadMessage = async (client: Client, message: Message<true>) => {
+	if (isModMailThreadSealedForRemoval(message.channelId)) return;
+	await withModMailThreadLock(message.channelId, async () => {
+		await handleThreadMessageUnlocked(client, message);
+	});
 };
 
 const handleModmailAssignSelect = async (

@@ -206,19 +206,24 @@ export async function createArchiveFromThread(
 			: await thread.guild.members.fetch(
 					modMailTicket.assignedUserId.toString(),
 				);
-		const messages = await fetchAllMessagesWithRetry(
-			thread,
-			3,
-			50000,
-			(message) => {
-				return (
-					message.author.bot &&
-					message.author.id === thread.client.user.id &&
-					message.embeds.length === 1 &&
-					!message.embeds[0].title
-				);
-			},
-		); // Max 3 retries, up to 50k messages
+		const fetchedMessages = await fetchAllMessagesWithRetry(thread, 3, -1);
+		const unprocessedMessage = fetchedMessages.find(
+			(message) => !message.author.bot && !message.system,
+		);
+		if (unprocessedMessage != null) {
+			throw new Error(
+				`Thread contains unprocessed message ${unprocessedMessage.id}`,
+			);
+		}
+		const latestMessageId = fetchedMessages.first()?.id ?? null;
+		const messages = fetchedMessages.filter((message) => {
+			return (
+				message.author.bot &&
+				message.author.id === thread.client.user.id &&
+				message.embeds.length === 1 &&
+				!message.embeds[0].title
+			);
+		});
 
 		logger.info(`Processing ${messages.size} messages for archive...`);
 
@@ -298,6 +303,7 @@ export async function createArchiveFromThread(
 			success: true,
 			content: html,
 			messageCount: messageData.length,
+			latestMessageId,
 		};
 	} catch (error) {
 		logger.error("Failed to create thread archive:", error);
@@ -613,6 +619,14 @@ export async function extractNoteIdFromMessage(
 // =============================================
 // MODERATOR INTERACTION HANDLERS
 // =============================================
+export interface ModMailArchiveAttachmentResult {
+	success: boolean;
+	attachment?: AttachmentBuilder;
+	messageCount?: number;
+	latestMessageId?: string | null;
+	error?: string;
+}
+
 /**
  * Creates an archive file from thread content and returns it as an AttachmentBuilder
  * @param thread The Discord thread to archive
@@ -622,7 +636,7 @@ export async function extractNoteIdFromMessage(
 export async function createArchiveAttachment(
 	thread: AnyThreadChannel,
 	modMail: ModMailTicket,
-) {
+): Promise<ModMailArchiveAttachmentResult> {
 	const archiveResult = await createArchiveFromThread(thread, modMail);
 
 	if (!archiveResult.success || !archiveResult.content) {
@@ -639,6 +653,7 @@ export async function createArchiveAttachment(
 	return {
 		success: true,
 		attachment,
+		latestMessageId: archiveResult.latestMessageId,
 		messageCount: archiveResult.messageCount,
 	};
 }
