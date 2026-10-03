@@ -43,7 +43,7 @@ export const RemoveSupportThreadCommand: Command<ApplicationCommandType.Message>
 			const member = await getMemberFromInteraction(interaction);
 			if (
 				member == null ||
-				thread.permissionsFor(member)?.has(PermissionFlagsBits.ManageThreads)
+				!thread.permissionsFor(member)?.has(PermissionFlagsBits.ManageThreads)
 			) {
 				await interaction.reply({
 					content:

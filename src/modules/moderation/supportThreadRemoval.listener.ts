@@ -126,7 +126,7 @@ export function createSupportThreadRemovalListener(
 					const member = await getMemberFromInteraction(interaction);
 					if (
 						member == null ||
-						thread
+						!thread
 							.permissionsFor(member)
 							?.has(PermissionFlagsBits.ManageThreads)
 					) {
