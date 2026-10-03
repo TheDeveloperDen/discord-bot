@@ -30,26 +30,30 @@ export async function modifyRoles(
 		currentRoles.delete(role);
 	});
 
-	const languagesSeparator = hasRolesBetween(roles.langs, null)(currentRoles);
-	if (languagesSeparator) {
-		addRole(roles.langs);
-	} else {
-		currentRoles.delete(roles.langs);
-	}
-	const tagsSeparator = hasRolesBetween(roles.tags, roles.langs)(currentRoles);
-	if (tagsSeparator) {
-		addRole(roles.tags);
-	} else {
-		currentRoles.delete(roles.tags);
-	}
+	if (roles) {
+		const languagesSeparator = hasRolesBetween(roles.langs, null)(currentRoles);
+		if (languagesSeparator) {
+			addRole(roles.langs);
+		} else {
+			currentRoles.delete(roles.langs);
+		}
+		const tagsSeparator = hasRolesBetween(roles.tags, roles.langs)(
+			currentRoles,
+		);
+		if (tagsSeparator) {
+			addRole(roles.tags);
+		} else {
+			currentRoles.delete(roles.tags);
+		}
 
-	const generalSeparator =
-		hasRolesBetween(null, roles.general)(currentRoles) &&
-		hasRolesBetween(roles.general, roles.tags)(currentRoles);
-	if (generalSeparator) {
-		addRole(roles.general);
-	} else {
-		currentRoles.delete(roles.general);
+		const generalSeparator =
+			hasRolesBetween(null, roles.general)(currentRoles) &&
+			hasRolesBetween(roles.general, roles.tags)(currentRoles);
+		if (generalSeparator) {
+			addRole(roles.general);
+		} else {
+			currentRoles.delete(roles.general);
+		}
 	}
 
 	await user.roles.set(currentRoles);
