@@ -105,9 +105,11 @@ const SetSubcommand: ExecutableSubcommand = {
 				}
 
 				if (role == null) {
+					const generalSeparator = config.roles.separators?.general;
 					const position =
-						interaction.guild?.roles.resolve(config.roles.separators.general)
-							?.position ?? 0;
+						(generalSeparator
+							? interaction.guild?.roles.resolve(generalSeparator)?.position
+							: undefined) ?? 0;
 					role = await member.guild.roles.create({
 						colors: { primaryColor: colour as ColorResolvable },
 						permissions: [],

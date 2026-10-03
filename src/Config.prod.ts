@@ -13,6 +13,9 @@ export const config: Config = {
 		modLog: "821819464793849876",
 		introductions: "888142541592076347",
 		general: "821743100657270876",
+		// Optional: channel where level-up messages are posted.
+		// If unset, it falls back to `botCommands`.
+		// levelUp: "000000000000000000",
 	},
 	starboard: {
 		emojiId: "⭐",
@@ -53,6 +56,8 @@ export const config: Config = {
 		admin: "821814446749646853",
 		staff: "857288092741009478",
 		notable: "821815023223308300",
+		// `separators` is now optional. If your server has no separator roles,
+		// simply omit this block; role colour positioning then falls back to 0.
 		separators: {
 			general: "874786063493787658",
 			tags: "874783773605130280",
@@ -199,4 +204,10 @@ https://discord.gg/devden`),
 	achievements: {
 		fallbackChannel: "821820015917006868", // botCommands
 	},
+
+	// Optional: custom activity/status texts for the bot.
+	// If set, these are used instead of the default `Coding in <language>`.
+	// languageStatus: {
+	// 	texts: ["Example status", "Another example status"],
+	// },
 };
