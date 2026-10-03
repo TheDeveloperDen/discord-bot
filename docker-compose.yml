@@ -9,7 +9,30 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U root -d database" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  bot:
+    image: discord-bot:latest
+    build: .
+    container_name: devden_bot
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DDB_HOST: postgres
+      DDB_PORT: "5432"
+      DDB_DATABASE: database
+      DDB_USERNAME: root
+      DDB_PASSWORD: password
+      DDB_DIALECT: postgres
+      DDB_BOT_TOKEN: ${DDB_BOT_TOKEN}
+      DDB_PASTE_BYPASS_TOKEN: ${DDB_PASTE_BYPASS_TOKEN:-}
     restart: unless-stopped
 
 volumes:
