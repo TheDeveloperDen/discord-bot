@@ -69,12 +69,14 @@ async function sendLevelUpMessage(
 	ddUser: DDUser,
 ) {
 	const user = member.user;
+	const levelUpChannelId =
+		config.channels.levelUp ?? config.channels.botCommands;
 	const channel = (await client.channels.fetch(
-		config.channels.botCommands,
+		levelUpChannelId,
 	)) as TextChannel;
 	if (!channel) {
 		console.error(
-			`Could not find level up channel with id ${config.channels.botCommands}`,
+			`Could not find level up channel with id ${levelUpChannelId}`,
 		);
 		return;
 	}
