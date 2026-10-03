@@ -65,12 +65,12 @@ export class ModMailTicket extends Model<
 	@Attribute(DataTypes.ENUM(ModMailTicketStatus))
 	@Default(ModMailTicketStatus.OPEN)
 	@NotNull
-	public status: ModMailTicketStatus = ModMailTicketStatus.OPEN;
+	public declare status: CreationOptional<ModMailTicketStatus>;
 
 	@Attribute(DataTypes.ENUM(ModMailTicketCategory))
 	@Default(ModMailTicketCategory.QUESTION)
 	@NotNull
-	public category: ModMailTicketCategory = ModMailTicketCategory.QUESTION;
+	public declare category: CreationOptional<ModMailTicketCategory>;
 
 	@HasMany(() => ModMailNote, "modMailTicketId")
 	public declare notes?: ModMailNote[];
