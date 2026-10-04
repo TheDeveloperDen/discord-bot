@@ -30,6 +30,7 @@ import { mentionRoleById } from "../../util/role.js";
 import { safelyFetchUser } from "../../util/users.js";
 import type { EventListener } from "../module.js";
 import {
+	assignModMailTicket,
 	closeModMailTicketByModMail,
 	createModMailDetails,
 	createModMailInitializationEmbed,
@@ -59,6 +60,7 @@ import {
 	MODMAIL_SUBMIT_ID,
 	MODMAIL_USER_CLOSE_ID,
 	MODMAIL_USER_DETAILS_ID,
+	rememberModMailDetailsMessage,
 } from "./modmail.js";
 import {
 	isModMailThreadSealedForRemoval,
@@ -96,7 +98,7 @@ const handleDMMessageForTicket = async (
 	modMail: ModMailTicket,
 ) => {
 	if (!modMail.threadId) {
-		await closeModMailTicketByModMail(modMail);
+		await closeModMailTicketByModMail(modMail, client);
 		return;
 	}
 
@@ -116,7 +118,7 @@ const handleDMMessageForTicket = async (
 			logger.warn(
 				`Thread ${modMail.threadId} no longer exists or is not a thread`,
 			);
-			await closeModMailTicketByModMail(modMail);
+			await closeModMailTicketByModMail(modMail, client);
 			if (message.channel.isSendable()) {
 				await message.channel.send({
 					content:
@@ -128,7 +130,7 @@ const handleDMMessageForTicket = async (
 
 		if (thread.archived) {
 			logger.warn(`Thread ${modMail.threadId} is archived`);
-			await closeModMailTicketByModMail(modMail);
+			await closeModMailTicketByModMail(modMail, client);
 			if (message.channel.isSendable()) {
 				await message.channel.send({
 					content:
@@ -140,7 +142,7 @@ const handleDMMessageForTicket = async (
 
 		if (!thread.isSendable()) {
 			logger.warn(`Thread ${modMail.threadId} is not sendable`);
-			await closeModMailTicketByModMail(modMail);
+			await closeModMailTicketByModMail(modMail, client);
 			if (message.channel.isSendable()) {
 				await message.channel.send({
 					content:
@@ -169,7 +171,7 @@ const handleDMMessageForTicket = async (
 				logger.warn(
 					`Thread ${modMail.threadId} is deleted or inaccessible, closing ticket`,
 				);
-				await closeModMailTicketByModMail(modMail);
+				await closeModMailTicketByModMail(modMail, client);
 				if (message.channel.isSendable()) {
 					await message.channel.send({
 						content:
@@ -230,7 +232,7 @@ const handleDMMessage = async (
 	}
 
 	if (!modMail.threadId) {
-		await closeModMailTicketByModMail(modMail);
+		await closeModMailTicketByModMail(modMail, client);
 		return;
 	}
 
@@ -261,7 +263,7 @@ const handleThreadMessageUnlocked = async (
 		// Check if the current thread is archived before processing
 		if (message.channel.isThread() && message.channel.archived) {
 			logger.warn(`Thread ${message.channelId} is archived, closing ticket`);
-			await closeModMailTicketByModMail(modMail);
+			await closeModMailTicketByModMail(modMail, client);
 			// Can't send messages to archived threads, so just log and return
 			return;
 		}
@@ -270,7 +272,7 @@ const handleThreadMessageUnlocked = async (
 		const dmChannel = await user.createDM();
 
 		if (!dmChannel?.isSendable()) {
-			await closeModMailTicketByModMail(modMail);
+			await closeModMailTicketByModMail(modMail, client);
 			if (message.channel.isSendable()) {
 				await message.channel.send({
 					content:
@@ -318,7 +320,7 @@ const handleThreadMessageUnlocked = async (
 					BigInt(message.channelId),
 				);
 				if (modMail) {
-					await closeModMailTicketByModMail(modMail);
+					await closeModMailTicketByModMail(modMail, client);
 				}
 			} else {
 				logger.error(`Error handling thread message ${message.id}:`, error);
@@ -407,10 +409,18 @@ const handleModmailAssignSelect = async (
 			return;
 		}
 
-		// Update the ticket assignment
-		await modMail.update({
-			assignedUserId: BigInt(targetUserId),
-		});
+		const assignedTicket = await assignModMailTicket(
+			interaction.client,
+			modMail,
+			BigInt(targetUserId),
+		);
+		if (!assignedTicket) {
+			await interaction.followUp({
+				content: "This ticket has already been archived.",
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
 
 		// Send notification in the channel (with error handling for deleted/archived threads)
 		if (interaction.channel?.isSendable()) {
@@ -528,10 +538,20 @@ const handleModmailSubmit = async (
 			row: ActionRowBuilder<ButtonBuilder>;
 		};
 
-		await thread.send({
+		const detailsMessage = await thread.send({
 			content: `A new ticket has been created! ${config.modmail.pingRole ? mentionRoleById(config.modmail.pingRole) : ""}`,
 			embeds: [ticketDetails.embed],
 			components: [ticketDetails.row],
+		});
+		await rememberModMailDetailsMessage(
+			ticket,
+			"moderator",
+			detailsMessage.id,
+		).catch((error) => {
+			logger.warn(
+				`Failed to persist moderator details message ${detailsMessage.id} for ModMail ticket ${ticket.id}`,
+				error,
+			);
 		});
 
 		if (interaction.channel?.isSendable()) {
@@ -545,11 +565,22 @@ const handleModmailSubmit = async (
 				row: ActionRowBuilder<ButtonBuilder>;
 			};
 
-			await interaction.channel.send({
+			const userDetailsMessage = await interaction.channel.send({
 				content:
 					"Your ticket has been created successfully! A member of staff will follow up soon.",
 				embeds: [userTicketDetails.embed],
 				components: [userTicketDetails.row],
+			});
+			await rememberModMailDetailsMessage(
+				ticket,
+				"creator",
+				userDetailsMessage.id,
+				interaction.client,
+			).catch((error) => {
+				logger.warn(
+					`Failed to persist creator details message ${userDetailsMessage.id} for ModMail ticket ${ticket.id}`,
+					error,
+				);
 			});
 		}
 

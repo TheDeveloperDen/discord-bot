@@ -10,6 +10,7 @@ import {
 	ButtonStyle,
 	type ChatInputCommandInteraction,
 	type Client,
+	type DMChannel,
 	type EmbedAuthorData,
 	type EmbedBuilder,
 	type GuildMember,
@@ -88,6 +89,45 @@ const modMailCategorySelections: SelectMenuComponentOptionData[] = [
 	},
 ];
 
+interface ModMailTicketMutationLock {
+	tail: Promise<void>;
+	pendingOperations: number;
+}
+
+const modMailTicketMutationLocks = new Map<number, ModMailTicketMutationLock>();
+
+async function withModMailTicketMutationLock<T>(
+	ticketId: number,
+	operation: () => Promise<T>,
+): Promise<T> {
+	let lock = modMailTicketMutationLocks.get(ticketId);
+	if (!lock) {
+		lock = {
+			tail: Promise.resolve(),
+			pendingOperations: 0,
+		};
+		modMailTicketMutationLocks.set(ticketId, lock);
+	}
+
+	const previousOperation = lock.tail;
+	let release: () => void = () => {};
+	lock.tail = new Promise<void>((resolve) => {
+		release = resolve;
+	});
+	lock.pendingOperations += 1;
+
+	await previousOperation;
+	try {
+		return await operation();
+	} finally {
+		lock.pendingOperations -= 1;
+		release();
+		if (lock.pendingOperations === 0) {
+			modMailTicketMutationLocks.delete(ticketId);
+		}
+	}
+}
+
 // =============================================
 // DATABASE OPERATIONS
 // =============================================
@@ -157,32 +197,20 @@ export async function createModMailTicket(
 }
 
 /**
- * Closes a modmail ticket by thread ID
- * @param threadId The ID of the thread to close
- * @returns The updated ticket or undefined if not found
+ * Closes a ModMail ticket and refreshes its moderator and creator details embeds.
+ * Embed synchronization is best-effort and never rolls back the persisted state.
  */
-export async function closeModMailTicketByThreadId(threadId: bigint) {
-	const ticket = await ModMailTicket.findOne({
-		where: {
-			threadId: threadId,
-		},
-	});
-	if (ticket == null) {
-		return;
-	}
-	return await ticket.update({
-		status: ModMailTicketStatus.ARCHIVED,
-	});
-}
-
-/**
- * Closes a modmail ticket by ticket instance
- * @param ticket The modmail ticket to close
- * @returns The updated ticket
- */
-export async function closeModMailTicketByModMail(ticket: ModMailTicket) {
-	return await ticket.update({
-		status: ModMailTicketStatus.ARCHIVED,
+export async function closeModMailTicketByModMail(
+	ticket: ModMailTicket,
+	client: Client,
+) {
+	return await withModMailTicketMutationLock(ticket.id, async () => {
+		await ticket.reload();
+		const updatedTicket = await ticket.update({
+			status: ModMailTicketStatus.ARCHIVED,
+		});
+		await updateModMailTicketEmbed(client, updatedTicket);
+		return updatedTicket;
 	});
 }
 
@@ -461,6 +489,273 @@ export function createModMailDetails(
 	return { embed: embed, row: actionRow };
 }
 
+type ModMailDetailsAudience = "moderator" | "creator";
+
+interface ModMailDetailsMessageIds {
+	moderator?: string;
+	creator?: string;
+}
+
+function parseModMailDetailsMessageIds(
+	storedIds: string | undefined,
+): ModMailDetailsMessageIds {
+	if (!storedIds) return {};
+	if (!storedIds.startsWith("{")) {
+		return { moderator: storedIds };
+	}
+
+	try {
+		const parsed = JSON.parse(storedIds) as Record<string, unknown>;
+		return {
+			moderator:
+				typeof parsed.moderator === "string" ? parsed.moderator : undefined,
+			creator: typeof parsed.creator === "string" ? parsed.creator : undefined,
+		};
+	} catch {
+		return { moderator: storedIds };
+	}
+}
+
+function serializeModMailDetailsMessageIds(
+	messageIds: ModMailDetailsMessageIds,
+): string {
+	return JSON.stringify(messageIds);
+}
+
+export async function rememberModMailDetailsMessage(
+	ticket: ModMailTicket,
+	audience: ModMailDetailsAudience,
+	messageId: string,
+	client?: Client,
+): Promise<void> {
+	await withModMailTicketMutationLock(ticket.id, async () => {
+		await ticket.reload();
+		const messageIds = parseModMailDetailsMessageIds(ticket.detailsMessageIds);
+		messageIds[audience] = messageId;
+		await ticket.update({
+			detailsMessageIds: serializeModMailDetailsMessageIds(messageIds),
+		});
+
+		if (
+			client &&
+			(ticket.assignedUserId != null ||
+				ticket.status !== ModMailTicketStatus.OPEN)
+		) {
+			await updateModMailTicketEmbed(client, ticket);
+		}
+	});
+}
+
+function isModMailDetailsMessage(
+	message: Message,
+	ticket: ModMailTicket,
+	client: Client,
+): boolean {
+	return (
+		message.author.id === client.user?.id &&
+		message.embeds.some((embed) =>
+			embed.title?.startsWith(`Modmail Ticket #${ticket.id} -`),
+		)
+	);
+}
+
+async function findModeratorDetailsMessage(
+	thread: AnyThreadChannel,
+	ticket: ModMailTicket,
+	client: Client,
+	storedMessageId: string | undefined,
+): Promise<Message | null> {
+	if (storedMessageId) {
+		const storedMessage = await thread.messages
+			.fetch(storedMessageId)
+			.catch(() => null);
+		if (
+			storedMessage &&
+			isModMailDetailsMessage(storedMessage, ticket, client)
+		) {
+			return storedMessage;
+		}
+	}
+
+	const initialMessages = await thread.messages.fetch({
+		after: thread.id,
+		cache: false,
+		limit: 100,
+	});
+	const initialMessage = initialMessages.find((message) =>
+		isModMailDetailsMessage(message, ticket, client),
+	);
+	if (initialMessage) return initialMessage;
+
+	const matchingHistory = await fetchAllMessagesWithRetry(
+		thread,
+		3,
+		-1,
+		(message) => isModMailDetailsMessage(message, ticket, client),
+	);
+	return matchingHistory.first() ?? null;
+}
+
+async function findCreatorDetailsMessage(
+	dmChannel: DMChannel,
+	ticket: ModMailTicket,
+	client: Client,
+	storedMessageId: string | undefined,
+): Promise<Message | null> {
+	if (storedMessageId) {
+		const storedMessage = await dmChannel.messages
+			.fetch(storedMessageId)
+			.catch(() => null);
+		if (
+			storedMessage &&
+			isModMailDetailsMessage(storedMessage, ticket, client)
+		) {
+			return storedMessage;
+		}
+	}
+
+	const recentMessages = await dmChannel.messages.fetch({
+		cache: false,
+		limit: 100,
+	});
+	const recentMessage = recentMessages.find((message) =>
+		isModMailDetailsMessage(message, ticket, client),
+	);
+	if (recentMessage) return recentMessage;
+	if (recentMessages.size < 100) return null;
+
+	const matchingHistory = await fetchAllMessagesWithRetry(
+		dmChannel,
+		3,
+		-1,
+		(message) => isModMailDetailsMessage(message, ticket, client),
+	);
+	return matchingHistory.first() ?? null;
+}
+
+/**
+ * Rebuilds the moderator and creator ticket embeds from persisted state.
+ * Existing tickets discover and remember their details messages on first update.
+ */
+export async function updateModMailTicketEmbed(
+	client: Client,
+	ticket: ModMailTicket,
+): Promise<boolean> {
+	const storedMessageIds = parseModMailDetailsMessageIds(
+		ticket.detailsMessageIds,
+	);
+	const updatedMessageIds = { ...storedMessageIds };
+	const creator = await safelyFetchUser(client, ticket.creatorId.toString());
+	const displayUser = creator ?? ticket.creatorId.toString();
+	let updated = false;
+
+	if (ticket.threadId) {
+		try {
+			const guild = await client.guilds.fetch(config.guildId);
+			const thread = await guild.channels.fetch(ticket.threadId.toString());
+			if (thread?.isThread()) {
+				const message = await findModeratorDetailsMessage(
+					thread,
+					ticket,
+					client,
+					storedMessageIds.moderator,
+				);
+				if (message) {
+					const details = createModMailDetails(ticket, displayUser, true) as {
+						embed: EmbedBuilder;
+						row: ActionRowBuilder<ButtonBuilder>;
+					};
+					await message.edit({
+						embeds: [details.embed],
+						components:
+							ticket.status === ModMailTicketStatus.OPEN ? [details.row] : [],
+					});
+					updatedMessageIds.moderator = message.id;
+					updated = true;
+				} else {
+					logger.warn(
+						`Unable to find moderator details message for ModMail ticket ${ticket.id}`,
+					);
+				}
+			}
+		} catch (error) {
+			logger.warn(
+				`Unable to update moderator details embed for ModMail ticket ${ticket.id}`,
+				error,
+			);
+		}
+	}
+
+	if (creator) {
+		try {
+			const dmChannel = await creator.createDM();
+			const message = await findCreatorDetailsMessage(
+				dmChannel,
+				ticket,
+				client,
+				storedMessageIds.creator,
+			);
+			if (message) {
+				const details = createModMailDetails(ticket, creator, false, true) as {
+					embed: EmbedBuilder;
+					row: ActionRowBuilder<ButtonBuilder>;
+				};
+				await message.edit({
+					embeds: [details.embed],
+					components:
+						ticket.status === ModMailTicketStatus.OPEN ? [details.row] : [],
+				});
+				updatedMessageIds.creator = message.id;
+				updated = true;
+			} else {
+				logger.warn(
+					`Unable to find creator details message for ModMail ticket ${ticket.id}`,
+				);
+			}
+		} catch (error) {
+			logger.warn(
+				`Unable to update creator details embed for ModMail ticket ${ticket.id}`,
+				error,
+			);
+		}
+	}
+
+	const serializedMessageIds =
+		serializeModMailDetailsMessageIds(updatedMessageIds);
+	if (
+		(updatedMessageIds.moderator != null ||
+			updatedMessageIds.creator != null) &&
+		serializedMessageIds !== ticket.detailsMessageIds
+	) {
+		await ticket
+			.update({ detailsMessageIds: serializedMessageIds })
+			.catch((error) => {
+				logger.warn(
+					`Unable to remember details messages for ModMail ticket ${ticket.id}`,
+					error,
+				);
+			});
+	}
+	return updated;
+}
+
+/**
+ * Assigns a moderator and refreshes the moderator and creator ticket embeds.
+ */
+export async function assignModMailTicket(
+	client: Client,
+	ticket: ModMailTicket,
+	assignedUserId: bigint,
+) {
+	return await withModMailTicketMutationLock(ticket.id, async () => {
+		await ticket.reload();
+		if (ticket.status !== ModMailTicketStatus.OPEN) return null;
+		const updatedTicket = await ticket.update({ assignedUserId });
+		await updateModMailTicketEmbed(client, updatedTicket);
+		return updatedTicket;
+	});
+}
+
 /**
  * Extracts embed and files from a Discord message for modmail display
  * @param message The Discord message to extract from
@@ -659,6 +954,49 @@ export async function createArchiveAttachment(
 }
 
 /**
+ * Sends a ModMail transcript to the configured server archive channel.
+ * Throws when the archive cannot be delivered.
+ */
+export async function sendArchiveToServer(
+	client: Client,
+	modMail: ModMailTicket,
+	attachment: AttachmentBuilder,
+	threadName: string,
+): Promise<void> {
+	const guild = await client.guilds.fetch(config.guildId);
+	const archiveChannel = await guild.channels.fetch(
+		config.modmail.archiveChannel,
+	);
+	if (!archiveChannel?.isTextBased() || !archiveChannel.isSendable()) {
+		throw new Error(
+			`ModMail archive channel ${config.modmail.archiveChannel} is not accessible`,
+		);
+	}
+
+	const archiveAttachment = new AttachmentBuilder(attachment.attachment, {
+		name: attachment.name ?? "archived_thread.html",
+	});
+	const listNotesButton = new ButtonBuilder()
+		.setCustomId(`${MODMAIL_LIST_NOTES_ID}-archived-${modMail.id}`)
+		.setLabel("List Mod Notes")
+		.setStyle(ButtonStyle.Secondary)
+		.setEmoji("📝");
+	const notesRow =
+		new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
+			listNotesButton,
+		);
+
+	await archiveChannel.send({
+		content: `Modmail ticket archived: ${threadName}\nTicket ID: ${modMail.id}\nUser: <@${modMail.creatorId}>`,
+		files: [archiveAttachment],
+		components: [notesRow],
+	});
+	logger.info(
+		`Successfully sent archive to archive channel ${config.modmail.archiveChannel}`,
+	);
+}
+
+/**
  * Sends archive to user's DM and archive channel
  * @param client Discord client
  * @param modMail ModMail ticket
@@ -704,45 +1042,10 @@ export async function sendArchiveToChannels(
 
 	// Send to archive channel
 	try {
-		const guild = await client.guilds.fetch(config.guildId);
-		const archiveChannel = await guild.channels.fetch(
-			config.modmail.archiveChannel,
-		);
-
-		if (archiveChannel?.isTextBased() && archiveChannel.isSendable()) {
-			// Create a new attachment for the archive channel (Discord requires separate instances)
-			const archiveAttachment = new AttachmentBuilder(attachment.attachment, {
-				name: attachment.name ?? "archived_thread.html",
-			});
-
-			// Create button to list mod notes
-			const listNotesButton = new ButtonBuilder()
-				.setCustomId(`${MODMAIL_LIST_NOTES_ID}-archived-${modMail.id}`)
-				.setLabel("List Mod Notes")
-				.setStyle(ButtonStyle.Secondary)
-				.setEmoji("📝");
-
-			const notesRow =
-				new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
-					listNotesButton,
-				);
-
-			await archiveChannel.send({
-				content: `Modmail ticket archived: ${threadName}\nTicket ID: ${modMail.id}\nUser: <@${modMail.creatorId}>`,
-				files: [archiveAttachment],
-				components: [notesRow],
-			});
-			archiveChannelSendSuccess = true;
-			logger.info(
-				`Successfully sent archive to archive channel ${config.modmail.archiveChannel}`,
-			);
-		} else {
-			logger.warn(
-				`Could not send archive to archive channel - channel not accessible`,
-			);
-		}
+		await sendArchiveToServer(client, modMail, attachment, threadName);
+		archiveChannelSendSuccess = true;
 	} catch (error) {
-		logger.error(`Failed to send archive to archive channel:`, error);
+		logger.error("Failed to send archive to archive channel:", error);
 	}
 
 	return { dmSendSuccess, archiveChannelSendSuccess };
@@ -800,7 +1103,7 @@ export async function archiveModmailTicket(
 	);
 
 	// Close the ticket
-	await closeModMailTicketByModMail(modMail);
+	await closeModMailTicketByModMail(modMail, client);
 
 	// Provide feedback to moderator
 	let statusMessage = `Archive created with ${archiveResult.messageCount} messages.`;
@@ -1357,7 +1660,7 @@ export async function handleModmailUserClose(interaction: ButtonInteraction) {
 		}
 
 		// Close the ticket
-		await closeModMailTicketByModMail(modMail);
+		await closeModMailTicketByModMail(modMail, interaction.client);
 
 		// Notify the thread if it exists
 		try {

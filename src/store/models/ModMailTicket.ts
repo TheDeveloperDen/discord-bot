@@ -58,9 +58,12 @@ export class ModMailTicket extends Model<
 	@AllowNull
 	public declare channelId?: bigint;
 
-	@Attribute(DataTypes.STRING)
+	@Attribute({
+		type: DataTypes.STRING,
+		columnName: "archiveMessageId",
+	})
 	@AllowNull
-	public declare archiveMessageId?: string;
+	public declare detailsMessageIds?: string;
 
 	@Attribute(DataTypes.ENUM(ModMailTicketStatus))
 	@Default(ModMailTicketStatus.OPEN)

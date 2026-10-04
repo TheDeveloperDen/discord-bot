@@ -71,7 +71,7 @@ export const RemoveSupportThreadCommand: Command<ApplicationCommandType.Message>
 
 			await interaction.reply({
 				content:
-					"Choose why this support ticket should be removed. Its creator will receive a full conversation archive before anything is deleted.",
+					"Choose why this support ticket should be removed. A full conversation archive will be sent to its creator and the server archive before anything is deleted.",
 				components: [
 					new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 						selectMenu,
