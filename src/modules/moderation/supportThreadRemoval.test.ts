@@ -3,6 +3,7 @@ import { Buffer } from "node:buffer";
 import {
 	AttachmentBuilder,
 	ChannelType,
+	type Client,
 	Collection,
 	type GuildMember,
 	MessageFlags,
@@ -14,7 +15,10 @@ import {
 	ModMailTicketCategory,
 	ModMailTicketStatus,
 } from "../../store/models/ModMailTicket.js";
-import { closeModMailTicketByModMail } from "../modmail/modmail.js";
+import {
+	closeModMailTicketByModMail,
+	sendArchiveToServer,
+} from "../modmail/modmail.js";
 import {
 	isModMailThreadSealedForRemoval,
 	withModMailThreadLock,
@@ -89,6 +93,7 @@ interface DependencyOverrides {
 	getActiveModMailByChannel?: SupportThreadRemovalDependencies["getActiveModMailByChannel"];
 	createArchiveAttachment?: SupportThreadRemovalDependencies["createArchiveAttachment"];
 	closeModMailTicketByModMail?: SupportThreadRemovalDependencies["closeModMailTicketByModMail"];
+	sendArchiveToServer?: SupportThreadRemovalDependencies["sendArchiveToServer"];
 }
 
 function createMember(canManageThreads: boolean): GuildMember {
@@ -183,10 +188,14 @@ function createDependencies(overrides?: DependencyOverrides) {
 		overrides?.closeModMailTicketByModMail ??
 			(async (modMail: ModMailTicket) => modMail),
 	);
+	const sendArchiveToServer = mock(
+		overrides?.sendArchiveToServer ?? (async () => {}),
+	);
 	const dependencies: SupportThreadRemovalDependencies = {
 		getActiveModMailByChannel,
 		createArchiveAttachment,
 		closeModMailTicketByModMail,
+		sendArchiveToServer,
 	};
 	return {
 		archive,
@@ -194,6 +203,7 @@ function createDependencies(overrides?: DependencyOverrides) {
 		createArchiveAttachment,
 		getActiveModMailByChannel,
 		listener: createSupportThreadRemovalListener(dependencies),
+		sendArchiveToServer,
 		ticket,
 	};
 }
@@ -393,6 +403,9 @@ describe("SupportThreadRemovalListener", () => {
 				sequence.push("close");
 				return modMail;
 			},
+			sendArchiveToServer: async () => {
+				sequence.push("server");
+			},
 		});
 		const selected = createSelectInteraction(thread, parent, {
 			creatorSend: async () => {
@@ -402,13 +415,19 @@ describe("SupportThreadRemovalListener", () => {
 
 		await invokeListener(dependencies.listener, selected.interaction);
 
-		expect(sequence).toEqual(["archive", "dm", "close", "delete"]);
+		expect(sequence).toEqual(["archive", "dm", "server", "close", "delete"]);
 		expect(dependencies.getActiveModMailByChannel).toHaveBeenCalledWith(
 			BigInt(threadId),
 		);
 		expect(dependencies.createArchiveAttachment).toHaveBeenCalledWith(
 			thread,
 			ticket,
+		);
+		expect(dependencies.sendArchiveToServer).toHaveBeenCalledWith(
+			selected.interaction.client,
+			ticket,
+			expect.any(AttachmentBuilder),
+			thread.name,
 		);
 		expect(selected.fetchUser).toHaveBeenCalledWith(creatorId);
 		const dmPayload = selected.creatorSend.mock.calls[0]?.[0] as {
@@ -551,6 +570,30 @@ describe("SupportThreadRemovalListener", () => {
 		expect(selected.editReply).toHaveBeenCalledWith(
 			expect.objectContaining({
 				content: expect.stringContaining("still open"),
+			}),
+		);
+	});
+
+	test("keeps the ticket open when the server archive cannot be delivered", async () => {
+		const { parent, thread } = createThread();
+		const dependencies = createDependencies({
+			sendArchiveToServer: async () => {
+				throw new Error("archive channel unavailable");
+			},
+		});
+		const selected = createSelectInteraction(thread, parent);
+
+		await invokeListener(dependencies.listener, selected.interaction);
+
+		expect(selected.creatorSend).toHaveBeenCalledTimes(1);
+		expect(dependencies.sendArchiveToServer).toHaveBeenCalledTimes(1);
+		expect(dependencies.closeModMailTicketByModMail).not.toHaveBeenCalled();
+		expect(thread.delete).not.toHaveBeenCalled();
+		expect(thread.archived).toBe(false);
+		expect(thread.locked).toBe(false);
+		expect(selected.editReply).toHaveBeenCalledWith(
+			expect.objectContaining({
+				content: expect.stringContaining("server archive"),
 			}),
 		);
 	});
@@ -752,6 +795,54 @@ describe("SupportThreadRemovalListener", () => {
 	});
 });
 
+describe("ModMail server archive", () => {
+	test("sends the preserved transcript and ticket context to the archive channel", async () => {
+		const send = mock(async (_payload: unknown) => {});
+		const channelFetch = mock(async () => ({
+			isTextBased: () => true,
+			isSendable: () => true,
+			send,
+		}));
+		const guildFetch = mock(async () => ({
+			channels: { fetch: channelFetch },
+		}));
+		const client = {
+			guilds: { fetch: guildFetch },
+		} as unknown as Client;
+		const ticket = {
+			id: 42,
+			creatorId: BigInt(creatorId),
+		} as ModMailTicket;
+		const attachment = new AttachmentBuilder(
+			Buffer.from("<html>archive</html>"),
+			{
+				name: "ticket.html",
+			},
+		);
+
+		await sendArchiveToServer(client, ticket, attachment, "support-thread");
+
+		expect(guildFetch).toHaveBeenCalledWith(config.guildId);
+		expect(channelFetch).toHaveBeenCalledWith(config.modmail.archiveChannel);
+		expect(send).toHaveBeenCalledTimes(1);
+		const payload = send.mock.calls[0]?.[0] as {
+			content: string;
+			files: AttachmentBuilder[];
+			components: { toJSON(): { components: { custom_id?: string }[] } }[];
+		};
+		expect(payload.content).toContain("support-thread");
+		expect(payload.content).toContain("Ticket ID: 42");
+		expect(payload.content).toContain(`<@${creatorId}>`);
+		expect(payload.files[0]?.name).toBe("ticket.html");
+		expect(payload.files[0]?.attachment).toEqual(
+			Buffer.from("<html>archive</html>"),
+		);
+		expect(payload.components[0]?.toJSON().components[0]?.custom_id).toBe(
+			"modmail-list-notes-archived-42",
+		);
+	});
+});
+
 describe("ModMail ticket closure", () => {
 	test("persists the archived status before a removal can delete the thread", async () => {
 		const ticket = await ModMailTicket.create({
@@ -760,9 +851,14 @@ describe("ModMail ticket closure", () => {
 			category: ModMailTicketCategory.QUESTION,
 			status: ModMailTicketStatus.OPEN,
 		});
+		const client = {
+			guilds: {
+				fetch: async () => ({ channels: { fetch: async () => null } }),
+			},
+		} as unknown as Client;
 
 		try {
-			await closeModMailTicketByModMail(ticket);
+			await closeModMailTicketByModMail(ticket, client);
 			await ticket.reload();
 
 			expect(ticket.status).toBe(ModMailTicketStatus.ARCHIVED);

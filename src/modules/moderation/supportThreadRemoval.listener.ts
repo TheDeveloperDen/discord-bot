@@ -1,5 +1,7 @@
 import {
 	type AnyThreadChannel,
+	type AttachmentBuilder,
+	type Client,
 	type Interaction,
 	PermissionFlagsBits,
 } from "discord.js";
@@ -11,6 +13,7 @@ import {
 	createArchiveAttachment,
 	getActiveModMailByChannel,
 	type ModMailArchiveAttachmentResult,
+	sendArchiveToServer,
 } from "../modmail/modmail.js";
 import {
 	sealModMailThreadForRemoval,
@@ -34,13 +37,23 @@ export interface SupportThreadRemovalDependencies {
 		thread: AnyThreadChannel,
 		modMail: ModMailTicket,
 	): Promise<ModMailArchiveAttachmentResult>;
-	closeModMailTicketByModMail(modMail: ModMailTicket): Promise<ModMailTicket>;
+	sendArchiveToServer(
+		client: Client,
+		modMail: ModMailTicket,
+		attachment: AttachmentBuilder,
+		threadName: string,
+	): Promise<void>;
+	closeModMailTicketByModMail(
+		modMail: ModMailTicket,
+		client: Client,
+	): Promise<ModMailTicket>;
 }
 
 const defaultDependencies: SupportThreadRemovalDependencies = {
 	getActiveModMailByChannel,
 	createArchiveAttachment,
 	closeModMailTicketByModMail,
+	sendArchiveToServer,
 };
 
 export function createSupportThreadRemovalListener(
@@ -266,6 +279,26 @@ export function createSupportThreadRemovalListener(
 							return;
 						}
 
+						try {
+							await dependencies.sendArchiveToServer(
+								interaction.client,
+								modMail,
+								archiveResult.attachment,
+								thread.name,
+							);
+						} catch (error) {
+							logger.warn(
+								"Unable to send the ModMail transcript to the server archive",
+								error,
+							);
+							await interaction.editReply({
+								content:
+									"The ticket creator received a copy, but I could not create the server archive. The ticket is still open and the thread was not deleted.",
+								components: [],
+							});
+							return;
+						}
+
 						if (!sealModMailThreadForRemoval(request.threadId)) {
 							await interaction.editReply({
 								content:
@@ -287,7 +320,7 @@ export function createSupportThreadRemovalListener(
 							);
 							await interaction.editReply({
 								content:
-									"The ticket creator received a copy, but I could not verify that it was complete. The ticket is still open and the thread was not deleted.",
+									"The ticket archives were delivered, but I could not verify that they were complete. The ticket is still open and the thread was not deleted.",
 								components: [],
 							});
 							return;
@@ -295,13 +328,16 @@ export function createSupportThreadRemovalListener(
 						if (latestMessageId !== archiveResult.latestMessageId) {
 							await interaction.editReply({
 								content:
-									"The ticket changed while its copy was being delivered. The ticket is still open and the thread was not deleted.",
+									"The ticket changed while its archives were being delivered. The ticket is still open and the thread was not deleted.",
 								components: [],
 							});
 							return;
 						}
 						try {
-							await dependencies.closeModMailTicketByModMail(modMail);
+							await dependencies.closeModMailTicketByModMail(
+								modMail,
+								interaction.client,
+							);
 						} catch (error) {
 							logger.warn(
 								"Unable to close a ModMail ticket after preserving it",
@@ -309,7 +345,7 @@ export function createSupportThreadRemovalListener(
 							);
 							await interaction.editReply({
 								content:
-									"The ticket creator received a copy, but I could not close the ticket. The thread was not deleted.",
+									"The ticket creator and server archive received copies, but I could not close the ticket. The thread was not deleted.",
 								components: [],
 							});
 							return;
@@ -328,7 +364,7 @@ export function createSupportThreadRemovalListener(
 							);
 							await interaction.editReply({
 								content:
-									"The ticket creator received a copy and the ticket was closed, but I could not delete the thread.",
+									"The ticket creator and server archive received copies and the ticket was closed, but I could not delete the thread.",
 								components: [],
 							});
 							return;
@@ -336,7 +372,7 @@ export function createSupportThreadRemovalListener(
 
 						await interaction.editReply({
 							content:
-								"The support ticket was removed and its creator received a conversation archive.",
+								"The support ticket was archived on the server, sent to its creator, and removed.",
 							components: [],
 						});
 					} finally {
