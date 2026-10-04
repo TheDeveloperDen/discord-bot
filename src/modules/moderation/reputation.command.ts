@@ -13,7 +13,7 @@ import {
 	ReputationEventType,
 } from "../../store/models/ReputationEvent.js";
 import { fakeMention } from "../../util/users.js";
-import { logModerationAction } from "./logs.js";
+import { dmModerationTarget, dmWarning, logModerationAction } from "./logs.js";
 import {
 	getReputationHistoryForUser,
 	getReputationTier,
@@ -238,7 +238,11 @@ const GrantSubcommand: ExecutableSubcommand = {
 				options?.customScore,
 			);
 
-			// Log the reputation grant
+			const dmSent = await dmModerationTarget(
+				targetUser,
+				`You were granted **+${result.event.scoreChange}** reputation in **${interaction.guild?.name ?? "the server"}**.\n**Reason:** ${reason}`,
+			);
+
 			await logModerationAction(interaction.client, {
 				kind: "ReputationGranted",
 				moderator: interaction.user,
@@ -247,6 +251,7 @@ const GrantSubcommand: ExecutableSubcommand = {
 				scoreChange: result.event.scoreChange,
 				newScore: result.newScore,
 				reason,
+				dmSent,
 			});
 
 			const tierChange = result.tierChanged
@@ -258,7 +263,8 @@ const GrantSubcommand: ExecutableSubcommand = {
 				content:
 					`Granted **+${result.event.scoreChange}** reputation to ${fakeMention(targetUser)}\n` +
 					`**Reason:** ${reason}\n` +
-					`**New Score:** ${formatScore(result.newScore)}${tierChange}`,
+					`**New Score:** ${formatScore(result.newScore)}${tierChange}` +
+					dmWarning(dmSent),
 			});
 		} catch (error) {
 			logger.error("Failed to grant reputation:", error);

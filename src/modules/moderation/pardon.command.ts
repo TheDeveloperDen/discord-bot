@@ -8,7 +8,7 @@ import type { Command } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { Warning } from "../../store/models/Warning.js";
 import { fakeMention } from "../../util/users.js";
-import { logModerationAction } from "./logs.js";
+import { dmModerationTarget, dmWarning, logModerationAction } from "./logs.js";
 
 export const PardonCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: "pardon",
@@ -109,33 +109,29 @@ export const PardonCommand: Command<ApplicationCommandType.ChatInput> = {
 				.fetch(warning.userId.toString())
 				.catch(() => null);
 
+			let dmSent = false;
 			if (targetUser) {
+				dmSent = await dmModerationTarget(
+					targetUser,
+					`Your warning #${warningId} in **${interaction.guild.name}** has been pardoned.\n` +
+						`**Reason:** ${reason}`,
+				);
 				await logModerationAction(interaction.client, {
 					kind: "WarningPardoned",
 					moderator: interaction.user,
 					target: targetUser,
 					warningId: warning.id,
 					reason,
+					dmSent,
 				});
-
-				try {
-					await targetUser.send({
-						content:
-							`Your warning #${warningId} in **${interaction.guild.name}** has been pardoned.\n` +
-							`**Reason:** ${reason}`,
-					});
-				} catch {
-					logger.info(
-						`Could not DM pardon notice to user ${targetUser.id} - DMs may be disabled`,
-					);
-				}
 			}
 
 			await interaction.editReply({
 				content:
 					`Pardoned warning #${warningId}` +
 					(targetUser ? ` for ${fakeMention(targetUser)}` : "") +
-					`\n**Reason:** ${reason}`,
+					`\n**Reason:** ${reason}` +
+					dmWarning(dmSent),
 			});
 		} catch (e) {
 			logger.error("Failed to pardon warning:", e);

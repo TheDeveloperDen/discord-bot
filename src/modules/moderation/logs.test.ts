@@ -46,6 +46,7 @@ describe("logModerationAction", () => {
 
 			const action: ModerationLog = {
 				kind: "Ban",
+				dmSent: true,
 				moderator,
 				target,
 				deleteMessages: true,
@@ -62,6 +63,24 @@ describe("logModerationAction", () => {
 
 			expect(embed.data.title).toBe("Member Banned");
 			expect(embed.data.color).toBe(Colors.Red);
+		});
+
+		test("shows whether the target was DMed", async () => {
+			const { mockClient, mockChannelSend } = createTestContext();
+			const action: ModerationLog = {
+				kind: "Kick",
+				dmSent: false,
+				moderator: createMockUser({ id: "12345" }),
+				target: createMockUser({ id: "67890" }),
+				reason: null,
+			};
+
+			await logModerationAction(mockClient, action);
+
+			const callArgs = mockChannelSend.mock.calls[0][0] as {
+				embeds: EmbedBuilder[];
+			};
+			expect(callArgs.embeds[0].data.description).toContain("**DM sent**: ❌");
 		});
 
 		test("handles Unban action", async () => {
@@ -95,6 +114,7 @@ describe("logModerationAction", () => {
 
 			const action: ModerationLog = {
 				kind: "TempBan",
+				dmSent: true,
 				moderator,
 				target,
 				deleteMessages: false,
@@ -122,6 +142,7 @@ describe("logModerationAction", () => {
 
 			const action: ModerationLog = {
 				kind: "Kick",
+				dmSent: true,
 				moderator,
 				target,
 				reason: "Being disruptive",
@@ -146,6 +167,7 @@ describe("logModerationAction", () => {
 
 			const action: ModerationLog = {
 				kind: "SoftBan",
+				dmSent: true,
 				moderator,
 				target,
 				deleteMessages: true,
@@ -219,6 +241,7 @@ describe("logModerationAction", () => {
 
 			const action: ModerationLog = {
 				kind: "Kick",
+				dmSent: true,
 				moderator,
 				target,
 				reason: "This is the reason",
@@ -241,6 +264,7 @@ describe("logModerationAction", () => {
 
 			const action: ModerationLog = {
 				kind: "Ban",
+				dmSent: true,
 				moderator,
 				target,
 				deleteMessages: false,
@@ -264,6 +288,7 @@ describe("logModerationAction", () => {
 
 			const action: ModerationLog = {
 				kind: "Ban",
+				dmSent: true,
 				moderator,
 				target,
 				deleteMessages: true,
@@ -291,6 +316,7 @@ describe("logModerationAction", () => {
 
 			const action: ModerationLog = {
 				kind: "Ban",
+				dmSent: true,
 				moderator: createMockUser({ id: "12345" }),
 				target: createMockUser({ id: "67890" }),
 				deleteMessages: false,

@@ -8,8 +8,12 @@ import {
 import type { Command } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { createStandardEmbed } from "../../util/embeds.js";
-import { parseTimespan } from "../../util/timespan.js";
-import { logModerationAction } from "../moderation/logs.js";
+import { parseTimespan, prettyPrintDuration } from "../../util/timespan.js";
+import {
+	dmModerationTarget,
+	dmWarning,
+	logModerationAction,
+} from "../moderation/logs.js";
 
 /** Discord's maximum timeout length */
 export const MAX_TIMEOUT_MS = 28 * 24 * 60 * 60 * 1000;
@@ -132,6 +136,10 @@ export const TimeoutCommand: Command<ApplicationCommandType.ChatInput> = {
 			return;
 		}
 
+		const dmSent = await dmModerationTarget(
+			target.user,
+			`You were timed out in ${interaction.guild.name} for **${prettyPrintDuration(period)}**: ${reason}`,
+		);
 		await interaction.editReply({
 			embeds: [
 				{
@@ -150,6 +158,7 @@ export const TimeoutCommand: Command<ApplicationCommandType.ChatInput> = {
 					],
 				},
 			],
+			content: dmWarning(dmSent) || undefined,
 		});
 
 		await logModerationAction(interaction.client, {
@@ -158,9 +167,7 @@ export const TimeoutCommand: Command<ApplicationCommandType.ChatInput> = {
 			target: target.user,
 			duration: period,
 			reason,
-		}).catch((e) => {
-			Sentry.captureException(e);
-			logger.error("Failed to log timeout to the moderation log", e);
+			dmSent,
 		});
 	},
 };

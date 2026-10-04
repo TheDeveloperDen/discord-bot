@@ -8,7 +8,7 @@ import { getMember } from "../../util/member.js";
 import { actualMention, isSpecialUser } from "../../util/users.js";
 import type { EventListener } from "../module.js";
 import { getTierByLevel } from "../xp/xpForMessage.util.js";
-import { logModerationAction } from "./logs.js";
+import { dmModerationTarget, logModerationAction } from "./logs.js";
 
 const invitePatterns = [
 	/discord\.gg\/[a-zA-Z0-9]+/gi,
@@ -89,12 +89,11 @@ async function banForInviteSpam(
 			: "same_channel";
 
 	try {
-		await member
-			.send(
-				"You have been banned for spamming Discord invites. " +
-					"If you believe this was a mistake, please contact a moderator.",
-			)
-			.catch(() => {});
+		const dmSent = await dmModerationTarget(
+			member.user,
+			"You have been banned for spamming Discord invites. " +
+				"If you believe this was a mistake, please reply to this DM to contact a moderator.",
+		);
 
 		await message.guild.bans.create(member.user, {
 			reason: `Auto-ban: Invite spam (${violation.count} violations across ${violation.channels.size} channel(s) in ${config.inviteSpam.violationWindowMs / 1000}s)`,
@@ -108,6 +107,7 @@ async function banForInviteSpam(
 			channelCount: violation.channels.size,
 			violationWindowMs: config.inviteSpam.violationWindowMs,
 			triggerReason,
+			dmSent,
 		});
 
 		inviteViolationCache.delete(member.id);

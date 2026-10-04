@@ -1,11 +1,16 @@
 import {
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
+	MessageFlags,
 	PermissionFlagsBits,
 } from "discord.js";
 import type { Command } from "../../commands/index.js";
 import { fakeMention } from "../../util/users.js";
-import { logModerationAction } from "./logs.js";
+import {
+	DM_FAILED_WARNING,
+	dmModerationTarget,
+	logModerationAction,
+} from "./logs.js";
 
 export const BanCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: "ban",
@@ -44,13 +49,10 @@ export const BanCommand: Command<ApplicationCommandType.ChatInput> = {
 				interaction.options.getBoolean("delete_messages") ?? true;
 			const user = interaction.options.getUser("user", true);
 			const reason = interaction.options.getString("reason", false);
-			try {
-				await user.send({
-					content: `You got banned from ${interaction.guild.name} ${reason ? `with the reason: ${reason}` : ""}`,
-				});
-			} catch {
-				/* empty */
-			}
+			const dmSent = await dmModerationTarget(
+				user,
+				`You were banned from ${interaction.guild.name} ${reason ? `with the reason: ${reason}` : ""}`,
+			);
 			await interaction.guild.bans.create(user, {
 				reason: reason ?? undefined,
 				deleteMessageSeconds: deleteMessages ? 604800 : undefined,
@@ -58,6 +60,7 @@ export const BanCommand: Command<ApplicationCommandType.ChatInput> = {
 
 			await logModerationAction(interaction.client, {
 				kind: "Ban",
+				dmSent,
 				moderator: interaction.user,
 				target: user,
 				deleteMessages,
@@ -69,6 +72,12 @@ export const BanCommand: Command<ApplicationCommandType.ChatInput> = {
 			});
 
 			setTimeout(() => banMessage.delete().catch(() => null), 5000);
+			if (!dmSent) {
+				await interaction.followUp({
+					flags: MessageFlags.Ephemeral,
+					content: DM_FAILED_WARNING,
+				});
+			}
 		} catch (e) {
 			console.error("Failed to ban user: ", e);
 

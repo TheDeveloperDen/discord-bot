@@ -1,11 +1,16 @@
 import {
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
+	MessageFlags,
 	PermissionFlagsBits,
 } from "discord.js";
 import type { Command } from "../../commands/index.js";
 import { fakeMention } from "../../util/users.js";
-import { logModerationAction } from "./logs.js";
+import {
+	DM_FAILED_WARNING,
+	dmModerationTarget,
+	logModerationAction,
+} from "./logs.js";
 
 export const SoftBanCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: "softban",
@@ -44,13 +49,10 @@ export const SoftBanCommand: Command<ApplicationCommandType.ChatInput> = {
 			const reason = interaction.options.getString("reason", false);
 			const deleteMessages =
 				interaction.options.getBoolean("delete_messages", false) ?? true;
-			try {
-				await user.send({
-					content: `You got soft-banned from ${interaction.guild.name} ${reason ? `with the reason: ${reason}` : ""}`,
-				});
-			} catch {
-				/* empty */
-			}
+			const dmSent = await dmModerationTarget(
+				user,
+				`You were kicked from ${interaction.guild.name} ${reason ? `with the reason: ${reason}` : ""}`, // saying "kicked" is intentional since they will be unbanned momentarily
+			);
 
 			await interaction.guild.bans.create(user, {
 				reason: reason ?? undefined,
@@ -59,6 +61,7 @@ export const SoftBanCommand: Command<ApplicationCommandType.ChatInput> = {
 
 			await logModerationAction(interaction.client, {
 				kind: "SoftBan",
+				dmSent,
 				target: user,
 				moderator: interaction.user,
 				deleteMessages,
@@ -70,6 +73,12 @@ export const SoftBanCommand: Command<ApplicationCommandType.ChatInput> = {
 			});
 
 			setTimeout(() => softBanMessage.delete().catch(() => null), 5000);
+			if (!dmSent) {
+				await interaction.followUp({
+					flags: MessageFlags.Ephemeral,
+					content: DM_FAILED_WARNING,
+				});
+			}
 			setTimeout(() => interaction.guild?.bans.remove(user, "Softban"), 5000);
 		} catch (e) {
 			console.error("Failed to ban user: ", e);

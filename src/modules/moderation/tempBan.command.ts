@@ -1,13 +1,18 @@
 import {
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
+	MessageFlags,
 	PermissionFlagsBits,
 } from "discord.js";
 import type { Command } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { parseTimespan, prettyPrintDuration } from "../../util/timespan.js";
 import { fakeMention } from "../../util/users.js";
-import { logModerationAction } from "./logs.js";
+import {
+	DM_FAILED_WARNING,
+	dmModerationTarget,
+	logModerationAction,
+} from "./logs.js";
 import { createTempBanModAction } from "./tempBan.js";
 
 export const TempBanCommand: Command<ApplicationCommandType.ChatInput> = {
@@ -57,13 +62,10 @@ export const TempBanCommand: Command<ApplicationCommandType.ChatInput> = {
 			);
 			const deleteMessages =
 				interaction.options.getBoolean("delete_messages", false) ?? true;
-			try {
-				await user.send({
-					content: `You got temp-banned from ${interaction.guild.name} ${reason ? `with the reason: ${reason}` : ""} for ${prettyPrintDuration(banDurationMillis)}`,
-				});
-			} catch {
-				/* empty */
-			}
+			const dmSent = await dmModerationTarget(
+				user,
+				`You were temp-banned from ${interaction.guild.name} ${reason ? `for the reason: ${reason}` : ""} for ${prettyPrintDuration(banDurationMillis)}`,
+			);
 
 			await interaction.guild.bans.create(user, {
 				reason: reason ?? undefined,
@@ -81,6 +83,7 @@ export const TempBanCommand: Command<ApplicationCommandType.ChatInput> = {
 
 			await logModerationAction(interaction.client, {
 				kind: "TempBan",
+				dmSent,
 				moderator: interaction.user,
 				target: user,
 				deleteMessages,
@@ -93,6 +96,12 @@ export const TempBanCommand: Command<ApplicationCommandType.ChatInput> = {
 			});
 
 			setTimeout(() => tempBanMessage.delete().catch(() => null), 5000);
+			if (!dmSent) {
+				await interaction.followUp({
+					flags: MessageFlags.Ephemeral,
+					content: DM_FAILED_WARNING,
+				});
+			}
 		} catch (e) {
 			logger.error("Failed to ban user: ", e);
 
