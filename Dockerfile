@@ -17,11 +17,9 @@ RUN bun install --frozen-lockfile --production
 
 # create final release image
 FROM base AS release
-COPY --from=deps /usr/src/app/node_modules ./node_modules
-COPY . .
-
-# Set permissions for non-root user
-RUN chown -R 1000:1000 /usr/src/app
+COPY --from=deps --chown=1000:1000 /usr/src/app/node_modules ./node_modules
+COPY --chown=1000:1000 . .
+RUN mkdir -p /usr/src/app/logs && chown 1000:1000 /usr/src/app /usr/src/app/logs
 
 # Git commit SHA, used as the Sentry release
 ARG SENTRY_RELEASE
