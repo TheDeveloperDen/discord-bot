@@ -35,7 +35,6 @@
 		"@sequelize/sqlite3": "^7.0.0-alpha.47",
 		"bufferutil": "^4.0.9",
 		"discord.js": "^14.25.1",
-		"djs-slash-helper": "git+https://github.com/bristermitten/djs-slash-helper.git#97726a356be094f4d187637734b116e4e1c89be5",
 		"expiry-map": "^2.0.0",
 		"handlebars": "^4.7.8",
 		"hot-takes": "git+https://github.com/bristermitten/hot-takes.git#fe74913b7a3d08df5b852eaf2995f6b7ac5e7f2c",
