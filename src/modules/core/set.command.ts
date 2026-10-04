@@ -16,6 +16,7 @@ import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 
 import { mentionIfPingable } from "../../util/users.js";
+import { evaluateLevelAchievements } from "../xp/xpForMessage.util.js";
 import { levelForXp } from "../xp/xpRoles.util.js";
 
 export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
@@ -135,6 +136,9 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
 			});
 			setter(user, value);
 			await user.save();
+			if (option === "xp") {
+				await evaluateLevelAchievements(target, user, channel);
+			}
 			await reply.edit({
 				components: [],
 				embeds: [

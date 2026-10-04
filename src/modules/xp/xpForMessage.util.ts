@@ -1,11 +1,19 @@
 import * as Sentry from "@sentry/bun";
-import { type Channel, type GuildMember, Message, type User } from "discord.js";
+import {
+	type Channel,
+	type GuildMember,
+	Message,
+	type TextBasedChannel,
+	type User,
+} from "discord.js";
 import stringComparison from "string-comparison";
 import { config } from "../../Config.js";
 import type { Config } from "../../config.type.js";
 import { logger } from "../../logging.js";
-import { getOrCreateUserById } from "../../store/models/DDUser.js";
+import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { compose } from "../../util/functions.js";
+import { notifyMultipleAchievements } from "../achievements/achievementNotifier.js";
+import { checkAndAwardAchievements } from "../achievements/achievementService.js";
 import {
 	getReputationTier,
 	getXpModifier,
@@ -133,14 +141,44 @@ export interface XPResult {
 }
 
 /**
- * Gives XP to a member
+ * Evaluates and announces level achievements after an XP mutation has persisted.
+ * Failures here must not turn a completed XP mutation into a failed one.
+ */
+export async function evaluateLevelAchievements(
+	member: GuildMember,
+	ddUser: DDUser,
+	triggerChannel?: TextBasedChannel,
+): Promise<void> {
+	try {
+		const newAchievements = await checkAndAwardAchievements(
+			ddUser,
+			{ type: "xp", event: "xp_gained" },
+			{ totalXp: ddUser.xp, level: ddUser.level },
+		);
+		if (newAchievements.length > 0) {
+			await notifyMultipleAchievements(
+				member.client,
+				member,
+				newAchievements.map((achievement) => achievement.definition),
+				triggerChannel,
+			);
+		}
+	} catch (error) {
+		logger.error("Failed to check XP achievements:", error);
+	}
+}
+
+/**
+ * Gives XP to a member and evaluates eligible level achievements.
  * @param user the member to give XP to
  * @param xp the amount of XP to give
+ * @param triggerChannel optional channel in which the XP was earned
  * @returns How much XP was given. This may be affected by perks such as boosting or reputation. If something went wrong, -1 will be returned.
  */
 export const giveXp = async (
 	user: GuildMember,
 	xp: number,
+	triggerChannel?: TextBasedChannel,
 ): Promise<XPResult> =>
 	await Sentry.startSpan(
 		{ name: "giveXP", op: "db", attributes: { user: user.id, xp } },
@@ -158,6 +196,7 @@ export const giveXp = async (
 				logger.debug(
 					`User ${user.id} is in Restricted reputation tier, no XP given`,
 				);
+				await evaluateLevelAchievements(user, ddUser, triggerChannel);
 				return {
 					xpGiven: 0,
 					reputationModifier: 0,
@@ -173,6 +212,7 @@ export const giveXp = async (
 			logger.info(
 				`Gave ${finalXp} XP to user ${user.id} (base: ${xp}, boost: ${boostMultiplier}x, rep: ${reputationModifier}x)`,
 			);
+			await evaluateLevelAchievements(user, ddUser, triggerChannel);
 			return {
 				xpGiven: finalXp,
 				multiplier: boostMultiplier === 1 ? undefined : boostMultiplier,

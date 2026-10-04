@@ -71,7 +71,11 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
 				}
 
 				const xpToGive = 50 + 10 * (ddUser.currentDailyStreak - 1);
-				const { xpGiven, multiplier } = await giveXp(user, xpToGive);
+				const { xpGiven, multiplier } = await giveXp(
+					user,
+					xpToGive,
+					interaction.channel ?? undefined,
+				);
 				ddUser.lastDailyTime = new Date();
 				// how many fire emojis to generate, starts at 1 when your streak is over 100 and then increases by 1 for every 50 days
 				const streakMul =

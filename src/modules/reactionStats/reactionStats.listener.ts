@@ -1,11 +1,25 @@
 import { logger } from "../../logging.js";
-import { getOrCreateUserById } from "../../store/models/DDUser.js";
+import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { ReactionStat } from "../../store/models/ReactionStat.js";
+import { notifyMultipleAchievements } from "../achievements/achievementNotifier.js";
+import { checkAndAwardAchievements } from "../achievements/achievementService.js";
 import type { EventListener } from "../module.js";
+import { getRecipientReactionMetrics } from "./reactionStats.service.js";
 
 export const ReactionStatsListener: EventListener = {
-	async messageReactionAdd(_, reaction, user) {
-		if (!user || user.bot) return;
+	async messageReactionAdd(client, reaction, user) {
+		if (!user) return;
+
+		let reactor = user;
+		if (reactor.partial) {
+			try {
+				reactor = await reactor.fetch();
+			} catch (error) {
+				logger.error("ReactionStats: Failed to fetch partial reactor:", error);
+				return;
+			}
+		}
+		if (reactor.bot || reactor.system) return;
 
 		if (reaction.partial) {
 			try {
@@ -33,7 +47,7 @@ export const ReactionStatsListener: EventListener = {
 		const emojiName = emoji.id ? (emoji.name ?? emoji.id) : emoji.name;
 		if (!emojiName) return;
 		const isCustomEmoji = emoji.id !== null;
-		const userId = BigInt(user.id);
+		const userId = BigInt(reactor.id);
 		const messageId = BigInt(message.id);
 		const messageAuthorId = BigInt(message.author.id);
 		const emojiId = isCustomEmoji && emoji.id ? BigInt(emoji.id) : null;
@@ -51,11 +65,13 @@ export const ReactionStatsListener: EventListener = {
 					emojiName,
 				};
 
+		let messageAuthor: DDUser;
 		try {
-			await Promise.all([
+			const [, createdMessageAuthor] = await Promise.all([
 				getOrCreateUserById(userId),
 				getOrCreateUserById(messageAuthorId),
 			]);
+			messageAuthor = createdMessageAuthor;
 
 			await ReactionStat.findOrCreate({
 				where,
@@ -72,6 +88,34 @@ export const ReactionStatsListener: EventListener = {
 			});
 		} catch (error) {
 			logger.error("ReactionStats: Failed to save reaction stat:", error);
+			return;
+		}
+
+		try {
+			const reactionMetrics =
+				await getRecipientReactionMetrics(messageAuthorId);
+			const newAchievements = await checkAndAwardAchievements(
+				messageAuthor,
+				{ type: "reaction", event: "reaction_received" },
+				reactionMetrics,
+			);
+
+			if (newAchievements.length > 0) {
+				const member = await message.guild?.members.fetch(message.author.id);
+				if (member) {
+					await notifyMultipleAchievements(
+						client,
+						member,
+						newAchievements.map((achievement) => achievement.definition),
+						message.channel,
+					);
+				}
+			}
+		} catch (error) {
+			logger.error(
+				"ReactionStats: Failed to check reaction achievements:",
+				error,
+			);
 		}
 	},
 };
