@@ -31,36 +31,36 @@ export class ModeratorActions extends Model<
 	@Attribute(DataTypes.INTEGER)
 	@PrimaryKey
 	@AutoIncrement
-	public declare id: CreationOptional<number>;
+	declare public id: CreationOptional<number>;
 
 	@Attribute(RealBigInt)
 	@NotNull
-	public declare ddUserId: bigint;
+	declare public ddUserId: bigint;
 
 	@Attribute(RealBigInt)
 	@NotNull
-	public declare moderatorId: bigint;
+	declare public moderatorId: bigint;
 
 	@Attribute(DataTypes.ENUM(ModeratorAction))
 	@NotNull
 	@ColumnName("action")
-	public declare action: ModeratorAction;
+	declare public action: ModeratorAction;
 
 	@Attribute(DataTypes.STRING({ length: 10000 }))
 	@AllowNull
-	public declare reason: string | null;
+	declare public reason: string | null;
 
 	@Attribute(DataTypes.DATE)
 	@AllowNull
-	public declare expires: Date | null;
+	declare public expires: Date | null;
 
 	@Attribute(DataTypes.BOOLEAN)
 	@Default(false)
-	public declare expired: CreationOptional<boolean>;
+	declare public expired: CreationOptional<boolean>;
 
 	@BelongsTo(() => DDUser, "ddUserId")
-	public declare ddUser?: DDUser;
+	declare public ddUser?: DDUser;
 
 	@BelongsTo(() => DDUser, "moderatorId")
-	public declare moderator?: DDUser;
+	declare public moderator?: DDUser;
 }

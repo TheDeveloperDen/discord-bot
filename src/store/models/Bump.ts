@@ -21,14 +21,14 @@ export class Bump extends Model<
 	@Attribute(RealBigInt)
 	@PrimaryKey
 	@NotNull
-	public declare messageId: bigint;
+	declare public messageId: bigint;
 
 	@Attribute(RealBigInt)
 	@NotNull
-	public declare userId: bigint;
+	declare public userId: bigint;
 
 	@Attribute(DataTypes.DATE)
 	@NotNull
 	@Index
-	public declare timestamp: Date;
+	declare public timestamp: Date;
 }

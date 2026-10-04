@@ -32,50 +32,50 @@ export class Warning extends Model<
 	@Attribute(DataTypes.INTEGER)
 	@PrimaryKey
 	@AutoIncrement
-	public declare id: CreationOptional<number>;
+	declare public id: CreationOptional<number>;
 
 	@Attribute(RealBigInt)
 	@NotNull
-	public declare userId: bigint;
+	declare public userId: bigint;
 
 	@Attribute(RealBigInt)
 	@NotNull
-	public declare moderatorId: bigint;
+	declare public moderatorId: bigint;
 
 	@Attribute(DataTypes.TEXT)
 	@NotNull
-	public declare reason: string;
+	declare public reason: string;
 
 	@Attribute(DataTypes.INTEGER)
 	@Default(WarningSeverity.MINOR)
 	@NotNull
-	public declare severity: WarningSeverity;
+	declare public severity: WarningSeverity;
 
 	@Attribute(DataTypes.DATE)
 	@AllowNull
-	public declare expiresAt: Date | null;
+	declare public expiresAt: Date | null;
 
 	@Attribute(DataTypes.BOOLEAN)
 	@Default(false)
-	public declare expired: CreationOptional<boolean>;
+	declare public expired: CreationOptional<boolean>;
 
 	@Attribute(DataTypes.BOOLEAN)
 	@Default(false)
-	public declare pardoned: CreationOptional<boolean>;
+	declare public pardoned: CreationOptional<boolean>;
 
 	@Attribute(RealBigInt)
 	@AllowNull
-	public declare pardonedBy: bigint | null;
+	declare public pardonedBy: bigint | null;
 
 	@Attribute(DataTypes.TEXT)
 	@AllowNull
-	public declare pardonReason: string | null;
+	declare public pardonReason: string | null;
 
-	public declare createdAt: CreationOptional<Date>;
-	public declare updatedAt: CreationOptional<Date>;
+	declare public createdAt: CreationOptional<Date>;
+	declare public updatedAt: CreationOptional<Date>;
 
 	@BelongsTo(() => DDUser, "userId")
-	public declare user?: DDUser;
+	declare public user?: DDUser;
 }
 
 export async function getActiveWarnings(userId: bigint): Promise<Warning[]> {

@@ -24,7 +24,7 @@ export class ColourRoles extends Model<
 	@PrimaryKey
 	@Unique
 	@NotNull
-	public declare id: bigint;
+	declare public id: bigint;
 
 	@Attribute(RealBigInt)
 	@NotNull
