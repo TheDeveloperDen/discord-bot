@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/bun";
-import { ApplicationCommandType } from "discord.js";
-import type { Command } from "djs-slash-helper";
+import { ApplicationCommandType, PermissionFlagsBits } from "discord.js";
 import { config } from "../../Config.js";
+import type { Command } from "../../commands/index.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import randomElementFromArray from "../../util/random.js";
 import { actualMention, type UserMentionable } from "../../util/users.js";
@@ -32,7 +32,7 @@ const zooMessages: ((user: UserMentionable) => string)[] = [
 
 export const ZookeepCommand: Command<ApplicationCommandType.User> = {
 	name: "Zookeep",
-	default_permission: false,
+	default_member_permissions: PermissionFlagsBits.ModerateMembers,
 	type: ApplicationCommandType.User,
 	async handle(interaction) {
 		if (!config.roles.zooExhibit) {

@@ -1,8 +1,9 @@
 import {
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
+	PermissionFlagsBits,
 } from "discord.js";
-import type { Command } from "djs-slash-helper";
+import type { Command } from "../../commands/index.js";
 import { fakeMention } from "../../util/users.js";
 import { logModerationAction } from "./logs.js";
 
@@ -10,7 +11,7 @@ export const SoftBanCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: "softban",
 	description: "Soft Ban a baaaaad boy",
 	type: ApplicationCommandType.ChatInput,
-	default_permission: false,
+	default_member_permissions: PermissionFlagsBits.BanMembers,
 	options: [
 		{
 			type: ApplicationCommandOptionType.User,

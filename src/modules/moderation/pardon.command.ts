@@ -2,8 +2,9 @@ import {
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
 	MessageFlags,
+	PermissionFlagsBits,
 } from "discord.js";
-import type { Command } from "djs-slash-helper";
+import type { Command } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { Warning } from "../../store/models/Warning.js";
 import { fakeMention } from "../../util/users.js";
@@ -13,7 +14,7 @@ export const PardonCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: "pardon",
 	description: "Pardon (remove) a warning from a user",
 	type: ApplicationCommandType.ChatInput,
-	default_permission: false,
+	default_member_permissions: PermissionFlagsBits.ModerateMembers,
 	options: [
 		{
 			type: ApplicationCommandOptionType.Integer,

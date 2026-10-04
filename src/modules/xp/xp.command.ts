@@ -3,8 +3,9 @@ import type { GuildMember } from "discord.js";
 import {
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
+	MessageFlags,
 } from "discord.js";
-import type { Command } from "djs-slash-helper";
+import type { Command } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import { branding } from "../../util/branding.js";
@@ -32,17 +33,22 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
 
 	async handle(interaction) {
 		await Sentry.startSpan({ name: "xp", op: "command" }, async () => {
-			await interaction.deferReply();
-
 			const targetUser =
 				interaction.options.get("member")?.user ?? interaction.user;
 			const member =
 				getResolvedMember(interaction.options.get("member")?.member) ??
-				(await interaction.guild?.members.fetch(targetUser.id));
+				(await interaction.guild?.members
+					.fetch(targetUser.id)
+					.catch(() => null));
 			if (!member) {
-				await interaction.followUp("Member not found");
+				await interaction.reply({
+					flags: MessageFlags.Ephemeral,
+					content: "Member not found",
+				});
 				return;
 			}
+
+			await interaction.deferReply();
 			const ddUser = await getOrCreateUserById(BigInt(targetUser.id));
 			const xp = ddUser.xp;
 			const image = createXpImage(xp, member);

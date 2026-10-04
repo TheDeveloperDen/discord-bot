@@ -6,7 +6,7 @@ import {
 	MessageFlags,
 	PermissionFlagsBits,
 } from "discord.js";
-import type { Command, ExecutableSubcommand } from "djs-slash-helper";
+import type { Command, ExecutableSubcommand } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import {
 	REPUTATION_EVENT_LABELS,
@@ -415,7 +415,7 @@ export const ReputationCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: "reputation",
 	description: "Manage user reputation (mods only)",
 	type: ApplicationCommandType.ChatInput,
-	default_permission: false,
+	default_member_permissions: PermissionFlagsBits.ModerateMembers,
 	options: [ViewSubcommand, GrantSubcommand, HistorySubcommand],
 	handle() {},
 };

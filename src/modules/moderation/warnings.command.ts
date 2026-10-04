@@ -4,7 +4,7 @@ import {
 	EmbedBuilder,
 	MessageFlags,
 } from "discord.js";
-import type { Command } from "djs-slash-helper";
+import type { Command } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import {
 	getAllWarnings,

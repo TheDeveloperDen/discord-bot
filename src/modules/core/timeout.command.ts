@@ -3,8 +3,9 @@ import {
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
 	MessageFlags,
+	PermissionFlagsBits,
 } from "discord.js";
-import type { Command } from "djs-slash-helper";
+import type { Command } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { parseTimespan } from "../../util/timespan.js";
@@ -40,7 +41,6 @@ export function checkCanTimeout(
 ): string | null {
 	if (target.id === moderator.id) return "You can't time yourself out.";
 	if (target.user.bot) return "Bots can't be timed out.";
-	// guild owner, admins, and anyone above the bot's highest role
 	if (!target.moderatable) return "I'm not able to time out this member.";
 	if (
 		moderator.id !== guildOwnerId &&
@@ -54,7 +54,7 @@ export function checkCanTimeout(
 export const TimeoutCommand: Command<ApplicationCommandType.ChatInput> = {
 	type: ApplicationCommandType.ChatInput,
 	name: "timeout",
-	default_permission: false,
+	default_member_permissions: PermissionFlagsBits.ModerateMembers,
 	description: "Times out a user",
 	options: [
 		{

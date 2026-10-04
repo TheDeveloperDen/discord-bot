@@ -7,7 +7,7 @@ import {
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
 } from "discord.js";
-import type { Command } from "djs-slash-helper";
+import type { Command } from "../../commands/index.js";
 import { DDUser } from "../../store/models/DDUser.js";
 import { branding } from "../../util/branding.js";
 import { createStandardEmbed } from "../../util/embeds.js";

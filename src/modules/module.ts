@@ -4,7 +4,7 @@ import type {
 	Client,
 	ClientEvents,
 } from "discord.js";
-import type { Command } from "djs-slash-helper";
+import type { Command } from "../commands/index.js";
 
 import type ModuleManager from "./moduleManager.js";
 

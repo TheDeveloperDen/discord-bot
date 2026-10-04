@@ -1,8 +1,9 @@
 import {
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
+	PermissionFlagsBits,
 } from "discord.js";
-import type { Command } from "djs-slash-helper";
+import type { Command } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { parseTimespan, prettyPrintDuration } from "../../util/timespan.js";
 import { fakeMention } from "../../util/users.js";
@@ -13,7 +14,7 @@ export const TempBanCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: "tempban",
 	description: "Temp Ban a baaaaad boy",
 	type: ApplicationCommandType.ChatInput,
-	default_permission: false,
+	default_member_permissions: PermissionFlagsBits.BanMembers,
 	options: [
 		{
 			type: ApplicationCommandOptionType.User,

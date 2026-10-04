@@ -2,8 +2,9 @@ import {
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
 	MessageFlags,
+	PermissionFlagsBits,
 } from "discord.js";
-import type { Command } from "djs-slash-helper";
+import type { Command } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { fakeMention } from "../../util/users.js";
 import { logModerationAction } from "./logs.js";
@@ -12,7 +13,7 @@ export const KickCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: "kick",
 	description: "Ban a baaaaad boy",
 	type: ApplicationCommandType.ChatInput,
-	default_permission: false,
+	default_member_permissions: PermissionFlagsBits.KickMembers,
 	options: [
 		{
 			type: ApplicationCommandOptionType.User,

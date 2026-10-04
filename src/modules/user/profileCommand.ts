@@ -4,18 +4,18 @@ import {
 	type GuildMember,
 	MessageFlags,
 } from "discord.js";
-import type { Command } from "djs-slash-helper";
+import type { Command } from "../../commands/index.js";
 import { getProfileEmbed } from "./user.js";
 
 export const ProfileCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: "profile",
 	description: "Look at your profile",
-	default_permission: false,
+	default_member_permissions: 0n,
 	type: ApplicationCommandType.ChatInput,
 	options: [],
 	async handle(interaction) {
 		if (!interaction.member) {
-			await interaction.followUp({
+			await interaction.reply({
 				content: "Sorry this can only be invoked in a guild!",
 				flags: "Ephemeral",
 			});

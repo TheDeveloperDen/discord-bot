@@ -1,12 +1,16 @@
-import { ApplicationCommandType, MessageFlags } from "discord.js";
-import type { Command } from "djs-slash-helper";
+import {
+	ApplicationCommandType,
+	MessageFlags,
+	PermissionFlagsBits,
+} from "discord.js";
+import type { Command } from "../../commands/index.js";
 
 import { createSuggestionManageButtons } from "./suggest.js";
 
 export const ManageSuggestionCommand: Command<ApplicationCommandType.Message> =
 	{
 		name: "Manage Suggestion",
-		default_permission: false,
+		default_member_permissions: PermissionFlagsBits.ManageMessages,
 		type: ApplicationCommandType.Message,
 		async handle(interaction) {
 			const row = createSuggestionManageButtons();

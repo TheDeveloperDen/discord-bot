@@ -1,3 +1,4 @@
+import { PermissionFlagsBits } from "discord.js";
 /**
  * /grant-achievement command
  *
@@ -10,7 +11,7 @@ import {
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
 } from "discord.js";
-import type { Command } from "djs-slash-helper";
+import type { Command } from "../../commands/index.js";
 import { fakeMention } from "../../util/users.js";
 import {
 	getAchievementById,
@@ -30,7 +31,7 @@ export const GrantAchievementCommand: Command<ApplicationCommandType.ChatInput> 
 		name: "grant-achievement",
 		type: ApplicationCommandType.ChatInput,
 		description: "Grant an achievement to a user (staff only)",
-		default_permission: false,
+		default_member_permissions: PermissionFlagsBits.ModerateMembers,
 		options: [
 			{
 				type: ApplicationCommandOptionType.User,

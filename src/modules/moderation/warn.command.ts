@@ -3,9 +3,10 @@ import {
 	ApplicationCommandType,
 	EmbedBuilder,
 	MessageFlags,
+	PermissionFlagsBits,
 } from "discord.js";
-import type { Command } from "djs-slash-helper";
 import { config } from "../../Config.js";
+import type { Command } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import {
@@ -34,7 +35,7 @@ export const WarnCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: "warn",
 	description: "Issue a formal warning to a user",
 	type: ApplicationCommandType.ChatInput,
-	default_permission: false,
+	default_member_permissions: PermissionFlagsBits.ModerateMembers,
 	options: [
 		{
 			type: ApplicationCommandOptionType.User,
