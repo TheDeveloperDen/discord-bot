@@ -19,8 +19,6 @@ import {
 	updateAllResources,
 } from "./resourcesCache.util.js";
 
-// Mutated in place: the command's `choices` references this array and is
-// serialised when commands are registered.
 const resources: Array<{ name: string; value: string }> = [];
 
 export async function updateResourcesForCommands() {
