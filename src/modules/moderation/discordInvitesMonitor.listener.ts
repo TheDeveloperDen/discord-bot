@@ -123,38 +123,33 @@ async function handleInvite(
 	matches: string[],
 	wasEdit: boolean,
 ) {
-	try {
-		await message.delete();
+	await message.delete();
 
-		const warningMessage = await message.channel.send({
-			content: noInvitesAllowedMessage(member),
-		});
+	const warningMessage = await message.channel.send({
+		content: noInvitesAllowedMessage(member),
+	});
 
-		setTimeout(() => {
-			warningMessage.delete().catch(() => {});
-		}, 10000);
+	setTimeout(() => {
+		warningMessage.delete().catch(() => {});
+	}, 10000);
 
-		await sendAuditMessage(message, member, matches, wasEdit);
+	await sendAuditMessage(message, member, matches, wasEdit);
 
-		const existing = inviteViolationCache.get(member.id);
-		const violation: InviteViolation = existing ?? {
-			count: 0,
-			channels: new Set(),
-		};
-		violation.count++;
-		violation.channels.add(message.channelId);
-		inviteViolationCache.set(member.id, violation);
+	const existing = inviteViolationCache.get(member.id);
+	const violation: InviteViolation = existing ?? {
+		count: 0,
+		channels: new Set(),
+	};
+	violation.count++;
+	violation.channels.add(message.channelId);
+	inviteViolationCache.set(member.id, violation);
 
-		const shouldBan =
-			violation.count >= config.inviteSpam.maxViolations ||
-			violation.channels.size >= config.inviteSpam.maxChannels;
+	const shouldBan =
+		violation.count >= config.inviteSpam.maxViolations ||
+		violation.channels.size >= config.inviteSpam.maxChannels;
 
-		if (shouldBan && isSubjectToAutoban(member)) {
-			await banForInviteSpam(message, member, violation);
-		}
-	} catch (error) {
-		logger.error("Failed to delete message with Discord invite:", error);
-		Sentry.captureException(error);
+	if (shouldBan && isSubjectToAutoban(member)) {
+		await banForInviteSpam(message, member, violation);
 	}
 }
 
