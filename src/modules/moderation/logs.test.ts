@@ -1,8 +1,7 @@
 import { describe, expect, mock, test } from "bun:test";
-import type { Client, TextChannel, User } from "discord.js";
+import type { Client, TextChannel } from "discord.js";
 import { Colors, type EmbedBuilder } from "discord.js";
 import {
-	createMockClient,
 	createMockTextChannel,
 	createMockUser,
 } from "../../tests/mocks/discord.js";

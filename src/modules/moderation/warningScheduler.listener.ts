@@ -1,5 +1,5 @@
 import { Op } from "@sequelize/core";
-import type { Client, Guild } from "discord.js";
+import type { Guild } from "discord.js";
 import * as schedule from "node-schedule";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
@@ -31,7 +31,7 @@ async function expireWarnings(): Promise<number> {
 	return expiredCount;
 }
 
-async function checkEscalations(client: Client, guild: Guild): Promise<void> {
+async function checkEscalations(guild: Guild): Promise<void> {
 	const thresholds = config.reputation?.warningThresholds;
 	if (!thresholds) return;
 
@@ -93,7 +93,7 @@ export const WarningSchedulerListener: EventListener = {
 					.fetch(config.guildId)
 					.catch(() => null);
 				if (guild) {
-					await checkEscalations(client, guild);
+					await checkEscalations(guild);
 				}
 			}),
 		);

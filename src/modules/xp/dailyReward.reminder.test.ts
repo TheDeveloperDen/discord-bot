@@ -128,7 +128,7 @@ describe("scheduleReminder", () => {
 	});
 
 	test("sends immediate reminder if claimable now", async () => {
-		const { mockClient, mockMember, mockChannelSend } = createTestContext();
+		const { mockClient, mockMember } = createTestContext();
 
 		// User claimed 25 hours ago (can claim now, still has streak)
 		const ddUser = DDUser.build({

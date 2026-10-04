@@ -16,14 +16,11 @@ import { fakeMention } from "../../util/users.js";
 import { dmModerationTarget, dmWarning, logModerationAction } from "./logs.js";
 import {
 	getReputationHistoryForUser,
-	getReputationTier,
 	getUserReputation,
 	grantReputation,
-	REPUTATION_TIER_COLORS,
 	REPUTATION_TIER_LABELS,
 	REPUTATION_TIER_THRESHOLDS,
 	ReputationTier,
-	updateReputation,
 } from "./reputation.service.js";
 
 // Grantable positive reputation types

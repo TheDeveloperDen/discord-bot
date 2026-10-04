@@ -330,7 +330,7 @@ export async function logBulkDeletedMessages(
 	// Format all messages for paste
 	const pasteContent = messages
 		.map((m, i) => {
-			const separator = i > 0 ? "\n" + "─".repeat(50) + "\n\n" : "";
+			const separator = i > 0 ? `\n${"─".repeat(50)}\n\n` : "";
 			return separator + formatMessageForPaste(m);
 		})
 		.join("\n");

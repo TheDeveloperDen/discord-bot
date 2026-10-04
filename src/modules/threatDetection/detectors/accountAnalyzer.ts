@@ -83,7 +83,7 @@ function matchesSuspiciousPatterns(
 
 	for (const pattern of patterns) {
 		const regex = getCompiledPattern(pattern);
-		if (regex && regex.test(username)) {
+		if (regex?.test(username)) {
 			matchedPatterns.push(pattern);
 		}
 	}
