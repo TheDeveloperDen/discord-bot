@@ -100,6 +100,39 @@ export async function getUserStats(
 	};
 }
 
+// ─── Recipient Reaction Metrics ─────────────────────────────
+
+export interface RecipientReactionMetrics {
+	distinctReactors: number;
+	reactedMessageCount: number;
+}
+
+/**
+ * Count the distinct non-self reactors and messages for one message author.
+ */
+export async function getRecipientReactionMetrics(
+	messageAuthorId: bigint,
+): Promise<RecipientReactionMetrics> {
+	const where = {
+		messageAuthorId,
+		userId: { [Op.ne]: messageAuthorId },
+	};
+	const [distinctReactors, reactedMessageCount] = await Promise.all([
+		ReactionStat.count({
+			where,
+			distinct: true,
+			col: "userId",
+		}),
+		ReactionStat.count({
+			where,
+			distinct: true,
+			col: "messageId",
+		}),
+	]);
+
+	return { distinctReactors, reactedMessageCount };
+}
+
 // ─── Global Stats ──────────────────────────────────────────
 
 export interface GlobalTopReactor {
