@@ -65,7 +65,7 @@ export default class ModuleManager {
 	 * Runs a lifecycle hook on every module concurrently and waits for all of them, reporting but not halting on errors
 	 */
 	private async runHook(
-		hook: "preInit" | "onCommandInit" | "onInit",
+		hook: "preInit" | "onInit",
 		run: (module: Module) => Promise<void> | undefined,
 	) {
 		// turn any thrown exceptions into rejected promises
@@ -86,19 +86,10 @@ export default class ModuleManager {
 		await this.runHook("preInit", (module) => module.preInit?.(this.client));
 	}
 
-	/** Waits for every module's onCommandInit, then registers commands */
+	/** Registers guild and global commands with Discord */
 	async refreshCommands() {
-		await this.runHook("onCommandInit", (module) =>
-			module.onCommandInit?.(this.client),
-		);
-
-		// Set up guild-specific commands
 		await this.guildCommandManager.setupForGuild(this.clientId, this.guildId);
-
-		// Set up global commands
-		if (this.globalCommandManager) {
-			await this.globalCommandManager.setupGlobally(this.clientId);
-		}
+		await this.globalCommandManager.setupGlobally(this.clientId);
 	}
 
 	/** Called once commands are registered */
