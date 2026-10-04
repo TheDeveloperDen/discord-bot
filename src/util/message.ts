@@ -72,16 +72,10 @@ export async function fetchAllMessages(
 		logger.info(`Successfully fetched ${allMessages.size} total messages`);
 		return new Collection(allMessages);
 	} catch (error) {
-		logger.error("Error fetching messages:", error);
-
-		// Return what we have so far instead of failing completely
-		if (allMessages.size > 0) {
-			logger.error(
-				`Returning ${allMessages.size} messages fetched before error`,
-			);
-			return new Collection(allMessages);
-		}
-
+		logger.error(
+			`Failed to fetch complete message history after ${allMessages.size} messages:`,
+			error,
+		);
 		throw error;
 	}
 }

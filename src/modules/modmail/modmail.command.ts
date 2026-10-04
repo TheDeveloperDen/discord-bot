@@ -18,6 +18,7 @@ import { getMemberFromInteraction } from "../../util/member.js";
 import { safelyFetchUser } from "../../util/users.js";
 import {
 	archiveModmailTicket,
+	assignModMailTicket,
 	closeModMailTicketByModMail,
 	createModMailDetails,
 	createModMailNoteEmbed,
@@ -275,7 +276,7 @@ const CloseSubCommand: ExecutableSubcommand = {
 			}
 
 			// Close the ticket
-			await closeModMailTicketByModMail(modMail);
+			await closeModMailTicketByModMail(modMail, interaction.client);
 
 			// Notify the thread if it exists
 			try {
@@ -336,7 +337,7 @@ const CloseSubCommand: ExecutableSubcommand = {
 		}
 
 		// Close the ticket
-		await closeModMailTicketByModMail(modMail);
+		await closeModMailTicketByModMail(modMail, interaction.client);
 
 		// Notify the user via DM
 		try {
@@ -435,10 +436,18 @@ const AssignSubCommand: ExecutableSubcommand = {
 			return;
 		}
 
-		// Update the ticket assignment
-		await modMail.update({
-			assignedUserId: BigInt(targetUser.id),
-		});
+		const assignedTicket = await assignModMailTicket(
+			interaction.client,
+			modMail,
+			BigInt(targetUser.id),
+		);
+		if (!assignedTicket) {
+			await interaction.followUp({
+				content: "This ticket has already been archived.",
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
 
 		// Send notification in the channel
 		await interaction.channel.send({

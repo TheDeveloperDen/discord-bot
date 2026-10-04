@@ -58,19 +58,22 @@ export class ModMailTicket extends Model<
 	@AllowNull
 	public declare channelId?: bigint;
 
-	@Attribute(DataTypes.STRING)
+	@Attribute({
+		type: DataTypes.STRING,
+		columnName: "archiveMessageId",
+	})
 	@AllowNull
-	public declare archiveMessageId?: string;
+	public declare detailsMessageIds?: string;
 
 	@Attribute(DataTypes.ENUM(ModMailTicketStatus))
 	@Default(ModMailTicketStatus.OPEN)
 	@NotNull
-	public status: ModMailTicketStatus = ModMailTicketStatus.OPEN;
+	public declare status: CreationOptional<ModMailTicketStatus>;
 
 	@Attribute(DataTypes.ENUM(ModMailTicketCategory))
 	@Default(ModMailTicketCategory.QUESTION)
 	@NotNull
-	public category: ModMailTicketCategory = ModMailTicketCategory.QUESTION;
+	public declare category: CreationOptional<ModMailTicketCategory>;
 
 	@HasMany(() => ModMailNote, "modMailTicketId")
 	public declare notes?: ModMailNote[];

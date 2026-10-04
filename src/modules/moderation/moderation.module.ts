@@ -6,6 +6,8 @@ import { KickCommand } from "./kick.command.js";
 import { PardonCommand } from "./pardon.command.js";
 import { ReputationCommand } from "./reputation.command.js";
 import { SoftBanCommand } from "./softBan.command.js";
+import { RemoveSupportThreadCommand } from "./supportThreadRemoval.command.js";
+import { SupportThreadRemovalListener } from "./supportThreadRemoval.listener.js";
 import { TempBanCommand } from "./tempBan.command.js";
 import { TempBanListener } from "./tempBan.listener.js";
 import { UnbanCommand } from "./unban.command.js";
@@ -29,10 +31,12 @@ export const ModerationModule: Module = {
 		PardonCommand,
 		WordlistCommand,
 		ReputationCommand,
+		RemoveSupportThreadCommand,
 	],
 	listeners: [
 		...InviteListeners,
 		TempBanListener,
+		SupportThreadRemovalListener,
 		WarningSchedulerListener,
 		DeletedMessagesListener,
 	],
