@@ -69,6 +69,56 @@ following environment variables:
   valid [Sequelize](https://sequelize.org/) dialect. You may need to install
   additional dependencies to use some dialects.
 
+## Documentation Lookup
+
+Use `/docs` to search the bot's local documentation index:
+
+- `/docs source:python query:asyncio.gather`
+- `/docs source:py query:asyncio.gather version:3.13`
+- `/docs source:javascript query:Array.map`
+- `/docs source:ts query:Utility Types`
+
+`source` and `query` are required; `version` defaults to `Stable`. Supported
+sources, aliases, and intentionally curated targets are:
+
+| Source | Aliases | Targets |
+| --- | --- | --- |
+| Python | `py` | Stable, Python 3.13, Python 3.12 |
+| JavaScript | `js` | Stable |
+| TypeScript | `ts` | Stable |
+| HTML | — | Stable |
+| CSS | — | Stable |
+| Node.js | `nodejs`, `node.js` | Stable, Node.js 24 LTS |
+| Rust | — | Stable |
+| Go | `golang` | Stable |
+
+Python's Stable target follows the upstream `/3/` inventory while preserving
+version-pinned result links. For DevDocs targets, Stable means the latest
+available aggregate from DevDocs; it does not guarantee the upstream publisher's
+current release. Add a source or target in `src/modules/docs/sources.ts`; add
+new versions deliberately rather than accepting arbitrary version strings.
+
+The index supports Sphinx v2 inventories and DevDocs publisher entries. It is
+not a natural-language search and does not include every topic or symbol: for
+TypeScript, search `Utility Types` rather than the unavailable `Partial` entry.
+It requires no API keys or additional runtime dependencies.
+
+The bot loads its local snapshot at startup, then syncs on startup and every 12
+hours. During an upstream outage, it serves the last good cache and marks the
+local refresh timestamp as stale; a result's upstream update timestamp, when
+provided, is separate. `DOCS_CACHE_DIR` sets the snapshot directory, which
+defaults to `.cache/docs`. Persist or mount this directory across redeploys for
+offline resilience. On a cold start with no successful snapshot, documentation
+lookups remain unavailable until the first sync completes without blocking the
+rest of the bot.
+
+Each download attempt has a 30-second timeout. Client-side timeouts are retried
+at most twice, after 1 and 2 seconds, with a fresh timeout for each attempt.
+Malformed documentation and other request failures are not retried. If all
+attempts fail, the warning includes the request URL, attempt count, and cause;
+the source keeps its last good cache (or remains unavailable without one)
+until a later successful sync.
+
 ## Contributing Guidelines
 
 - All code will be under the MIT License

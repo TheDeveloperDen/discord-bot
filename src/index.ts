@@ -10,6 +10,7 @@ import { logger } from "./logging.js";
 import { AchievementsModule } from "./modules/achievements/achievements.module.js";
 import AskToAskModule from "./modules/askToAsk.module.js";
 import { CoreModule } from "./modules/core/core.module.js";
+import { DocsModule } from "./modules/docs/docs.module.js";
 import FaqModule from "./modules/faq/faq.module.js";
 import { HotTakesModule } from "./modules/hotTakes/hotTakes.module.js";
 import ImageForwarderModule from "./modules/imageForwarder.module.js";
@@ -53,6 +54,7 @@ const moduleManager = new ModuleManager(
 	[
 		AskToAskModule,
 		CoreModule,
+		DocsModule,
 		FaqModule,
 		HotTakesModule,
 		ImageForwarderModule,
