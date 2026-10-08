@@ -1,5 +1,5 @@
 import * as fs from "node:fs";
-import Canvas, { createCanvas, Image } from "@napi-rs/canvas";
+import Canvas from "@napi-rs/canvas";
 import type { GuildMember } from "discord.js";
 import sharp from "sharp";
 import { getBumpStreak } from "../../store/models/bumps.js";

@@ -42,5 +42,5 @@ export class SuggestionVote extends Model<
 	public vote!: SuggestionVoteType;
 
 	@BelongsTo(() => Suggestion, "suggestionId")
-	public declare suggestion?: Suggestion;
+	declare public suggestion?: Suggestion;
 }

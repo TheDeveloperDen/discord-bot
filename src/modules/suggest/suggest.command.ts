@@ -8,8 +8,8 @@ import {
 	type GuildMember,
 	MessageFlags,
 } from "discord.js";
-import type { Command } from "djs-slash-helper";
 import { config } from "../../Config.js";
+import type { Command } from "../../commands/index.js";
 
 import { logger } from "../../logging.js";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";

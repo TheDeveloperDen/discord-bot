@@ -4,7 +4,7 @@ import type {
 	Client,
 	ClientEvents,
 } from "discord.js";
-import type { Command } from "djs-slash-helper";
+import type { Command } from "../commands/index.js";
 
 import type ModuleManager from "./moduleManager.js";
 
@@ -26,12 +26,6 @@ export default interface Module {
 	 * @param client The client that is being used.
 	 */
 	preInit?: (client: Client) => Promise<void>;
-
-	/**
-	 * Called immediately *after* command registration
-	 * @param client
-	 */
-	onCommandInit?: (client: Client) => Promise<void>;
 
 	/**
 	 * Called when the module is initialized, after command registration

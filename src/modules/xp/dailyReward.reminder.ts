@@ -15,7 +15,7 @@ const FORTY_EIGHT_HOURS_IN_MS = 48 * 60 * 60 * 1000;
 const sendReminder = async (client: Client, user: GuildMember) => {
 	const botCommands = await client.channels.fetch(config.channels.botCommands);
 
-	if (!botCommands || !botCommands?.isSendable()) {
+	if (!botCommands?.isSendable()) {
 		logger.error("Bot commands channel not found or not sendable");
 		return;
 	}

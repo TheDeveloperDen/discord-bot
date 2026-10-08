@@ -1,11 +1,11 @@
 import type { Message } from "discord.js";
-import { ApplicationCommandType } from "discord.js";
-import type { Command } from "djs-slash-helper";
+import { ApplicationCommandType, PermissionFlagsBits } from "discord.js";
+import type { Command } from "../../commands/index.js";
 import { pastify } from "./pastify.js";
 
 export const PastifyCommand: Command<ApplicationCommandType.Message> = {
 	name: "Pastify",
-	default_permission: false,
+	default_member_permissions: PermissionFlagsBits.ManageMessages,
 	type: ApplicationCommandType.Message,
 	async handle(interaction) {
 		const message = interaction.options.data[0].message;

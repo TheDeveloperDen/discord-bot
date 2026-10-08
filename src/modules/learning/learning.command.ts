@@ -7,7 +7,7 @@ import {
 	PermissionFlagsBits,
 	type User,
 } from "discord.js";
-import type { Command, ExecutableSubcommand } from "djs-slash-helper";
+import type { Command, ExecutableSubcommand } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { createStandardEmbed, standardFooter } from "../../util/embeds.js";
 import { getEmoji, stringifyEmoji } from "../../util/emojis.js";
@@ -16,22 +16,20 @@ import { getModuleManager } from "../moduleManager.js";
 import type { LearningResource } from "./learningResource.model.js";
 import {
 	getAllCachedResources,
-	getResource,
 	updateAllResources,
 } from "./resourcesCache.util.js";
 
 const resources: Array<{ name: string; value: string }> = [];
 
 export async function updateResourcesForCommands() {
-	logger.debug("Updating resource for commands");
 	await updateAllResources();
-	const result = getAllCachedResources().map(([fileName, res]) => ({
-		name: res.name,
-		value: fileName,
-	}));
 	resources.length = 0;
-	resources.push(...result);
-	logger.debug("found resources: %O", resources);
+	resources.push(
+		...getAllCachedResources().map(([fileName, res]) => ({
+			name: res.name,
+			value: fileName,
+		})),
+	);
 }
 
 const extraFooter =
@@ -110,9 +108,14 @@ const LearningGetSubcommand: ExecutableSubcommand = {
 	async handle(interaction) {
 		const name = interaction.options.get("resource")?.value as string | null;
 		if (!name) return;
-		const resource = await getResource(name);
+		const resource = getAllCachedResources().find(
+			([fileName]) => fileName.toLowerCase() === name.toLowerCase(),
+		)?.[1];
 		if (resource == null) {
-			return await interaction.reply(`Could not find resource ${name}`);
+			return await interaction.reply({
+				flags: MessageFlags.Ephemeral,
+				content: `Could not find resource ${name}`,
+			});
 		}
 
 		const embed = getResourceEmbed(

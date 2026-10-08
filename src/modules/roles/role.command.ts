@@ -1,8 +1,8 @@
 import * as Sentry from "@sentry/bun";
 import type { GuildMember } from "discord.js";
 import { ApplicationCommandType } from "discord.js";
-import type { Command } from "djs-slash-helper";
 import { config } from "../../Config.js";
+import type { Command } from "../../commands/index.js";
 
 export const NoPingCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: "no-ping",

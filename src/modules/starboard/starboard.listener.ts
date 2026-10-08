@@ -255,11 +255,7 @@ export const StarboardListener: EventListener = {
 							const boardChannel = await guild.channels.fetch(
 								board.config.channel,
 							);
-							if (
-								!boardChannel ||
-								!boardChannel.isTextBased() ||
-								!boardChannel.isSendable()
-							) {
+							if (!boardChannel?.isTextBased() || !boardChannel.isSendable()) {
 								logger.error(
 									`${board.name} channel not found, not a text channel or not sendable`,
 								);

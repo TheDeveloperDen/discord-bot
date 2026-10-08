@@ -9,8 +9,8 @@ import {
 	MessageFlags,
 	PermissionFlagsBits,
 } from "discord.js";
-import type { Command, ExecutableSubcommand } from "djs-slash-helper";
 import { config } from "../../Config.js";
+import type { Command, ExecutableSubcommand } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { ModMailNote } from "../../store/models/ModMailNote.js";
 import { getMemberFromInteraction } from "../../util/member.js";

@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, describe, expect, mock, test } from "bun:test";
 import type { ChatInputCommandInteraction, User } from "discord.js";
 import { MessageFlags } from "discord.js";
-import type { ExecutableSubcommand } from "djs-slash-helper";
+import type { ExecutableSubcommand } from "../../commands/index.js";
 import {
 	clearUserCache,
 	DDUser,

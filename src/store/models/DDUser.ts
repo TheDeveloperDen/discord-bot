@@ -29,50 +29,50 @@ export class DDUser extends Model<
 	@Attribute(RealBigInt)
 	@PrimaryKey
 	@NotNull
-	public declare id: bigint;
+	declare public id: bigint;
 
 	@Attribute(RealBigInt)
 	@NotNull
-	public declare xp: bigint;
+	declare public xp: bigint;
 
 	@Attribute(DataTypes.INTEGER({ length: 11 }))
-	public declare level: number;
+	declare public level: number;
 
 	@Attribute(DataTypes.INTEGER({ length: 11 }))
-	public declare bumps: number;
+	declare public bumps: number;
 
 	@Attribute(DataTypes.INTEGER)
-	public declare currentDailyStreak: number;
+	declare public currentDailyStreak: number;
 
 	@Attribute(DataTypes.INTEGER)
-	public declare highestDailyStreak: number;
+	declare public highestDailyStreak: number;
 
 	@AllowNull
 	@Attribute(DataTypes.DATE)
-	public declare lastDailyTime: Date | null;
+	declare public lastDailyTime: Date | null;
 
 	@Attribute(DataTypes.INTEGER)
 	@Default(0)
-	public declare reputationScore: CreationOptional<number>;
+	declare public reputationScore: CreationOptional<number>;
 
 	@Attribute(DataTypes.INTEGER)
 	@Default(0)
-	public declare starboardCount: CreationOptional<number>;
+	declare public starboardCount: CreationOptional<number>;
 
 	@AllowNull
 	@Attribute(DataTypes.STRING)
-	public declare githubId: string | null;
+	declare public githubId: string | null;
 
 	@AllowNull
 	@Attribute(DataTypes.STRING)
-	public declare githubUsername: string | null;
+	declare public githubUsername: string | null;
 
 	@AllowNull
 	@Attribute(DataTypes.DATE)
-	public declare lastReputationUpdate: Date | null;
+	declare public lastReputationUpdate: Date | null;
 
 	@HasMany(() => DDUserAchievements, "ddUserId")
-	public declare ddUserAchievements?: DDUserAchievements[];
+	declare public ddUserAchievements?: DDUserAchievements[];
 
 	override async save(options?: SaveOptions): Promise<this> {
 		return await Sentry.startSpan(

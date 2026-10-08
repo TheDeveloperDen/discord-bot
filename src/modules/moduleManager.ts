@@ -1,17 +1,9 @@
 import * as Sentry from "@sentry/bun";
 import type { Client, ClientEvents, Snowflake } from "discord.js";
-import { CommandManager } from "djs-slash-helper";
+import { CommandManager } from "../commands/index.js";
 import { logger } from "../logging.js";
+import { runObserved } from "../observe.js";
 import type Module from "./module.js";
-
-export function reportListenerError(
-	module: string,
-	event: string,
-	error: unknown,
-) {
-	Sentry.captureException(error, { tags: { module, event } });
-	logger.error(`Error in ${event} listener for module ${module}`, error);
-}
 
 export default class ModuleManager {
 	private readonly guildCommandManager: CommandManager;
@@ -53,15 +45,16 @@ export default class ModuleManager {
 				for (const listener of module.listeners) {
 					const handler = listener[event];
 					if (handler == null) continue;
-					// A throwing listener must not stop other listeners or the original emit
-					try {
-						const result = handler(this, ...args);
-						if (result instanceof Promise) {
-							result.catch((e) => reportListenerError(module.name, event, e));
-						}
-					} catch (e) {
-						reportListenerError(module.name, event, e);
-					}
+
+					// we don't pass `interaction` here because listeners see interactions they don't own, so an error reply would race the real handler's reply.
+					void runObserved(
+						{
+							op: "event",
+							name: `${module.name}.${event}`,
+							tags: { module: module.name, event },
+						},
+						() => handler(this, ...args),
+					);
 				}
 			}
 			return previousEmit.call(this, event, ...args);
@@ -72,7 +65,7 @@ export default class ModuleManager {
 	 * Runs a lifecycle hook on every module concurrently and waits for all of them, reporting but not halting on errors
 	 */
 	private async runHook(
-		hook: "preInit" | "onCommandInit" | "onInit",
+		hook: "preInit" | "onInit",
 		run: (module: Module) => Promise<void> | undefined,
 	) {
 		// turn any thrown exceptions into rejected promises
@@ -93,19 +86,10 @@ export default class ModuleManager {
 		await this.runHook("preInit", (module) => module.preInit?.(this.client));
 	}
 
-	/** Waits for every module's onCommandInit, then registers commands */
+	/** Registers guild and global commands with Discord */
 	async refreshCommands() {
-		await this.runHook("onCommandInit", (module) =>
-			module.onCommandInit?.(this.client),
-		);
-
-		// Set up guild-specific commands
 		await this.guildCommandManager.setupForGuild(this.clientId, this.guildId);
-
-		// Set up global commands
-		if (this.globalCommandManager) {
-			await this.globalCommandManager.setupGlobally(this.clientId);
-		}
+		await this.globalCommandManager.setupGlobally(this.clientId);
 	}
 
 	/** Called once commands are registered */

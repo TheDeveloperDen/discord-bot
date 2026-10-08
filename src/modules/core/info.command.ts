@@ -1,6 +1,6 @@
 import type { CommandInteraction, GuildMember } from "discord.js";
 import { ApplicationCommandType } from "discord.js";
-import type { Command } from "djs-slash-helper";
+import type { Command } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { DDUser } from "../../store/models/DDUser.js";
 import { branding } from "../../util/branding.js";

@@ -3,12 +3,17 @@ import {
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
 	MessageFlags,
+	PermissionFlagsBits,
 } from "discord.js";
-import type { Command } from "djs-slash-helper";
+import type { Command } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { createStandardEmbed } from "../../util/embeds.js";
-import { parseTimespan } from "../../util/timespan.js";
-import { logModerationAction } from "../moderation/logs.js";
+import { parseTimespan, prettyPrintDuration } from "../../util/timespan.js";
+import {
+	dmModerationTarget,
+	dmWarning,
+	logModerationAction,
+} from "../moderation/logs.js";
 
 /** Discord's maximum timeout length */
 export const MAX_TIMEOUT_MS = 28 * 24 * 60 * 60 * 1000;
@@ -40,7 +45,6 @@ export function checkCanTimeout(
 ): string | null {
 	if (target.id === moderator.id) return "You can't time yourself out.";
 	if (target.user.bot) return "Bots can't be timed out.";
-	// guild owner, admins, and anyone above the bot's highest role
 	if (!target.moderatable) return "I'm not able to time out this member.";
 	if (
 		moderator.id !== guildOwnerId &&
@@ -54,7 +58,7 @@ export function checkCanTimeout(
 export const TimeoutCommand: Command<ApplicationCommandType.ChatInput> = {
 	type: ApplicationCommandType.ChatInput,
 	name: "timeout",
-	default_permission: false,
+	default_member_permissions: PermissionFlagsBits.ModerateMembers,
 	description: "Times out a user",
 	options: [
 		{
@@ -132,6 +136,10 @@ export const TimeoutCommand: Command<ApplicationCommandType.ChatInput> = {
 			return;
 		}
 
+		const dmSent = await dmModerationTarget(
+			target.user,
+			`You were timed out in ${interaction.guild.name} for **${prettyPrintDuration(period)}**: ${reason}`,
+		);
 		await interaction.editReply({
 			embeds: [
 				{
@@ -150,6 +158,7 @@ export const TimeoutCommand: Command<ApplicationCommandType.ChatInput> = {
 					],
 				},
 			],
+			content: dmWarning(dmSent) || undefined,
 		});
 
 		await logModerationAction(interaction.client, {
@@ -158,9 +167,7 @@ export const TimeoutCommand: Command<ApplicationCommandType.ChatInput> = {
 			target: target.user,
 			duration: period,
 			reason,
-		}).catch((e) => {
-			Sentry.captureException(e);
-			logger.error("Failed to log timeout to the moderation log", e);
+			dmSent,
 		});
 	},
 };

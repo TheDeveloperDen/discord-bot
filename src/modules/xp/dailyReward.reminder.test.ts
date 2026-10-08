@@ -8,7 +8,7 @@ import {
 	mock,
 	test,
 } from "bun:test";
-import { type InstalledClock, install } from "@sinonjs/fake-timers";
+import { type Clock, install } from "@sinonjs/fake-timers";
 import type { Client, GuildMember, Message } from "discord.js";
 import { clearUserCache, DDUser } from "../../store/models/DDUser.js";
 import { getSequelizeInstance, initStorage } from "../../store/storage.js";
@@ -23,7 +23,7 @@ import {
 	scheduleReminder,
 } from "./dailyReward.reminder.js";
 
-let clock: InstalledClock;
+let clock: Clock;
 
 beforeAll(async () => {
 	await initStorage();
@@ -128,7 +128,7 @@ describe("scheduleReminder", () => {
 	});
 
 	test("sends immediate reminder if claimable now", async () => {
-		const { mockClient, mockMember, mockChannelSend } = createTestContext();
+		const { mockClient, mockMember } = createTestContext();
 
 		// User claimed 25 hours ago (can claim now, still has streak)
 		const ddUser = DDUser.build({

@@ -67,56 +67,56 @@ export class ReactionStat extends Model<
 	@Attribute(DataTypes.INTEGER)
 	@PrimaryKey
 	@AutoIncrement
-	public declare id: CreationOptional<number>;
+	declare public id: CreationOptional<number>;
 
 	/** The user who added the reaction */
 	@Attribute(RealBigInt)
 	@NotNull
-	public declare userId: bigint;
+	declare public userId: bigint;
 
 	/** The message that was reacted to */
 	@Attribute(RealBigInt)
 	@NotNull
-	public declare messageId: bigint;
+	declare public messageId: bigint;
 
 	/** The author of the message that was reacted to */
 	@Attribute(RealBigInt)
 	@NotNull
-	public declare messageAuthorId: bigint;
+	declare public messageAuthorId: bigint;
 
 	/** The channel the message is in */
 	@Attribute(RealBigInt)
 	@NotNull
-	public declare channelId: bigint;
+	declare public channelId: bigint;
 
 	/** Emoji identifier: unicode char for standard, name for custom */
 	@Attribute(DataTypes.STRING)
 	@NotNull
-	public declare emojiName: string;
+	declare public emojiName: string;
 
 	/** Custom emoji snowflake ID, null for standard unicode emojis */
 	@AllowNull
 	@Attribute(RealBigInt)
-	public declare emojiId: bigint | null;
+	declare public emojiId: bigint | null;
 
 	/** Whether this is a custom guild emoji */
 	@Attribute(DataTypes.BOOLEAN)
 	@NotNull
 	@Default(false)
-	public declare isCustomEmoji: CreationOptional<boolean>;
+	declare public isCustomEmoji: CreationOptional<boolean>;
 
 	/** When the reaction was added — used for time-based filtering */
 	@Attribute(DataTypes.DATE)
 	@NotNull
 	@Index({ name: "idx_reactionstats_reacted_at" })
-	public declare reactedAt: Date;
+	declare public reactedAt: Date;
 
 	@BelongsTo(() => DDUser, "userId")
-	public declare user?: DDUser;
+	declare public user?: DDUser;
 
 	@BelongsTo(() => DDUser, "messageAuthorId")
-	public declare messageAuthor?: DDUser;
+	declare public messageAuthor?: DDUser;
 
-	public declare createdAt: CreationOptional<Date>;
-	public declare updatedAt: CreationOptional<Date>;
+	declare public createdAt: CreationOptional<Date>;
+	declare public updatedAt: CreationOptional<Date>;
 }

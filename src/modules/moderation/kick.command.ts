@@ -2,17 +2,21 @@ import {
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
 	MessageFlags,
+	PermissionFlagsBits,
 } from "discord.js";
-import type { Command } from "djs-slash-helper";
-import { logger } from "../../logging.js";
+import type { Command } from "../../commands/index.js";
 import { fakeMention } from "../../util/users.js";
-import { logModerationAction } from "./logs.js";
+import {
+	DM_FAILED_WARNING,
+	dmModerationTarget,
+	logModerationAction,
+} from "./logs.js";
 
 export const KickCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: "kick",
 	description: "Ban a baaaaad boy",
 	type: ApplicationCommandType.ChatInput,
-	default_permission: false,
+	default_member_permissions: PermissionFlagsBits.KickMembers,
 	options: [
 		{
 			type: ApplicationCommandOptionType.User,
@@ -40,18 +44,16 @@ export const KickCommand: Command<ApplicationCommandType.ChatInput> = {
 			const reason = interaction.options.getString("reason", false);
 
 			const member = await interaction.guild.members.fetch(user.id);
-			try {
-				await user.send({
-					content: `You were kicked from ${interaction.guild.name} ${reason ? `with the reason: ${reason}` : ""}`,
-				});
-			} catch {
-				logger.warn(`Unable to DM user %s about being kicked`, user.id);
-			}
+			const dmSent = await dmModerationTarget(
+				user,
+				`You were kicked from ${interaction.guild.name} ${reason ? `for the reason: ${reason}` : ""}`,
+			);
 
 			await member.kick(reason ?? undefined);
 
 			await logModerationAction(interaction.client, {
 				kind: "Kick",
+				dmSent,
 				moderator: interaction.user,
 				target: user,
 				reason,
@@ -62,6 +64,12 @@ export const KickCommand: Command<ApplicationCommandType.ChatInput> = {
 			});
 
 			setTimeout(() => kickMessage.delete().catch(() => null), 5000);
+			if (!dmSent) {
+				await interaction.followUp({
+					flags: MessageFlags.Ephemeral,
+					content: DM_FAILED_WARNING,
+				});
+			}
 		} catch (e) {
 			console.error("Failed to kick user: ", e);
 

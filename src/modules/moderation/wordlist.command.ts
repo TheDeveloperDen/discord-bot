@@ -6,7 +6,7 @@ import {
 	MessageFlags,
 	PermissionFlagsBits,
 } from "discord.js";
-import type { Command, ExecutableSubcommand } from "djs-slash-helper";
+import type { Command, ExecutableSubcommand } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import {
 	addBlockedWord,
@@ -337,7 +337,7 @@ export const WordlistCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: "wordlist",
 	description: "Manage the blocked words list",
 	type: ApplicationCommandType.ChatInput,
-	default_permission: false,
+	default_member_permissions: PermissionFlagsBits.ManageMessages,
 	options: [
 		AddSubcommand,
 		RemoveSubcommand,

@@ -79,32 +79,32 @@ export class ReputationEvent extends Model<
 	@Attribute(DataTypes.INTEGER)
 	@PrimaryKey
 	@AutoIncrement
-	public declare id: CreationOptional<number>;
+	declare public id: CreationOptional<number>;
 
 	@Attribute(RealBigInt)
 	@NotNull
-	public declare userId: bigint;
+	declare public userId: bigint;
 
 	@Attribute(DataTypes.STRING(30))
 	@NotNull
-	public declare eventType: ReputationEventType;
+	declare public eventType: ReputationEventType;
 
 	@Attribute(DataTypes.INTEGER)
 	@NotNull
-	public declare scoreChange: number;
+	declare public scoreChange: number;
 
 	@Attribute(DataTypes.STRING(500))
-	public declare reason: string | null;
+	declare public reason: string | null;
 
 	@Attribute(RealBigInt)
-	public declare grantedBy: bigint | null;
+	declare public grantedBy: bigint | null;
 
 	@Attribute(DataTypes.INTEGER)
-	public declare relatedId: number | null; // e.g., warning ID, starboard message ID
+	declare public relatedId: number | null; // e.g., warning ID, starboard message ID
 
 	@Attribute(DataTypes.DATE)
 	@Default(DataTypes.NOW)
-	public declare createdAt: CreationOptional<Date>;
+	declare public createdAt: CreationOptional<Date>;
 }
 
 /**

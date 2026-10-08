@@ -4,7 +4,7 @@ import {
 	EmbedBuilder,
 	MessageFlags,
 } from "discord.js";
-import type { Command, ExecutableSubcommand } from "djs-slash-helper";
+import type { Command, ExecutableSubcommand } from "../../commands/index.js";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import { notifyGitHubLinkStatusChange } from "./github.notification.js";
 import { GitHubService } from "./github.service.js";

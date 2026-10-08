@@ -2,12 +2,14 @@ import {
 	type Client,
 	type Colors,
 	EmbedBuilder,
+	type MessageCreateOptions,
 	type Snowflake,
 	type User,
 	type UserResolvable,
 } from "discord.js";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
+import { runObserved } from "../../observe.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { prettyPrintDuration } from "../../util/timespan.js";
 import { actualMention, fakeMention } from "../../util/users.js";
@@ -37,7 +39,12 @@ export type ModerationLog =
 	| WarningPardonedLog
 	| ReputationGrantedLog;
 
-interface BanLog {
+/** actions whose target gets DMed to tell them about the action */
+interface Notified {
+	dmSent: boolean; // whether the target was successfully DMed about the action
+}
+
+interface BanLog extends Notified {
 	kind: "Ban";
 	moderator: User;
 	target: UserResolvable;
@@ -52,14 +59,14 @@ interface UnbanLog {
 	reason: string | null;
 }
 
-interface SoftBanLog {
+interface SoftBanLog extends Notified {
 	kind: "SoftBan";
 	moderator: User;
 	target: UserResolvable;
 	deleteMessages: boolean;
 	reason: string | null;
 }
-interface TempBanLog {
+interface TempBanLog extends Notified {
 	kind: "TempBan";
 	moderator: User;
 	target: UserResolvable;
@@ -72,14 +79,14 @@ interface TempBanExpiredLog {
 	kind: "TempBanEnded";
 	target: UserResolvable;
 }
-interface KickLog {
+interface KickLog extends Notified {
 	kind: "Kick";
 	moderator: User;
 	target: UserResolvable;
 	reason: string | null;
 }
 
-interface TimeoutLog {
+interface TimeoutLog extends Notified {
 	kind: "Timeout";
 	moderator: User;
 	target: UserResolvable;
@@ -96,7 +103,7 @@ interface InviteDeletedLog {
 	matches: string[];
 }
 
-interface WarningLog {
+interface WarningLog extends Notified {
 	kind: "Warning";
 	moderator: User;
 	target: UserResolvable;
@@ -107,7 +114,7 @@ interface WarningLog {
 	expiresAt: Date | null;
 }
 
-interface WarningPardonedLog {
+interface WarningPardonedLog extends Notified {
 	kind: "WarningPardoned";
 	moderator: User;
 	target: UserResolvable;
@@ -115,7 +122,7 @@ interface WarningPardonedLog {
 	reason: string;
 }
 
-interface ReputationGrantedLog {
+interface ReputationGrantedLog extends Notified {
 	kind: "ReputationGranted";
 	moderator: User;
 	target: UserResolvable;
@@ -125,7 +132,7 @@ interface ReputationGrantedLog {
 	reason: string;
 }
 
-interface InviteSpamBanLog {
+interface InviteSpamBanLog extends Notified {
 	kind: "InviteSpamBan";
 	target: User;
 	violationCount: number;
@@ -214,11 +221,12 @@ const embedReasons: {
 		`**Trigger:** ${ban.triggerReason === "same_channel" ? "4+ violations in same channel" : "Violations across 3+ channels"}`,
 };
 
-export async function logModerationAction(
-	client: Client,
-	action: ModerationLog,
-) {
-	const modLogChannel = await client.channels.fetch(config.channels.modLog);
+async function sendModerationLog(client: Client, action: ModerationLog) {
+	const targetUser = await client.users.fetch(action.target).catch(() => null);
+	const modLogChannel = await client.channels
+		.fetch(config.channels.modLog)
+		.catch(() => null);
+
 	if (!modLogChannel) {
 		logger.error(`Moderation log channel does not exist`);
 		return;
@@ -233,7 +241,6 @@ export async function logModerationAction(
 	embed.setTitle(embedTitles[action.kind]);
 	embed.setColor(embedColors[action.kind]);
 
-	const targetUser = await client.users.fetch(action.target).catch(() => null);
 	const targetLabel =
 		action.kind === "ReputationGranted" ? "Recipient" : "Offender";
 	let description = `**${targetLabel}**: ${targetUser && fakeMention(targetUser)} ${actualMention(action.target)}\n`;
@@ -252,6 +259,9 @@ export async function logModerationAction(
 	if (embedReason) {
 		// biome-ignore lint/suspicious/noExplicitAny: we know it's safe, fixing would be too complicated
 		description += embedReason(action as any);
+	}
+	if ("dmSent" in action) {
+		description += `**DM sent**: ${action.dmSent ? "✅" : "❌"}\n`;
 	}
 	embed.setDescription(description);
 
@@ -320,7 +330,7 @@ export async function logBulkDeletedMessages(
 	// Format all messages for paste
 	const pasteContent = messages
 		.map((m, i) => {
-			const separator = i > 0 ? "\n" + "─".repeat(50) + "\n\n" : "";
+			const separator = i > 0 ? `\n${"─".repeat(50)}\n\n` : "";
 			return separator + formatMessageForPaste(m);
 		})
 		.join("\n");
@@ -338,4 +348,41 @@ export async function logBulkDeletedMessages(
 		.setTimestamp();
 
 	await modLogChannel.send({ embeds: [embed] });
+}
+
+/**
+ * DMs the target of a moderation action with a set message
+ * Returns false if they couldn't be DMed
+ */
+export async function dmModerationTarget(
+	user: User,
+	message: string | MessageCreateOptions,
+): Promise<boolean> {
+	try {
+		await user.send(message);
+		return true;
+	} catch (error) {
+		logger.warn(`Couldn't DM ${user.id} about a moderation action`, error);
+		return false;
+	}
+}
+
+export const DM_FAILED_WARNING =
+	"⚠️ The user couldn't be DMed with a reason for the action";
+
+/** Appended to a moderator's reply when the target couldn't be DMed */
+export const dmWarning = (dmSent: boolean) =>
+	dmSent ? "" : `\n${DM_FAILED_WARNING}`;
+
+/**
+ * Never throws: the action has already happened by the time it's logged,
+ * so a logging failure must not be reported to the moderator as the action failing.
+ */
+export async function logModerationAction(
+	client: Client,
+	action: ModerationLog,
+) {
+	await runObserved({ op: "event", name: `modLog.${action.kind}` }, () =>
+		sendModerationLog(client, action),
+	);
 }

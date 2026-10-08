@@ -1,11 +1,13 @@
 import {
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
+	Colors,
 	EmbedBuilder,
 	MessageFlags,
+	PermissionFlagsBits,
 } from "discord.js";
-import type { Command } from "djs-slash-helper";
 import { config } from "../../Config.js";
+import type { Command } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import {
@@ -15,7 +17,7 @@ import {
 } from "../../store/models/Warning.js";
 import { parseTimespan } from "../../util/timespan.js";
 import { fakeMention } from "../../util/users.js";
-import { logModerationAction } from "./logs.js";
+import { dmModerationTarget, dmWarning, logModerationAction } from "./logs.js";
 import { deductReputation, getWarningEventType } from "./reputation.service.js";
 
 const SEVERITY_LABELS: Record<WarningSeverity, string> = {
@@ -34,7 +36,7 @@ export const WarnCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: "warn",
 	description: "Issue a formal warning to a user",
 	type: ApplicationCommandType.ChatInput,
-	default_permission: false,
+	default_member_permissions: PermissionFlagsBits.ModerateMembers,
 	options: [
 		{
 			type: ApplicationCommandOptionType.User,
@@ -139,27 +141,21 @@ export const WarnCommand: Command<ApplicationCommandType.ChatInput> = {
 
 			const warningCount = await getWarningCount(BigInt(user.id));
 
-			try {
-				const dmEmbed = new EmbedBuilder()
-					.setTitle("You have received a warning")
-					.setColor("Orange")
-					.setDescription(
-						`You have been warned in **${interaction.guild.name}**.\n\n` +
-							`**Reason:** ${reason}\n` +
-							`**Severity:** ${SEVERITY_LABELS[severity]}\n` +
-							(expiresAt
-								? `**Expires:** <t:${Math.floor(expiresAt.getTime() / 1000)}:R>\n`
-								: "") +
-							`\nThis is warning #${warningCount}. Please review the server rules to avoid further action.`,
-					)
-					.setTimestamp();
+			const dmEmbed = new EmbedBuilder()
+				.setTitle("You have received a warning")
+				.setColor(Colors.Orange)
+				.setDescription(
+					`You have been warned in **${interaction.guild.name}**.\n\n` +
+						`**Reason:** ${reason}\n` +
+						`**Severity:** ${SEVERITY_LABELS[severity]}\n` +
+						(expiresAt
+							? `**Expires:** <t:${Math.floor(expiresAt.getTime() / 1000)}:R>\n`
+							: "") +
+						`\nThis is warning #${warningCount}. Please review the server rules to avoid further action.`,
+				)
+				.setTimestamp();
 
-				await user.send({ embeds: [dmEmbed] });
-			} catch {
-				logger.info(
-					`Could not DM warning to user ${user.id} - DMs may be disabled`,
-				);
-			}
+			const dmSent = await dmModerationTarget(user, { embeds: [dmEmbed] });
 
 			await logModerationAction(interaction.client, {
 				kind: "Warning",
@@ -170,6 +166,7 @@ export const WarnCommand: Command<ApplicationCommandType.ChatInput> = {
 				warningId: warning.id,
 				warningCount,
 				expiresAt,
+				dmSent,
 			});
 
 			const thresholds = config.reputation?.warningThresholds;
@@ -187,7 +184,8 @@ export const WarnCommand: Command<ApplicationCommandType.ChatInput> = {
 					`Warned ${fakeMention(user)} (Warning #${warningCount})\n` +
 					`**Reason:** ${reason}\n` +
 					`**Severity:** ${SEVERITY_LABELS[severity]}` +
-					escalationNote,
+					escalationNote +
+					dmWarning(dmSent),
 			});
 		} catch (e) {
 			logger.error("Failed to warn user:", e);

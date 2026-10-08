@@ -6,24 +6,21 @@ import {
 	MessageFlags,
 	PermissionFlagsBits,
 } from "discord.js";
-import type { Command, ExecutableSubcommand } from "djs-slash-helper";
+import type { Command, ExecutableSubcommand } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import {
 	REPUTATION_EVENT_LABELS,
 	ReputationEventType,
 } from "../../store/models/ReputationEvent.js";
 import { fakeMention } from "../../util/users.js";
-import { logModerationAction } from "./logs.js";
+import { dmModerationTarget, dmWarning, logModerationAction } from "./logs.js";
 import {
 	getReputationHistoryForUser,
-	getReputationTier,
 	getUserReputation,
 	grantReputation,
-	REPUTATION_TIER_COLORS,
 	REPUTATION_TIER_LABELS,
 	REPUTATION_TIER_THRESHOLDS,
 	ReputationTier,
-	updateReputation,
 } from "./reputation.service.js";
 
 // Grantable positive reputation types
@@ -238,7 +235,11 @@ const GrantSubcommand: ExecutableSubcommand = {
 				options?.customScore,
 			);
 
-			// Log the reputation grant
+			const dmSent = await dmModerationTarget(
+				targetUser,
+				`You were granted **+${result.event.scoreChange}** reputation in **${interaction.guild?.name ?? "the server"}**.\n**Reason:** ${reason}`,
+			);
+
 			await logModerationAction(interaction.client, {
 				kind: "ReputationGranted",
 				moderator: interaction.user,
@@ -247,6 +248,7 @@ const GrantSubcommand: ExecutableSubcommand = {
 				scoreChange: result.event.scoreChange,
 				newScore: result.newScore,
 				reason,
+				dmSent,
 			});
 
 			const tierChange = result.tierChanged
@@ -258,7 +260,8 @@ const GrantSubcommand: ExecutableSubcommand = {
 				content:
 					`Granted **+${result.event.scoreChange}** reputation to ${fakeMention(targetUser)}\n` +
 					`**Reason:** ${reason}\n` +
-					`**New Score:** ${formatScore(result.newScore)}${tierChange}`,
+					`**New Score:** ${formatScore(result.newScore)}${tierChange}` +
+					dmWarning(dmSent),
 			});
 		} catch (error) {
 			logger.error("Failed to grant reputation:", error);
@@ -415,7 +418,7 @@ export const ReputationCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: "reputation",
 	description: "Manage user reputation (mods only)",
 	type: ApplicationCommandType.ChatInput,
-	default_permission: false,
+	default_member_permissions: PermissionFlagsBits.ModerateMembers,
 	options: [ViewSubcommand, GrantSubcommand, HistorySubcommand],
 	handle() {},
 };
