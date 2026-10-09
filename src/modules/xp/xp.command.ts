@@ -10,11 +10,12 @@ import { logger } from "../../logging.js";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import { branding } from "../../util/branding.js";
 import { createStandardEmbed } from "../../util/embeds.js";
-import { createImage, font, getCanvasContext } from "../../util/imageUtils.js";
+import { createImage, getCanvasContext } from "../../util/imageUtils.js";
 import { getResolvedMember } from "../../util/interactions.js";
 import { drawText } from "../../util/textRendering.js";
 import { fakeMention } from "../../util/users.js";
 import { format } from "../core/info.command.js";
+import { profileFont } from "../user/user.js";
 import { formatDayCount, getActualDailyStreak } from "./dailyReward.command.js";
 import { getTierByLevel, xpForLevel } from "./xpForMessage.util.js";
 
@@ -117,7 +118,6 @@ function createXpImage(xp: bigint, user: GuildMember) {
 	drawText(
 		ctx,
 		message,
-		font,
 		{
 			x: 0,
 			y: 0,
@@ -125,6 +125,7 @@ function createXpImage(xp: bigint, user: GuildMember) {
 			height: canvas.height,
 		},
 		{
+			fontFamily: profileFont,
 			hAlign: "center",
 			vAlign: "center",
 			maxSize: 450,
