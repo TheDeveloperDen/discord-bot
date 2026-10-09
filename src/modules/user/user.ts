@@ -117,7 +117,9 @@ export function drawDivider(
 	y: number,
 	length: number,
 	orientation: "horizontal" | "vertical" = "horizontal",
-	color: string | CanvasGradient = "#444444",
+	color:
+		| string
+		| ReturnType<Canvas.SKRSContext2D["createLinearGradient"]> = "#444444",
 	thickness: number = 1,
 ) {
 	ctx.save();
