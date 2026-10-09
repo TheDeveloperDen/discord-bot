@@ -60,6 +60,14 @@ export class DDUser extends Model<
 	declare public starboardCount: CreationOptional<number>;
 
 	@AllowNull
+	@Attribute(DataTypes.STRING)
+	declare public githubId: string | null;
+
+	@AllowNull
+	@Attribute(DataTypes.STRING)
+	declare public githubUsername: string | null;
+
+	@AllowNull
 	@Attribute(DataTypes.DATE)
 	declare public lastReputationUpdate: Date | null;
 

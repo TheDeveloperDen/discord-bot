@@ -11,6 +11,7 @@ import { AchievementsModule } from "./modules/achievements/achievements.module.j
 import AskToAskModule from "./modules/askToAsk.module.js";
 import { CoreModule } from "./modules/core/core.module.js";
 import FaqModule from "./modules/faq/faq.module.js";
+import { GitHubModule } from "./modules/github/github.module.js";
 import { HotTakesModule } from "./modules/hotTakes/hotTakes.module.js";
 import ImageForwarderModule from "./modules/imageForwarder.module.js";
 import { InformationModule } from "./modules/information/information.module.js";
@@ -33,6 +34,7 @@ import { UserModule } from "./modules/user/user.module.js";
 import { XpModule } from "./modules/xp/xp.module.js";
 import { initSentry } from "./sentry.js";
 import { initStorage } from "./store/storage.js";
+import { startOAuthServer } from "./web/server.js";
 
 const client = new Client({
 	intents: [
@@ -74,6 +76,7 @@ const moduleManager = new ModuleManager(
 		AchievementsModule,
 		ThreatDetectionModule,
 		ReactionStatsModule,
+		GitHubModule,
 	],
 );
 
@@ -96,6 +99,7 @@ async function main() {
 	await initStorage();
 	await moduleManager.preInit();
 	await logIn();
+	await startOAuthServer(client);
 	const guild = await client.guilds.fetch(config.guildId);
 	await setupBranding(guild);
 
