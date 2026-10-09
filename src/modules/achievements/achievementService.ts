@@ -336,16 +336,18 @@ export async function getAchievementProgress(userId: bigint): Promise<{
 	};
 
 	const activeAchievements = getActiveAchievements();
+	let unlocked = 0;
 	for (const achievement of activeAchievements) {
 		byCategory[achievement.category].total++;
 		if (userAchievements.has(achievement.id)) {
 			byCategory[achievement.category].unlocked++;
+			unlocked++;
 		}
 	}
 
 	return {
 		total: activeAchievements.length,
-		unlocked: userAchievements.size,
+		unlocked,
 		byCategory,
 	};
 }
