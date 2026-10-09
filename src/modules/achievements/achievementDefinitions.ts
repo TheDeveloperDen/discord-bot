@@ -8,7 +8,9 @@
 export type AchievementCategory =
 	| "bump"
 	| "daily"
+	| "level"
 	| "starboard"
+	| "reaction"
 	| "introduction"
 	| "suggestion"
 	| "special";
@@ -18,11 +20,13 @@ export type AchievementTrigger =
 	| { type: "daily"; event: "daily_claimed" }
 	| { type: "xp"; event: "xp_gained" }
 	| { type: "starboard"; event: "starboard_reached" }
+	| { type: "reaction"; event: "reaction_received" }
 	| { type: "introduction"; event: "intro_posted" }
 	| {
 			type: "suggestion";
 			event: "suggestion_submitted" | "suggestion_approved";
 	  }
+	| { type: "achievement"; event: "achievement_earned" }
 	| { type: "manual"; event: "manual_grant" };
 
 export interface AchievementContext {
@@ -36,9 +40,14 @@ export interface AchievementContext {
 	level?: number;
 	// Starboard context
 	starboardCount?: number;
+	// Reaction context
+	distinctReactors?: number;
+	reactedMessageCount?: number;
 	// Suggestion context
 	suggestionsSubmitted?: number;
 	suggestionsApproved?: number;
+	// Achievement context
+	earnedCategoryCount?: number;
 }
 
 /** Notification mode for achievements */
@@ -199,6 +208,53 @@ const DAILY_ACHIEVEMENTS: AchievementDefinition[] = [
 ];
 
 // ─────────────────────────────────────────────────
+// Level Achievements
+// ─────────────────────────────────────────────────
+
+const LEVEL_ACHIEVEMENTS: AchievementDefinition[] = [
+	{
+		id: "level_5",
+		name: "Level Up: Apprentice",
+		description: "Reach level 5",
+		emoji: "🌱",
+		category: "level",
+		trigger: { type: "xp", event: "xp_gained" },
+		checkCondition: (ctx) => (ctx.level ?? 0) >= 5,
+		notificationMode: "trigger",
+	},
+	{
+		id: "level_10",
+		name: "Level Up: Journeyman",
+		description: "Reach level 10",
+		emoji: "📚",
+		category: "level",
+		trigger: { type: "xp", event: "xp_gained" },
+		checkCondition: (ctx) => (ctx.level ?? 0) >= 10,
+		notificationMode: "trigger",
+	},
+	{
+		id: "level_25",
+		name: "Level Up: Expert",
+		description: "Reach level 25",
+		emoji: "🏅",
+		category: "level",
+		trigger: { type: "xp", event: "xp_gained" },
+		checkCondition: (ctx) => (ctx.level ?? 0) >= 25,
+		notificationMode: "trigger",
+	},
+	{
+		id: "level_50",
+		name: "Level Up: Master",
+		description: "Reach level 50",
+		emoji: "🏆",
+		category: "level",
+		trigger: { type: "xp", event: "xp_gained" },
+		checkCondition: (ctx) => (ctx.level ?? 0) >= 50,
+		notificationMode: "trigger",
+	},
+];
+
+// ─────────────────────────────────────────────────
 // Starboard Achievements
 // ─────────────────────────────────────────────────
 
@@ -232,6 +288,24 @@ const STARBOARD_ACHIEVEMENTS: AchievementDefinition[] = [
 		trigger: { type: "starboard", event: "starboard_reached" },
 		checkCondition: (ctx) => (ctx.starboardCount ?? 0) >= 25,
 		notificationMode: "channel",
+	},
+];
+
+// ─────────────────────────────────────────────────
+// Reaction Achievements
+// ─────────────────────────────────────────────────
+
+const REACTION_ACHIEVEMENTS: AchievementDefinition[] = [
+	{
+		id: "broad_appeal",
+		name: "Broad Appeal",
+		description: "Receive reactions from 25 members across 5 messages",
+		emoji: "💖",
+		category: "reaction",
+		trigger: { type: "reaction", event: "reaction_received" },
+		checkCondition: (ctx) =>
+			(ctx.distinctReactors ?? 0) >= 25 && (ctx.reactedMessageCount ?? 0) >= 5,
+		notificationMode: "trigger",
 	},
 ];
 
@@ -303,8 +377,17 @@ const SPECIAL_ACHIEVEMENTS: AchievementDefinition[] = [
 		trigger: { type: "manual", event: "manual_grant" },
 		checkCondition: () => false, // Never auto-awarded
 	},
+	{
+		id: "all_rounder",
+		name: "All-Rounder",
+		description: "Earn achievements in 4 different categories",
+		emoji: "🌟",
+		category: "special",
+		trigger: { type: "achievement", event: "achievement_earned" },
+		checkCondition: (ctx) => (ctx.earnedCategoryCount ?? 0) >= 4,
+		notificationMode: "trigger",
+	},
 ];
-
 // ─────────────────────────────────────────────────
 // Combined Export
 // ─────────────────────────────────────────────────
@@ -312,7 +395,9 @@ const SPECIAL_ACHIEVEMENTS: AchievementDefinition[] = [
 export const ACHIEVEMENTS: AchievementDefinition[] = [
 	...BUMP_ACHIEVEMENTS,
 	...DAILY_ACHIEVEMENTS,
+	...LEVEL_ACHIEVEMENTS,
 	...STARBOARD_ACHIEVEMENTS,
+	...REACTION_ACHIEVEMENTS,
 	...INTRODUCTION_ACHIEVEMENTS,
 	...SUGGESTION_ACHIEVEMENTS,
 	...SPECIAL_ACHIEVEMENTS,
@@ -381,7 +466,9 @@ export const CATEGORY_INFO: Record<
 > = {
 	bump: { name: "Bump Achievements", emoji: "🎯" },
 	daily: { name: "Daily Achievements", emoji: "🌅" },
+	level: { name: "Level Achievements", emoji: "⬆️" },
 	starboard: { name: "Starboard Achievements", emoji: "⭐" },
+	reaction: { name: "Reaction Achievements", emoji: "💖" },
 	introduction: { name: "Introduction Achievements", emoji: "👋" },
 	suggestion: { name: "Suggestion Achievements", emoji: "💡" },
 	special: { name: "Special Achievements", emoji: "🛠️" },

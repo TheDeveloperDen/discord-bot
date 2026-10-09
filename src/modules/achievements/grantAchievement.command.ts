@@ -17,7 +17,7 @@ import {
 	getAchievementById,
 	getManualAchievements,
 } from "./achievementDefinitions.js";
-import { notifyAchievementUnlocked } from "./achievementNotifier.js";
+import { notifyMultipleAchievements } from "./achievementNotifier.js";
 import { grantAchievement } from "./achievementService.js";
 
 // Build choices from manual achievements at startup
@@ -111,19 +111,24 @@ export const GrantAchievementCommand: Command<ApplicationCommandType.ChatInput> 
 						return;
 					}
 
-					// Send notification unless silent
+					// Send notifications for every newly granted badge unless silent
 					if (!silent) {
 						const member = await interaction.guild.members.fetch(user.id);
-						await notifyAchievementUnlocked(
+						await notifyMultipleAchievements(
 							interaction.client,
 							member,
-							achievement,
+							result.awarded.map(({ definition }) => definition),
 							interaction.channel ?? undefined,
 						);
 					}
 
+					const awardedAchievements = result.awarded
+						.map(
+							({ definition }) => `**${definition.emoji} ${definition.name}**`,
+						)
+						.join(", ");
 					await interaction.followUp({
-						content: `Successfully granted **${achievement.emoji} ${achievement.name}** to ${fakeMention(user)}${silent ? " (silently)" : ""}.`,
+						content: `Successfully awarded ${awardedAchievements} to ${fakeMention(user)}${silent ? " (silently)" : ""}.`,
 						ephemeral: true,
 					});
 				},

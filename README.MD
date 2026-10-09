@@ -3,6 +3,38 @@
 The official main Discord Bot for the
 [Developer Den](https://developerden.org/discord) Discord Server.
 
+## Achievements
+
+Use `/achievements` to view earned and locked badges. The `level` and `reaction`
+category filters include:
+
+| Achievement | Unlock condition |
+| --- | --- |
+| Level Up: Apprentice | Reach level 5 |
+| Level Up: Journeyman | Reach level 10 |
+| Level Up: Expert | Reach level 25 |
+| Level Up: Master | Reach level 50 |
+| Broad Appeal | Receive reactions from 25 distinct other people across at least five distinct messages |
+
+**All-Rounder**, in the `special` category, requires earned achievements in four
+distinct active categories. Multiple badges in one category count only once.
+Project Contributor counts toward this total; All-Rounder itself and unknown,
+inactive, or revoked badges do not.
+
+Level badges are checked after message XP, daily rewards, and confirmed staff XP
+updates. Existing high-level members can earn all qualifying milestones on their
+next XP action without leveling up again. All-Rounder is checked during automatic
+achievement checks and after successful manual grants.
+
+Broad Appeal uses the bot's recorded reaction history, checked when another
+reaction is observed. Bots and self-reactions do not qualify, and multiple emojis
+from one person do not increase the distinct-person count. Removed reactions stay
+in the recorded history; messages predating reaction tracking are not backfilled.
+Reducing XP or removing reactions does not automatically revoke earned badges.
+
+New badges notify in the triggering channel, using the configured fallback when
+needed. A silent manual grant also suppresses any resulting All-Rounder notification.
+
 ## Building
 
 ### Building for Development

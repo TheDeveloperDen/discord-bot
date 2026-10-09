@@ -9,6 +9,7 @@ import {
 	formatEmoji,
 	getDateCutoff,
 	getGlobalStats,
+	getRecipientReactionMetrics,
 	getTopMessages,
 	getUserStats,
 	periodLabel,
@@ -212,6 +213,60 @@ describe("getUserStats", () => {
 		const stats = await getUserStats(50n, "all");
 		expect(stats.totalReactions).toBe(3);
 		expect(stats.uniqueMessagesReacted).toBe(2);
+	});
+});
+
+// ── Recipient Reaction Metrics ──────────────────────────
+
+describe("getRecipientReactionMetrics", () => {
+	test("counts only distinct non-self reactors and messages for one recipient", async () => {
+		const recipientId = 200n;
+
+		for (let i = 1; i <= 24; i++) {
+			await createReaction({
+				userId: BigInt(i),
+				messageId: BigInt(100 + ((i - 1) % 5)),
+				messageAuthorId: recipientId,
+			});
+		}
+		await createReaction({
+			userId: 1n,
+			messageId: 100n,
+			messageAuthorId: recipientId,
+			emojiName: "❤️",
+		});
+		await createReaction({
+			userId: 1n,
+			messageId: 101n,
+			messageAuthorId: recipientId,
+			emojiName: "🔥",
+		});
+		await createReaction({
+			userId: recipientId,
+			messageId: 105n,
+			messageAuthorId: recipientId,
+		});
+		await createReaction({
+			userId: 25n,
+			messageId: 106n,
+			messageAuthorId: 201n,
+		});
+
+		expect(await getRecipientReactionMetrics(recipientId)).toEqual({
+			distinctReactors: 24,
+			reactedMessageCount: 5,
+		});
+
+		await createReaction({
+			userId: 25n,
+			messageId: 104n,
+			messageAuthorId: recipientId,
+		});
+
+		expect(await getRecipientReactionMetrics(recipientId)).toEqual({
+			distinctReactors: 25,
+			reactedMessageCount: 5,
+		});
 	});
 });
 
