@@ -9,8 +9,9 @@ import {
 	type ComponentType,
 	GuildMember,
 	MessageFlags,
+	PermissionFlagsBits,
 } from "discord.js";
-import type { Command } from "djs-slash-helper";
+import type { Command } from "../../commands/index.js";
 import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 
@@ -20,7 +21,7 @@ import { levelForXp } from "../xp/xpRoles.util.js";
 export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
 	type: ApplicationCommandType.ChatInput,
 	name: "set",
-	default_permission: false,
+	default_member_permissions: PermissionFlagsBits.Administrator,
 	description: "Set data for a user",
 	options: [
 		{
@@ -54,7 +55,10 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
 			| null
 			| undefined = interaction.options.get("target")?.member;
 		if (!(target instanceof GuildMember)) {
-			await interaction.reply("Could not find user");
+			await interaction.reply({
+				flags: MessageFlags.Ephemeral,
+				content: "Could not find user",
+			});
 			return;
 		}
 		const user = await getOrCreateUserById(BigInt(target.id));

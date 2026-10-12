@@ -31,24 +31,24 @@ export class BlockedWord extends Model<
 	@Attribute(DataTypes.INTEGER)
 	@PrimaryKey
 	@AutoIncrement
-	public declare id: CreationOptional<number>;
+	declare public id: CreationOptional<number>;
 
 	@Attribute(DataTypes.STRING(100))
 	@NotNull
-	public declare word: string;
+	declare public word: string;
 
 	@Attribute(DataTypes.STRING(20))
 	@NotNull
 	@Default(BlockedWordCategory.OTHER)
-	public declare category: CreationOptional<BlockedWordCategory>;
+	declare public category: CreationOptional<BlockedWordCategory>;
 
 	@Attribute(RealBigInt)
 	@NotNull
-	public declare addedBy: bigint;
+	declare public addedBy: bigint;
 
 	@Attribute(DataTypes.DATE)
 	@Default(DataTypes.NOW)
-	public declare createdAt: CreationOptional<Date>;
+	declare public createdAt: CreationOptional<Date>;
 }
 
 export async function getAllBlockedWords(): Promise<BlockedWord[]> {

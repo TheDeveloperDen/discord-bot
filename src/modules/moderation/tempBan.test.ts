@@ -1,9 +1,6 @@
 import { afterEach, beforeAll, describe, expect, test } from "bun:test";
 import { clearUserCache } from "../../store/models/DDUser.js";
-import {
-	ModeratorAction,
-	ModeratorActions,
-} from "../../store/models/ModeratorActions.js";
+import { ModeratorAction } from "../../store/models/ModeratorActions.js";
 import { getSequelizeInstance, initStorage } from "../../store/storage.js";
 import { createMockUser } from "../../tests/mocks/discord.js";
 import {

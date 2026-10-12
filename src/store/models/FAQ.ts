@@ -23,21 +23,21 @@ export class FAQ extends Model<
 	@Attribute(DataTypes.INTEGER)
 	@PrimaryKey
 	@AutoIncrement
-	public declare id: CreationOptional<number>;
+	declare public id: CreationOptional<number>;
 
 	@Attribute(RealBigInt)
 	@NotNull
-	public declare author: bigint;
+	declare public author: bigint;
 
 	@Attribute(DataTypes.STRING(64))
 	@NotNull
-	public declare name: string;
+	declare public name: string;
 
 	@Attribute(DataTypes.STRING(64))
 	@NotNull
-	public declare title: string;
+	declare public title: string;
 
 	@Attribute(DataTypes.TEXT("long"))
 	@NotNull
-	public declare content: string;
+	declare public content: string;
 }

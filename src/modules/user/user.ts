@@ -1,5 +1,5 @@
 import * as fs from "node:fs";
-import Canvas, { createCanvas, Image } from "@napi-rs/canvas";
+import Canvas from "@napi-rs/canvas";
 import type { GuildMember } from "discord.js";
 import sharp from "sharp";
 import { getBumpStreak } from "../../store/models/bumps.js";
@@ -117,7 +117,9 @@ export function drawDivider(
 	y: number,
 	length: number,
 	orientation: "horizontal" | "vertical" = "horizontal",
-	color: string | CanvasGradient = "#444444",
+	color:
+		| string
+		| ReturnType<Canvas.SKRSContext2D["createLinearGradient"]> = "#444444",
 	thickness: number = 1,
 ) {
 	ctx.save();

@@ -1,47 +1,23 @@
-// adjusted from https://github.com/kaivi/node-canvas-text
-
-import type { CanvasRenderingContext2D } from "@napi-rs/canvas";
-import type { Font } from "opentype.js";
+import type { SKRSContext2D } from "@napi-rs/canvas";
 
 const measureText = (
+	ctx: SKRSContext2D,
 	text: string,
-	font: Font,
+	fontFamily: string,
 	fontSize: number,
 ): {
-	actualBoundingBoxDescent: number;
-	fontBoundingBoxDescent: number;
 	width: number;
-	fontBoundingBoxAscent: number;
-	actualBoundingBoxAscent: number;
 	height: number;
+	actualBoundingBoxDescent: number;
 } => {
-	const scale = (1 / font.unitsPerEm) * fontSize;
-	const glyphs = font.stringToGlyphs(text);
-	let ascent = 0;
-	let descent = 0;
-	let width = 0;
-
-	for (let i = 0; i < glyphs.length; i++) {
-		const glyph = glyphs[i];
-		width += (glyph.advanceWidth ?? 0) * scale;
-		if (i < glyphs.length - 1) {
-			const kerningValue = font.getKerningValue(glyph, glyphs[i + 1]);
-			width += kerningValue * scale;
-		}
-
-		const { yMin, yMax } = glyph.getMetrics();
-
-		ascent = Math.max(ascent, yMax);
-		descent = Math.min(descent, yMin);
-	}
-
+	ctx.font = `${fontSize}px ${fontFamily}`;
+	const metrics = ctx.measureText(text);
 	return {
-		width,
-		height: Math.abs(ascent) * scale + Math.abs(descent) * scale,
-		actualBoundingBoxAscent: ascent * scale,
-		actualBoundingBoxDescent: descent * scale,
-		fontBoundingBoxAscent: font.ascender * scale,
-		fontBoundingBoxDescent: font.descender * scale,
+		width: metrics.width,
+		height:
+			Math.abs(metrics.actualBoundingBoxAscent) +
+			Math.abs(metrics.actualBoundingBoxDescent),
+		actualBoundingBoxDescent: metrics.actualBoundingBoxDescent,
 	};
 };
 
@@ -53,6 +29,7 @@ interface Rectangle {
 }
 
 interface Options {
+	fontFamily: string;
 	minSize: number;
 	maxSize: number;
 	hAlign: string;
@@ -61,9 +38,8 @@ interface Options {
 }
 
 export function drawText(
-	ctx: CanvasRenderingContext2D,
+	ctx: SKRSContext2D,
 	text: string,
-	fontObject: Font,
 	rectangle: Rectangle,
 	options: Options,
 ): void {
@@ -74,7 +50,7 @@ export function drawText(
 	ctx.save();
 
 	let fontSize = options.maxSize;
-	let textMetrics = measureText(text, fontObject, fontSize);
+	let textMetrics = measureText(ctx, text, options.fontFamily, fontSize);
 	let textWidth = textMetrics.width;
 	let textHeight = textMetrics.height;
 
@@ -83,7 +59,7 @@ export function drawText(
 		fontSize >= options.minSize
 	) {
 		fontSize = fontSize - options.granularity;
-		textMetrics = measureText(text, fontObject, fontSize);
+		textMetrics = measureText(ctx, text, options.fontFamily, fontSize);
 		textWidth = textMetrics.width;
 		textHeight = textMetrics.height;
 	}
@@ -125,10 +101,10 @@ export function drawText(
 	}
 
 	// Draw text
-	const fontPath = fontObject.getPath(text, xPos, yPos, fontSize, {});
-	fontPath.fill = ctx.fillStyle as string;
-	// @ts-expect-error this is quite bad but i hope it will be fine
-	fontPath.draw(ctx);
+	ctx.font = `${fontSize}px ${options.fontFamily}`;
+	ctx.textBaseline = "alphabetic";
+	ctx.textAlign = "left";
+	ctx.fillText(text, xPos, yPos);
 
 	ctx.restore();
 }

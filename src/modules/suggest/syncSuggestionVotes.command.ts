@@ -4,7 +4,7 @@ import {
 	MessageFlags,
 	PermissionFlagsBits,
 } from "discord.js";
-import type { Command } from "djs-slash-helper";
+import type { Command } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { removeSuggestionVotesForMembers } from "./suggest.js";
 
@@ -13,7 +13,7 @@ export const SyncSuggestionVotesCommand: Command<ApplicationCommandType.ChatInpu
 		name: "syncsuggestionvotes",
 		description: "Remove banned users from suggestion votes and refresh totals",
 		type: ApplicationCommandType.ChatInput,
-		default_permission: false,
+		default_member_permissions: PermissionFlagsBits.Administrator,
 		options: [],
 		handle: async (interaction) => {
 			if (

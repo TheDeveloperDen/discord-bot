@@ -1,30 +1,27 @@
 import {
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
+	type AutocompleteInteraction,
 	type GuildMember,
 	MessageFlags,
 	PermissionFlagsBits,
 } from "discord.js";
-import type { Command, ExecutableSubcommand } from "djs-slash-helper";
-import { logger } from "../../logging.js";
+import {
+	type Command,
+	type ExecutableSubcommand,
+	respondWithChoices,
+} from "../../commands/index.js";
 import { FAQ } from "../../store/models/FAQ.js";
-import { getModuleManager } from "../moduleManager.js";
 
 import createFaqModal from "./faq.modal.js";
 import { createFaqEmbed } from "./faq.util.js";
 
-const choices: Array<{ name: string; value: string }> = [];
-
-export async function updateChoices() {
-	const result = await FAQ.findAll();
-	choices.length = 0;
-	choices.push(
-		...result.map((it) => ({
-			name: it.name,
-			value: it.name,
-		})),
+async function autocompleteFaqNames(interaction: AutocompleteInteraction) {
+	const faqs = await FAQ.findAll({ attributes: ["name"] });
+	await respondWithChoices(
+		interaction,
+		faqs.map((it) => ({ name: it.name, value: it.name })),
 	);
-	logger.info(`Updated FAQ choices to ${JSON.stringify(choices)}`);
 }
 
 const GetSubcommand: ExecutableSubcommand = {
@@ -37,9 +34,10 @@ const GetSubcommand: ExecutableSubcommand = {
 			name: "name",
 			description: "The name of the FAQ",
 			required: true,
-			choices,
+			autocomplete: true,
 		},
 	],
+	autocomplete: autocompleteFaqNames,
 	async handle(interaction) {
 		const name = interaction.options.get("name")?.value as string | null;
 		const faq = await FAQ.findOne({
@@ -65,8 +63,10 @@ const EditSubcommand: ExecutableSubcommand = {
 			name: "name",
 			description: "The name of the FAQ",
 			required: true,
+			autocomplete: true,
 		},
 	],
+	autocomplete: autocompleteFaqNames,
 	async handle(interaction) {
 		const member = interaction.member as GuildMember;
 		if (!member.permissions.has(PermissionFlagsBits.ManageMessages)) {
@@ -102,9 +102,6 @@ const EditSubcommand: ExecutableSubcommand = {
 			flags: MessageFlags.Ephemeral,
 			content: `FAQ named ${name} created`,
 		});
-
-		await updateChoices();
-		return await getModuleManager().refreshCommands();
 	},
 };
 
@@ -118,9 +115,10 @@ const DeleteSubcommand: ExecutableSubcommand = {
 			name: "name",
 			description: "The name of the FAQ",
 			required: true,
-			choices,
+			autocomplete: true,
 		},
 	],
+	autocomplete: autocompleteFaqNames,
 	async handle(interaction) {
 		const member = interaction.member as GuildMember;
 		if (!member.permissions.has(PermissionFlagsBits.ManageMessages)) {
@@ -145,8 +143,6 @@ const DeleteSubcommand: ExecutableSubcommand = {
 			});
 		}
 		await faq.destroy();
-		await updateChoices();
-		await getModuleManager().refreshCommands();
 		return await interaction.reply({
 			flags: MessageFlags.Ephemeral,
 			content: `FAQ named ${name} deleted`,

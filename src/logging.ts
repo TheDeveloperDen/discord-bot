@@ -46,12 +46,12 @@ const cliFormat = format.combine(
 		all: true,
 	}),
 	format.printf(({ timestamp, level, message, source, ...meta }) => {
-		const filteredMeta = { ...meta };
-		if (filteredMeta.service) delete filteredMeta.service;
-		const metaString = Object.keys(filteredMeta).length
-			? stringify(filteredMeta, null, 2)
-			: "";
-		return `[${timestamp}] ${level}${source ? ` (${source})` : ""}: ${message}${metaString ? ` ${metaString}` : ""}`;
+		const { service: _service, stack, ...rest } = meta;
+		const metaString = Object.keys(rest).length ? stringify(rest, null, 2) : "";
+		const header = `[${timestamp}] ${level}${source ? ` (${source})` : ""}: ${message}`;
+		return [header, metaString, typeof stack === "string" ? stack : ""]
+			.filter(Boolean)
+			.join("\n");
 	}),
 );
 

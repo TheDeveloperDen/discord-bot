@@ -229,7 +229,7 @@ export async function getTopMessages(
 		],
 		where: timeWhere,
 		group: ["messageId", "messageAuthorId", "channelId"],
-		order: [[sql`COUNT(*)`, "DESC"]],
+		order: [[sql`COUNT(DISTINCT("userId"))`, "DESC"]],
 		limit,
 		raw: true,
 	})) as Array<{

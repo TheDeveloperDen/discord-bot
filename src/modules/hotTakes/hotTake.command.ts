@@ -1,6 +1,6 @@
 import type { CommandInteraction } from "discord.js";
 import { ApplicationCommandType } from "discord.js";
-import type { Command } from "djs-slash-helper";
+import type { Command } from "../../commands/index.js";
 import generateHotTake from "./hotTakes.util.js";
 
 export const HotTakeCommand: Command<ApplicationCommandType.ChatInput> = {

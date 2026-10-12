@@ -40,15 +40,12 @@ describe("parseTimespan", () => {
 		expect(parseTimespan("1M")).toBe(4.3 * WEEK);
 	});
 
-	test.each([
-		"",
-		"abc",
-		"5",
-		"5x",
-		"h",
-	])("returns 0 for invalid span %p", (input) => {
-		expect(parseTimespan(input)).toBe(0);
-	});
+	test.each(["", "abc", "5", "5x", "h"])(
+		"returns 0 for invalid span %p",
+		(input) => {
+			expect(parseTimespan(input)).toBe(0);
+		},
+	);
 
 	test("ignores unknown units alongside valid ones", () => {
 		expect(parseTimespan("1h5x")).toBe(HOUR);

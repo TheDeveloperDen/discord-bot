@@ -44,52 +44,52 @@ export class ThreatLog extends Model<
 	@Attribute(DataTypes.INTEGER)
 	@PrimaryKey
 	@AutoIncrement
-	public declare id: CreationOptional<number>;
+	declare public id: CreationOptional<number>;
 
 	@Attribute(RealBigInt)
 	@NotNull
-	public declare userId: bigint;
+	declare public userId: bigint;
 
 	@Attribute(DataTypes.STRING(30))
 	@NotNull
-	public declare threatType: ThreatType;
+	declare public threatType: ThreatType;
 
 	@Attribute(DataTypes.FLOAT)
 	@NotNull
-	public declare severity: number;
+	declare public severity: number;
 
 	@Attribute(DataTypes.STRING(20))
 	@NotNull
-	public declare actionTaken: ThreatAction;
+	declare public actionTaken: ThreatAction;
 
 	@Attribute(DataTypes.TEXT)
 	@AllowNull
-	public declare messageContent: string | null;
+	declare public messageContent: string | null;
 
 	@Attribute(RealBigInt)
 	@AllowNull
-	public declare messageId: bigint | null;
+	declare public messageId: bigint | null;
 
 	@Attribute(RealBigInt)
 	@AllowNull
-	public declare channelId: bigint | null;
+	declare public channelId: bigint | null;
 
 	@Attribute(DataTypes.JSON)
 	@AllowNull
-	public declare metadata: Record<string, unknown> | null;
+	declare public metadata: Record<string, unknown> | null;
 
 	@Attribute(DataTypes.BOOLEAN)
 	@Default(false)
-	public declare falsePositive: CreationOptional<boolean>;
+	declare public falsePositive: CreationOptional<boolean>;
 
 	@Attribute(RealBigInt)
 	@AllowNull
-	public declare reviewedBy: bigint | null;
+	declare public reviewedBy: bigint | null;
 
 	@Attribute(DataTypes.DATE)
 	@Default(DataTypes.NOW)
-	public declare createdAt: CreationOptional<Date>;
+	declare public createdAt: CreationOptional<Date>;
 
 	@BelongsTo(() => DDUser, "userId")
-	public declare user?: DDUser;
+	declare public user?: DDUser;
 }

@@ -28,7 +28,7 @@ export class ModMailNote extends Model<
 	@Attribute(DataTypes.INTEGER)
 	@PrimaryKey
 	@AutoIncrement
-	public declare id: CreationOptional<number>;
+	declare public id: CreationOptional<number>;
 
 	@Attribute(DataTypes.INTEGER)
 	@NotNull
@@ -50,11 +50,11 @@ export class ModMailNote extends Model<
 	@AllowNull
 	public contentUpdatedAt?: Date;
 
-	public declare createdAt: CreationOptional<Date>;
-	public declare updatedAt: CreationOptional<Date>;
+	declare public createdAt: CreationOptional<Date>;
+	declare public updatedAt: CreationOptional<Date>;
 
 	@BelongsTo(() => ModMailTicket, {
 		foreignKey: "modMailTicketId",
 	})
-	public declare modMailTicket?: ModMailTicket;
+	declare public modMailTicket?: ModMailTicket;
 }

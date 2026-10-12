@@ -66,37 +66,32 @@ async function handleScamDetection(
 	wasEdit: boolean,
 ): Promise<void> {
 	try {
-		try {
-			await message.delete();
-		} catch (deleteError) {
-			logger.warn(`Failed to delete scam message ${message.id}:`, deleteError);
-		}
-
-		const warningMessage = await message.channel.send({
-			content: `${actualMention(member)}, your message was removed because it contained a potentially malicious link. If you believe this was a mistake, please contact a moderator.`,
-		});
-
-		setTimeout(() => {
-			warningMessage.delete().catch(() => {});
-		}, 15000);
-
-		await logThreatToDatabase(BigInt(member.id), result, message);
-
-		await logThreatAction(message.client, {
-			kind: "ScamLinkDetected",
-			target: member.user,
-			messageId: message.id,
-			messageCreatedTimestamp: message.createdTimestamp,
-			edited: wasEdit,
-			matchedUrls: result.details.matchedUrls,
-			matchedDomains: result.details.matchedDomains,
-			matchReason: result.details.matchReason,
-			severity: result.severity,
-		});
-	} catch (error) {
-		logger.error("Failed to handle scam detection:", error);
-		Sentry.captureException(error);
+		await message.delete();
+	} catch (deleteError) {
+		logger.warn(`Failed to delete scam message ${message.id}:`, deleteError);
 	}
+
+	const warningMessage = await message.channel.send({
+		content: `${actualMention(member)}, your message was removed because it contained a potentially malicious link. If you believe this was a mistake, please contact a moderator.`,
+	});
+
+	setTimeout(() => {
+		warningMessage.delete().catch(() => {});
+	}, 15000);
+
+	await logThreatToDatabase(BigInt(member.id), result, message);
+
+	await logThreatAction(message.client, {
+		kind: "ScamLinkDetected",
+		target: member.user,
+		messageId: message.id,
+		messageCreatedTimestamp: message.createdTimestamp,
+		edited: wasEdit,
+		matchedUrls: result.details.matchedUrls,
+		matchedDomains: result.details.matchedDomains,
+		matchReason: result.details.matchReason,
+		severity: result.severity,
+	});
 }
 
 async function handleSpamDetection(
@@ -105,44 +100,39 @@ async function handleSpamDetection(
 	result: SpamDetectionResult,
 ): Promise<void> {
 	try {
-		try {
-			await message.delete();
-		} catch (deleteError) {
-			logger.warn(`Failed to delete spam message ${message.id}:`, deleteError);
-		}
-
-		if (result.action === ThreatAction.MUTED) {
-			const muteDuration = config.threatDetection?.spam?.muteDuration ?? 300000;
-			try {
-				await member.timeout(muteDuration, "Auto-mute: Spam detection");
-			} catch (timeoutError) {
-				logger.warn(
-					`Failed to timeout member ${member.id} for spam:`,
-					timeoutError,
-				);
-			}
-		}
-
-		// Deduct reputation for spam
-		await deductReputation(
-			BigInt(member.id),
-			ReputationEventType.SPAM_DELETED,
-			"Spam message deleted",
-		);
-
-		await logThreatToDatabase(BigInt(member.id), result, message);
-
-		await logThreatAction(message.client, {
-			kind: "SpamDetected",
-			target: member.user,
-			messageCount: result.details.messageCount,
-			windowSeconds: result.details.windowSeconds,
-			action: result.action,
-		});
-	} catch (error) {
-		logger.error("Failed to handle spam detection:", error);
-		Sentry.captureException(error);
+		await message.delete();
+	} catch (deleteError) {
+		logger.warn(`Failed to delete spam message ${message.id}:`, deleteError);
 	}
+
+	if (result.action === ThreatAction.MUTED) {
+		const muteDuration = config.threatDetection?.spam?.muteDuration ?? 300000;
+		try {
+			await member.timeout(muteDuration, "Auto-mute: Spam detection");
+		} catch (timeoutError) {
+			logger.warn(
+				`Failed to timeout member ${member.id} for spam:`,
+				timeoutError,
+			);
+		}
+	}
+
+	// Deduct reputation for spam
+	await deductReputation(
+		BigInt(member.id),
+		ReputationEventType.SPAM_DELETED,
+		"Spam message deleted",
+	);
+
+	await logThreatToDatabase(BigInt(member.id), result, message);
+
+	await logThreatAction(message.client, {
+		kind: "SpamDetected",
+		target: member.user,
+		messageCount: result.details.messageCount,
+		windowSeconds: result.details.windowSeconds,
+		action: result.action,
+	});
 }
 
 async function handleMentionSpamDetection(
@@ -151,52 +141,44 @@ async function handleMentionSpamDetection(
 	result: MentionSpamResult,
 ): Promise<void> {
 	try {
+		await message.delete();
+	} catch (deleteError) {
+		logger.warn(
+			`Failed to delete mention spam message ${message.id}:`,
+			deleteError,
+		);
+	}
+
+	if (result.action === ThreatAction.MUTED) {
+		const muteDuration =
+			config.threatDetection?.mentionSpam?.windowSeconds ?? 60;
 		try {
-			await message.delete();
-		} catch (deleteError) {
+			await member.timeout(muteDuration * 1000 * 5, "Auto-mute: Mention spam");
+		} catch (timeoutError) {
 			logger.warn(
-				`Failed to delete mention spam message ${message.id}:`,
-				deleteError,
+				`Failed to timeout member ${member.id} for mention spam:`,
+				timeoutError,
 			);
 		}
-
-		if (result.action === ThreatAction.MUTED) {
-			const muteDuration =
-				config.threatDetection?.mentionSpam?.windowSeconds ?? 60;
-			try {
-				await member.timeout(
-					muteDuration * 1000 * 5,
-					"Auto-mute: Mention spam",
-				);
-			} catch (timeoutError) {
-				logger.warn(
-					`Failed to timeout member ${member.id} for mention spam:`,
-					timeoutError,
-				);
-			}
-		}
-
-		const warningMessage = await message.channel.send({
-			content: `${actualMention(member)}, please avoid mass mentioning users.`,
-		});
-
-		setTimeout(() => {
-			warningMessage.delete().catch(() => {});
-		}, 10000);
-
-		await logThreatToDatabase(BigInt(member.id), result, message);
-
-		await logThreatAction(message.client, {
-			kind: "SpamDetected",
-			target: member.user,
-			messageCount: result.details.mentionsInMessage,
-			windowSeconds: result.details.windowSeconds,
-			action: result.action,
-		});
-	} catch (error) {
-		logger.error("Failed to handle mention spam detection:", error);
-		Sentry.captureException(error);
 	}
+
+	const warningMessage = await message.channel.send({
+		content: `${actualMention(member)}, please avoid mass mentioning users.`,
+	});
+
+	setTimeout(() => {
+		warningMessage.delete().catch(() => {});
+	}, 10000);
+
+	await logThreatToDatabase(BigInt(member.id), result, message);
+
+	await logThreatAction(message.client, {
+		kind: "SpamDetected",
+		target: member.user,
+		messageCount: result.details.mentionsInMessage,
+		windowSeconds: result.details.windowSeconds,
+		action: result.action,
+	});
 }
 
 async function handleToxicContentDetection(
@@ -204,47 +186,39 @@ async function handleToxicContentDetection(
 	member: GuildMember,
 	result: ToxicContentResult,
 ): Promise<void> {
-	try {
-		if (result.action === ThreatAction.DELETED) {
-			try {
-				await message.delete();
-			} catch (deleteError) {
-				logger.warn(
-					`Failed to delete toxic message ${message.id}:`,
-					deleteError,
-				);
-			}
-
-			const warningMessage = await message.channel.send({
-				content: `${actualMention(member)}, your message was removed for containing inappropriate content.`,
-			});
-
-			setTimeout(() => {
-				warningMessage.delete().catch(() => {});
-			}, 10000);
-
-			// Deduct reputation for toxic content
-			await deductReputation(
-				BigInt(member.id),
-				ReputationEventType.TOXIC_CONTENT,
-				`Toxic content detected: ${result.details.category || "unknown category"}`,
-			);
+	if (result.action === ThreatAction.DELETED) {
+		try {
+			await message.delete();
+		} catch (deleteError) {
+			logger.warn(`Failed to delete toxic message ${message.id}:`, deleteError);
 		}
 
-		await logThreatToDatabase(BigInt(member.id), result, message);
-
-		await logThreatAction(message.client, {
-			kind: "ToxicContentDetected",
-			target: member.user,
-			matchedWord: result.details.matchedWord,
-			category: result.details.category,
-			bypassAttempted: result.details.bypassAttempted,
-			action: result.action,
+		const warningMessage = await message.channel.send({
+			content: `${actualMention(member)}, your message was removed for containing inappropriate content.`,
 		});
-	} catch (error) {
-		logger.error("Failed to handle toxic content detection:", error);
-		Sentry.captureException(error);
+
+		setTimeout(() => {
+			warningMessage.delete().catch(() => {});
+		}, 10000);
+
+		// Deduct reputation for toxic content
+		await deductReputation(
+			BigInt(member.id),
+			ReputationEventType.TOXIC_CONTENT,
+			`Toxic content detected: ${result.details.category || "unknown category"}`,
+		);
 	}
+
+	await logThreatToDatabase(BigInt(member.id), result, message);
+
+	await logThreatAction(message.client, {
+		kind: "ToxicContentDetected",
+		target: member.user,
+		matchedWord: result.details.matchedWord,
+		category: result.details.category,
+		bypassAttempted: result.details.bypassAttempted,
+		action: result.action,
+	});
 }
 
 async function analyzeMessage(

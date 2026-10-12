@@ -35,22 +35,22 @@ export class DDUserAchievements extends Model<
 	@Attribute(DataTypes.INTEGER)
 	@PrimaryKey
 	@AutoIncrement
-	public declare id: CreationOptional<number>;
+	declare public id: CreationOptional<number>;
 
 	@Attribute(DataTypes.STRING)
 	@NotNull
 	@ColumnName("achievementId")
-	public declare achievementId: string;
+	declare public achievementId: string;
 
 	@Attribute(RealBigInt)
 	@NotNull
-	public declare ddUserId: bigint;
+	declare public ddUserId: bigint;
 
 	@BelongsTo(() => DDUser, "ddUserId")
-	public declare ddUser?: DDUser;
+	declare public ddUser?: DDUser;
 
 	// Sequelize automatically manages these timestamps with paranoid: true
-	public declare createdAt: CreationOptional<Date>;
-	public declare updatedAt: CreationOptional<Date>;
-	public declare deletedAt: CreationOptional<Date | null>;
+	declare public createdAt: CreationOptional<Date>;
+	declare public updatedAt: CreationOptional<Date>;
+	declare public deletedAt: CreationOptional<Date | null>;
 }

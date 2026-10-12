@@ -1,8 +1,4 @@
 import { type Canvas, createCanvas, type SKRSContext2D } from "@napi-rs/canvas";
-import { loadSync } from "opentype.js";
-import { branding } from "./branding.js";
-
-export const font = loadSync(branding.font);
 
 export function createImage(
 	width: number,

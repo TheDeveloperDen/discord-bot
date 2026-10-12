@@ -4,9 +4,10 @@ import {
 	ApplicationCommandType,
 	ButtonBuilder,
 	MessageFlags,
+	PermissionFlagsBits,
 } from "discord.js";
-import type { Command } from "djs-slash-helper";
 import { config } from "../../Config.js";
+import type { Command } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import type { CustomButton } from "./information.js";
@@ -26,7 +27,7 @@ function loadCustomButton(customButton: CustomButton) {
 export const InformationMessageCommand: Command<ApplicationCommandType.Message> =
 	{
 		name: "Set Information Message",
-		default_permission: false,
+		default_member_permissions: PermissionFlagsBits.ManageGuild,
 		type: ApplicationCommandType.Message,
 		async handle(interaction) {
 			if (!interaction.targetMessage.editable) {

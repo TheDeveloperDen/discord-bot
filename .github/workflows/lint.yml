@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Add system libs for native modules
         run: sudo apt update && sudo apt install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - name: Setup Bun
@@ -31,7 +31,7 @@ jobs:
           bun-version-file: package.json
       - name: Cache Bun package downloads
         id: bun-cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.bun/install/cache
@@ -40,7 +40,7 @@ jobs:
             ${{ runner.os }}-bun-cache-
       - name: Cache node_modules
         id: node-modules-cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             node_modules
@@ -50,7 +50,7 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
       - name: Upload node_modules artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: node-modules-${{ runner.os }}-${{ hashFiles('bun.lock') }}
           path: node_modules
@@ -66,13 +66,13 @@ jobs:
       actions: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
       - name: Download node_modules artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: node-modules-${{ runner.os }}-${{ hashFiles('bun.lock') }}
           path: node_modules
@@ -86,13 +86,13 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
       - name: Download node_modules artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: node-modules-${{ runner.os }}-${{ hashFiles('bun.lock') }}
           path: node_modules
@@ -106,7 +106,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Add system libs for native modules (runtime)
         run: sudo apt update && sudo apt install -y libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - name: Setup Bun
@@ -114,7 +114,7 @@ jobs:
         with:
           bun-version-file: package.json
       - name: Download node_modules artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: node-modules-${{ runner.os }}-${{ hashFiles('bun.lock') }}
           path: node_modules
@@ -123,7 +123,7 @@ jobs:
         run: CLICOLOR=1 bun test:retry --coverage --coverage-reporter=lcov
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-${{ runner.os }}-${{ github.run_id }}
           path: |

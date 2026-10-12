@@ -36,7 +36,7 @@ export class Suggestion extends Model<
 	@PrimaryKey
 	@Unique
 	@NotNull
-	public declare id: bigint;
+	declare public id: bigint;
 
 	@Attribute(RealBigInt)
 	@NotNull
@@ -62,8 +62,8 @@ export class Suggestion extends Model<
 	@Attribute(RealBigInt)
 	@AllowNull
 	@ColumnName("moderatorId")
-	public declare moderatorId: bigint | undefined;
+	declare public moderatorId: bigint | undefined;
 
 	@HasMany(() => SuggestionVote, "suggestionId")
-	public declare votes?: SuggestionVote[];
+	declare public votes?: SuggestionVote[];
 }

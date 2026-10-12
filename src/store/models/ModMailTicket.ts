@@ -40,27 +40,27 @@ export class ModMailTicket extends Model<
 	@Attribute(DataTypes.INTEGER)
 	@PrimaryKey
 	@AutoIncrement
-	public declare id: CreationOptional<number>;
+	declare public id: CreationOptional<number>;
 
 	@Attribute(RealBigInt)
 	@NotNull
-	public declare creatorId: bigint;
+	declare public creatorId: bigint;
 
 	@Attribute(RealBigInt)
 	@AllowNull
-	public declare assignedUserId?: bigint;
+	declare public assignedUserId?: bigint;
 
 	@Attribute(RealBigInt)
 	@AllowNull
-	public declare threadId?: bigint;
+	declare public threadId?: bigint;
 
 	@Attribute(RealBigInt)
 	@AllowNull
-	public declare channelId?: bigint;
+	declare public channelId?: bigint;
 
 	@Attribute(DataTypes.STRING)
 	@AllowNull
-	public declare archiveMessageId?: string;
+	declare public archiveMessageId?: string;
 
 	@Attribute(DataTypes.ENUM(ModMailTicketStatus))
 	@Default(ModMailTicketStatus.OPEN)
@@ -73,5 +73,5 @@ export class ModMailTicket extends Model<
 	public category: ModMailTicketCategory = ModMailTicketCategory.QUESTION;
 
 	@HasMany(() => ModMailNote, "modMailTicketId")
-	public declare notes?: ModMailNote[];
+	declare public notes?: ModMailNote[];
 }

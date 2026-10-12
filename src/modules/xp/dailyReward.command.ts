@@ -5,7 +5,7 @@ import {
 	MessageFlags,
 	type Snowflake,
 } from "discord.js";
-import type { Command } from "djs-slash-helper";
+import type { Command } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { createStandardEmbed } from "../../util/embeds.js";

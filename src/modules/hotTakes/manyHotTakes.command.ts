@@ -3,7 +3,7 @@ import {
 	ApplicationCommandType,
 	range,
 } from "discord.js";
-import type { Command } from "djs-slash-helper";
+import type { Command } from "../../commands/index.js";
 import { upload } from "../pastify/pastify.js";
 import generateHotTake from "./hotTakes.util.js";
 

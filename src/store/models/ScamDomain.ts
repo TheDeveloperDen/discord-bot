@@ -28,17 +28,17 @@ export class ScamDomain extends Model<
 > {
 	@Attribute(DataTypes.STRING(255))
 	@PrimaryKey
-	public declare domain: string;
+	declare public domain: string;
 
 	@Attribute(DataTypes.STRING(20))
 	@NotNull
-	public declare category: ScamDomainCategory;
+	declare public category: ScamDomainCategory;
 
 	@Attribute(RealBigInt)
 	@NotNull
-	public declare addedBy: bigint;
+	declare public addedBy: bigint;
 
 	@Attribute(DataTypes.DATE)
 	@Default(DataTypes.NOW)
-	public declare createdAt: CreationOptional<Date>;
+	declare public createdAt: CreationOptional<Date>;
 }

@@ -4,7 +4,7 @@ import {
 	type Guild,
 	type GuildMember,
 } from "discord.js";
-import type { Command, ExecutableSubcommand } from "djs-slash-helper";
+import type { Command, ExecutableSubcommand } from "../../commands/index.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { actualMention } from "../../util/users.js";
 import { medal } from "../leaderboard/leaderboard.js";

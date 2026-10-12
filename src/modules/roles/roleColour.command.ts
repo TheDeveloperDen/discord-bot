@@ -7,8 +7,8 @@ import {
 	MessageFlags,
 	type Role,
 } from "discord.js";
-import type { Command, ExecutableSubcommand } from "djs-slash-helper";
 import { config } from "../../Config.js";
+import type { Command, ExecutableSubcommand } from "../../commands/index.js";
 import { ColourRoles } from "../../store/models/ColourRoles.js";
 
 const ResetSubcommand: ExecutableSubcommand = {
@@ -134,7 +134,7 @@ export const RoleColourCommand: Command<ApplicationCommandType.ChatInput> = {
 	name: "rolecolour",
 	description: "Set your role colour",
 	type: ApplicationCommandType.ChatInput,
-	default_permission: false,
+	default_member_permissions: 0n,
 	options: [SetSubcommand, ResetSubcommand],
 	handle() {
 		throw new Error("This command should not be executed");
