@@ -840,12 +840,14 @@ export async function archiveModmailTicket(
 	}, 10 * 1000);
 }
 /**
- * Validates if user has permission to perform modmail actions
+ * Validates if user has permission to perform a modmail action.
  * @param interaction The interaction
+ * @param attemptedAction The modmail action being attempted
  * @returns Promise<boolean>
  */
 export async function validateModmailPermissions(
 	interaction: ButtonInteraction | ChatInputCommandInteraction,
+	attemptedAction: "archive tickets" | "list notes" | "add notes",
 ): Promise<boolean> {
 	if (!interaction.inGuild()) {
 		await interaction.followUp({
@@ -859,7 +861,7 @@ export async function validateModmailPermissions(
 	const member = await getMemberFromInteraction(interaction);
 	if (!member?.permissions.has(PermissionFlagsBits.ManageMessages)) {
 		await interaction.followUp({
-			content: "You don't have permission to archive tickets.",
+			content: `You don't have permission to ${attemptedAction}.`,
 			flags: MessageFlags.Ephemeral,
 		});
 		return false;
@@ -875,8 +877,7 @@ export async function handleModmailArchive(interaction: ButtonInteraction) {
 	await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
 	try {
-		// Validate permissions
-		if (!(await validateModmailPermissions(interaction))) {
+		if (!(await validateModmailPermissions(interaction, "archive tickets"))) {
 			return;
 		}
 
@@ -905,8 +906,7 @@ export async function showModmailNotes(
 	interaction: ButtonInteraction | ChatInputCommandInteraction,
 	ticketId?: string,
 ) {
-	// Validate permissions
-	if (!(await validateModmailPermissions(interaction))) {
+	if (!(await validateModmailPermissions(interaction, "list notes"))) {
 		return;
 	}
 
@@ -1102,21 +1102,7 @@ export async function handleModmailAddNote(interaction: ButtonInteraction) {
 	await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
 	try {
-		if (!interaction.inGuild()) {
-			await interaction.followUp({
-				content: "This command can only be used in a guild.",
-				flags: MessageFlags.Ephemeral,
-			});
-			return;
-		}
-
-		// Check if user has moderator permissions
-		const member = await getMemberFromInteraction(interaction);
-		if (!member?.permissions.has(PermissionFlagsBits.ManageMessages)) {
-			await interaction.followUp({
-				content: "You don't have permission to add notes.",
-				flags: MessageFlags.Ephemeral,
-			});
+		if (!(await validateModmailPermissions(interaction, "add notes"))) {
 			return;
 		}
 
@@ -1192,40 +1178,6 @@ export async function handleModmailUserDetails(interaction: ButtonInteraction) {
 			embed: EmbedBuilder;
 			row: ActionRowBuilder<ButtonBuilder>;
 		};
-
-		// Add additional details for the user
-		ticketDetails.embed.addFields([
-			{
-				name: "Status",
-				value: modMail.status,
-				inline: true,
-			},
-		]);
-
-		if (modMail.assignedUserId) {
-			try {
-				const assignedUser = await interaction.client.users.fetch(
-					modMail.assignedUserId.toString(),
-				);
-				ticketDetails.embed.addFields({
-					name: "Assigned Moderator",
-					value: assignedUser.displayName,
-					inline: true,
-				});
-			} catch {
-				ticketDetails.embed.addFields({
-					name: "Assigned Moderator",
-					value: "Unknown",
-					inline: true,
-				});
-			}
-		} else {
-			ticketDetails.embed.addFields({
-				name: "Assigned Moderator",
-				value: "Unassigned",
-				inline: true,
-			});
-		}
 
 		await interaction.followUp({
 			embeds: [ticketDetails.embed],

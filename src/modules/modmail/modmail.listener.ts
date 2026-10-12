@@ -62,7 +62,8 @@ import {
 } from "./modmail.js";
 
 interface PendingModmailSelection {
-	category: ModMailTicketCategory;
+	category?: ModMailTicketCategory;
+	openingMessage?: OmitPartialGroupDMChannel<Message>;
 	timeout: NodeJS.Timeout;
 }
 
@@ -93,6 +94,31 @@ const handleDMMessage = async (
 	const modMail = await getActiveModMailByUser(BigInt(message.author.id));
 
 	if (!modMail) {
+		const existingSelection = pendingModmailSelections.get(message.author.id);
+		if (!existingSelection?.openingMessage) {
+			if (existingSelection?.timeout) {
+				clearTimeout(existingSelection.timeout);
+			}
+			const timeout = setTimeout(() => {
+				cleanupPendingSelection(message.author.id);
+				try {
+					if (message.channel.isSendable()) {
+						message.channel
+							.send({
+								content: `The selection process for your ticket has timed out. Please try again.`,
+							})
+							.catch(() => {});
+					}
+				} catch {}
+			}, SELECTION_TIMEOUT_MS);
+
+			pendingModmailSelections.set(message.author.id, {
+				...existingSelection,
+				openingMessage: message,
+				timeout,
+			});
+		}
+
 		const initializationMessage = createModMailInitializationEmbed(
 			message.author,
 		);
@@ -410,6 +436,12 @@ const handleModmailSubmit = async (
 	await interaction.deferUpdate();
 
 	const userId = interaction.user.id;
+	const userConfig = pendingModmailSelections.get(userId);
+	const category = userConfig?.category ?? ModMailTicketCategory.QUESTION;
+	const openingMessage = userConfig?.openingMessage;
+
+	// Clean up pending selection
+	cleanupPendingSelection(userId);
 
 	if (await hasActiveModMailByUser(BigInt(userId))) {
 		await interaction.message.delete().catch(() => {});
@@ -419,12 +451,6 @@ const handleModmailSubmit = async (
 		});
 		return;
 	}
-
-	const userConfig = pendingModmailSelections.get(userId);
-	const category = userConfig?.category ?? ModMailTicketCategory.QUESTION;
-
-	// Clean up pending selection
-	cleanupPendingSelection(userId);
 
 	try {
 		const guild = await client.guilds.fetch(config.guildId);
@@ -467,6 +493,9 @@ const handleModmailSubmit = async (
 			category,
 		);
 
+		// Clear any pending state recreated by a DM received while ticket creation was in flight.
+		cleanupPendingSelection(userId);
+
 		const ticketDetails = createModMailDetails(
 			ticket,
 			interaction.user,
@@ -482,6 +511,17 @@ const handleModmailSubmit = async (
 			components: [ticketDetails.row],
 		});
 
+		if (openingMessage) {
+			const parsedMessage = extractEmbedAndFilesFromMessageModMail(
+				openingMessage,
+				openingMessage.author,
+			);
+			await thread.send({
+				embeds: [parsedMessage.embed],
+				files: parsedMessage.files,
+			});
+		}
+
 		if (interaction.channel?.isSendable()) {
 			const userTicketDetails = createModMailDetails(
 				ticket,
@@ -495,7 +535,7 @@ const handleModmailSubmit = async (
 
 			await interaction.channel.send({
 				content:
-					"Your ticket has been created successfully! A member of staff will follow up soon.",
+					"Your ticket has been created successfully! A member of staff will follow up soon. You can add more context or information at any time by simply sending another message here.",
 				embeds: [userTicketDetails.embed],
 				components: [userTicketDetails.row],
 			});
@@ -520,11 +560,13 @@ const handleCategorySelect = async (
 	const category = interaction.values[0] as ModMailTicketCategory;
 	const userId = interaction.user.id;
 
+	const existingSelection = pendingModmailSelections.get(userId);
+
 	// Clean up existing timeout if any
 	cleanupPendingSelection(userId);
 
 	const timeout = setTimeout(() => {
-		pendingModmailSelections.delete(userId);
+		cleanupPendingSelection(userId);
 		try {
 			if (interaction.channel?.isSendable()) {
 				interaction.channel
@@ -538,6 +580,7 @@ const handleCategorySelect = async (
 
 	pendingModmailSelections.set(userId, {
 		category,
+		openingMessage: existingSelection?.openingMessage,
 		timeout,
 	});
 

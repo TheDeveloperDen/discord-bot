@@ -38,7 +38,7 @@ const ArchiveSubCommand: ExecutableSubcommand = {
 
 		try {
 			// Validate permissions
-			if (!(await validateModmailPermissions(interaction))) {
+			if (!(await validateModmailPermissions(interaction, "archive tickets"))) {
 				return;
 			}
 
