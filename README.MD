@@ -38,6 +38,26 @@ attributes if you want to test in production.
 We use [Nixpacks](https://nixpacks.com/docs/getting-started) to manage creation
 of a Docker image. To build a docker image, run `nixpacks build .`
 
+### Docker Compose
+
+The repository ships a [`docker-compose.yml`](/docker-compose.yml) that builds
+the bot image from the [`Dockerfile`](/Dockerfile) and runs it together with a
+PostgreSQL database.
+
+1. Copy the example environment file and fill in your values:
+
+   ```sh
+   cp .env.local.example .env
+   ```
+
+   At minimum, set `DDB_BOT_TOKEN`. `DDB_PASTE_BYPASS_TOKEN` is optional.
+
+2. Build and start everything:
+
+   ```sh
+   docker compose up --build
+   ```
+
 ### Nix
 
 This project also has a Nix Flake to set up a reproducible development
