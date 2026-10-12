@@ -9,6 +9,7 @@
 		"moduleResolution": "nodenext",
 		"forceConsistentCasingInFileNames": true,
 		"resolveJsonModule": true,
+		"jsx": "react-jsx",
 
 		"experimentalDecorators": true,
 		"emitDecoratorMetadata": false,
