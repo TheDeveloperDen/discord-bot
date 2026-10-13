@@ -1,4 +1,3 @@
-import * as Sentry from "@sentry/bun";
 import type { APIApplicationCommandOptionChoice } from "discord.js";
 import { defineCommand, option } from "../../commands/index.js";
 import { DDUser } from "../../store/models/DDUser.js";
@@ -162,49 +161,45 @@ export const LeaderboardCommand = defineCommand({
 	},
 
 	async handle(interaction, { type }) {
-		await Sentry.startSpan({ name: "leaderboard", op: "command" }, async () => {
-			await interaction.deferReply();
-			const guild = interaction.guild;
-			const traitInfo = info.find((it) => it.value === type);
-			if (traitInfo == null) {
-				await interaction.followUp("Invalid leaderboard type");
-				return;
-			}
-			if (traitInfo.value === "currentDailyStreak") {
-				// manually refresh all the dailies. this is not very efficient
-				const all = await DDUser.findAll();
-				await Promise.all(all.map(getActualDailyStreak));
-			}
-			const { format, name } = traitInfo;
+		await interaction.deferReply();
+		const guild = interaction.guild;
+		const traitInfo = info.find((it) => it.value === type);
+		if (traitInfo == null) {
+			await interaction.followUp("Invalid leaderboard type");
+			return;
+		}
+		if (traitInfo.value === "currentDailyStreak") {
+			// manually refresh all the dailies. this is not very efficient
+			const all = await DDUser.findAll();
+			await Promise.all(all.map(getActualDailyStreak));
+		}
+		const { format, name } = traitInfo;
 
-			const mappedUsers = await getLeaderboardUsers(traitInfo);
+		const mappedUsers = await getLeaderboardUsers(traitInfo);
 
-			if (mappedUsers.length === 0) {
-				await interaction.followUp("No applicable users");
-				return;
-			}
-			const embed = {
-				...createStandardEmbed(interaction.member),
-				title: `${branding.name} Leaderboard`,
-				description: `The top ${mappedUsers.length} users based on ${name}`,
-				fields: await Promise.all(
-					mappedUsers.map(async (userData, index) => {
-						const discordUser = await guild.client.users
-							.fetch(userData.userId)
-							.catch(() => null);
+		if (mappedUsers.length === 0) {
+			await interaction.followUp("No applicable users");
+			return;
+		}
+		const embed = {
+			...createStandardEmbed(interaction.member),
+			title: `${branding.name} Leaderboard`,
+			description: `The top ${mappedUsers.length} users based on ${name}`,
+			fields: await Promise.all(
+				mappedUsers.map(async (userData, index) => {
+					const discordUser = await guild.client.users
+						.fetch(userData.userId)
+						.catch(() => null);
 
-						return {
-							name: `${medal(index)} #${index + 1} - ${format(userData.count)}`.trimStart(),
-							value:
-								discordUser == null
-									? "Unknown User"
-									: actualMention(discordUser),
-						};
-					}),
-				),
-			};
-			await interaction.followUp({ embeds: [embed] });
-		});
+					return {
+						name: `${medal(index)} #${index + 1} - ${format(userData.count)}`.trimStart(),
+						value:
+							discordUser == null ? "Unknown User" : actualMention(discordUser),
+					};
+				}),
+			),
+		};
+		await interaction.followUp({ embeds: [embed] });
 	},
 });
 

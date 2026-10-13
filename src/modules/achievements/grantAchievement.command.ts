@@ -6,7 +6,6 @@ import { PermissionFlagsBits } from "discord.js";
  * Only staff members can use this command.
  */
 
-import * as Sentry from "@sentry/bun";
 import { defineCommand, option } from "../../commands/index.js";
 import { fakeMention } from "../../util/users.js";
 import {
@@ -45,64 +44,59 @@ export const GrantAchievementCommand = defineCommand({
 		interaction,
 		{ user, achievement: achievementId, silent = false },
 	) {
-		await Sentry.startSpan(
-			{ name: "grant-achievement", op: "command" },
-			async () => {
-				await interaction.deferReply({ ephemeral: true });
+		await interaction.deferReply({ ephemeral: true });
 
-				// Validate achievement exists and is manual
-				const achievement = getAchievementById(achievementId);
-				if (!achievement) {
-					await interaction.followUp({
-						content: `Achievement \`${achievementId}\` not found.`,
-						ephemeral: true,
-					});
-					return;
-				}
+		// Validate achievement exists and is manual
+		const achievement = getAchievementById(achievementId);
+		if (!achievement) {
+			await interaction.followUp({
+				content: `Achievement \`${achievementId}\` not found.`,
+				ephemeral: true,
+			});
+			return;
+		}
 
-				if (achievement.trigger.type !== "manual") {
-					await interaction.followUp({
-						content: `Achievement **${achievement.name}** cannot be manually granted. Only special achievements can be granted manually.`,
-						ephemeral: true,
-					});
-					return;
-				}
+		if (achievement.trigger.type !== "manual") {
+			await interaction.followUp({
+				content: `Achievement **${achievement.name}** cannot be manually granted. Only special achievements can be granted manually.`,
+				ephemeral: true,
+			});
+			return;
+		}
 
-				// Grant the achievement
-				const result = await grantAchievement(BigInt(user.id), achievementId);
+		// Grant the achievement
+		const result = await grantAchievement(BigInt(user.id), achievementId);
 
-				if (result.error) {
-					await interaction.followUp({
-						content: `Failed to grant achievement: ${result.error}`,
-						ephemeral: true,
-					});
-					return;
-				}
+		if (result.error) {
+			await interaction.followUp({
+				content: `Failed to grant achievement: ${result.error}`,
+				ephemeral: true,
+			});
+			return;
+		}
 
-				if (result.alreadyHad) {
-					await interaction.followUp({
-						content: `${fakeMention(user)} already has the **${achievement.name}** achievement.`,
-						ephemeral: true,
-					});
-					return;
-				}
+		if (result.alreadyHad) {
+			await interaction.followUp({
+				content: `${fakeMention(user)} already has the **${achievement.name}** achievement.`,
+				ephemeral: true,
+			});
+			return;
+		}
 
-				// Send notification unless silent
-				if (!silent) {
-					const member = await interaction.guild.members.fetch(user.id);
-					await notifyAchievementUnlocked(
-						interaction.client,
-						member,
-						achievement,
-						interaction.channel ?? undefined,
-					);
-				}
+		// Send notification unless silent
+		if (!silent) {
+			const member = await interaction.guild.members.fetch(user.id);
+			await notifyAchievementUnlocked(
+				interaction.client,
+				member,
+				achievement,
+				interaction.channel ?? undefined,
+			);
+		}
 
-				await interaction.followUp({
-					content: `Successfully granted **${achievement.emoji} ${achievement.name}** to ${fakeMention(user)}${silent ? " (silently)" : ""}.`,
-					ephemeral: true,
-				});
-			},
-		);
+		await interaction.followUp({
+			content: `Successfully granted **${achievement.emoji} ${achievement.name}** to ${fakeMention(user)}${silent ? " (silently)" : ""}.`,
+			ephemeral: true,
+		});
 	},
 });

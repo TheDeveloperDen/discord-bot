@@ -4,7 +4,6 @@
  * Displays a user's achievements grouped by category.
  */
 
-import * as Sentry from "@sentry/bun";
 import { defineCommand, option } from "../../commands/index.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { fakeMention } from "../../util/users.js";
@@ -47,66 +46,58 @@ export const AchievementsCommand = defineCommand({
 	},
 
 	async handle(interaction, { member = interaction.member, category }) {
-		await Sentry.startSpan(
-			{ name: "achievements", op: "command" },
-			async () => {
-				const targetUser = member.user;
+		const targetUser = member.user;
 
-				await interaction.deferReply();
+		await interaction.deferReply();
 
-				const categoryFilter = category as AchievementCategory | undefined;
+		const categoryFilter = category as AchievementCategory | undefined;
 
-				const userId = BigInt(targetUser.id);
-				const achievementsWithStatus = await getAchievementsWithStatus(userId);
-				const progress = await getAchievementProgress(userId);
+		const userId = BigInt(targetUser.id);
+		const achievementsWithStatus = await getAchievementsWithStatus(userId);
+		const progress = await getAchievementProgress(userId);
 
-				// Build the embed
-				const embed = createStandardEmbed(member)
-					.setTitle(`Achievements for ${fakeMention(targetUser)}`)
-					.setThumbnail(targetUser.displayAvatarURL({ size: 128 }));
+		// Build the embed
+		const embed = createStandardEmbed(member)
+			.setTitle(`Achievements for ${fakeMention(targetUser)}`)
+			.setThumbnail(targetUser.displayAvatarURL({ size: 128 }));
 
-				// Filter categories if specified
-				const categoriesToShow = categoryFilter
-					? [categoryFilter]
-					: CATEGORY_ORDER;
+		// Filter categories if specified
+		const categoriesToShow = categoryFilter ? [categoryFilter] : CATEGORY_ORDER;
 
-				for (const category of categoriesToShow) {
-					const categoryInfo = CATEGORY_INFO[category];
-					const categoryAchievements = achievementsWithStatus.filter(
-						(a) => a.definition.category === category,
-					);
+		for (const category of categoriesToShow) {
+			const categoryInfo = CATEGORY_INFO[category];
+			const categoryAchievements = achievementsWithStatus.filter(
+				(a) => a.definition.category === category,
+			);
 
-					const categoryProgress = progress.byCategory[category];
+			const categoryProgress = progress.byCategory[category];
 
-					// Build achievement lines
-					const lines = categoryAchievements.map((achievement) => {
-						const { definition, unlocked, unlockedAt } = achievement;
-						if (unlocked && unlockedAt) {
-							const dateStr = formatDate(unlockedAt);
-							return `✅ ${definition.emoji} ${definition.name} - *${dateStr}*`;
-						}
-						return `⬛ ${definition.emoji} ${definition.name}`;
-					});
-
-					const fieldName = `${categoryInfo.emoji} ${categoryInfo.name} (${categoryProgress.unlocked}/${categoryProgress.total})`;
-					const fieldValue =
-						lines.join("\n") || "No achievements in this category";
-
-					embed.addFields({
-						name: fieldName,
-						value: fieldValue,
-						inline: false,
-					});
+			// Build achievement lines
+			const lines = categoryAchievements.map((achievement) => {
+				const { definition, unlocked, unlockedAt } = achievement;
+				if (unlocked && unlockedAt) {
+					const dateStr = formatDate(unlockedAt);
+					return `✅ ${definition.emoji} ${definition.name} - *${dateStr}*`;
 				}
+				return `⬛ ${definition.emoji} ${definition.name}`;
+			});
 
-				// Add progress footer
-				embed.setFooter({
-					text: `Progress: ${progress.unlocked}/${progress.total} achievements unlocked`,
-				});
+			const fieldName = `${categoryInfo.emoji} ${categoryInfo.name} (${categoryProgress.unlocked}/${categoryProgress.total})`;
+			const fieldValue = lines.join("\n") || "No achievements in this category";
 
-				await interaction.followUp({ embeds: [embed] });
-			},
-		);
+			embed.addFields({
+				name: fieldName,
+				value: fieldValue,
+				inline: false,
+			});
+		}
+
+		// Add progress footer
+		embed.setFooter({
+			text: `Progress: ${progress.unlocked}/${progress.total} achievements unlocked`,
+		});
+
+		await interaction.followUp({ embeds: [embed] });
 	},
 });
 

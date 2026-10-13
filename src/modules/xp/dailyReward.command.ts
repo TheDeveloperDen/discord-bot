@@ -1,4 +1,3 @@
-import * as Sentry from "@sentry/bun";
 import { MessageFlags, type Snowflake } from "discord.js";
 import { defineCommand } from "../../commands/index.js";
 import { logger } from "../../logging.js";
@@ -18,109 +17,107 @@ export const DailyRewardCommand = defineCommand({
 	description: "Claim your daily reward",
 
 	async handle(interaction) {
-		await Sentry.startSpan({ name: "daily", op: "command" }, async () => {
-			const startTime = Date.now();
-			const user = interaction.member;
-			await interaction.deferReply();
-			if (dailiesInProgress.has(user.id)) {
-				await interaction.followUp({
-					flags: MessageFlags.Ephemeral,
-					content: "You are already claiming your daily reward!",
-				});
-				return;
-			}
-			try {
-				dailiesInProgress.add(user.id);
-				const ddUser = await getOrCreateUserById(BigInt(user.id));
-				const difference = Date.now() - (ddUser.lastDailyTime?.getTime() ?? 0);
-				if (difference < 1000 * 60 * 60 * 24) {
-					const lastClaimTime = ddUser.lastDailyTime;
-					if (lastClaimTime == null) {
-						logger.error("lastClaimTime is null");
-						return;
-					}
-					const nextClaimTime = getNextDailyTimeFrom(lastClaimTime);
-					await interaction.followUp({
-						flags: MessageFlags.Ephemeral,
-						content: `You can only claim your daily reward once every 24 hours. You can claim it again <t:${Math.floor(
-							nextClaimTime.getTime() / 1000,
-						)}:R>.`,
-					});
-					logger.info(
-						`Daily reward attempted by ${user.user.tag} in ${Date.now() - startTime}ms`,
-					);
+		const startTime = Date.now();
+		const user = interaction.member;
+		await interaction.deferReply();
+		if (dailiesInProgress.has(user.id)) {
+			await interaction.followUp({
+				flags: MessageFlags.Ephemeral,
+				content: "You are already claiming your daily reward!",
+			});
+			return;
+		}
+		try {
+			dailiesInProgress.add(user.id);
+			const ddUser = await getOrCreateUserById(BigInt(user.id));
+			const difference = Date.now() - (ddUser.lastDailyTime?.getTime() ?? 0);
+			if (difference < 1000 * 60 * 60 * 24) {
+				const lastClaimTime = ddUser.lastDailyTime;
+				if (lastClaimTime == null) {
+					logger.error("lastClaimTime is null");
 					return;
 				}
+				const nextClaimTime = getNextDailyTimeFrom(lastClaimTime);
+				await interaction.followUp({
+					flags: MessageFlags.Ephemeral,
+					content: `You can only claim your daily reward once every 24 hours. You can claim it again <t:${Math.floor(
+						nextClaimTime.getTime() / 1000,
+					)}:R>.`,
+				});
+				logger.info(
+					`Daily reward attempted by ${user.user.tag} in ${Date.now() - startTime}ms`,
+				);
+				return;
+			}
 
-				const [, streak] = getActualDailyStreakWithoutSaving(ddUser);
-				ddUser.currentDailyStreak = streak + 1;
+			const [, streak] = getActualDailyStreakWithoutSaving(ddUser);
+			ddUser.currentDailyStreak = streak + 1;
 
-				if (ddUser.currentDailyStreak > ddUser.highestDailyStreak) {
-					ddUser.highestDailyStreak = ddUser.currentDailyStreak;
-				}
+			if (ddUser.currentDailyStreak > ddUser.highestDailyStreak) {
+				ddUser.highestDailyStreak = ddUser.currentDailyStreak;
+			}
 
-				const xpToGive = 50 + 10 * (ddUser.currentDailyStreak - 1);
-				const { xpGiven, multiplier } = await giveXp(user, xpToGive);
-				ddUser.lastDailyTime = new Date();
-				// how many fire emojis to generate, starts at 1 when your streak is over 100 and then increases by 1 for every 50 days
-				const streakMul =
-					ddUser.currentDailyStreak >= 100
-						? Math.floor((ddUser.currentDailyStreak - 100) / 50) + 1
-						: 0;
-				await Promise.all([
-					interaction.followUp({
-						flags: MessageFlags.Ephemeral,
-						embeds: [
-							createStandardEmbed(user)
-								.setTitle("Daily Reward Claimed!")
-								.setDescription(
-									`📆 Current Streak = ${
-										formatDayCount(ddUser.currentDailyStreak) +
-										" " +
-										"🔥".repeat(streakMul)
-									}
+			const xpToGive = 50 + 10 * (ddUser.currentDailyStreak - 1);
+			const { xpGiven, multiplier } = await giveXp(user, xpToGive);
+			ddUser.lastDailyTime = new Date();
+			// how many fire emojis to generate, starts at 1 when your streak is over 100 and then increases by 1 for every 50 days
+			const streakMul =
+				ddUser.currentDailyStreak >= 100
+					? Math.floor((ddUser.currentDailyStreak - 100) / 50) + 1
+					: 0;
+			await Promise.all([
+				interaction.followUp({
+					flags: MessageFlags.Ephemeral,
+					embeds: [
+						createStandardEmbed(user)
+							.setTitle("Daily Reward Claimed!")
+							.setDescription(
+								`📆 Current Streak = ${
+									formatDayCount(ddUser.currentDailyStreak) +
+									" " +
+									"🔥".repeat(streakMul)
+								}
 	⭐️ + ${xpGiven} XP  ${multiplier ? `(x${multiplier})` : ""}
 	⏰ Come back in 24 hours for a new reward!`,
-								),
-						],
-					}),
-					ddUser.save(),
-				]);
-				logger.info(
-					`Daily reward claimed by ${user.user.tag} in ${Date.now() - startTime}ms`,
-				);
-				if (isSpecialUser(user)) {
-					await scheduleReminder(user.client, user, ddUser);
-				}
-
-				// Check and award achievements
-				try {
-					const newAchievements = await checkAndAwardAchievements(
-						ddUser,
-						{ type: "daily", event: "daily_claimed" },
-						{
-							dailyStreak: Math.max(
-								ddUser.currentDailyStreak,
-								ddUser.highestDailyStreak,
 							),
-						},
-					);
-
-					if (newAchievements.length > 0) {
-						await notifyMultipleAchievements(
-							user.client,
-							user,
-							newAchievements.map((a) => a.definition),
-							interaction.channel ?? undefined,
-						);
-					}
-				} catch (error) {
-					logger.error("Failed to check daily achievements:", error);
-				}
-			} finally {
-				dailiesInProgress.delete(user.id);
+					],
+				}),
+				ddUser.save(),
+			]);
+			logger.info(
+				`Daily reward claimed by ${user.user.tag} in ${Date.now() - startTime}ms`,
+			);
+			if (isSpecialUser(user)) {
+				await scheduleReminder(user.client, user, ddUser);
 			}
-		});
+
+			// Check and award achievements
+			try {
+				const newAchievements = await checkAndAwardAchievements(
+					ddUser,
+					{ type: "daily", event: "daily_claimed" },
+					{
+						dailyStreak: Math.max(
+							ddUser.currentDailyStreak,
+							ddUser.highestDailyStreak,
+						),
+					},
+				);
+
+				if (newAchievements.length > 0) {
+					await notifyMultipleAchievements(
+						user.client,
+						user,
+						newAchievements.map((a) => a.definition),
+						interaction.channel ?? undefined,
+					);
+				}
+			} catch (error) {
+				logger.error("Failed to check daily achievements:", error);
+			}
+		} finally {
+			dailiesInProgress.delete(user.id);
+		}
 	},
 });
 

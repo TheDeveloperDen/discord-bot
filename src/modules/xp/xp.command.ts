@@ -1,4 +1,3 @@
-import * as Sentry from "@sentry/bun";
 import type { GuildMember } from "discord.js";
 import { defineCommand, option } from "../../commands/index.js";
 import { logger } from "../../logging.js";
@@ -23,62 +22,60 @@ export const XpCommand = defineCommand({
 	},
 
 	async handle(interaction, { member = interaction.member }) {
-		await Sentry.startSpan({ name: "xp", op: "command" }, async () => {
-			const targetUser = member.user;
+		const targetUser = member.user;
 
-			await interaction.deferReply();
-			const ddUser = await getOrCreateUserById(BigInt(targetUser.id));
-			const xp = ddUser.xp;
-			const image = createXpImage(xp, member);
-			const embedBuilder = createStandardEmbed(member)
-				.setTitle(`Profile of ${fakeMention(targetUser)}`)
-				.setFields(
-					{
-						name: "🔮 Level",
-						value: `${ddUser.level}`,
-						inline: true,
-					},
-					{
-						name: "📝 Tier",
-						value: `${getTierByLevel(ddUser.level)}`,
-						inline: true,
-					},
-					{
-						name: "❗ Daily Streak (Current / Highest)",
-						value: `${formatDayCount(
-							await getActualDailyStreak(ddUser),
-						)} / ${formatDayCount(ddUser.highestDailyStreak)}`,
-						inline: true,
-					},
-					{
-						name: "📈 XP Difference (Current Level / Next Level)",
-						value: `${format(ddUser.xp)}/${format(xpForLevel(ddUser.level + 1))}`,
-						inline: true,
-					},
-					{
-						name: "⬆️ XP Needed Until Level Up",
-						value: `${format(xpForLevel(ddUser.level + 1) - ddUser.xp)}`,
-						inline: true,
-					},
-					{
-						name: "❗Bumps",
-						value: format(await ddUser.countBumps()),
-						inline: true,
-					},
-				)
-				.setImage("attachment://xp.png");
-			logger.debug(
-				`Responding with XP embed: ${JSON.stringify(embedBuilder.toJSON())}`,
-			);
-			await interaction.followUp({
-				embeds: [embedBuilder],
-				files: [
-					{
-						attachment: image.toBuffer("image/png"),
-						name: "xp.png",
-					},
-				],
-			});
+		await interaction.deferReply();
+		const ddUser = await getOrCreateUserById(BigInt(targetUser.id));
+		const xp = ddUser.xp;
+		const image = createXpImage(xp, member);
+		const embedBuilder = createStandardEmbed(member)
+			.setTitle(`Profile of ${fakeMention(targetUser)}`)
+			.setFields(
+				{
+					name: "🔮 Level",
+					value: `${ddUser.level}`,
+					inline: true,
+				},
+				{
+					name: "📝 Tier",
+					value: `${getTierByLevel(ddUser.level)}`,
+					inline: true,
+				},
+				{
+					name: "❗ Daily Streak (Current / Highest)",
+					value: `${formatDayCount(
+						await getActualDailyStreak(ddUser),
+					)} / ${formatDayCount(ddUser.highestDailyStreak)}`,
+					inline: true,
+				},
+				{
+					name: "📈 XP Difference (Current Level / Next Level)",
+					value: `${format(ddUser.xp)}/${format(xpForLevel(ddUser.level + 1))}`,
+					inline: true,
+				},
+				{
+					name: "⬆️ XP Needed Until Level Up",
+					value: `${format(xpForLevel(ddUser.level + 1) - ddUser.xp)}`,
+					inline: true,
+				},
+				{
+					name: "❗Bumps",
+					value: format(await ddUser.countBumps()),
+					inline: true,
+				},
+			)
+			.setImage("attachment://xp.png");
+		logger.debug(
+			`Responding with XP embed: ${JSON.stringify(embedBuilder.toJSON())}`,
+		);
+		await interaction.followUp({
+			embeds: [embedBuilder],
+			files: [
+				{
+					attachment: image.toBuffer("image/png"),
+					name: "xp.png",
+				},
+			],
 		});
 	},
 });
