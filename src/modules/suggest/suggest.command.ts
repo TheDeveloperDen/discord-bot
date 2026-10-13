@@ -1,15 +1,11 @@
 import {
 	ActionRowBuilder,
-	ApplicationCommandOptionType,
-	ApplicationCommandType,
 	ButtonBuilder,
 	ButtonStyle,
-	type ChatInputCommandInteraction,
-	type GuildMember,
 	MessageFlags,
 } from "discord.js";
 import { config } from "../../Config.js";
-import type { Command } from "../../commands/index.js";
+import { defineCommand, option } from "../../commands/index.js";
 
 import { logger } from "../../logging.js";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
@@ -24,34 +20,22 @@ import {
 	SUGGESTION_YES_ID,
 } from "./suggest.js";
 
-export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
+export const SuggestCommand = defineCommand({
 	name: "suggest",
 	description: "Create a suggestion",
-	type: ApplicationCommandType.ChatInput,
-	options: [
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "suggestion",
+	options: {
+		suggestion: option.string({
 			description: "The suggestion",
 			required: true,
-		},
-	],
-	handle: async (interaction: ChatInputCommandInteraction) => {
-		if (!interaction.member || !interaction.inGuild()) {
-			await interaction.reply({
-				flags: MessageFlags.Ephemeral,
-				content: "We are not in a guild?",
-			});
-		}
-
-		const member = interaction.member as GuildMember;
+		}),
+	},
+	async handle(interaction, { suggestion: suggestionText }) {
+		const member = interaction.member;
 
 		await interaction.deferReply({
 			flags: MessageFlags.Ephemeral,
 		});
 		// Get the suggestion and optional image
-		const suggestionText = interaction.options.get("suggestion")
-			?.value as string;
 
 		const suggestionChannel = await interaction.client.channels.fetch(
 			config.suggest.suggestionsChannel,
@@ -142,4 +126,4 @@ export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
 			logger.error("Failed to check suggestion achievements", error);
 		}
 	},
-};
+});

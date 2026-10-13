@@ -389,8 +389,7 @@ describe("SyncSuggestionVotesCommand", () => {
 		const reply = mock(async (_payload: unknown) => ({}));
 
 		await SyncSuggestionVotesCommand.handle({
-			isChatInputCommand: () => true,
-			inGuild: () => true,
+			inCachedGuild: () => true,
 			guild: {
 				bans: {
 					fetch: mock(async () => new Map()),
@@ -486,8 +485,7 @@ describe("SyncSuggestionVotesCommand", () => {
 		const editReply = mock(async (_payload: unknown) => ({}));
 
 		await SyncSuggestionVotesCommand.handle({
-			isChatInputCommand: () => true,
-			inGuild: () => true,
+			inCachedGuild: () => true,
 			guild: {
 				bans: {
 					fetch: mock(async () => new Map([[bannedUserId.toString(), {}]])),
