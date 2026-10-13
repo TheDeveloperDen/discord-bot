@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/bun";
-import { ApplicationCommandType, PermissionFlagsBits } from "discord.js";
+import { PermissionFlagsBits } from "discord.js";
 import { config } from "../../Config.js";
-import type { Command } from "../../commands/index.js";
+import { defineContextMenu } from "../../commands/index.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import randomElementFromArray from "../../util/random.js";
 import { actualMention, type UserMentionable } from "../../util/users.js";
@@ -30,11 +30,11 @@ const zooMessages: ((user: UserMentionable) => string)[] = [
 		`${actualMention(user)} is now part of our exclusive zoo collection! 🦓`,
 ];
 
-export const ZookeepCommand: Command<ApplicationCommandType.User> = {
+export const ZookeepCommand = defineContextMenu({
+	type: "user",
 	name: "Zookeep",
 	default_member_permissions: PermissionFlagsBits.ModerateMembers,
-	type: ApplicationCommandType.User,
-	async handle(interaction) {
+	async handle(interaction, targetMember) {
 		if (!config.roles.zooExhibit) {
 			await interaction.reply({
 				content: "Sorry, there's no zoo configured.",
@@ -42,25 +42,9 @@ export const ZookeepCommand: Command<ApplicationCommandType.User> = {
 			});
 			return;
 		}
-		const targetUser = interaction.targetUser;
-
+		const targetUser = targetMember.user;
 		const guild = interaction.guild;
-		if (!guild) {
-			await interaction.reply({
-				content: "This command can only be used in a guild.",
-				flags: "Ephemeral",
-			});
-			return;
-		}
-		const targetMember = await guild?.members.fetch(targetUser.id);
-		if (!targetMember) {
-			await interaction.reply({
-				content: "User not found in this guild.",
-				flags: "Ephemeral",
-			});
-			return;
-		}
-		if (targetMember.user.bot) {
+		if (targetUser.bot) {
 			await interaction.reply({
 				content: `Bots can't be sent to the zoo!`,
 				flags: "Ephemeral",
@@ -68,16 +52,13 @@ export const ZookeepCommand: Command<ApplicationCommandType.User> = {
 			return;
 		}
 
-		const interactionMember = await interaction.guild.members.fetch(
-			interaction.user.id,
-		);
 		console.debug(
 			targetMember.roles.highest.position,
-			interactionMember.roles.highest.position,
+			interaction.member.roles.highest.position,
 		);
 		if (
 			targetMember.roles.highest.position >=
-			interactionMember.roles.highest.position
+			interaction.member.roles.highest.position
 		) {
 			await interaction.reply({
 				content: `You cannot send ${actualMention(targetUser)} to the zoo because they have an equal or higher role than you.`,
@@ -117,10 +98,6 @@ export const ZookeepCommand: Command<ApplicationCommandType.User> = {
 			.setImage(gif);
 		console.log(gif);
 
-		if (!interaction.inCachedGuild()) {
-			await interaction.reply({ embeds: [embed] });
-			return;
-		}
 		const applicableChannel = interaction.channel;
 
 		// if the command is being done in a private or special channel...
@@ -150,4 +127,4 @@ export const ZookeepCommand: Command<ApplicationCommandType.User> = {
 
 		await interaction.reply({ embeds: [embed] });
 	},
-};
+});
