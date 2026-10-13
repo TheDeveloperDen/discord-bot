@@ -49,14 +49,14 @@ interface BanLog extends Notified {
 	moderator: User;
 	target: UserResolvable;
 	deleteMessages: boolean;
-	reason: string | null;
+	reason?: string;
 }
 
 interface UnbanLog {
 	kind: "Unban";
 	moderator: User;
 	target: UserResolvable;
-	reason: string | null;
+	reason?: string;
 }
 
 interface SoftBanLog extends Notified {
@@ -64,7 +64,7 @@ interface SoftBanLog extends Notified {
 	moderator: User;
 	target: UserResolvable;
 	deleteMessages: boolean;
-	reason: string | null;
+	reason?: string;
 }
 interface TempBanLog extends Notified {
 	kind: "TempBan";
@@ -72,7 +72,7 @@ interface TempBanLog extends Notified {
 	target: UserResolvable;
 	deleteMessages: boolean;
 	banDuration: number;
-	reason: string | null;
+	reason?: string;
 }
 
 interface TempBanExpiredLog {
@@ -83,7 +83,7 @@ interface KickLog extends Notified {
 	kind: "Kick";
 	moderator: User;
 	target: UserResolvable;
-	reason: string | null;
+	reason?: string;
 }
 
 interface TimeoutLog extends Notified {

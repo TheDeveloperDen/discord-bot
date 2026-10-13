@@ -1,10 +1,5 @@
-import {
-	ApplicationCommandOptionType,
-	ApplicationCommandType,
-	EmbedBuilder,
-	MessageFlags,
-} from "discord.js";
-import type { Command } from "../../commands/index.js";
+import { EmbedBuilder, MessageFlags } from "discord.js";
+import { defineCommand, option } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import {
 	getAllWarnings,
@@ -51,40 +46,25 @@ function formatWarning(warning: Warning, isMod: boolean): string {
 	return `${emoji} ${date} - ${severity}${status}: ${warning.reason.slice(0, 50)}${warning.reason.length > 50 ? "..." : ""}`;
 }
 
-export const WarningsCommand: Command<ApplicationCommandType.ChatInput> = {
+export const WarningsCommand = defineCommand({
 	name: "warnings",
 	description: "View warnings for a user",
-	type: ApplicationCommandType.ChatInput,
-	options: [
-		{
-			type: ApplicationCommandOptionType.User,
-			name: "user",
+	options: {
+		user: option.user({
 			description: "The user to check (leave empty for yourself)",
-			required: false,
-		},
-		{
-			type: ApplicationCommandOptionType.Boolean,
-			name: "include_expired",
+		}),
+		include_expired: option.boolean({
 			description: "Include expired and pardoned warnings (mods only)",
-			required: false,
-		},
-	],
+		}),
+	},
 
-	handle: async (interaction) => {
-		if (!interaction.isChatInputCommand() || !interaction.inGuild()) return;
-
+	async handle(interaction, { user, include_expired: includeExpired = false }) {
 		try {
 			await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-			const targetUser =
-				interaction.options.getUser("user") || interaction.user;
-			const includeExpired =
-				interaction.options.getBoolean("include_expired") ?? false;
+			const targetUser = user || interaction.user;
 
-			const member = await interaction.guild?.members
-				.fetch(interaction.user.id)
-				.catch(() => null);
-			const isMod = member ? isSpecialUser(member) : false;
+			const isMod = isSpecialUser(interaction.member);
 
 			const isSelf = targetUser.id === interaction.user.id;
 			if (!isSelf && !isMod) {
@@ -165,4 +145,4 @@ export const WarningsCommand: Command<ApplicationCommandType.ChatInput> = {
 			}
 		}
 	},
-};
+});

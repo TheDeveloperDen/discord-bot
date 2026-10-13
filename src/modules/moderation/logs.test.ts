@@ -71,7 +71,6 @@ describe("logModerationAction", () => {
 				dmSent: false,
 				moderator: createMockUser({ id: "12345" }),
 				target: createMockUser({ id: "67890" }),
-				reason: null,
 			};
 
 			await logModerationAction(mockClient, action);
@@ -267,7 +266,6 @@ describe("logModerationAction", () => {
 				moderator,
 				target,
 				deleteMessages: false,
-				reason: null,
 			};
 
 			await logModerationAction(mockClient, action);
@@ -291,7 +289,6 @@ describe("logModerationAction", () => {
 				moderator,
 				target,
 				deleteMessages: true,
-				reason: null,
 			};
 
 			await logModerationAction(mockClient, action);
@@ -319,7 +316,6 @@ describe("logModerationAction", () => {
 				moderator: createMockUser({ id: "12345" }),
 				target: createMockUser({ id: "67890" }),
 				deleteMessages: false,
-				reason: null,
 			};
 
 			// Should not throw

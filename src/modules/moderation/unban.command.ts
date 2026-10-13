@@ -1,48 +1,31 @@
-import {
-	ApplicationCommandOptionType,
-	ApplicationCommandType,
-	PermissionFlagsBits,
-} from "discord.js";
-import type { Command } from "../../commands/index.js";
+import { PermissionFlagsBits } from "discord.js";
+import { defineCommand, option } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { fakeMention } from "../../util/users.js";
 import { logModerationAction } from "./logs.js";
 import { getActiveTempBanModAction } from "./tempBan.js";
 
-export const UnbanCommand: Command<ApplicationCommandType.ChatInput> = {
+export const UnbanCommand = defineCommand({
 	name: "unban",
 	description: "Unban a not so baaad boy",
-	type: ApplicationCommandType.ChatInput,
 	default_member_permissions: PermissionFlagsBits.BanMembers,
-	options: [
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "user_id",
+	options: {
+		user_id: option.string({
 			description: "The user id to be unbanned",
 			required: true,
-		},
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "reason",
+		}),
+		reason: option.string({
 			description: "The reason why the user gets unbanned",
-		},
-	],
+		}),
+	},
 
-	handle: async (interaction) => {
-		if (
-			!interaction.isChatInputCommand() ||
-			!interaction.inGuild() ||
-			interaction.guild === null
-		)
-			return;
+	async handle(interaction, { user_id: userId, reason }) {
 		try {
 			await interaction.deferReply();
-			const userId = interaction.options.getString("user_id", true);
-			const reason = interaction.options.getString("reason", false);
 
 			const user = await interaction.client.users.fetch(userId);
 
-			await interaction.guild.bans.remove(user.id, reason ?? undefined);
+			await interaction.guild.bans.remove(user.id, reason);
 
 			const modAction = await getActiveTempBanModAction(BigInt(user.id));
 			if (modAction) await modAction.destroy();
@@ -73,4 +56,4 @@ export const UnbanCommand: Command<ApplicationCommandType.ChatInput> = {
 			}
 		}
 	},
-};
+});

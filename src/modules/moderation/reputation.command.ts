@@ -1,12 +1,5 @@
-import {
-	ApplicationCommandOptionType,
-	ApplicationCommandType,
-	EmbedBuilder,
-	type GuildMember,
-	MessageFlags,
-	PermissionFlagsBits,
-} from "discord.js";
-import type { Command, ExecutableSubcommand } from "../../commands/index.js";
+import { EmbedBuilder, MessageFlags, PermissionFlagsBits } from "discord.js";
+import { defineCommand, option, subcommand } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import {
 	REPUTATION_EVENT_LABELS,
@@ -43,26 +36,16 @@ const grantableTypes = [
 	},
 ];
 
-const ViewSubcommand: ExecutableSubcommand = {
-	type: ApplicationCommandOptionType.Subcommand,
-	name: "view",
+const ViewSubcommand = subcommand({
 	description: "View a user's reputation",
-	options: [
-		{
-			type: ApplicationCommandOptionType.User,
-			name: "user",
+	options: {
+		user: option.user({
 			description: "The user to check",
 			required: true,
-		},
-	],
-	async handle(interaction) {
-		const member = interaction.member as GuildMember | null;
-		if (!member) {
-			return await interaction.reply({
-				flags: MessageFlags.Ephemeral,
-				content: "This command must be used in a server.",
-			});
-		}
+		}),
+	},
+	async handle(interaction, { user }) {
+		const member = interaction.member;
 		if (!member.permissions.has(PermissionFlagsBits.ModerateMembers)) {
 			return await interaction.reply({
 				flags: MessageFlags.Ephemeral,
@@ -70,7 +53,7 @@ const ViewSubcommand: ExecutableSubcommand = {
 			});
 		}
 
-		const targetUser = interaction.options.getUser("user", true);
+		const targetUser = user;
 
 		try {
 			const reputation = await getUserReputation(BigInt(targetUser.id));
@@ -137,49 +120,32 @@ const ViewSubcommand: ExecutableSubcommand = {
 			});
 		}
 	},
-};
+});
 
-const GrantSubcommand: ExecutableSubcommand = {
-	type: ApplicationCommandOptionType.Subcommand,
-	name: "grant",
+const GrantSubcommand = subcommand({
 	description: "Grant positive reputation to a user",
-	options: [
-		{
-			type: ApplicationCommandOptionType.User,
-			name: "user",
+	options: {
+		user: option.user({
 			description: "The user to grant reputation to",
 			required: true,
-		},
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "type",
+		}),
+		type: option.string({
 			description: "Type of reputation to grant",
 			required: true,
 			choices: grantableTypes,
-		},
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "reason",
+		}),
+		reason: option.string({
 			description: "Reason for granting reputation",
 			required: true,
-		},
-		{
-			type: ApplicationCommandOptionType.Integer,
-			name: "amount",
+		}),
+		amount: option.integer({
 			description: "Custom amount (only for Custom Amount type)",
-			required: false,
 			min_value: 1,
 			max_value: 100,
-		},
-	],
-	async handle(interaction) {
-		const member = interaction.member as GuildMember | null;
-		if (!member) {
-			return await interaction.reply({
-				flags: MessageFlags.Ephemeral,
-				content: "This command must be used in a server.",
-			});
-		}
+		}),
+	},
+	async handle(interaction, { user, type, reason, amount: customAmount }) {
+		const member = interaction.member;
 		if (!member.permissions.has(PermissionFlagsBits.ModerateMembers)) {
 			return await interaction.reply({
 				flags: MessageFlags.Ephemeral,
@@ -187,10 +153,8 @@ const GrantSubcommand: ExecutableSubcommand = {
 			});
 		}
 
-		const targetUser = interaction.options.getUser("user", true);
-		const eventTypeStr = interaction.options.getString("type", true);
-		const reason = interaction.options.getString("reason", true);
-		const customAmount = interaction.options.getInteger("amount");
+		const targetUser = user;
+		const eventTypeStr = type;
 
 		// Validate event type is one of the allowed grantable types
 		const validEventTypes = grantableTypes.map((t) => t.value);
@@ -271,36 +235,23 @@ const GrantSubcommand: ExecutableSubcommand = {
 			});
 		}
 	},
-};
+});
 
-const HistorySubcommand: ExecutableSubcommand = {
-	type: ApplicationCommandOptionType.Subcommand,
-	name: "history",
+const HistorySubcommand = subcommand({
 	description: "View a user's reputation history",
-	options: [
-		{
-			type: ApplicationCommandOptionType.User,
-			name: "user",
+	options: {
+		user: option.user({
 			description: "The user to check",
 			required: true,
-		},
-		{
-			type: ApplicationCommandOptionType.Integer,
-			name: "limit",
+		}),
+		limit: option.integer({
 			description: "Number of events to show (default: 20)",
-			required: false,
 			min_value: 5,
 			max_value: 50,
-		},
-	],
-	async handle(interaction) {
-		const member = interaction.member as GuildMember | null;
-		if (!member) {
-			return await interaction.reply({
-				flags: MessageFlags.Ephemeral,
-				content: "This command must be used in a server.",
-			});
-		}
+		}),
+	},
+	async handle(interaction, { user, limit = 20 }) {
+		const member = interaction.member;
 		if (!member.permissions.has(PermissionFlagsBits.ModerateMembers)) {
 			return await interaction.reply({
 				flags: MessageFlags.Ephemeral,
@@ -310,8 +261,7 @@ const HistorySubcommand: ExecutableSubcommand = {
 
 		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-		const targetUser = interaction.options.getUser("user", true);
-		const limit = interaction.options.getInteger("limit") ?? 20;
+		const targetUser = user;
 
 		try {
 			const history = await getReputationHistoryForUser(
@@ -363,7 +313,7 @@ const HistorySubcommand: ExecutableSubcommand = {
 			});
 		}
 	},
-};
+});
 
 function getTierEmoji(tier: ReputationTier): string {
 	switch (tier) {
@@ -414,11 +364,13 @@ function getProgressToNextTier(
 	return `${pointsNeeded} to ${REPUTATION_TIER_LABELS[nextTier]}`;
 }
 
-export const ReputationCommand: Command<ApplicationCommandType.ChatInput> = {
+export const ReputationCommand = defineCommand({
 	name: "reputation",
 	description: "Manage user reputation (mods only)",
-	type: ApplicationCommandType.ChatInput,
 	default_member_permissions: PermissionFlagsBits.ModerateMembers,
-	options: [ViewSubcommand, GrantSubcommand, HistorySubcommand],
-	handle() {},
-};
+	subcommands: {
+		view: ViewSubcommand,
+		grant: GrantSubcommand,
+		history: HistorySubcommand,
+	},
+});

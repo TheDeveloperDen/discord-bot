@@ -1,48 +1,30 @@
-import {
-	ApplicationCommandOptionType,
-	ApplicationCommandType,
-	MessageFlags,
-	PermissionFlagsBits,
-} from "discord.js";
-import type { Command } from "../../commands/index.js";
+import { MessageFlags, PermissionFlagsBits } from "discord.js";
+import { defineCommand, option } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { Warning } from "../../store/models/Warning.js";
 import { fakeMention } from "../../util/users.js";
 import { dmModerationTarget, dmWarning, logModerationAction } from "./logs.js";
 
-export const PardonCommand: Command<ApplicationCommandType.ChatInput> = {
+export const PardonCommand = defineCommand({
 	name: "pardon",
 	description: "Pardon (remove) a warning from a user",
-	type: ApplicationCommandType.ChatInput,
 	default_member_permissions: PermissionFlagsBits.ModerateMembers,
-	options: [
-		{
-			type: ApplicationCommandOptionType.Integer,
-			name: "warning_id",
+	options: {
+		warning_id: option.integer({
 			description: "The ID of the warning to pardon",
 			required: true,
-		},
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "reason",
+		}),
+		reason: option.string({
 			description: "Reason for pardoning the warning",
 			required: true,
-		},
-	],
+		}),
+	},
 
-	handle: async (interaction) => {
-		if (
-			!interaction.isChatInputCommand() ||
-			!interaction.inGuild() ||
-			interaction.guild === null
-		)
-			return;
-
+	async handle(interaction, { warning_id: warningId, reason: rawReason }) {
 		try {
 			await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-			const warningId = interaction.options.getInteger("warning_id", true);
-			const reason = interaction.options.getString("reason", true).trim();
+			const reason = rawReason.trim();
 
 			// Validate reason length
 			if (reason.length === 0) {
@@ -145,4 +127,4 @@ export const PardonCommand: Command<ApplicationCommandType.ChatInput> = {
 			}
 		}
 	},
-};
+});

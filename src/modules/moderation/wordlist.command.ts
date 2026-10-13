@@ -1,12 +1,5 @@
-import {
-	ApplicationCommandOptionType,
-	ApplicationCommandType,
-	EmbedBuilder,
-	type GuildMember,
-	MessageFlags,
-	PermissionFlagsBits,
-} from "discord.js";
-import type { Command, ExecutableSubcommand } from "../../commands/index.js";
+import { EmbedBuilder, MessageFlags, PermissionFlagsBits } from "discord.js";
+import { defineCommand, option, subcommand } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import {
 	addBlockedWord,
@@ -35,33 +28,20 @@ const categoryChoices = Object.entries(CATEGORY_LABELS).map(
 	}),
 );
 
-const AddSubcommand: ExecutableSubcommand = {
-	type: ApplicationCommandOptionType.Subcommand,
-	name: "add",
+const AddSubcommand = subcommand({
 	description: "Add a word to the blocklist",
-	options: [
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "word",
+	options: {
+		word: option.string({
 			description: "The word to block",
 			required: true,
-		},
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "category",
+		}),
+		category: option.string({
 			description: "Category for the blocked word",
-			required: false,
 			choices: categoryChoices,
-		},
-	],
-	async handle(interaction) {
-		const member = interaction.member as GuildMember | null;
-		if (!member) {
-			return await interaction.reply({
-				flags: MessageFlags.Ephemeral,
-				content: "This command must be used in a server.",
-			});
-		}
+		}),
+	},
+	async handle(interaction, { word, category: rawCategory }) {
+		const member = interaction.member;
 		if (!member.permissions.has(PermissionFlagsBits.ManageMessages)) {
 			return await interaction.reply({
 				flags: MessageFlags.Ephemeral,
@@ -69,10 +49,8 @@ const AddSubcommand: ExecutableSubcommand = {
 			});
 		}
 
-		const word = interaction.options.getString("word", true);
 		const category =
-			(interaction.options.getString("category") as BlockedWordCategory) ||
-			BlockedWordCategory.OTHER;
+			(rawCategory as BlockedWordCategory) || BlockedWordCategory.OTHER;
 
 		try {
 			const blockedWord = await addBlockedWord(
@@ -94,36 +72,24 @@ const AddSubcommand: ExecutableSubcommand = {
 			});
 		}
 	},
-};
+});
 
-const RemoveSubcommand: ExecutableSubcommand = {
-	type: ApplicationCommandOptionType.Subcommand,
-	name: "remove",
+const RemoveSubcommand = subcommand({
 	description: "Remove a word from the blocklist",
-	options: [
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "word",
+	options: {
+		word: option.string({
 			description: "The word to remove",
 			required: true,
-		},
-	],
-	async handle(interaction) {
-		const member = interaction.member as GuildMember | null;
-		if (!member) {
-			return await interaction.reply({
-				flags: MessageFlags.Ephemeral,
-				content: "This command must be used in a server.",
-			});
-		}
+		}),
+	},
+	async handle(interaction, { word }) {
+		const member = interaction.member;
 		if (!member.permissions.has(PermissionFlagsBits.ManageMessages)) {
 			return await interaction.reply({
 				flags: MessageFlags.Ephemeral,
 				content: "You don't have permission to manage the wordlist.",
 			});
 		}
-
-		const word = interaction.options.getString("word", true);
 
 		try {
 			const deleted = await removeBlockedWord(word);
@@ -147,29 +113,18 @@ const RemoveSubcommand: ExecutableSubcommand = {
 			});
 		}
 	},
-};
+});
 
-const ListSubcommand: ExecutableSubcommand = {
-	type: ApplicationCommandOptionType.Subcommand,
-	name: "list",
+const ListSubcommand = subcommand({
 	description: "View the current blocklist",
-	options: [
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "category",
+	options: {
+		category: option.string({
 			description: "Filter by category",
-			required: false,
 			choices: categoryChoices,
-		},
-	],
-	async handle(interaction) {
-		const member = interaction.member as GuildMember | null;
-		if (!member) {
-			return await interaction.reply({
-				flags: MessageFlags.Ephemeral,
-				content: "This command must be used in a server.",
-			});
-		}
+		}),
+	},
+	async handle(interaction, { category: rawCategory }) {
+		const member = interaction.member;
 		if (!member.permissions.has(PermissionFlagsBits.ManageMessages)) {
 			return await interaction.reply({
 				flags: MessageFlags.Ephemeral,
@@ -179,9 +134,7 @@ const ListSubcommand: ExecutableSubcommand = {
 
 		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-		const category = interaction.options.getString(
-			"category",
-		) as BlockedWordCategory | null;
+		const category = rawCategory as BlockedWordCategory | undefined;
 
 		try {
 			const words = category
@@ -230,44 +183,27 @@ const ListSubcommand: ExecutableSubcommand = {
 			});
 		}
 	},
-};
+});
 
-const WordListTestSubcommand: ExecutableSubcommand = {
-	type: ApplicationCommandOptionType.Subcommand,
-	name: "test",
+const WordListTestSubcommand = subcommand({
 	description: "Test if text would trigger the filter",
-	options: [
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "text",
+	options: {
+		text: option.string({
 			description: "The text to test",
 			required: true,
-		},
-		{
-			type: ApplicationCommandOptionType.Boolean,
-			name: "detect_bypasses",
+		}),
+		detect_bypasses: option.boolean({
 			description: "Whether to detect bypass attempts (default: true)",
-			required: false,
-		},
-	],
-	async handle(interaction) {
-		const member = interaction.member as GuildMember | null;
-		if (!member) {
-			return await interaction.reply({
-				flags: MessageFlags.Ephemeral,
-				content: "This command must be used in a server.",
-			});
-		}
+		}),
+	},
+	async handle(interaction, { text, detect_bypasses: detectBypasses = true }) {
+		const member = interaction.member;
 		if (!member.permissions.has(PermissionFlagsBits.ManageMessages)) {
 			return await interaction.reply({
 				flags: MessageFlags.Ephemeral,
 				content: "You don't have permission to test the wordlist.",
 			});
 		}
-
-		const text = interaction.options.getString("text", true);
-		const detectBypasses =
-			interaction.options.getBoolean("detect_bypasses") ?? true;
 
 		try {
 			const result = await testForToxicContent(text, detectBypasses);
@@ -331,18 +267,16 @@ const WordListTestSubcommand: ExecutableSubcommand = {
 			});
 		}
 	},
-};
+});
 
-export const WordlistCommand: Command<ApplicationCommandType.ChatInput> = {
+export const WordlistCommand = defineCommand({
 	name: "wordlist",
 	description: "Manage the blocked words list",
-	type: ApplicationCommandType.ChatInput,
 	default_member_permissions: PermissionFlagsBits.ManageMessages,
-	options: [
-		AddSubcommand,
-		RemoveSubcommand,
-		ListSubcommand,
-		WordListTestSubcommand,
-	],
-	handle() {},
-};
+	subcommands: {
+		add: AddSubcommand,
+		remove: RemoveSubcommand,
+		list: ListSubcommand,
+		test: WordListTestSubcommand,
+	},
+});

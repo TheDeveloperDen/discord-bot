@@ -1,13 +1,11 @@
 import {
-	ApplicationCommandOptionType,
-	ApplicationCommandType,
 	Colors,
 	EmbedBuilder,
 	MessageFlags,
 	PermissionFlagsBits,
 } from "discord.js";
 import { config } from "../../Config.js";
-import type { Command } from "../../commands/index.js";
+import { defineCommand, option } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import {
@@ -32,61 +30,46 @@ const DEFAULT_EXPIRY: Record<WarningSeverity, number | null> = {
 	[WarningSeverity.SEVERE]: null,
 };
 
-export const WarnCommand: Command<ApplicationCommandType.ChatInput> = {
+export const WarnCommand = defineCommand({
 	name: "warn",
 	description: "Issue a formal warning to a user",
-	type: ApplicationCommandType.ChatInput,
 	default_member_permissions: PermissionFlagsBits.ModerateMembers,
-	options: [
-		{
-			type: ApplicationCommandOptionType.User,
-			name: "user",
+	options: {
+		user: option.user({
 			description: "The user to warn",
 			required: true,
-		},
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "reason",
+		}),
+		reason: option.string({
 			description: "Reason for the warning",
 			required: true,
-		},
-		{
-			type: ApplicationCommandOptionType.Integer,
-			name: "severity",
+		}),
+		severity: option.integer({
 			description: "Warning severity (default: Minor)",
-			required: false,
 			choices: [
 				{ name: "Minor", value: WarningSeverity.MINOR },
 				{ name: "Moderate", value: WarningSeverity.MODERATE },
 				{ name: "Severe", value: WarningSeverity.SEVERE },
 			],
-		},
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "duration",
+		}),
+		duration: option.string({
 			description:
 				"How long before warning expires (e.g., 30d, 90d). Leave empty for default based on severity",
-			required: false,
+		}),
+	},
+
+	async handle(
+		interaction,
+		{
+			user,
+			reason: rawReason,
+			severity = WarningSeverity.MINOR,
+			duration: durationStr,
 		},
-	],
-
-	handle: async (interaction) => {
-		if (
-			!interaction.isChatInputCommand() ||
-			!interaction.inGuild() ||
-			interaction.guild === null
-		)
-			return;
-
+	) {
 		try {
 			await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-			const user = interaction.options.getUser("user", true);
-			const reason = interaction.options.getString("reason", true).trim();
-			const severity =
-				(interaction.options.getInteger("severity") as WarningSeverity) ||
-				WarningSeverity.MINOR;
-			const durationStr = interaction.options.getString("duration");
+			const reason = rawReason.trim();
 
 			// Validate reason
 			if (reason.length === 0) {
@@ -199,4 +182,4 @@ export const WarnCommand: Command<ApplicationCommandType.ChatInput> = {
 			}
 		}
 	},
-};
+});
