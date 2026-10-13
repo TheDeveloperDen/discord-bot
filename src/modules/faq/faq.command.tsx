@@ -6,14 +6,14 @@ import {
 	MessageFlags,
 	PermissionFlagsBits,
 } from "discord.js";
+import { renderDiscordModal } from "disjsx";
 import {
 	type Command,
 	type ExecutableSubcommand,
 	respondWithChoices,
 } from "../../commands/index.js";
 import { FAQ } from "../../store/models/FAQ.js";
-
-import createFaqModal from "./faq.modal.js";
+import { FaqEditForm } from "./faq.modal.js";
 import { createFaqEmbed } from "./faq.util.js";
 
 async function autocompleteFaqNames(interaction: AutocompleteInteraction) {
@@ -63,6 +63,7 @@ const EditSubcommand: ExecutableSubcommand = {
 			name: "name",
 			description: "The name of the FAQ",
 			required: true,
+			max_length: 64,
 			autocomplete: true,
 		},
 	],
@@ -84,24 +85,9 @@ const EditSubcommand: ExecutableSubcommand = {
 		}
 		const faq = await FAQ.findOne({ where: { name } });
 
-		const modal = createFaqModal(faq ?? undefined);
-
-		await interaction.showModal(modal);
-		const response = await interaction.awaitModalSubmit({ time: 2 ** 31 - 1 });
-		const title = response.fields.getTextInputValue("titleField");
-		const content = response.fields.getTextInputValue("faqContentField");
-
-		await FAQ.upsert({
-			id: faq?.id,
-			name,
-			title,
-			content,
-			author: BigInt(interaction.user.id),
-		});
-		await response.reply({
-			flags: MessageFlags.Ephemeral,
-			content: `FAQ named ${name} created`,
-		});
+		await interaction.showModal(
+			renderDiscordModal(<FaqEditForm name={name} faq={faq ?? undefined} />),
+		);
 	},
 };
 
