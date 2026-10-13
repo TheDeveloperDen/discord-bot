@@ -5,15 +5,8 @@
  */
 
 import * as Sentry from "@sentry/bun";
-import {
-	ApplicationCommandOptionType,
-	ApplicationCommandType,
-	type GuildMember,
-	MessageFlags,
-} from "discord.js";
-import type { Command } from "../../commands/index.js";
+import { defineCommand, option } from "../../commands/index.js";
 import { createStandardEmbed } from "../../util/embeds.js";
-import { getResolvedMember } from "../../util/interactions.js";
 import { fakeMention } from "../../util/users.js";
 import {
 	type AchievementCategory,
@@ -33,22 +26,15 @@ const CATEGORY_ORDER: AchievementCategory[] = [
 	"special",
 ];
 
-export const AchievementsCommand: Command<ApplicationCommandType.ChatInput> = {
+export const AchievementsCommand = defineCommand({
 	name: "achievements",
-	type: ApplicationCommandType.ChatInput,
 	description: "View achievements for yourself or another member",
-	options: [
-		{
-			type: ApplicationCommandOptionType.User,
-			name: "member",
+	options: {
+		member: option.member({
 			description: "The member to view achievements for",
-			required: false,
-		},
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "category",
+		}),
+		category: option.string({
 			description: "Filter by category",
-			required: false,
 			choices: [
 				{ name: "Bump Achievements", value: "bump" },
 				{ name: "Daily Achievements", value: "daily" },
@@ -57,41 +43,25 @@ export const AchievementsCommand: Command<ApplicationCommandType.ChatInput> = {
 				{ name: "Suggestion Achievements", value: "suggestion" },
 				{ name: "Special Achievements", value: "special" },
 			],
-		},
-	],
+		}),
+	},
 
-	async handle(interaction) {
+	async handle(interaction, { member = interaction.member, category }) {
 		await Sentry.startSpan(
 			{ name: "achievements", op: "command" },
 			async () => {
-				const targetUser =
-					interaction.options.get("member")?.user ?? interaction.user;
-				const member =
-					getResolvedMember(interaction.options.get("member")?.member) ??
-					(await interaction.guild?.members
-						.fetch(targetUser.id)
-						.catch(() => null));
-
-				if (!member) {
-					await interaction.reply({
-						flags: MessageFlags.Ephemeral,
-						content: "Member not found",
-					});
-					return;
-				}
+				const targetUser = member.user;
 
 				await interaction.deferReply();
 
-				const categoryFilter = interaction.options.get("category")?.value as
-					| AchievementCategory
-					| undefined;
+				const categoryFilter = category as AchievementCategory | undefined;
 
 				const userId = BigInt(targetUser.id);
 				const achievementsWithStatus = await getAchievementsWithStatus(userId);
 				const progress = await getAchievementProgress(userId);
 
 				// Build the embed
-				const embed = createStandardEmbed(member as GuildMember)
+				const embed = createStandardEmbed(member)
 					.setTitle(`Achievements for ${fakeMention(targetUser)}`)
 					.setThumbnail(targetUser.displayAvatarURL({ size: 128 }));
 
@@ -138,7 +108,7 @@ export const AchievementsCommand: Command<ApplicationCommandType.ChatInput> = {
 			},
 		);
 	},
-};
+});
 
 /**
  * Format a date for display.
