@@ -11,12 +11,12 @@ import { defineCommand, option } from "../../commands/index.js";
 import { fakeMention } from "../../util/users.js";
 import {
 	getAchievementById,
-	getManualAchievements,
+	getActiveAchievements,
 } from "./achievementDefinitions.js";
 import { revokeAchievement } from "./achievementService.js";
 
 // Build choices from manual achievements at startup
-const achievementChoices = getManualAchievements().map((a) => ({
+const achievementChoices = getActiveAchievements().map((a) => ({
 	name: `${a.emoji} ${a.name}`,
 	value: a.id,
 }));
