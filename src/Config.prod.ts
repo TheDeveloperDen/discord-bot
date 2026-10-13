@@ -1,4 +1,4 @@
-import { ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
+import { ButtonStyle, EmbedBuilder } from "discord.js";
 import type { Config } from "./config.type.js";
 import { actualMention } from "./util/users.js";
 
@@ -128,69 +128,63 @@ https://discord.gg/devden`),
 
 		buttonRows: [
 			[
-				new ButtonBuilder()
-					.setLabel("Permanent Invite Link")
-					.setURL("https://developerden.org/discord")
-					.setEmoji({
-						id: "1007753088003747910",
-					})
-					.setStyle(ButtonStyle.Link),
-				new ButtonBuilder()
-					.setLabel("Our GitHub Organization")
-					.setURL("https://github.com/TheDeveloperDen")
-					.setEmoji({
-						id: "1007741713026134107",
-					})
-					.setStyle(ButtonStyle.Link),
-				new ButtonBuilder()
-					.setLabel("Our Website")
-					.setURL("https://developerden.org")
-					.setEmoji("🌐")
-					.setStyle(ButtonStyle.Link),
+				{
+					type: "link",
+					label: "Permanent Invite Link",
+					url: "https://developerden.org/discord",
+					emoji: { id: "1007753088003747910" },
+				},
+				{
+					type: "link",
+					label: "Our GitHub Organization",
+					url: "https://github.com/TheDeveloperDen",
+					emoji: { id: "1007741713026134107" },
+				},
+				{
+					type: "link",
+					label: "Our Website",
+					url: "https://developerden.org",
+					emoji: { name: "🌐" },
+				},
 			],
 			[
 				{
-					faqId: "codeblocks",
 					type: "faq",
-					button: new ButtonBuilder()
-						.setLabel("How to share code")
-						.setStyle(ButtonStyle.Primary)
-						.setEmoji("📝"),
+					faqId: "codeblocks",
+					label: "How to share code",
+					style: ButtonStyle.Primary,
+					emoji: { name: "📝" },
 				},
 				{
-					faqId: "ask",
 					type: "faq",
-					button: new ButtonBuilder()
-						.setLabel("How to ask for help")
-						.setStyle(ButtonStyle.Primary)
-						.setEmoji("❓"),
+					faqId: "ask",
+					label: "How to ask for help",
+					style: ButtonStyle.Primary,
+					emoji: { name: "❓" },
 				},
 			],
 			[
 				{
 					type: "learning",
-					button: new ButtonBuilder()
-						.setLabel("Learn a new Language")
-						.setStyle(ButtonStyle.Success)
-						.setEmoji("📚"),
+					label: "Learn a new Language",
+					style: ButtonStyle.Success,
+					emoji: { name: "📚" },
 				},
 			],
 			[
 				{
 					type: "faq",
 					faqId: "role-info",
-					button: new ButtonBuilder()
-						.setLabel("Our Server Roles")
-						.setStyle(ButtonStyle.Success)
-						.setEmoji("🎖"),
+					label: "Our Server Roles",
+					style: ButtonStyle.Success,
+					emoji: { name: "🎖" },
 				},
 				{
 					type: "faq",
 					faqId: "xp-guide",
-					button: new ButtonBuilder()
-						.setLabel("How XP works")
-						.setStyle(ButtonStyle.Success)
-						.setEmoji("⭐"),
+					label: "How XP works",
+					style: ButtonStyle.Success,
+					emoji: { name: "⭐" },
 				},
 			],
 		],

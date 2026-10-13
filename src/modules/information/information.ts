@@ -1,20 +1,27 @@
-import type { ButtonBuilder, EmbedBuilder } from "discord.js";
+import type {
+	APIMessageComponentEmoji,
+	ButtonStyle,
+	EmbedBuilder,
+} from "discord.js";
 
 export interface InformationMessage {
 	content?: string;
 	embed: EmbedBuilder;
-	buttonRows: CustomButton[][];
+	buttonRows: InformationButton[][];
 }
 
-export type CustomButton = FAQButton | LearningButton | PlainButton;
-
-export type FAQButton = { type: "faq" } & {
-	faqId: string;
-	button: ButtonBuilder;
-};
-export type PlainButton = ButtonBuilder;
-
-export interface LearningButton {
-	type: "learning";
-	button: ButtonBuilder;
+interface BaseButton {
+	label: string;
+	emoji?: APIMessageComponentEmoji;
 }
+
+type InteractiveStyle =
+	| ButtonStyle.Primary
+	| ButtonStyle.Secondary
+	| ButtonStyle.Success
+	| ButtonStyle.Danger;
+
+export type InformationButton =
+	| (BaseButton & { type: "link"; url: string })
+	| (BaseButton & { type: "faq"; faqId: string; style: InteractiveStyle })
+	| (BaseButton & { type: "learning"; style: InteractiveStyle });

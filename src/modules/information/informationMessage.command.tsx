@@ -1,27 +1,73 @@
 import {
-	ActionRowBuilder,
 	type APIEmbed,
 	ApplicationCommandType,
-	ButtonBuilder,
+	ButtonStyle,
 	MessageFlags,
 	PermissionFlagsBits,
 } from "discord.js";
+import { ActionRow, Button, Message, renderDiscordMessage } from "disjsx";
 import { config } from "../../Config.js";
 import type { Command } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { createStandardEmbed } from "../../util/embeds.js";
-import type { CustomButton } from "./information.js";
+import type { InformationButton } from "./information.js";
+import {
+	FaqButton,
+	LearningResourcesButton,
+} from "./informationMessage.components.js";
 
-function loadCustomButton(customButton: CustomButton) {
-	if (customButton instanceof ButtonBuilder) {
-		return customButton;
-	}
-	switch (customButton.type) {
+const InformationButtonElement = ({
+	button,
+}: {
+	button: InformationButton;
+}) => {
+	const { label, emoji } = button;
+	switch (button.type) {
+		case "link":
+			return (
+				<Button
+					style={ButtonStyle.Link}
+					url={button.url}
+					label={label}
+					emoji={emoji}
+				/>
+			);
 		case "faq":
-			return customButton.button.setCustomId(`faq-${customButton.faqId}`);
+			return (
+				<FaqButton
+					name={button.faqId}
+					style={button.style}
+					label={label}
+					emoji={emoji}
+				/>
+			);
 		case "learning":
-			return customButton.button.setCustomId("learning-resources");
+			return (
+				<LearningResourcesButton
+					style={button.style}
+					label={label}
+					emoji={emoji}
+				/>
+			);
 	}
+};
+
+/** The information message's button rows, as message components */
+export function renderInformationButtons(rows: InformationButton[][]) {
+	return (
+		renderDiscordMessage(
+			<Message>
+				{rows.map((row, i) => (
+					// biome-ignore lint/suspicious/noArrayIndexKey: rows are static config
+					<ActionRow key={i}>
+						{row.map((button) => (
+							<InformationButtonElement key={button.label} button={button} />
+						))}
+					</ActionRow>
+				))}
+			</Message>,
+		).components ?? []
+	);
 }
 
 export const InformationMessageCommand: Command<ApplicationCommandType.Message> =
@@ -50,17 +96,10 @@ export const InformationMessageCommand: Command<ApplicationCommandType.Message> 
 				...createStandardEmbed().data,
 				...informationMessage.embed.data,
 			};
-			const rows = informationMessage.buttonRows;
-
 			const newMessage = await interaction.targetMessage.edit({
 				content: informationMessage.content ?? null,
 				embeds: [embed],
-				components: rows.map((row) => {
-					const rowEntries = row.map(loadCustomButton);
-					return new ActionRowBuilder<ButtonBuilder>().addComponents(
-						...rowEntries,
-					);
-				}),
+				components: renderInformationButtons(informationMessage.buttonRows),
 			});
 
 			logger.info(
