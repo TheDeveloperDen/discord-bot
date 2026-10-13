@@ -1,11 +1,6 @@
 import * as Sentry from "@sentry/bun";
-import {
-	ApplicationCommandType,
-	type GuildMember,
-	MessageFlags,
-	type Snowflake,
-} from "discord.js";
-import type { Command } from "../../commands/index.js";
+import { MessageFlags, type Snowflake } from "discord.js";
+import { defineCommand } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { createStandardEmbed } from "../../util/embeds.js";
@@ -18,20 +13,14 @@ import { giveXp } from "./xpForMessage.util.js";
 
 const dailiesInProgress = new Set<Snowflake>();
 
-export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
+export const DailyRewardCommand = defineCommand({
 	name: "daily",
 	description: "Claim your daily reward",
-	type: ApplicationCommandType.ChatInput,
-	options: [],
 
 	async handle(interaction) {
 		await Sentry.startSpan({ name: "daily", op: "command" }, async () => {
 			const startTime = Date.now();
-			const user = interaction.member as GuildMember;
-			if (!user) {
-				await interaction.reply("You must be in a guild to use this command");
-				return;
-			}
+			const user = interaction.member;
 			await interaction.deferReply();
 			if (dailiesInProgress.has(user.id)) {
 				await interaction.followUp({
@@ -133,7 +122,7 @@ export const DailyRewardCommand: Command<ApplicationCommandType.ChatInput> = {
 			}
 		});
 	},
-};
+});
 
 export function formatDayCount(count: number) {
 	if (count === 1) {

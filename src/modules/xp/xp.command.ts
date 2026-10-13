@@ -1,17 +1,11 @@
 import * as Sentry from "@sentry/bun";
 import type { GuildMember } from "discord.js";
-import {
-	ApplicationCommandOptionType,
-	ApplicationCommandType,
-	MessageFlags,
-} from "discord.js";
-import type { Command } from "../../commands/index.js";
+import { defineCommand, option } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import { branding } from "../../util/branding.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { createImage, getCanvasContext } from "../../util/imageUtils.js";
-import { getResolvedMember } from "../../util/interactions.js";
 import { drawText } from "../../util/textRendering.js";
 import { fakeMention } from "../../util/users.js";
 import { format } from "../core/info.command.js";
@@ -19,35 +13,18 @@ import { profileFont } from "../user/user.js";
 import { formatDayCount, getActualDailyStreak } from "./dailyReward.command.js";
 import { getTierByLevel, xpForLevel } from "./xpForMessage.util.js";
 
-export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
+export const XpCommand = defineCommand({
 	name: "xp",
-	type: ApplicationCommandType.ChatInput,
 	description: "Show a member's XP",
-	options: [
-		{
-			type: ApplicationCommandOptionType.User,
-			name: "member",
+	options: {
+		member: option.member({
 			description: "The member to show XP for",
-			required: false,
-		},
-	],
+		}),
+	},
 
-	async handle(interaction) {
+	async handle(interaction, { member = interaction.member }) {
 		await Sentry.startSpan({ name: "xp", op: "command" }, async () => {
-			const targetUser =
-				interaction.options.get("member")?.user ?? interaction.user;
-			const member =
-				getResolvedMember(interaction.options.get("member")?.member) ??
-				(await interaction.guild?.members
-					.fetch(targetUser.id)
-					.catch(() => null));
-			if (!member) {
-				await interaction.reply({
-					flags: MessageFlags.Ephemeral,
-					content: "Member not found",
-				});
-				return;
-			}
+			const targetUser = member.user;
 
 			await interaction.deferReply();
 			const ddUser = await getOrCreateUserById(BigInt(targetUser.id));
@@ -104,7 +81,7 @@ export const XpCommand: Command<ApplicationCommandType.ChatInput> = {
 			});
 		});
 	},
-};
+});
 
 const xpBackground = createImage(1000, 500, "#171834");
 
