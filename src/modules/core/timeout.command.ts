@@ -1,11 +1,6 @@
 import * as Sentry from "@sentry/bun";
-import {
-	ApplicationCommandOptionType,
-	ApplicationCommandType,
-	MessageFlags,
-	PermissionFlagsBits,
-} from "discord.js";
-import type { Command } from "../../commands/index.js";
+import { MessageFlags, PermissionFlagsBits } from "discord.js";
+import { defineCommand, option } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { parseTimespan, prettyPrintDuration } from "../../util/timespan.js";
@@ -55,54 +50,27 @@ export function checkCanTimeout(
 	return null;
 }
 
-export const TimeoutCommand: Command<ApplicationCommandType.ChatInput> = {
-	type: ApplicationCommandType.ChatInput,
+export const TimeoutCommand = defineCommand({
 	name: "timeout",
 	default_member_permissions: PermissionFlagsBits.ModerateMembers,
 	description: "Times out a user",
-	options: [
-		{
-			type: ApplicationCommandOptionType.User,
-			name: "target",
+	options: {
+		target: option.member({
 			description: "The user to timeout",
 			required: true,
-		},
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "duration",
+		}),
+		duration: option.string({
 			description: "How long to time out the user for",
 			required: true,
-		},
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "reason",
+		}),
+		reason: option.string({
 			description: "The reason for issuing the timeout",
 			required: true,
-		},
-	],
+		}),
+	},
 
-	async handle(interaction) {
-		if (!interaction.isChatInputCommand()) return;
-		if (!interaction.inCachedGuild()) {
-			await interaction.reply({
-				flags: MessageFlags.Ephemeral,
-				content: "This command can only be used in the server.",
-			});
-			return;
-		}
-
-		const target = interaction.options.getMember("target");
-		if (target == null) {
-			await interaction.reply({
-				flags: MessageFlags.Ephemeral,
-				content: "Could not find that member.",
-			});
-			return;
-		}
-
-		const period = parseTimeoutDuration(
-			interaction.options.getString("duration", true),
-		);
+	async handle(interaction, { target, duration, reason }) {
+		const period = parseTimeoutDuration(duration);
 		if (period == null) {
 			await interaction.reply({
 				flags: MessageFlags.Ephemeral,
@@ -123,8 +91,6 @@ export const TimeoutCommand: Command<ApplicationCommandType.ChatInput> = {
 			});
 			return;
 		}
-
-		const reason = interaction.options.getString("reason", true);
 
 		await interaction.deferReply();
 		try {
@@ -170,6 +136,6 @@ export const TimeoutCommand: Command<ApplicationCommandType.ChatInput> = {
 			dmSent,
 		});
 	},
-};
+});
 
 export default TimeoutCommand;
