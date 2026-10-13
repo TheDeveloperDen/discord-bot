@@ -1,11 +1,11 @@
 import {
 	type ButtonInteraction,
 	type GuildMember,
-	type Interaction,
 	MessageFlags,
 	type ModalSubmitInteraction,
 } from "discord.js";
 import { config } from "../../Config.js";
+import { defineComponent } from "../../components/index.js";
 import { logger } from "../../logging.js";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import { Suggestion, SuggestionStatus } from "../../store/models/Suggestion.js";
@@ -33,19 +33,11 @@ import {
 	upsertOrRemoveVote,
 } from "./suggest.js";
 
-const SUGGESTION_BUTTON_MAP: {
-	[SUGGESTION_NO_ID]: SuggestionVoteType;
-	[SUGGESTION_YES_ID]: SuggestionVoteType;
-	[key: string]: SuggestionVoteType | undefined;
-} = {
-	[SUGGESTION_NO_ID]: -1,
-	[SUGGESTION_YES_ID]: 1,
-};
-
 // Handler functions
 async function handleVoteButtonInteraction(
 	interaction: ButtonInteraction,
 	member: GuildMember,
+	votingValue: SuggestionVoteType,
 ): Promise<void> {
 	if (!interaction.message.editable) {
 		await interaction.reply({
@@ -54,15 +46,6 @@ async function handleVoteButtonInteraction(
 		});
 		return;
 	}
-	const votingValue = SUGGESTION_BUTTON_MAP[interaction.customId];
-	if (!votingValue) {
-		await interaction.reply({
-			content: "This is not a valid Button!",
-			flags: MessageFlags.Ephemeral,
-		});
-		return;
-	}
-
 	await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
 	const suggestion = await getSuggestionByMessageIdOrRecoverFromMessage(
@@ -235,66 +218,90 @@ async function handleManageModalSubmission(
 	}
 }
 
+/** Suggestions only work inside the guild, so anything else is ignored */
+const inGuild =
+	<I extends ButtonInteraction | ModalSubmitInteraction>(
+		handle: (interaction: I, member: GuildMember) => Promise<void>,
+	) =>
+	async (interaction: I) => {
+		if (interaction.inCachedGuild())
+			await handle(interaction, interaction.member);
+	};
+
+// these ids predate the component router and must not change, as old suggestion messages still use them
+export const SuggestionComponents = [
+	defineComponent({
+		id: SUGGESTION_YES_ID,
+		kind: "button",
+		handle: inGuild((interaction, member) =>
+			handleVoteButtonInteraction(interaction, member, 1),
+		),
+	}),
+	defineComponent({
+		id: SUGGESTION_NO_ID,
+		kind: "button",
+		handle: inGuild((interaction, member) =>
+			handleVoteButtonInteraction(interaction, member, -1),
+		),
+	}),
+	defineComponent({
+		id: SUGGESTION_VIEW_VOTES_ID,
+		kind: "button",
+		handle: inGuild(handleViewVotesInteraction),
+	}),
+	defineComponent({
+		id: SUGGESTION_MANAGE_APPROVE_ID,
+		kind: "button",
+		async handle(interaction) {
+			await interaction.showModal(
+				createReasonModal(
+					SUGGESTION_MANAGE_APPROVE_MODAL_ID,
+					"Approve Suggestion",
+					"Enter an optional reason for approval...",
+				),
+			);
+		},
+	}),
+	defineComponent({
+		id: SUGGESTION_MANAGE_REJECT_ID,
+		kind: "button",
+		async handle(interaction) {
+			await interaction.showModal(
+				createReasonModal(
+					SUGGESTION_MANAGE_REJECT_MODAL_ID,
+					"Reject Suggestion",
+					"Enter an optional reason for rejection...",
+				),
+			);
+		},
+	}),
+	defineComponent({
+		id: SUGGESTION_MANAGE_APPROVE_MODAL_ID,
+		kind: "modal",
+		handle: inGuild((interaction, member) =>
+			handleManageModalSubmission(
+				interaction,
+				member,
+				SuggestionStatus.APPROVED,
+				"Suggestion approved!",
+			),
+		),
+	}),
+	defineComponent({
+		id: SUGGESTION_MANAGE_REJECT_MODAL_ID,
+		kind: "modal",
+		handle: inGuild((interaction, member) =>
+			handleManageModalSubmission(
+				interaction,
+				member,
+				SuggestionStatus.REJECTED,
+				"Suggestion rejected!",
+			),
+		),
+	}),
+];
+
 export const SuggestionButtonListener: EventListener = {
-	async interactionCreate(_client, interaction: Interaction) {
-		if (!interaction.member || !interaction.inGuild()) return;
-		const member = interaction.member as GuildMember;
-
-		if (interaction.isButton()) {
-			switch (interaction.customId) {
-				case SUGGESTION_NO_ID:
-				case SUGGESTION_YES_ID:
-					await handleVoteButtonInteraction(interaction, member);
-					break;
-
-				case SUGGESTION_VIEW_VOTES_ID:
-					await handleViewVotesInteraction(interaction, member);
-					break;
-
-				case SUGGESTION_MANAGE_APPROVE_ID: {
-					const modal = createReasonModal(
-						SUGGESTION_MANAGE_APPROVE_MODAL_ID,
-						"Approve Suggestion",
-						"Enter an optional reason for approval...",
-					);
-					await interaction.showModal(modal);
-					break;
-				}
-
-				case SUGGESTION_MANAGE_REJECT_ID: {
-					const modal = createReasonModal(
-						SUGGESTION_MANAGE_REJECT_MODAL_ID,
-						"Reject Suggestion",
-						"Enter an optional reason for rejection...",
-					);
-					await interaction.showModal(modal);
-					break;
-				}
-			}
-		}
-
-		if (interaction.isModalSubmit()) {
-			switch (interaction.customId) {
-				case SUGGESTION_MANAGE_APPROVE_MODAL_ID:
-					await handleManageModalSubmission(
-						interaction,
-						member,
-						SuggestionStatus.APPROVED,
-						"Suggestion approved!",
-					);
-					break;
-
-				case SUGGESTION_MANAGE_REJECT_MODAL_ID:
-					await handleManageModalSubmission(
-						interaction,
-						member,
-						SuggestionStatus.REJECTED,
-						"Suggestion rejected!",
-					);
-					break;
-			}
-		}
-	},
 	async guildBanAdd(client, ban) {
 		try {
 			const { removedVotes, updatedSuggestions } =
