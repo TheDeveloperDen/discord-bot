@@ -1,80 +1,55 @@
 import {
 	ActionRowBuilder,
-	type APIInteractionDataResolvedGuildMember,
-	ApplicationCommandOptionType,
-	ApplicationCommandType,
 	ButtonBuilder,
 	ButtonStyle,
 	Colors,
 	type ComponentType,
-	GuildMember,
 	MessageFlags,
 	PermissionFlagsBits,
 } from "discord.js";
-import type { Command } from "../../commands/index.js";
+import { defineCommand, option } from "../../commands/index.js";
 import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 
 import { mentionIfPingable } from "../../util/users.js";
 import { levelForXp } from "../xp/xpRoles.util.js";
 
-export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
-	type: ApplicationCommandType.ChatInput,
+export const SetCommand = defineCommand({
 	name: "set",
 	default_member_permissions: PermissionFlagsBits.Administrator,
 	description: "Set data for a user",
-	options: [
-		{
-			type: ApplicationCommandOptionType.User,
-			name: "target",
+	options: {
+		target: option.member({
 			description: "The user to edit",
 			required: true,
-		},
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "field",
+		}),
+		field: option.string({
 			description: "The field to edit",
 			required: true,
 			choices: ["xp", "daily"].map((it) => ({
 				name: it,
 				value: it,
 			})),
-		},
-		{
-			type: ApplicationCommandOptionType.Integer,
-			name: "value",
+		}),
+		value: option.integer({
 			description: "The value to set",
 			required: true,
-		},
-	],
+		}),
+	},
 
-	async handle(interaction) {
-		const target:
-			| GuildMember
-			| APIInteractionDataResolvedGuildMember
-			| null
-			| undefined = interaction.options.get("target")?.member;
-		if (!(target instanceof GuildMember)) {
-			await interaction.reply({
-				flags: MessageFlags.Ephemeral,
-				content: "Could not find user",
-			});
-			return;
-		}
+	async handle(interaction, { target, field, value }) {
 		const user = await getOrCreateUserById(BigInt(target.id));
 
-		const option = interaction.options.get("field", true).value as string;
-		const getter = getters.get(option);
-		const setter = setters.get(option);
+		const getter = getters.get(field);
+		const setter = setters.get(field);
 		if (getter == null || setter == null) return;
-		const value = interaction.options.get("value", true).value as number;
 
 		const embed = createStandardEmbed(target)
 			.setTitle("Confirm")
 			.setDescription(
 				`Are you sure you want to set ${mentionIfPingable(
 					target,
-				)}'s ${option} to ${value}?`,
+				)}'s ${field} to ${value}?`,
 			)
 			.setFields([
 				{
@@ -142,7 +117,7 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
 						.setTitle("Success")
 						.setColor(Colors.Green)
 						.setDescription(
-							`Set ${mentionIfPingable(target)}'s ${option} to ${value}`,
+							`Set ${mentionIfPingable(target)}'s ${field} to ${value}`,
 						),
 				],
 			});
@@ -152,7 +127,7 @@ export const SetCommand: Command<ApplicationCommandType.ChatInput> = {
 			});
 		}
 	},
-};
+});
 
 const getters = new Map([
 	["xp", (user: DDUser) => user.xp],

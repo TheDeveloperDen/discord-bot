@@ -1,32 +1,20 @@
-import {
-	ApplicationCommandOptionType,
-	ApplicationCommandType,
-	range,
-} from "discord.js";
-import type { Command } from "../../commands/index.js";
+import { range } from "discord.js";
+import { defineCommand, option } from "../../commands/index.js";
 import { upload } from "../pastify/pastify.js";
 import generateHotTake from "./hotTakes.util.js";
 
-export const ManyHotTakesCommand: Command<ApplicationCommandType.ChatInput> = {
+export const ManyHotTakesCommand = defineCommand({
 	name: "manyhottakes",
 	description: "Summon MANY hot takes from the database.",
-	type: ApplicationCommandType.ChatInput,
-	options: [
-		{
-			type: ApplicationCommandOptionType.Integer,
-			name: "count",
+	options: {
+		count: option.integer({
 			description: "The number of hot takes to summon.",
 			required: true,
-		},
-	],
+		}),
+	},
 
-	handle: async (interaction) => {
-		const count = interaction.options.get("count", true).value as number;
+	async handle(interaction, { count }) {
 		const guild = interaction.guild;
-		if (guild == null) {
-			await interaction.reply("Not in a guild");
-			return;
-		}
 		await interaction.deferReply();
 		const takes = await Promise.all(
 			Array.from(range(count)).map(async () => await generateHotTake(guild)),
@@ -42,6 +30,6 @@ export const ManyHotTakesCommand: Command<ApplicationCommandType.ChatInput> = {
 			});
 		}
 	},
-};
+});
 
 export default ManyHotTakesCommand;

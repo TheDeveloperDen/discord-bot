@@ -1,24 +1,15 @@
 import * as Sentry from "@sentry/bun";
-import {
-	ApplicationCommandOptionType,
-	ApplicationCommandType,
-	type ColorResolvable,
-	type GuildMember,
-	MessageFlags,
-	type Role,
-} from "discord.js";
+import { type ColorResolvable, MessageFlags, type Role } from "discord.js";
 import { config } from "../../Config.js";
-import type { Command, ExecutableSubcommand } from "../../commands/index.js";
+import { defineCommand, option, subcommand } from "../../commands/index.js";
 import { ColourRoles } from "../../store/models/ColourRoles.js";
 
-const ResetSubcommand: ExecutableSubcommand = {
-	type: ApplicationCommandOptionType.Subcommand,
-	name: "reset",
+const ResetSubcommand = subcommand({
 	description: "Reset your role colour",
 	async handle(interaction) {
 		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 		const user = interaction.user;
-		const member = interaction.member as GuildMember;
+		const member = interaction.member;
 		const roleInfo = await ColourRoles.findOne({
 			where: {
 				id: BigInt(user.id),
@@ -59,25 +50,20 @@ const ResetSubcommand: ExecutableSubcommand = {
 			interaction.followUp("Your role colour has been reset"),
 		]);
 	},
-};
+});
 
-const SetSubcommand: ExecutableSubcommand = {
-	type: ApplicationCommandOptionType.Subcommand,
-	name: "set",
+const SetSubcommand = subcommand({
 	description: "Set your role colour",
-	options: [
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "colour",
+	options: {
+		colour: option.string({
 			description: "The colour to set as a hex string (format: `#RRGGBB`)",
 			required: true,
-		},
-	],
-	async handle(interaction) {
+		}),
+	},
+	async handle(interaction, { colour }) {
 		await Sentry.startSpan(
 			{ name: "rolecolour/set", op: "command" },
 			async () => {
-				const colour = interaction.options.get("colour", true).value as string;
 				if (!colour.startsWith("#") || colour.length !== 7) {
 					await interaction.reply({
 						content: "Not a valid colour",
@@ -88,7 +74,7 @@ const SetSubcommand: ExecutableSubcommand = {
 
 				await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 				const user = interaction.user;
-				const member = interaction.member as GuildMember;
+				const member = interaction.member;
 				const roleInfo = await ColourRoles.findOne({
 					where: {
 						id: BigInt(user.id),
@@ -106,7 +92,7 @@ const SetSubcommand: ExecutableSubcommand = {
 
 				if (role == null) {
 					const position =
-						interaction.guild?.roles.resolve(config.roles.separators.general)
+						interaction.guild.roles.resolve(config.roles.separators.general)
 							?.position ?? 0;
 					role = await member.guild.roles.create({
 						colors: { primaryColor: colour as ColorResolvable },
@@ -128,15 +114,11 @@ const SetSubcommand: ExecutableSubcommand = {
 			},
 		);
 	},
-};
+});
 
-export const RoleColourCommand: Command<ApplicationCommandType.ChatInput> = {
+export const RoleColourCommand = defineCommand({
 	name: "rolecolour",
 	description: "Set your role colour",
-	type: ApplicationCommandType.ChatInput,
 	default_member_permissions: 0n,
-	options: [SetSubcommand, ResetSubcommand],
-	handle() {
-		throw new Error("This command should not be executed");
-	},
-};
+	subcommands: { set: SetSubcommand, reset: ResetSubcommand },
+});

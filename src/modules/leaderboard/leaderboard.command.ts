@@ -1,13 +1,6 @@
 import * as Sentry from "@sentry/bun";
-import type {
-	APIApplicationCommandOptionChoice,
-	GuildMember,
-} from "discord.js";
-import {
-	ApplicationCommandOptionType,
-	ApplicationCommandType,
-} from "discord.js";
-import type { Command } from "../../commands/index.js";
+import type { APIApplicationCommandOptionChoice } from "discord.js";
+import { defineCommand, option } from "../../commands/index.js";
 import { DDUser } from "../../store/models/DDUser.js";
 import { branding } from "../../util/branding.js";
 import { createStandardEmbed } from "../../util/embeds.js";
@@ -157,30 +150,22 @@ async function getLeaderboardUsers(
 	}
 }
 
-export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
-	type: ApplicationCommandType.ChatInput,
+export const LeaderboardCommand = defineCommand({
 	name: "leaderboard",
 	description: "Show the top 10 users based on XP, Level, or Daily Streak",
-	options: [
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "type",
+	options: {
+		type: option.string({
 			description: "The type of leaderboard to show",
 			required: true,
 			choices: info,
-		},
-	],
+		}),
+	},
 
-	async handle(interaction) {
+	async handle(interaction, { type }) {
 		await Sentry.startSpan({ name: "leaderboard", op: "command" }, async () => {
 			await interaction.deferReply();
 			const guild = interaction.guild;
-			if (guild == null) {
-				await interaction.followUp("This command can only be used in a server");
-				return;
-			}
-			const option = interaction.options.get("type", true).value as string;
-			const traitInfo = info.find((it) => it.value === option);
+			const traitInfo = info.find((it) => it.value === type);
 			if (traitInfo == null) {
 				await interaction.followUp("Invalid leaderboard type");
 				return;
@@ -199,7 +184,7 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
 				return;
 			}
 			const embed = {
-				...createStandardEmbed(interaction.member as GuildMember),
+				...createStandardEmbed(interaction.member),
 				title: `${branding.name} Leaderboard`,
 				description: `The top ${mappedUsers.length} users based on ${name}`,
 				fields: await Promise.all(
@@ -221,7 +206,7 @@ export const LeaderboardCommand: Command<ApplicationCommandType.ChatInput> = {
 			await interaction.followUp({ embeds: [embed] });
 		});
 	},
-};
+});
 
 function formatDays(days: number | bigint) {
 	if (days === 1) {
