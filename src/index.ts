@@ -104,8 +104,6 @@ async function main() {
 	logger.info("Startup complete");
 }
 
-const processEvents: NodeJS.EventEmitter = process;
-
 async function shutdown(signal: NodeJS.Signals) {
 	logger.info(`Received ${signal}, shutting down`);
 	await schedule.gracefulShutdown();
@@ -115,7 +113,7 @@ async function shutdown(signal: NodeJS.Signals) {
 }
 
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
-	processEvents.once(signal, () => void shutdown(signal));
+	process.once(signal, () => void shutdown(signal));
 }
 
 try {
