@@ -73,7 +73,7 @@ async function sendLevelUpMessage(
 		config.channels.botCommands,
 	)) as TextChannel;
 	if (!channel) {
-		console.error(
+		logger.error(
 			`Could not find level up channel with id ${config.channels.botCommands}`,
 		);
 		return;

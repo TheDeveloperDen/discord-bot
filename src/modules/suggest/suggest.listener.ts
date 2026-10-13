@@ -209,7 +209,7 @@ async function handleManageModalSubmission(
 			content: successMessage,
 		});
 	} catch (error) {
-		console.error(error);
+		logger.error(error);
 		await interaction.followUp({
 			content:
 				"Something went wrong while archiving the suggestion! Please try again later!",

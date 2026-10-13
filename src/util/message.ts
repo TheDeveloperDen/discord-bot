@@ -58,7 +58,7 @@ export async function fetchAllMessages(
 
 			// If we fetched less than requested, we've reached the end
 			if (messages.size < limit) {
-				console.info("Reached end of channel messages");
+				logger.info("Reached end of channel messages");
 				break;
 			}
 

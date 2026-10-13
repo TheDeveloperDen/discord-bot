@@ -1,8 +1,9 @@
+import { logger } from "./logging.js";
 export function startHealthCheck() {
 	Bun.serve({
 		routes: {
 			"/health": new Response("OK"),
 		},
 	});
-	console.log("Health check server started on /health");
+	logger.info("Health check server started on /health");
 }

@@ -23,7 +23,7 @@ export class MessageFetcher {
 				try {
 					await fetchFunction();
 				} catch (error) {
-					console.error("Error fetching messages:", error);
+					logger.error("Error fetching messages:", error);
 				}
 				// Wait before processing next
 				await new Promise((resolve) => setTimeout(resolve, this.delay));

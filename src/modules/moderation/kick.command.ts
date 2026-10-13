@@ -1,5 +1,6 @@
 import { MessageFlags, PermissionFlagsBits } from "discord.js";
 import { defineCommand, option } from "../../commands/index.js";
+import { logger } from "../../logging.js";
 import { fakeMention } from "../../util/users.js";
 import {
 	DM_FAILED_WARNING,
@@ -53,7 +54,7 @@ export const KickCommand = defineCommand({
 				});
 			}
 		} catch (e) {
-			console.error("Failed to kick user: ", e);
+			logger.error("Failed to kick user: ", e);
 
 			if (interaction.replied) {
 				await interaction.editReply("Something went wrong!");

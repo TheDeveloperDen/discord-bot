@@ -52,10 +52,6 @@ export const ZookeepCommand = defineContextMenu({
 			return;
 		}
 
-		console.debug(
-			targetMember.roles.highest.position,
-			interaction.member.roles.highest.position,
-		);
 		if (
 			targetMember.roles.highest.position >=
 			interaction.member.roles.highest.position
@@ -96,7 +92,6 @@ export const ZookeepCommand = defineContextMenu({
 			.setDescription(message)
 			.setColor("Purple")
 			.setImage(gif);
-		console.log(gif);
 
 		const applicableChannel = interaction.channel;
 

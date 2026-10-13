@@ -1,5 +1,6 @@
 import { MessageFlags, PermissionFlagsBits } from "discord.js";
 import { defineCommand, option } from "../../commands/index.js";
+import { logger } from "../../logging.js";
 import { fakeMention } from "../../util/users.js";
 import {
 	DM_FAILED_WARNING,
@@ -60,7 +61,7 @@ export const BanCommand = defineCommand({
 				});
 			}
 		} catch (e) {
-			console.error("Failed to ban user: ", e);
+			logger.error("Failed to ban user: ", e);
 
 			if (interaction.replied) {
 				await interaction.editReply("Something went wrong!");
