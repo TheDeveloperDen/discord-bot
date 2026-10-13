@@ -5,6 +5,7 @@ import type {
 	ClientEvents,
 } from "discord.js";
 import type { Command } from "../commands/index.js";
+import type { ComponentDefinition } from "../components/index.js";
 
 import type ModuleManager from "./moduleManager.js";
 
@@ -19,6 +20,7 @@ export default interface Module {
 	name: string;
 	commands?: Array<Command<ApplicationCommandType>>;
 	globalCommands?: Array<Command<ApplicationCommandType>>;
+	components?: ComponentDefinition[];
 	listeners?: EventListener[];
 
 	/**

@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/bun";
 import type { Client, ClientEvents, Snowflake } from "discord.js";
 import { CommandManager } from "../commands/index.js";
+import { ComponentRouter } from "../components/index.js";
 import { logger } from "../logging.js";
 import { runObserved } from "../observe.js";
 import type Module from "./module.js";
@@ -8,6 +9,7 @@ import type Module from "./module.js";
 export default class ModuleManager {
 	private readonly guildCommandManager: CommandManager;
 	private readonly globalCommandManager: CommandManager;
+	private readonly componentRouter: ComponentRouter;
 	private readonly originalEmit;
 
 	constructor(
@@ -25,6 +27,10 @@ export default class ModuleManager {
 
 		this.guildCommandManager = new CommandManager(guildCommands, client);
 		this.globalCommandManager = new CommandManager(globalCommands, client);
+		this.componentRouter = new ComponentRouter(
+			modules.flatMap((it) => it.components ?? []),
+			client,
+		);
 	}
 
 	/**
