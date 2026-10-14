@@ -48,7 +48,10 @@ const EditSubcommand = subcommand({
 	description: "Edit a FAQ entry, or create a new one if it doesn't exist",
 	options: { name: faqName(64) },
 	async handle(interaction, { name }) {
-		if (!isModerator(interaction)) return await denyPermission(interaction);
+		if (!isModerator(interaction)) {
+			await denyPermission(interaction);
+			return;
+		}
 		const faq = await FAQ.findOne({ where: { name } });
 
 		await interaction.showModal(
@@ -61,7 +64,10 @@ const DeleteSubcommand = subcommand({
 	description: "Delete a FAQ entry",
 	options: { name: faqName() },
 	async handle(interaction, { name }) {
-		if (!isModerator(interaction)) return await denyPermission(interaction);
+		if (!isModerator(interaction)) {
+			await denyPermission(interaction);
+			return;
+		}
 		const faq = await FAQ.findOne({ where: { name } });
 		if (faq == null) {
 			return await interaction.reply({

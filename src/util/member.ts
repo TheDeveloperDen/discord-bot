@@ -14,6 +14,7 @@ export async function getMember(message: Message) {
 	} catch (error) {
 		logger.error("Failed to fetch member:", error);
 		Sentry.captureException(error);
+		return null;
 	}
 }
 export async function getMemberFromInteraction(interaction: Interaction) {
@@ -31,5 +32,6 @@ export async function getMemberFromInteraction(interaction: Interaction) {
 	} catch (error) {
 		logger.error("Failed to fetch member:", error);
 		Sentry.captureException(error);
+		return null;
 	}
 }

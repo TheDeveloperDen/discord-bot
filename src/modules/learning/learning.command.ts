@@ -104,10 +104,11 @@ const LearningGetSubcommand = subcommand({
 			([fileName]) => fileName.toLowerCase() === name.toLowerCase(),
 		)?.[1];
 		if (resource == null) {
-			return await interaction.reply({
+			await interaction.reply({
 				flags: MessageFlags.Ephemeral,
 				content: `Could not find resource ${name}`,
 			});
+			return;
 		}
 
 		const embed = getResourceEmbed(
@@ -126,10 +127,11 @@ const LearningUpdateSubcommand = subcommand({
 		if (
 			!interaction.member.permissions.has(PermissionFlagsBits.ManageMessages)
 		) {
-			return await interaction.reply({
+			await interaction.reply({
 				flags: MessageFlags.Ephemeral,
 				content: "No permission",
 			});
+			return;
 		}
 
 		await interaction.deferReply({

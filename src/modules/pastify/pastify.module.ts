@@ -23,7 +23,7 @@ export const PastifyModule: Module = {
 				}
 				const pastified = await pastify(message);
 				if (pastified != null) {
-					return await message.channel.send({
+					await message.channel.send({
 						...pastified,
 						flags: undefined,
 					});
