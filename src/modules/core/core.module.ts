@@ -1,4 +1,5 @@
 import type Module from "../module.js";
+import { BlockCountCommand } from "./blockCount.command.js";
 import { BumpListener } from "./bump.listener.js";
 import InfoCommand from "./info.command.js";
 import { IntroListener } from "./introduction.listener.js";
@@ -8,6 +9,6 @@ import TimeoutCommand from "./timeout.command.js";
 
 export const CoreModule: Module = {
 	name: "core",
-	commands: [InfoCommand, TimeoutCommand, SetCommand],
+	commands: [InfoCommand, TimeoutCommand, SetCommand, BlockCountCommand],
 	listeners: [PollListener, BumpListener, IntroListener],
 };

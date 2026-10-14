@@ -12,6 +12,8 @@
 		"lint": "bunx biome check --fix",
 		"typecheck": "bunx tsc  --build --noEmit tsconfig.json",
 		"typecheck:prod": "bunx tsc --noEmit -p tsconfig.production.json",
+		"activity:build": "bun run activity/build.ts",
+		"activity:start": "bun run activity/server.ts",
 		"watch-dev": "bun --watch src/index.ts",
 		"start": "bun --trace-warnings src/index.ts",
 		"start:prod": "NODE_ENV=production bun run start",
@@ -28,6 +30,7 @@
 	"author": "Developer Den",
 	"license": "MIT",
 	"dependencies": {
+		"@discord/embedded-app-sdk": "^2.5.0",
 		"@napi-rs/canvas": "^1.0.11",
 		"@sentry/bun": "^11.7.0",
 		"@sequelize/core": "^7.0.0-alpha.48",

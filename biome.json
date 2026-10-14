@@ -7,7 +7,7 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"includes": ["src/**/*"]
+		"includes": ["src/**/*", "activity/**/*.ts", "activity/tsconfig.json"]
 	},
 	"formatter": {
 		"enabled": true,

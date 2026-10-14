@@ -1,10 +1,13 @@
 import {
+	type APIApplicationCommand,
 	ApplicationCommandOptionType,
-	type ApplicationCommandType,
+	ApplicationCommandType,
 	type AutocompleteInteraction,
 	type Client,
 	type CommandInteraction,
 	type Interaction,
+	type RESTGetAPIApplicationCommandsResult,
+	type RESTPutAPIApplicationCommandsJSONBody,
 	Routes,
 	type Snowflake,
 } from "discord.js";
@@ -22,6 +25,29 @@ type ResolvedCommand = {
 	autocomplete?: (interaction: AutocompleteInteraction) => unknown;
 };
 
+function primaryEntryPointPayload(
+	command: APIApplicationCommand,
+): RESTPutAPIApplicationCommandsJSONBody[number] {
+	return {
+		type: ApplicationCommandType.PrimaryEntryPoint,
+		name: command.name,
+		description: command.description,
+		default_member_permissions: command.default_member_permissions,
+		...(command.name_localizations
+			? { name_localizations: command.name_localizations }
+			: {}),
+		...(command.description_localizations
+			? { description_localizations: command.description_localizations }
+			: {}),
+		...(command.integration_types
+			? { integration_types: command.integration_types }
+			: {}),
+		...(command.contexts ? { contexts: command.contexts } : {}),
+		...(command.handler !== undefined ? { handler: command.handler } : {}),
+		nsfw: command.nsfw,
+	};
+}
+
 export class CommandManager {
 	constructor(
 		private readonly commands: Command<ApplicationCommandType>[],
@@ -32,16 +58,30 @@ export class CommandManager {
 		});
 	}
 
-	private async register(route: `/${string}`) {
+	private async register(
+		route: `/${string}`,
+		preservePrimaryEntryPoint = false,
+	) {
 		const body = this.commands.map((cmd) => ({
 			...cmd,
 			default_member_permissions: cmd.default_member_permissions?.toString(), // bigint but discord uses string
-		}));
+		})) as unknown as RESTPutAPIApplicationCommandsJSONBody;
+
+		if (preservePrimaryEntryPoint) {
+			const commands = (await this.client.rest.get(
+				route,
+			)) as RESTGetAPIApplicationCommandsResult;
+			const entryPoint = commands.find(
+				(command) => command.type === ApplicationCommandType.PrimaryEntryPoint,
+			);
+			if (entryPoint) body.push(primaryEntryPointPayload(entryPoint));
+		}
+
 		await this.client.rest.put(route, { body });
 	}
 
 	async setupGlobally(clientId: Snowflake) {
-		await this.register(Routes.applicationCommands(clientId));
+		await this.register(Routes.applicationCommands(clientId), true);
 	}
 
 	async setupForGuild(clientId: Snowflake, guildId: Snowflake) {

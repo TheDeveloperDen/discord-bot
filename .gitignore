@@ -6,6 +6,7 @@ bin/
 # nixpacks
 out/
 logs/
+activity/dist/
 .vscode/
 .DS_Store
 eslint-results.sarif

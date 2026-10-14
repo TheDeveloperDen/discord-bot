@@ -35,5 +35,24 @@ services:
       DDB_PASTE_BYPASS_TOKEN: ${DDB_PASTE_BYPASS_TOKEN:-}
     restart: unless-stopped
 
+  activity:
+    image: discord-bot:latest
+    build: .
+    container_name: devden_activity
+    profiles: ["activity"]
+    entrypoint: ["bun", "run", "activity:start"]
+    environment:
+      ACTIVITY_PORT: "3001"
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID:-}
+    ports:
+      - "3001:3001"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 30s
+      start_period: 5s
+      retries: 3
+    restart: unless-stopped
+
 volumes:
   postgres_data:

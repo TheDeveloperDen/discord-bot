@@ -58,7 +58,68 @@ PostgreSQL database.
    docker compose up --build
    ```
 
-### Nix
+
+## BlockCount Discord Activity
+
+BlockCount is a single-player 8×8 puzzle inside Discord, with mouse, touch, and
+keyboard controls. Draw a side-connected region containing exactly one clue,
+using as many cells as its number. Cover the board without overlaps to win.
+Generated puzzles always have a solution; other valid solutions are accepted.
+While drawing, a valid selection immediately takes on its clue's block color
+once the cell count matches. Adding too many cells or another clue returns the
+selection to its amber preview; release or press Enter to place a valid block.
+
+Tap a placed block to remove it. Undo restores the previous move, including
+removals and resets. For keyboard play, use arrow keys to move, Space to select,
+Enter to place, Delete/Backspace to remove, and Escape to cancel. Progress is
+saved in this browser/device, not synchronized between devices.
+Help, Undo, Reset, and New are grouped in the compact header above the board.
+The interface has no preview-mode badge; Discord connection errors remain visible.
+
+The frontend uses the Discord Embedded App SDK and a separate static server in
+this repository. Building it needs no Discord token, client ID, or database:
+
+```sh
+bun run activity:build
+```
+
+For a local browser preview, run `bun run activity:start` and open
+`http://localhost:3001`. Preview mode does not connect to Discord.
+
+Start the static server with the public client ID of the existing Discord
+application. The ID is read when the server starts, not while building:
+
+```sh
+DISCORD_CLIENT_ID=<public-discord-application-id> bun run activity:start
+```
+
+`ACTIVITY_PORT` is optional and defaults to `3001`. The configured Activity URL
+mapping must publicly route HTTPS traffic to this server; the server exposes
+`/`, `/app.js`, `/style.css`, `/config.json`, and `/health` only. For Compose,
+start the opt-in service with:
+
+```sh
+DISCORD_CLIENT_ID=<public-discord-application-id> docker compose --profile activity up --build activity
+```
+
+To enable it in Discord:
+
+1. Open the **existing bot application** in the Discord Developer Portal and
+   enable **Activities**. Enable the desktop/web/mobile platforms you support.
+2. Host this service behind HTTPS. Under **Activities → URL Mappings**, map
+   the `/` prefix to your host (without `https://`; for example,
+   `games.example.com`). Discord does not host the game files for you.
+3. Set `DISCORD_CLIENT_ID` to that application's public ID at server startup.
+   Never put the bot token or a client secret in frontend configuration.
+4. Restart the bot to register `/blockcount` in its configured guild. Launch it
+   with that command or the application's **Launch** entry in the App Launcher.
+   Global command synchronization preserves Discord's existing Activity entry.
+
+Verify the embedded launch in Discord after configuring the public host and
+Developer Portal. Browser preview proves gameplay but not Discord's handshake,
+URL mapping, or availability to other users.
+
+## Nix
 
 This project also has a Nix Flake to set up a reproducible development
 environment. To access this, run `nix develop`.

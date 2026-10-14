@@ -1,0 +1,10 @@
+{
+	"extends": "../tsconfig.json",
+	"compilerOptions": {
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"types": ["bun", "node"],
+		"noEmit": true
+	},
+	"include": ["build.ts", "server.ts", "src/**/*.ts"]
+}
