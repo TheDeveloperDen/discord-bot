@@ -15,7 +15,6 @@ import { checkAndAwardAchievements } from "../achievements/achievementService.js
 import type { EventListener } from "../module.js";
 import {
 	createReasonModal,
-	createSuggestionEmbedFromEntity,
 	createVotesEmbed,
 	generateVoteMessage,
 	getSuggestionByMessageIdOrRecoverFromMessage,
@@ -32,6 +31,11 @@ import {
 	type SuggestionVoteType,
 	upsertOrRemoveVote,
 } from "./suggest.js";
+import {
+	renderSuggestion,
+	suggestionEdit,
+	suggestionView,
+} from "./suggest.post.js";
 
 // Handler functions
 async function handleVoteButtonInteraction(
@@ -67,11 +71,11 @@ async function handleVoteButtonInteraction(
 	);
 
 	await suggestion.reload();
-	await interaction.message.edit({
-		embeds: [
-			await createSuggestionEmbedFromEntity(interaction.client, suggestion),
-		],
-	});
+	await interaction.message.edit(
+		suggestionEdit(
+			await renderSuggestion(interaction.client, suggestionView(suggestion)),
+		),
+	);
 
 	const content = generateVoteMessage(votingValue, previousVoteValue);
 	await interaction.followUp({

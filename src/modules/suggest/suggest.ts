@@ -16,141 +16,32 @@ import {
 	type TextBasedChannel,
 	TextInputBuilder,
 	TextInputStyle,
-	type UserResolvable,
 } from "discord.js";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
 import { Suggestion, SuggestionStatus } from "../../store/models/Suggestion.js";
 import { SuggestionVote } from "../../store/models/SuggestionVote.js";
-import { createStandardEmbed, standardFooter } from "../../util/embeds.js";
+import { createStandardEmbed } from "../../util/embeds.js";
 import { awaitTimeout } from "../../util/timeouts.js";
-import { actualMention, actualMentionById } from "../../util/users.js";
+import { actualMentionById } from "../../util/users.js";
 
-export const SUGGESTION_ID_FIELD_NAME = "Suggestion ID";
+import {
+	SUGGESTION_MANAGE_APPROVE_ID,
+	SUGGESTION_MANAGE_REJECT_ID,
+	SUGGESTION_REASON_INPUT_ID,
+} from "./suggest.constants.js";
 
-export const SUGGESTION_YES_ID = "suggestion-yes";
-export const SUGGESTION_NO_ID = "suggestion-no";
-export const SUGGESTION_MANAGE_APPROVE_ID = "suggestion-manage-approve";
-export const SUGGESTION_MANAGE_REJECT_ID = "suggestion-manage-reject";
+export * from "./suggest.constants.js";
 
-export const SUGGESTION_MANAGE_APPROVE_MODAL_ID =
-	"suggestion-manage-approve-modal";
-export const SUGGESTION_MANAGE_REJECT_MODAL_ID =
-	"suggestion-manage-reject-modal";
-
-export const SUGGESTION_REASON_INPUT_ID = "suggestion-reason-input";
-
-export const SUGGESTION_VIEW_VOTES_ID = "suggestion-view-votes";
+import {
+	renderSuggestion,
+	suggestionEdit,
+	suggestionView,
+} from "./suggest.post.js";
 
 export type SuggestionVoteNo = -1;
 export type SuggestionVoteYes = 1;
 export type SuggestionVoteType = SuggestionVoteNo | SuggestionVoteYes;
-
-export async function createSuggestionEmbed(
-	id: string,
-	client: Client,
-	submitter: UserResolvable,
-	suggestionText: string,
-	status?: SuggestionStatus,
-	moderatorId?: string,
-	moderatorReason?: string,
-	threadUrl?: string,
-	upvotes: number = 0,
-	downVotes: number = 0,
-): Promise<EmbedBuilder> {
-	const builder = createStandardEmbed(submitter ?? undefined);
-
-	if (status) {
-		builder.addFields({
-			name: "Status",
-			value: `**${status}**`,
-		});
-		builder.setColor(status === SuggestionStatus.REJECTED ? "Red" : "Green");
-		if (moderatorId) {
-			builder.addFields({
-				name: `${status === SuggestionStatus.REJECTED ? "**Denied**" : "**Approved**"} By`,
-				value: actualMentionById(BigInt(moderatorId)),
-			});
-		}
-		if (moderatorReason) {
-			builder.addFields({
-				name: "Reason",
-				value: moderatorReason,
-			});
-		}
-		if (threadUrl) {
-			builder.addFields({
-				name: "Discussion Thread",
-				value: `[View Discussion](${threadUrl})`,
-				inline: true,
-			});
-		}
-	}
-
-	builder.addFields([
-		{
-			name: "Submitter",
-			value: actualMention(submitter),
-			inline: true,
-		},
-		{
-			name: "Suggestion",
-			value: suggestionText,
-		},
-		{
-			name: status === SuggestionStatus.PENDING ? "Current Votes" : "Results",
-			value: `:white_check_mark:: **${upvotes}**
-        :x:: **${downVotes}**
-            `,
-		},
-	]);
-
-	builder.setFooter({
-		...standardFooter(),
-		text: `${SUGGESTION_ID_FIELD_NAME}: ${id}`,
-	});
-
-	const avatarURL = (await client.users.fetch(submitter)).avatarURL();
-	if (avatarURL) {
-		builder.setThumbnail(avatarURL);
-	}
-	return builder;
-}
-
-export const createSuggestionEmbedFromEntity: (
-	client: Client,
-	suggestion: Suggestion,
-	moderatorReason?: string,
-	threadUrl?: string,
-) => Promise<EmbedBuilder> = async (
-	client,
-	suggestion: Suggestion,
-	moderatorReason,
-	threadUrl,
-) => {
-	const upvotes = suggestion.votes?.filter((vote) => vote.vote === 1).length;
-	const downvotes = suggestion.votes?.filter((vote) => vote.vote === -1).length;
-
-	const member = await client.users
-		.fetch(suggestion.memberId.toString())
-		.catch(() => suggestion.memberId.toString());
-	return createSuggestionEmbed(
-		suggestion.id.toString(),
-		client,
-		member,
-		suggestion.suggestionText,
-
-		suggestion.status !== SuggestionStatus.PENDING
-			? suggestion.status
-			: undefined,
-		suggestion.moderatorId ? suggestion.moderatorId.toString() : undefined,
-		// stored when the suggestion is decided, so re-rendering keeps them
-		moderatorReason ?? suggestion.reason ?? undefined,
-		threadUrl ?? suggestion.threadUrl ?? undefined,
-		upvotes ?? 0,
-		downvotes ?? 0,
-	);
-};
 
 export const getSuggestionByMessageId: (
 	messageId: bigint,
@@ -233,10 +124,30 @@ export async function refreshSuggestionMessage(
 		return false;
 	}
 
-	await message.edit({
-		embeds: [await createSuggestionEmbedFromEntity(client, suggestion)],
-	});
+	await recoverDecisionFromEmbed(message, suggestion);
+	await message.edit(
+		suggestionEdit(await renderSuggestion(client, suggestionView(suggestion))),
+	);
 	return true;
+}
+
+/**
+ * Suggestions decided before the reason and thread link were stored only have them in their message's embed.
+ * Saves them from there, so re-rendering the message (which replaces the embed) doesn't lose them.
+ */
+async function recoverDecisionFromEmbed(
+	message: Message,
+	suggestion: Suggestion,
+) {
+	const fields = message.embeds?.[0]?.fields;
+	if (!fields) return;
+	const reason = fields.find((field) => field.name === "Reason")?.value;
+	const threadUrl = fields
+		.find((field) => field.name === "Discussion Thread")
+		?.value.match(/\((https?:\/\/[^)\s]+)\)/)?.[1];
+	if (!suggestion.reason && reason) suggestion.reason = reason;
+	if (!suggestion.threadUrl && threadUrl) suggestion.threadUrl = threadUrl;
+	if (suggestion.changed()) await suggestion.save();
 }
 
 /** Re-renders every suggestion's message from its row, so UI changes reach old suggestions. */
@@ -417,11 +328,11 @@ export async function getSuggestionByMessageIdOrRecoverFromMessage(
 	});
 
 	if (embedMessage.editable) {
-		const updatedEmbed = await createSuggestionEmbedFromEntity(
-			embedMessage.client,
-			suggestion,
+		await embedMessage.edit(
+			suggestionEdit(
+				await renderSuggestion(embedMessage.client, suggestionView(suggestion)),
+			),
 		);
-		await embedMessage.edit({ embeds: [updatedEmbed] });
 	}
 
 	return suggestion;
@@ -612,24 +523,9 @@ export async function respondToSuggestionInteraction(
 	suggestion.threadUrl = threadUrl ?? null;
 	await suggestion.save();
 
-	const embed = await createSuggestionEmbedFromEntity(
-		interaction.client,
-		suggestion,
-		moderatorReason,
-		threadUrl,
-	);
-
 	const newMessage = await suggestionArchive.send({
-		embeds: [embed],
-		components: [
-			new ActionRowBuilder<ButtonBuilder>().addComponents(
-				new ButtonBuilder()
-					.setCustomId(SUGGESTION_VIEW_VOTES_ID)
-					.setStyle(ButtonStyle.Secondary)
-					.setEmoji("👁")
-					.setLabel("View Votes"),
-			),
-		],
+		...(await renderSuggestion(interaction.client, suggestionView(suggestion))),
+		allowedMentions: { parse: [] },
 	});
 
 	if (initialMessage.deletable) {

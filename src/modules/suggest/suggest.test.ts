@@ -19,107 +19,37 @@ function createTestUser(id: string): User {
 	return {
 		...createMockUser({ id }),
 		avatarURL: () => null,
+		displayAvatarURL: () => `https://cdn.discordapp.com/embed/avatars/0.png`,
 	} as unknown as User;
 }
 
-function getFieldValue(
-	editPayload: {
-		embeds: Array<{
-			data?: {
-				fields?: Array<{
-					name?: string;
-					value?: string;
-				}>;
-			};
-			fields?: Array<{
-				name?: string;
-				value?: string;
-			}>;
-			toJSON?: () => {
-				fields?: Array<{
-					name?: string;
-					value?: string;
-				}>;
-			};
-		}>;
-	},
-	fieldName: string,
-): string {
-	const embed = editPayload.embeds[0];
-	const fields =
-		embed?.toJSON?.().fields ?? embed?.data?.fields ?? embed?.fields;
-	const field = fields?.find((candidate) => candidate.name === fieldName);
-	expect(field).toBeDefined();
-	return field?.value ?? "";
+/** All the text in a Components V2 payload, nested components included */
+function textOf(payload: unknown): string {
+	const texts: string[] = [];
+	const walk = (node: unknown) => {
+		if (Array.isArray(node)) return node.forEach(walk);
+		if (!node || typeof node !== "object") return;
+		const { content, components } = node as Record<string, unknown>;
+		if (typeof content === "string") texts.push(content);
+		walk(components);
+	};
+	walk((payload as { components?: unknown }).components);
+	return texts.join("\n");
 }
 
 describe("removeSuggestionVotesForMember", () => {
 	test("removes banned user votes and refreshes live and archived suggestions", async () => {
 		const bannedUserId = 999n;
-		const liveEditPayloads: Array<{
-			embeds: Array<{
-				fields?: Array<{
-					name?: string;
-					value?: string;
-				}>;
-			}>;
-		}> = [];
-		const archivedEditPayloads: Array<{
-			embeds: Array<{
-				fields?: Array<{
-					name?: string;
-					value?: string;
-				}>;
-			}>;
-		}> = [];
-		const liveEdit = mock(
-			async (payload: {
-				embeds: Array<{
-					data?: {
-						fields?: Array<{
-							name?: string;
-							value?: string;
-						}>;
-					};
-					toJSON?: () => {
-						fields?: Array<{
-							name?: string;
-							value?: string;
-						}>;
-					};
-				}>;
-			}) => {
-				const embed = payload.embeds[0];
-				liveEditPayloads.push({
-					embeds: [embed?.toJSON?.() ?? embed?.data ?? {}],
-				});
-				return {};
-			},
-		);
-		const archivedEdit = mock(
-			async (payload: {
-				embeds: Array<{
-					data?: {
-						fields?: Array<{
-							name?: string;
-							value?: string;
-						}>;
-					};
-					toJSON?: () => {
-						fields?: Array<{
-							name?: string;
-							value?: string;
-						}>;
-					};
-				}>;
-			}) => {
-				const embed = payload.embeds[0];
-				archivedEditPayloads.push({
-					embeds: [embed?.toJSON?.() ?? embed?.data ?? {}],
-				});
-				return {};
-			},
-		);
+		const liveEditPayloads: unknown[] = [];
+		const archivedEditPayloads: unknown[] = [];
+		const liveEdit = mock(async (payload: unknown) => {
+			liveEditPayloads.push(payload);
+			return {};
+		});
+		const archivedEdit = mock(async (payload: unknown) => {
+			archivedEditPayloads.push(payload);
+			return {};
+		});
 
 		const liveMessage = {
 			id: "2001",
@@ -252,37 +182,13 @@ describe("removeSuggestionVotesForMember", () => {
 		expect(liveEdit).toHaveBeenCalledTimes(1);
 		expect(archivedEdit).toHaveBeenCalledTimes(1);
 
-		const liveFieldValue = getFieldValue(
-			liveEditPayloads[0] as {
-				embeds: Array<{
-					data: {
-						fields?: Array<{
-							name?: string;
-							value?: string;
-						}>;
-					};
-				}>;
-			},
-			"Results",
+		// the live suggestion is pending, so it shows its votes; the archived one shows its results
+		expect(textOf(liveEditPayloads[0])).toContain(
+			"**Votes**\n:white_check_mark: **0** · :x: **1**",
 		);
-		expect(liveFieldValue).toMatch(/:white_check_mark:: \*\*0\*\*/);
-		expect(liveFieldValue).toMatch(/:x:: \*\*1\*\*/);
-
-		const archivedFieldValue = getFieldValue(
-			archivedEditPayloads[0] as {
-				embeds: Array<{
-					data: {
-						fields?: Array<{
-							name?: string;
-							value?: string;
-						}>;
-					};
-				}>;
-			},
-			"Results",
+		expect(textOf(archivedEditPayloads[0])).toContain(
+			"**Results**\n:white_check_mark: **1** · :x: **0**",
 		);
-		expect(archivedFieldValue).toMatch(/:white_check_mark:: \*\*1\*\*/);
-		expect(archivedFieldValue).toMatch(/:x:: \*\*0\*\*/);
 	});
 });
 
@@ -413,18 +319,64 @@ describe("refreshSuggestionMessage", () => {
 		if (!reloaded) throw new Error("suggestion missing");
 		await refreshSuggestionMessage(client, reloaded, [archive]);
 
-		const payload = edit.mock.calls[0][0] as {
-			embeds: { toJSON(): { fields: { name: string; value: string }[] } }[];
-		};
-		const fields = Object.fromEntries(
-			payload.embeds[0].toJSON().fields.map((f) => [f.name, f.value]),
+		const text = textOf(edit.mock.calls[0][0]);
+		expect(text).toContain("**Approved** by <@2>");
+		expect(text).toContain("**Reason**\ngood idea");
+		expect(text).toContain(
+			"**Discussion**\n[View the discussion thread](https://discord.com/channels/g/t)",
 		);
-		expect(fields).toMatchObject({
-			Status: "**APPROVED**",
-			Reason: "good idea",
-			"Discussion Thread":
-				"[View Discussion](https://discord.com/channels/g/t)",
+	});
+});
+
+describe("refreshing a suggestion decided before reasons were stored", () => {
+	test("saves the reason and thread link from its old embed, then shows them", async () => {
+		const edit = mock(async (_payload: unknown) => ({}));
+		const message = {
+			id: "6001",
+			editable: true,
+			edit,
+			embeds: [
+				{
+					fields: [
+						{ name: "Status", value: "**APPROVED**" },
+						{ name: "Reason", value: "we already planned this" },
+						{
+							name: "Discussion Thread",
+							value: "[View Discussion](https://discord.com/channels/g/t)",
+						},
+					],
+				},
+			],
+		} as unknown as Message;
+		const archive = {
+			id: config.suggest.archiveChannel,
+			isTextBased: () => true,
+			messages: { fetch: async () => message },
+		} as unknown as TextBasedChannel;
+		const client = {
+			users: { fetch: async (id: string) => createTestUser(id) },
+		} as unknown as Client;
+		const suggestion = await Suggestion.create({
+			id: 31n,
+			memberId: 1n,
+			suggestionText: "t",
+			messageId: 6001n,
 		});
+		suggestion.status = SuggestionStatus.APPROVED;
+		await suggestion.save();
+
+		const loaded = await Suggestion.findByPk(31n, {
+			include: [SuggestionVote],
+		});
+		if (!loaded) throw new Error("suggestion missing");
+		await refreshSuggestionMessage(client, loaded, [archive]);
+
+		const saved = await Suggestion.findByPk(31n);
+		expect(saved?.reason).toBe("we already planned this");
+		expect(saved?.threadUrl).toBe("https://discord.com/channels/g/t");
+		expect(textOf(edit.mock.calls[0][0])).toContain(
+			"**Reason**\nwe already planned this",
+		);
 	});
 });
 
