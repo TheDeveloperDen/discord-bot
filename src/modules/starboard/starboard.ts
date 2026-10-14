@@ -119,7 +119,7 @@ export const extractEmbedAndFilesFromMessage: (
 		)
 		.setAuthor({
 			name: member.displayName,
-			iconURL: member.user.displayAvatarURL(),
+			iconURL: member.displayAvatarURL(),
 			url: `https://discord.com/users/${member.id}`,
 		})
 		.setURL(message.url)
