@@ -69,13 +69,18 @@ Generated puzzles always have a solution; other valid solutions are accepted.
 While drawing, a valid selection immediately takes on its clue's block color
 once the cell count matches. Adding too many cells or another clue returns the
 selection to its amber preview; release or press Enter to place a valid block.
+Fast drags include the cells crossed between pointer updates. Moving outside the
+board cancels the current stroke.
 
 Tap a placed block to remove it. Undo restores the previous move, including
 removals and resets. For keyboard play, use arrow keys to move, Space to select,
 Enter to place, Delete/Backspace to remove, and Escape to cancel. Progress is
 saved in this browser/device, not synchronized between devices.
+Completing a puzzle focuses “Play another puzzle” and disables the covered board,
+so keyboard input cannot accidentally change the saved solution.
 Help, Undo, Reset, and New are grouped in the compact header above the board.
-The interface has no preview-mode badge; Discord connection errors remain visible.
+The interface has no preview-mode badge. Discord connection errors close any open
+help or confirmation dialog so the error message remains visible.
 
 The frontend uses the Discord Embedded App SDK. Its HTTP server starts and stops
 inside the bot process, so normal development needs only one command:

@@ -6,6 +6,7 @@ import {
 	type Puzzle,
 	validatePlacement,
 } from "./game.js";
+import { getCellsCrossedByGridSegment } from "./pointerGeometry.js";
 
 const BOARD_SIZE = 8;
 const TOTAL_CELLS = BOARD_SIZE * BOARD_SIZE;
@@ -142,6 +143,8 @@ let puzzle: Puzzle = generatePuzzle(seed).puzzle;
 let blocks: Block[] = [];
 let selection: number[] = [];
 let activePointerId: number | null = null;
+let pointerX: number | null = null;
+let pointerY: number | null = null;
 let removalCandidate: number | null = null;
 let focusedCell = 0;
 let restoredNotice: string | null = null;
@@ -213,6 +216,8 @@ board.addEventListener("pointerdown", (event) => {
 
 	event.preventDefault();
 	activePointerId = event.pointerId;
+	pointerX = event.clientX;
+	pointerY = event.clientY;
 	board.setPointerCapture(event.pointerId);
 
 	const placedBlock = findBlockAt(cell);
@@ -231,9 +236,7 @@ board.addEventListener("pointerdown", (event) => {
 
 board.addEventListener("pointermove", (event) => {
 	if (event.pointerId !== activePointerId || removalCandidate !== null) return;
-	const cell = getCellAtPoint(event.clientX, event.clientY);
-	if (cell === null || !addToSelection(cell)) return;
-	refreshSelectionPreview();
+	extendSelectionThroughPointerEvent(event);
 });
 
 board.addEventListener("pointerup", (event) => {
@@ -248,7 +251,7 @@ board.addEventListener("pointercancel", (event) => {
 
 board.addEventListener("lostpointercapture", (event) => {
 	if (event.pointerId !== activePointerId) return;
-	activePointerId = null;
+	clearPointerTracking();
 	clearSelection();
 	removalCandidate = null;
 	refreshSelectionPreview();
@@ -256,6 +259,7 @@ board.addEventListener("lostpointercapture", (event) => {
 });
 
 board.addEventListener("keydown", (event) => {
+	if (!completion.hidden || !fatalState.hidden) return;
 	const target = event.target;
 	if (!(target instanceof HTMLButtonElement)) return;
 	const cell = Number(target.dataset.cell);
@@ -385,10 +389,17 @@ function waitForDiscordReady(discord: DiscordSDK): Promise<void> {
 }
 
 function showFatal(message: string): void {
+	cancelActivePointer();
+	clearSelection();
+	removalCandidate = null;
+	pendingAction = null;
+	if (helpDialog.open) helpDialog.close();
+	if (confirmationDialog.open) confirmationDialog.close();
 	for (const child of Array.from(game.children)) {
 		if (child !== fatalState && child instanceof HTMLElement)
 			child.inert = true;
 	}
+	fatalState.inert = false;
 	game.classList.add("is-unavailable");
 	fatalCopy.textContent = message;
 	fatalState.hidden = false;
@@ -526,7 +537,8 @@ function render(restoreBoardFocus = false): void {
 		selection.length > 0
 			? `Selecting ${selection.length} cell${selection.length === 1 ? "" : "s"} · release or press Enter to place`
 			: "Draw cells · release to place · tap to erase";
-	completion.hidden = !isComplete();
+	const complete = isComplete();
+	updateCompletionState(complete);
 	if (restoredNotice) {
 		setStatus(restoredNotice, "success");
 		restoredNotice = null;
@@ -536,10 +548,26 @@ function render(restoreBoardFocus = false): void {
 			? ""
 			: "Progress cannot be saved because browser storage is unavailable.",
 	);
-	if (restoreBoardFocus)
+	if (restoreBoardFocus && !complete && fatalState.hidden)
 		board
 			.querySelector<HTMLButtonElement>(`[data-cell="${focusedCell}"]`)
 			?.focus();
+}
+
+function updateCompletionState(complete: boolean): void {
+	completion.hidden = !complete;
+	if (!fatalState.hidden) return;
+
+	for (const child of Array.from(game.children)) {
+		if (
+			child !== completion &&
+			child !== fatalState &&
+			child instanceof HTMLElement
+		)
+			child.inert = complete;
+	}
+	completion.inert = false;
+	if (complete) playAgainButton.focus();
 }
 
 function createCell(
@@ -635,6 +663,69 @@ function areAdjacent(first: number, second: number): boolean {
 	);
 }
 
+function extendSelectionThroughPointerEvent(event: PointerEvent): boolean {
+	let selectionChanged = false;
+	for (const sample of event.getCoalescedEvents?.() ?? []) {
+		const changed = extendSelectionToPoint(sample.clientX, sample.clientY);
+		if (changed === null) return false;
+		selectionChanged ||= changed;
+	}
+	const changed = extendSelectionToPoint(event.clientX, event.clientY);
+	if (changed === null) return false;
+	selectionChanged ||= changed;
+	if (selectionChanged) refreshSelectionPreview();
+	return true;
+}
+
+function extendSelectionToPoint(x: number, y: number): boolean | null {
+	if (pointerX === null || pointerY === null) return false;
+	const cells = getCellsCrossedBySegment(pointerX, pointerY, x, y);
+	if (cells === null) {
+		cancelActivePointer();
+		return null;
+	}
+	pointerX = x;
+	pointerY = y;
+
+	let selectionChanged = false;
+	for (const cell of cells) {
+		if (selection.includes(cell)) continue;
+		if (findBlockAt(cell) !== -1 || !addToSelection(cell)) break;
+		selectionChanged = true;
+	}
+	return selectionChanged;
+}
+
+function getCellsCrossedBySegment(
+	startX: number,
+	startY: number,
+	endX: number,
+	endY: number,
+): number[] | null {
+	const bounds = board.getBoundingClientRect();
+	if (
+		bounds.width === 0 ||
+		bounds.height === 0 ||
+		!isPointInsideBoard(startX, startY, bounds) ||
+		!isPointInsideBoard(endX, endY, bounds)
+	)
+		return null;
+
+	return getCellsCrossedByGridSegment(
+		((startX - bounds.left) / bounds.width) * BOARD_SIZE,
+		((startY - bounds.top) / bounds.height) * BOARD_SIZE,
+		((endX - bounds.left) / bounds.width) * BOARD_SIZE,
+		((endY - bounds.top) / bounds.height) * BOARD_SIZE,
+		BOARD_SIZE,
+	);
+}
+
+function isPointInsideBoard(x: number, y: number, bounds: DOMRect): boolean {
+	return (
+		x >= bounds.left && x < bounds.right && y >= bounds.top && y < bounds.bottom
+	);
+}
+
 function finishPointerInteraction(event: PointerEvent): void {
 	if (removalCandidate !== null) {
 		const candidate = removalCandidate;
@@ -649,28 +740,29 @@ function finishPointerInteraction(event: PointerEvent): void {
 		return;
 	}
 
-	const cell = getCellAtPoint(event.clientX, event.clientY);
-	if (cell === null) {
-		clearSelection();
-		releasePointer(event.pointerId);
-		refreshSelectionPreview();
-		setStatus("Selection cancelled.");
-		return;
-	}
-	if (addToSelection(cell)) refreshSelectionPreview();
+	if (!extendSelectionThroughPointerEvent(event)) return;
 	releasePointer(event.pointerId);
 	commitSelection();
 }
 
 function releasePointer(pointerId: number): void {
-	activePointerId = null;
+	clearPointerTracking();
 	if (board.hasPointerCapture(pointerId))
 		board.releasePointerCapture(pointerId);
 }
 
+function clearPointerTracking(): void {
+	activePointerId = null;
+	pointerX = null;
+	pointerY = null;
+}
+
 function cancelActivePointer(): void {
 	const pointerId = activePointerId;
-	if (pointerId === null) return;
+	if (pointerId === null) {
+		clearPointerTracking();
+		return;
+	}
 	clearSelection();
 	removalCandidate = null;
 	releasePointer(pointerId);
