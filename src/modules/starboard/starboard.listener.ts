@@ -544,7 +544,15 @@ async function updateBoardMessage(
 			);
 		} catch (error) {
 			boardMessage = null;
-			logger.error(`Error fetching the ${board.name} message`, error);
+			if (isGone(error)) {
+				// a moderator deleted the post, so keep it off the board instead of failing on every refresh
+				await boardMessageEntity.update({ removedAt: new Date() });
+				logger.info(
+					`${board.name} post ${boardMessageEntity.starboardMessageId} was deleted from the board, so it won't be updated again`,
+				);
+			} else {
+				logger.error(`Error fetching the ${board.name} message`, error);
+			}
 		}
 
 		if (!boardMessage) {
