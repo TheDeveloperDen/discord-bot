@@ -29,6 +29,7 @@ describe("Card", () => {
 					iconUrl: "https://cdn/a.png",
 					url: "https://discord.com/users/1",
 				}}
+				description="Add a #rust channel"
 				footer="Suggestion ID: 1"
 				timestamp={1_700_000_000_000}
 			>
@@ -41,7 +42,10 @@ describe("Card", () => {
 		const [header, body, footer] = container.components;
 		expect(header).toMatchObject({
 			type: ComponentType.Section,
-			components: [{ content: "**[Alice](https://discord.com/users/1)**" }],
+			components: [
+				{ content: "**[Alice](https://discord.com/users/1)**" },
+				{ content: "Add a #rust channel" },
+			],
 			accessory: { media: { url: "https://cdn/a.png" } },
 		});
 		expect(body).toMatchObject({
@@ -64,5 +68,16 @@ describe("Card", () => {
 			Number.parseInt(branding.color.replace("#", ""), 16),
 		);
 		expect(container.components.at(-1)?.content).toBe(`-# ${branding.name}`);
+	});
+
+	test("leaves out the avatar when there's no text to sit beside it", () => {
+		const [container] = render(
+			<Card author={{ name: "Alice", iconUrl: "https://cdn/a.png" }} />,
+		);
+
+		expect(container.components[0]).toMatchObject({
+			type: ComponentType.TextDisplay,
+			content: "**Alice**",
+		});
 	});
 });
