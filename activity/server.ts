@@ -36,7 +36,15 @@ const securityHeaders = {
 	"X-Content-Type-Options": "nosniff",
 };
 
-function parsePort(value = process.env.ACTIVITY_PORT): number {
+export type ActivityServerOptions = {
+	clientId: string | null;
+	port: number;
+	hostname?: string;
+};
+
+export type ActivityServer = Bun.Server<undefined>;
+
+export function parseActivityPort(value: string | undefined): number {
 	if (!value) return 3001;
 
 	const port = Number(value);
@@ -81,49 +89,61 @@ async function assetResponse(asset: Asset, method: string): Promise<Response> {
 	});
 }
 
-export async function handleActivityRequest(
-	request: Request,
-): Promise<Response> {
-	if (request.method !== "GET" && request.method !== "HEAD") {
-		return textResponse("Method Not Allowed", 405, { Allow: "GET, HEAD" });
-	}
+export function createActivityRequestHandler(clientId: string | null) {
+	const configuredClientId = clientId?.trim() || null;
 
-	const { pathname } = new URL(request.url);
-	if (pathname === "/health") {
-		return textResponse(request.method === "HEAD" ? null : "OK", 200, {
-			"Cache-Control": "no-store",
-		});
-	}
+	return async function handleActivityRequest(
+		request: Request,
+	): Promise<Response> {
+		if (request.method !== "GET" && request.method !== "HEAD") {
+			return textResponse("Method Not Allowed", 405, { Allow: "GET, HEAD" });
+		}
 
-	if (pathname === "/config.json") {
-		return new Response(
-			request.method === "HEAD"
-				? null
-				: JSON.stringify({
-						clientId: process.env.DISCORD_CLIENT_ID?.trim() || null,
-					}),
-			{
-				headers: {
-					...securityHeaders,
-					"Content-Type": "application/json; charset=utf-8",
-					"Cache-Control": "no-store",
+		const { pathname } = new URL(request.url);
+		if (pathname === "/health") {
+			return textResponse(request.method === "HEAD" ? null : "OK", 200, {
+				"Cache-Control": "no-store",
+			});
+		}
+
+		if (pathname === "/config.json") {
+			return new Response(
+				request.method === "HEAD"
+					? null
+					: JSON.stringify({ clientId: configuredClientId }),
+				{
+					headers: {
+						...securityHeaders,
+						"Content-Type": "application/json; charset=utf-8",
+						"Cache-Control": "no-store",
+					},
 				},
-			},
+			);
+		}
+
+		if (!Object.hasOwn(assets, pathname)) {
+			return textResponse("Not Found", 404);
+		}
+
+		return assetResponse(assets[pathname], request.method);
+	};
+}
+
+export function startActivityServer({
+	clientId,
+	port,
+	hostname = "0.0.0.0",
+}: ActivityServerOptions) {
+	if (!Number.isInteger(port) || port < 0 || port > 65_535) {
+		throw new Error(
+			"Activity server port must be an integer between 0 and 65535",
 		);
 	}
 
-	if (!Object.hasOwn(assets, pathname)) return textResponse("Not Found", 404);
-	const asset = assets[pathname];
-
-	return assetResponse(asset, request.method);
-}
-
-export function startActivityServer() {
-	const port = parsePort();
 	const server = Bun.serve({
 		port,
-		hostname: "0.0.0.0",
-		fetch: handleActivityRequest,
+		hostname,
+		fetch: createActivityRequestHandler(clientId),
 	});
 
 	console.log(`BlockCount Activity server listening on ${server.url}`);
@@ -131,5 +151,8 @@ export function startActivityServer() {
 }
 
 if (import.meta.main) {
-	startActivityServer();
+	startActivityServer({
+		clientId: process.env.DISCORD_CLIENT_ID ?? null,
+		port: parseActivityPort(process.env.ACTIVITY_PORT),
+	});
 }

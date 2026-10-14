@@ -1,5 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import { handleActivityRequest } from "./server.js";
+import { createActivityRequestHandler } from "./server.js";
+
+const handleActivityRequest = createActivityRequestHandler(null);
 
 describe("BlockCount activity server", () => {
 	it("does not expose files outside its fixed asset list", async () => {

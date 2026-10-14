@@ -58,8 +58,8 @@ const devConfig: Config = {
 		noPing: "932637353263128577",
 		zooExhibit: "1432483356393734194",
 	},
-	clientId: "932387188585398353",
-	guildId: "904478147351806012",
+	clientId: "1536766074962444369",
+	guildId: "932286006156222495",
 	poll: {
 		emojiId: "skull",
 		yesEmojiId: "thumbsup",

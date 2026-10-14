@@ -1,5 +1,11 @@
 import "../instrument.js"; // Import the instrumentation module first
 import { Client, GatewayIntentBits, Partials } from "discord.js";
+import { buildActivity } from "../activity/build.js";
+import {
+	type ActivityServer,
+	parseActivityPort,
+	startActivityServer,
+} from "../activity/server.js";
 import { config } from "./Config.js";
 import { setupBranding } from "./util/branding.js";
 import "./util/random.js";
@@ -45,6 +51,8 @@ const client = new Client({
 	],
 	partials: [Partials.Message, Partials.Channel, Partials.Reaction],
 });
+
+let activityServer: ActivityServer | undefined;
 
 const moduleManager = new ModuleManager(
 	client,
@@ -96,6 +104,16 @@ async function main() {
 	await initStorage();
 	await moduleManager.preInit();
 	await logIn();
+
+	if (process.env.NODE_ENV !== "production") {
+		await buildActivity();
+	}
+
+	activityServer = startActivityServer({
+		clientId: client.application?.id ?? client.user?.id ?? config.clientId,
+		port: parseActivityPort(process.env.ACTIVITY_PORT),
+	});
+
 	const guild = await client.guilds.fetch(config.guildId);
 	await setupBranding(guild);
 
@@ -108,6 +126,10 @@ const processEvents: NodeJS.EventEmitter = process;
 
 async function shutdown(signal: NodeJS.Signals) {
 	logger.info(`Received ${signal}, shutting down`);
+	if (activityServer) {
+		await activityServer.stop();
+		activityServer = undefined;
+	}
 	await schedule.gracefulShutdown();
 	await client.destroy();
 	await Sentry.close(2000);
@@ -122,6 +144,10 @@ try {
 	startHealthCheck();
 	await main();
 } catch (e) {
+	if (activityServer) {
+		await activityServer.stop();
+		activityServer = undefined;
+	}
 	Sentry.captureException(e);
 	throw e;
 }

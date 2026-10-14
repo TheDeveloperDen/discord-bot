@@ -7,16 +7,17 @@ The official main Discord Bot for the
 
 ### Building for Development
 
-Development building skips linting checks and avoids compilation for faster
-prototyping. By default, it is [configured](/src/Config.ts) to use roles and
+Development runs the bot's TypeScript directly and builds the Activity frontend.
+By default, it is [configured](/src/Config.ts) to use roles and
 channels from the DevDen Testing server. Invitations to this server are given on
 request to avoid spam. Its use is recommended, as setting up your own testing
 server can be tedious.
 
-- Run `yarn install` to install all dependencies
-- Run `yarn watch-dev` to start the bot, automatically reloading on changes. If
-  this isn't desired, you can use `yarn build-and-run` to build and run the bot
-  once, without automatic reloading.
+- Run `bun install` to install all dependencies.
+- Run `bun run watch-dev` to start the bot and Activity server together, with
+  automatic bot reloads. Use `bun run start` without automatic reloads.
+- Development startup builds the Activity frontend automatically. Restart the
+  command after frontend HTML/CSS/TypeScript edits; it has no frontend hot reload.
 
 ### Building for Production
 
@@ -76,31 +77,51 @@ saved in this browser/device, not synchronized between devices.
 Help, Undo, Reset, and New are grouped in the compact header above the board.
 The interface has no preview-mode badge; Discord connection errors remain visible.
 
-The frontend uses the Discord Embedded App SDK and a separate static server in
-this repository. Building it needs no Discord token, client ID, or database:
+The frontend uses the Discord Embedded App SDK. Its HTTP server starts and stops
+inside the bot process, so normal development needs only one command:
+
+```sh
+bun run watch-dev
+```
+
+The bot builds the Activity assets on each non-production startup and serves
+them at `http://localhost:3001`. It supplies its logged-in application ID;
+`DISCORD_CLIENT_ID` is not needed when running with the bot. Configure the
+development bot token and test-server IDs as usual in the local environment and
+`src/Config.ts`.
+
+`ACTIVITY_PORT` is optional and defaults to `3001`. The server exposes only
+`/`, `/app.js`, `/style.css`, `/config.json`, and `/health`. Production uses
+prebuilt assets: the Docker image builds them during image creation. Outside
+Docker, run `bun run activity:build` before `bun run start:prod`.
+
+Compose publishes the Activity port on the bot service; no separate Activity
+container or profile is required:
+
+```sh
+docker compose up --build
+```
+
+For an optional **Activity-only browser preview**, without a bot token or
+database:
 
 ```sh
 bun run activity:build
+bun run activity:start
 ```
 
-For a local browser preview, run `bun run activity:start` and open
-`http://localhost:3001`. Preview mode does not connect to Discord.
+That standalone mode reads `DISCORD_CLIENT_ID` if you want to embed it in
+Discord. Normal browser preview does not connect to Discord.
 
-Start the static server with the public client ID of the existing Discord
-application. The ID is read when the server starts, not while building:
+For local testing inside Discord, expose the Activity port in another terminal:
 
 ```sh
-DISCORD_CLIENT_ID=<public-discord-application-id> bun run activity:start
+cloudflared tunnel --url http://localhost:3001
 ```
 
-`ACTIVITY_PORT` is optional and defaults to `3001`. The configured Activity URL
-mapping must publicly route HTTPS traffic to this server; the server exposes
-`/`, `/app.js`, `/style.css`, `/config.json`, and `/health` only. For Compose,
-start the opt-in service with:
-
-```sh
-DISCORD_CLIENT_ID=<public-discord-application-id> docker compose --profile activity up --build activity
-```
+Tunnels are not started automatically: they make the local service publicly
+accessible. Put the generated hostname in the development application's URL
+mapping, update it when the tunnel address changes, and remove it after testing.
 
 To enable it in Discord:
 
@@ -109,7 +130,8 @@ To enable it in Discord:
 2. Host this service behind HTTPS. Under **Activities → URL Mappings**, map
    the `/` prefix to your host (without `https://`; for example,
    `games.example.com`). Discord does not host the game files for you.
-3. Set `DISCORD_CLIENT_ID` to that application's public ID at server startup.
+3. Use the same application as the logged-in bot; its ID is supplied automatically.
+   For Activity-only hosting, set `DISCORD_CLIENT_ID` to that public application ID.
    Never put the bot token or a client secret in frontend configuration.
 4. Restart the bot to register `/blockcount` in its configured guild. Launch it
    with that command or the application's **Launch** entry in the App Launcher.
