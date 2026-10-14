@@ -1,4 +1,8 @@
-import { type ColorResolvable, resolveColor } from "discord.js";
+import {
+	type ColorResolvable,
+	type GuildMember,
+	resolveColor,
+} from "discord.js";
 import { Container, Section, TextDisplay, Thumbnail } from "disjsx";
 import type { ReactNode } from "react";
 import { branding } from "../util/branding.js";
@@ -9,12 +13,23 @@ export interface CardAuthor {
 	iconUrl?: string;
 	/** Makes the name a link */
 	url?: string;
+	/**
+	 * Shows the author as a mention
+	 */
+	userId?: string;
 }
 
 export interface CardProps {
 	/** The bar down the left. Defaults to the branding colour */
 	accent?: ColorResolvable;
+	/** A large heading at the top, for what the card is mainly about (e.g. a starboard post's score) */
+	title?: string;
 	author?: CardAuthor;
+	/**
+	 * The main text, shown beside the author's avatar so the header doesn't leave a gap next to it.
+	 * Up to two blocks, which are spaced apart (a section holds at most three, including the name)
+	 */
+	description?: string | [string] | [string, string];
 	/** Extra footer text, after the branding name */
 	footer?: string;
 	/** Shown in the footer as a relative time, but should be provided with a fixed time. */
@@ -28,7 +43,9 @@ export interface CardProps {
  */
 export function Card({
 	accent,
+	title,
 	author,
+	description,
 	footer,
 	timestamp,
 	children,
@@ -37,22 +54,45 @@ export function Card({
 		<Container
 			accentColor={resolveColor(accent ?? (branding.color as ColorResolvable))}
 		>
-			{author && <CardHeader author={author} />}
+			{title && <TextDisplay>{`## ${title}`}</TextDisplay>}
+			{author ? (
+				<CardHeader author={author} description={blocks(description)} />
+			) : (
+				blocks(description).map((block) => (
+					<TextDisplay key={block}>{block}</TextDisplay>
+				))
+			)}
 			{children}
 			<TextDisplay>{footerText(footer, timestamp)}</TextDisplay>
 		</Container>
 	);
 }
 
-function CardHeader({ author }: { author: CardAuthor }) {
-	const name = author.url
-		? `**[${author.name}](${author.url})**`
-		: `**${author.name}**`;
-	// a section must have an accessory, so a header without an icon is plain text
-	if (!author.iconUrl) return <TextDisplay>{name}</TextDisplay>;
+const blocks = (description: CardProps["description"]) =>
+	(Array.isArray(description) ? description : [description]).filter(
+		(block): block is string => !!block,
+	);
+
+function CardHeader({
+	author,
+	description,
+}: {
+	author: CardAuthor;
+	description: string[];
+}) {
+	const name = author.userId
+		? `<@${author.userId}>`
+		: author.url
+			? `**[${author.name}](${author.url})**`
+			: `**${author.name}**`;
+	const texts = [name, ...description].map((text) => (
+		<TextDisplay key={text}>{text}</TextDisplay>
+	));
+	// without text beside it the avatar leaves a gap and reads as a second picture, so it's only shown with text
+	if (!author.iconUrl || description.length === 0) return <>{texts}</>;
 	return (
 		<Section>
-			<TextDisplay>{name}</TextDisplay>
+			{texts}
 			<Thumbnail url={author.iconUrl} />
 		</Section>
 	);
@@ -66,3 +106,10 @@ function footerText(footer?: string, timestamp?: Date | number) {
 	}
 	return `-# ${parts.join(" · ")}`;
 }
+
+/** A card author for a member: a mention of them, and their server avatar */
+export const memberAuthor = (member: GuildMember): CardAuthor => ({
+	name: member.displayName,
+	iconUrl: member.displayAvatarURL(),
+	userId: member.id,
+});
