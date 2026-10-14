@@ -3,6 +3,7 @@ import {
 	ButtonStyle,
 	type GuildMember,
 	type Message,
+	type User,
 } from "discord.js";
 import {
 	ActionRow,
@@ -37,7 +38,8 @@ const MAX_REPLY_LINES = 4;
  */
 export async function renderStarboardPost(
 	message: Message<true>,
-	member: GuildMember,
+	/** The author's member, or their user if they've left the server */
+	author: GuildMember | User,
 	stars: number,
 	settings: StarboardContentRenderOptions,
 	contentStars = stars,
@@ -58,24 +60,22 @@ export async function renderStarboardPost(
 		? await message.fetchReference().catch(() => null)
 		: null;
 	const reply =
-		referenced?.inGuild() &&
-		referenced.guildId === message.guildId &&
-		referenced.member
-			? { message: referenced, member: referenced.member }
+		referenced?.inGuild() && referenced.guildId === message.guildId
+			? referenced
 			: undefined;
 
 	const media = [
 		await mediaUrl(message, "starboard.gif"),
-		reply ? await mediaUrl(reply.message, "starboard-reply.gif") : undefined,
+		reply ? await mediaUrl(reply, "starboard-reply.gif") : undefined,
 	].filter((url) => url !== undefined);
 
 	// shown beside the author's avatar: the message being replied to, then the message
 	const description = [
 		reply &&
 			quoteText({
-				author: `<@${reply.member.id}>`,
+				author: `<@${reply.author.id}>`,
 				children:
-					excerpt(reply.message.content, {
+					excerpt(reply.content, {
 						maxLength: MAX_REPLY_LENGTH,
 						maxLines: MAX_REPLY_LINES,
 					}) || "*(no text)*",
@@ -87,7 +87,7 @@ export async function renderStarboardPost(
 		<V2Message isV2>
 			<Card
 				accent={getColorForStars(stars, settings.threshold, settings.color)}
-				author={memberAuthor(member)}
+				author={memberAuthor(author)}
 				title={buildStarboardScore(message, contentStars, settings)}
 				timestamp={message.editedTimestamp ?? message.createdTimestamp}
 				description={description}

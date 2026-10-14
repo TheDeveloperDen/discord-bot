@@ -6,6 +6,7 @@ import {
 	RESTJSONErrorCodes,
 	type SendableChannels,
 	type Snowflake,
+	type User,
 } from "discord.js";
 import * as schedule from "node-schedule";
 import { config } from "../../Config.js";
@@ -14,7 +15,6 @@ import { AntiStarboardMessage } from "../../store/models/AntiStarboardMessage.js
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import { ReputationEventType } from "../../store/models/ReputationEvent.js";
 import { StarboardMessage } from "../../store/models/StarboardMessage.js";
-import { getMember } from "../../util/member.js";
 import { awaitTimeout } from "../../util/timeouts.js";
 import { notifyMultipleAchievements } from "../achievements/achievementNotifier.js";
 import { checkAndAwardAchievements } from "../achievements/achievementService.js";
@@ -314,14 +314,7 @@ export const StarboardListener: EventListener = {
 			);
 			if (existingBoardMessage?.removedAt) return;
 			try {
-				const member = await getMember(refreshedMessage);
-				if (!member) {
-					logger.info(
-						"Member not found for reaction message id %s, skipping",
-						refreshedMessage.id,
-					);
-					return;
-				}
+				const member = await authorOf(refreshedMessage);
 
 				const displayCount = getDisplayCountForBoard(refreshedMessage, board);
 				const contentCount = getContentCountForBoard(refreshedMessage, board);
@@ -471,14 +464,7 @@ export const StarboardListener: EventListener = {
 			}
 
 			try {
-				const member = await getMember(refreshedMessage);
-				if (!member) {
-					logger.info(
-						"Member not found for reaction message id: %s",
-						refreshedMessage.id,
-					);
-					return;
-				}
+				const member = await authorOf(refreshedMessage);
 
 				const boardChannel = await refreshedMessage.guild.channels.fetch(
 					board.config.channel,
@@ -518,14 +504,7 @@ async function syncStarboardMessageScore(message: Message<true>) {
 		return;
 	}
 
-	const member = await getMember(message);
-	if (!member) {
-		logger.info(
-			"Member not found while syncing starboard score for message id %s",
-			message.id,
-		);
-		return;
-	}
+	const member = await authorOf(message);
 
 	const boardChannel = await message.guild.channels.fetch(
 		starboard.config.channel,
@@ -553,7 +532,7 @@ async function updateBoardMessage(
 	boardChannel: SendableChannels,
 	boardMessageEntity: BoardMessageRecord,
 	reactionMessage: Message<true>,
-	member: GuildMember,
+	member: GuildMember | User,
 	starCount: number,
 	contentStarCount: number,
 ) {
@@ -637,14 +616,7 @@ export async function refreshBoards(client: Client) {
 				}
 				if (!message.inGuild()) continue;
 
-				const member = await getMember(message);
-				if (!member) {
-					logger.error(
-						"Member not found for message %s",
-						record.originalMessageId,
-					);
-					continue;
-				}
+				const member = await authorOf(message);
 				await updateBoardMessage(
 					board,
 					boardChannel,
@@ -721,5 +693,17 @@ function isGone(error: unknown): boolean {
 	return (
 		code === RESTJSONErrorCodes.UnknownMessage ||
 		code === RESTJSONErrorCodes.UnknownChannel
+	);
+}
+
+/**
+ * The author of a starred message as a member, or as a user if they've left the server, so their posts still render.
+ * Unlike `getMember`, a missing member isn't reported: departed authors are expected, and every refresh would report them
+ */
+async function authorOf(message: Message<true>): Promise<GuildMember | User> {
+	return (
+		message.member ??
+		(await message.guild.members.fetch(message.author.id).catch(() => null)) ??
+		message.author
 	);
 }

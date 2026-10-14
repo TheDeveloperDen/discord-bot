@@ -2,6 +2,7 @@ import {
 	type ColorResolvable,
 	type GuildMember,
 	resolveColor,
+	type User,
 } from "discord.js";
 import { Container, Section, TextDisplay, Thumbnail } from "disjsx";
 import type { ReactNode } from "react";
@@ -107,8 +108,8 @@ function footerText(footer?: string, timestamp?: Date | number) {
 	return `-# ${parts.join(" · ")}`;
 }
 
-/** A card author for a member: a mention of them, and their server avatar */
-export const memberAuthor = (member: GuildMember): CardAuthor => ({
+/** A card author for a member (their server avatar), or a user who has left (their account avatar), as a mention */
+export const memberAuthor = (member: GuildMember | User): CardAuthor => ({
 	name: member.displayName,
 	iconUrl: member.displayAvatarURL(),
 	userId: member.id,

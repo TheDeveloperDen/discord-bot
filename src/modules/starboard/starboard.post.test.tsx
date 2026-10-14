@@ -46,6 +46,7 @@ const fakeMessage = (fields: {
 		inGuild: () => true,
 		guildId: "g",
 		member: fields.author,
+		author: { id: fields.author?.id ?? "0" },
 	}) as unknown as Message<true>;
 
 const settings = {
@@ -146,5 +147,28 @@ describe("renderStarboardPost", () => {
 			.join("").length;
 		expect(total).toBeLessThanOrEqual(4000);
 		expect(post.files).toBeUndefined();
+	});
+
+	test("renders a post whose author and reply author have left, as mentions with their account avatar", async () => {
+		const reply = fakeMessage({
+			id: "4",
+			content: "question",
+			author: undefined,
+		});
+		const message = fakeMessage({ id: "5", content: "answer", replyTo: reply });
+		const departed = {
+			id: "30",
+			displayName: "carol",
+			displayAvatarURL: () => "https://cdn/account.png",
+		} as unknown as GuildMember;
+
+		const post = await renderStarboardPost(message, departed, 5, settings);
+
+		const header = (post.components as Node[])[0].components?.[1];
+		expect(header?.components?.map((text) => text.content)).toEqual([
+			"<@30>",
+			"Replying to **<@0>**\n> question",
+			"answer",
+		]);
 	});
 });
