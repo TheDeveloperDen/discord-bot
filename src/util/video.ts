@@ -42,7 +42,7 @@ const convertVideoToGif: (url: string) => Promise<Buffer> = async (url) => {
 			});
 
 			ffmpeg.stderr.on("data", (data) => {
-				logger.debug("FFmpeg stderr:", data.toString());
+				logger.debug(`FFmpeg stderr: ${data}`);
 			});
 
 			ffmpeg.on("error", (error) => {

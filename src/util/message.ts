@@ -112,7 +112,7 @@ export async function fetchAllMessagesWithRetry(
 			return await fetchAllMessages(channel, maxMessages, delayMs, filter);
 		} catch (error) {
 			lastError = error instanceof Error ? error : new Error(String(error));
-			logger.error(`Attempt ${attempt} failed:`, lastError.message);
+			logger.error(`Attempt ${attempt} failed: ${lastError.message}`);
 
 			if (attempt < maxRetries) {
 				// Exponential backoff: wait longer after each failed attempt
