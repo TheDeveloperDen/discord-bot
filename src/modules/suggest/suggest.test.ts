@@ -319,7 +319,7 @@ describe("refreshSuggestionMessage", () => {
 		if (!reloaded) throw new Error("suggestion missing");
 		await refreshSuggestionMessage(client, reloaded, [archive]);
 
-		const text = textOf(edit.mock.calls[0][0]);
+		const text = textOf(edit.mock.calls[0]?.[0]);
 		expect(text).toContain("**Approved** by <@2>");
 		expect(text).toContain("**Reason**\ngood idea");
 		expect(text).toContain(
@@ -374,7 +374,7 @@ describe("refreshing a suggestion decided before reasons were stored", () => {
 		const saved = await Suggestion.findByPk(31n);
 		expect(saved?.reason).toBe("we already planned this");
 		expect(saved?.threadUrl).toBe("https://discord.com/channels/g/t");
-		expect(textOf(edit.mock.calls[0][0])).toContain(
+		expect(textOf(edit.mock.calls[0]?.[0])).toContain(
 			"**Reason**\nwe already planned this",
 		);
 	});

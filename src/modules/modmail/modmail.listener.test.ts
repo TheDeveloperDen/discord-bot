@@ -58,7 +58,8 @@ describe("ModMailListener", () => {
 				})),
 			},
 		} as unknown as Client;
-		const listener = ModMailListener[0];
+		const [listener] = ModMailListener;
+		if (!listener) throw new Error("no modmail listener");
 
 		await listener.interactionCreate?.(client, {
 			customId: MODMAIL_CATEGORY_SELECT_ID,

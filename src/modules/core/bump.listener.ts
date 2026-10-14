@@ -58,9 +58,8 @@ export async function handleBumpStreak(
 		`User ${interactionOld.user.id} has a bump streak of ${streak.current} (highest: ${streak.highest})`,
 	);
 	// cool reactions
-	for (let i = 0; i < streak.current; i++) {
-		if (i >= streakReacts.length) return;
-		await message.react(streakReacts[i]);
+	for (const react of streakReacts.slice(0, streak.current)) {
+		await message.react(react);
 	}
 
 	// check if the user dethroned another user

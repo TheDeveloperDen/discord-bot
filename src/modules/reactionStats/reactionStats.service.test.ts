@@ -163,8 +163,8 @@ describe("getUserStats", () => {
 		const stats = await getUserStats(20n, "all");
 
 		expect(stats.topEmojis.length).toBeGreaterThanOrEqual(2);
-		expect(stats.topEmojis[0].emojiName).toBe("👍");
-		expect(stats.topEmojis[0].count).toBe(3);
+		expect(stats.topEmojis[0]?.emojiName).toBe("👍");
+		expect(stats.topEmojis[0]?.count).toBe(3);
 	});
 
 	test("respects limit for top emojis", async () => {
@@ -255,8 +255,8 @@ describe("getGlobalStats", () => {
 
 		const stats = await getGlobalStats("all");
 
-		expect(stats.topEmojis[0].emojiName).toBe("👍");
-		expect(stats.topEmojis[0].count).toBe(2);
+		expect(stats.topEmojis[0]?.emojiName).toBe("👍");
+		expect(stats.topEmojis[0]?.count).toBe(2);
 	});
 
 	test("returns top receivers sorted by count", async () => {
@@ -317,11 +317,11 @@ describe("getTopMessages", () => {
 		const result = await getTopMessages("all");
 
 		expect(result.length).toBeGreaterThanOrEqual(2);
-		expect(result[0].messageId).toBe(1n);
-		expect(result[0].reactionCount).toBe(3);
-		expect(result[0].uniqueReactors).toBe(3);
-		expect(result[1].messageId).toBe(2n);
-		expect(result[1].reactionCount).toBe(1);
+		expect(result[0]?.messageId).toBe(1n);
+		expect(result[0]?.reactionCount).toBe(3);
+		expect(result[0]?.uniqueReactors).toBe(3);
+		expect(result[1]?.messageId).toBe(2n);
+		expect(result[1]?.reactionCount).toBe(1);
 	});
 
 	test("counts unique reactors per message correctly", async () => {
@@ -333,8 +333,8 @@ describe("getTopMessages", () => {
 
 		const result = await getTopMessages("all");
 
-		expect(result[0].reactionCount).toBe(3);
-		expect(result[0].uniqueReactors).toBe(2);
+		expect(result[0]?.reactionCount).toBe(3);
+		expect(result[0]?.uniqueReactors).toBe(2);
 	});
 
 	test("filters by time period", async () => {
@@ -350,7 +350,7 @@ describe("getTopMessages", () => {
 
 		const monthResult = await getTopMessages("month");
 		expect(monthResult).toHaveLength(1);
-		expect(monthResult[0].messageId).toBe(1n);
+		expect(monthResult[0]?.messageId).toBe(1n);
 
 		const allResult = await getTopMessages("all");
 		expect(allResult).toHaveLength(2);

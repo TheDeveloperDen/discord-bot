@@ -188,7 +188,7 @@ describe("defineCommand", () => {
 			respond,
 		} as unknown as AutocompleteInteraction;
 
-		const [get] = command.options as ExecutableSubcommand[];
+		const [get] = command.options as [ExecutableSubcommand];
 		await get.autocomplete?.(interaction);
 		expect(respond).toHaveBeenCalledWith([{ name: "ban", value: "ban" }]);
 	});

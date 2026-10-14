@@ -1,23 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import {
-	type ButtonInteraction,
-	ButtonStyle,
-	type InteractionReplyOptions,
-	type MessageCreateOptions,
-	type MessageEditOptions,
-	TextInputStyle,
-} from "discord.js";
-import {
-	ActionRow,
-	Button,
-	Label,
-	Message,
-	Modal,
-	renderDiscordMessage,
-	renderDiscordModal,
-	TextDisplay,
-	TextInput,
-} from "disjsx";
+import { ButtonStyle } from "discord.js";
+import { ActionRow, Message, renderDiscordMessage } from "disjsx";
 import { defineComponent } from "./component.js";
 
 const Plain = defineComponent({
@@ -39,8 +22,10 @@ const customIdOf = (button: React.ReactElement) => {
 			<ActionRow>{button}</ActionRow>
 		</Message>,
 	);
-	const [row] = components as { components: { custom_id: string }[] }[];
-	return row.components[0].custom_id;
+	const [row] = components as unknown as [
+		{ components: { custom_id: string }[] },
+	];
+	return row.components[0]?.custom_id;
 };
 
 const style = ButtonStyle.Primary;

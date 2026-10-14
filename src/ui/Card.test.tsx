@@ -4,19 +4,22 @@ import { Message, renderDiscordMessage, TextDisplay } from "disjsx";
 import { branding } from "../util/branding.js";
 import { Card } from "./Card.js";
 
+type RenderedCard = {
+	type: number;
+	accent_color?: number;
+	components: {
+		type: number;
+		content?: string;
+		accessory?: { media: { url: string } };
+	}[];
+};
+
 const render = (card: React.ReactElement) => {
 	const payload = renderDiscordMessage(<Message isV2>{card}</Message>);
 	// sendable as is
 	const _: MessageCreateOptions = payload;
-	return payload.components as unknown as {
-		type: number;
-		accent_color?: number;
-		components: {
-			type: number;
-			content?: string;
-			accessory?: { media: { url: string } };
-		}[];
-	}[];
+	// one container per card
+	return payload.components as unknown as [RenderedCard];
 };
 
 describe("Card", () => {
@@ -40,6 +43,7 @@ describe("Card", () => {
 		expect(container.type).toBe(ComponentType.Container);
 		expect(container.accent_color).toBe(0xf1c40f);
 		const [header, body, footer] = container.components;
+		if (!footer) throw new Error("card has no footer");
 		expect(header).toMatchObject({
 			type: ComponentType.Section,
 			components: [

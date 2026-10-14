@@ -55,10 +55,11 @@ describe("logModerationAction", () => {
 			await logModerationAction(mockClient, action);
 
 			expect(mockChannelSend).toHaveBeenCalled();
-			const callArgs = mockChannelSend.mock.calls[0][0] as {
+			const callArgs = mockChannelSend.mock.calls[0]?.[0] as {
 				embeds: EmbedBuilder[];
 			};
 			const embed = callArgs.embeds[0];
+			if (!embed) throw new Error("no embed was sent");
 
 			expect(embed.data.title).toBe("Member Banned");
 			expect(embed.data.color).toBe(Colors.Red);
@@ -75,10 +76,10 @@ describe("logModerationAction", () => {
 
 			await logModerationAction(mockClient, action);
 
-			const callArgs = mockChannelSend.mock.calls[0][0] as {
+			const callArgs = mockChannelSend.mock.calls[0]?.[0] as {
 				embeds: EmbedBuilder[];
 			};
-			expect(callArgs.embeds[0].data.description).toContain("**DM sent**: ❌");
+			expect(callArgs.embeds[0]?.data.description).toContain("**DM sent**: ❌");
 		});
 
 		test("handles Unban action", async () => {
@@ -96,10 +97,11 @@ describe("logModerationAction", () => {
 			await logModerationAction(mockClient, action);
 
 			expect(mockChannelSend).toHaveBeenCalled();
-			const callArgs = mockChannelSend.mock.calls[0][0] as {
+			const callArgs = mockChannelSend.mock.calls[0]?.[0] as {
 				embeds: EmbedBuilder[];
 			};
 			const embed = callArgs.embeds[0];
+			if (!embed) throw new Error("no embed was sent");
 
 			expect(embed.data.title).toBe("Member Unbanned");
 			expect(embed.data.color).toBe(Colors.Green);
@@ -123,10 +125,11 @@ describe("logModerationAction", () => {
 			await logModerationAction(mockClient, action);
 
 			expect(mockChannelSend).toHaveBeenCalled();
-			const callArgs = mockChannelSend.mock.calls[0][0] as {
+			const callArgs = mockChannelSend.mock.calls[0]?.[0] as {
 				embeds: EmbedBuilder[];
 			};
 			const embed = callArgs.embeds[0];
+			if (!embed) throw new Error("no embed was sent");
 
 			expect(embed.data.title).toBe("Member Tempbanned");
 			expect(embed.data.color).toBe(Colors.Orange);
@@ -149,10 +152,11 @@ describe("logModerationAction", () => {
 			await logModerationAction(mockClient, action);
 
 			expect(mockChannelSend).toHaveBeenCalled();
-			const callArgs = mockChannelSend.mock.calls[0][0] as {
+			const callArgs = mockChannelSend.mock.calls[0]?.[0] as {
 				embeds: EmbedBuilder[];
 			};
 			const embed = callArgs.embeds[0];
+			if (!embed) throw new Error("no embed was sent");
 
 			expect(embed.data.title).toBe("Member Kicked");
 			expect(embed.data.color).toBe(Colors.Yellow);
@@ -175,10 +179,11 @@ describe("logModerationAction", () => {
 			await logModerationAction(mockClient, action);
 
 			expect(mockChannelSend).toHaveBeenCalled();
-			const callArgs = mockChannelSend.mock.calls[0][0] as {
+			const callArgs = mockChannelSend.mock.calls[0]?.[0] as {
 				embeds: EmbedBuilder[];
 			};
 			const embed = callArgs.embeds[0];
+			if (!embed) throw new Error("no embed was sent");
 
 			expect(embed.data.title).toBe("Member Softbanned");
 			expect(embed.data.color).toBe(Colors.DarkOrange);
@@ -200,10 +205,11 @@ describe("logModerationAction", () => {
 			await logModerationAction(mockClient, action);
 
 			expect(mockChannelSend).toHaveBeenCalled();
-			const callArgs = mockChannelSend.mock.calls[0][0] as {
+			const callArgs = mockChannelSend.mock.calls[0]?.[0] as {
 				embeds: EmbedBuilder[];
 			};
 			const embed = callArgs.embeds[0];
+			if (!embed) throw new Error("no embed was sent");
 
 			expect(embed.data.title).toBe("Discord Invite Removed");
 			expect(embed.data.color).toBe(Colors.Blurple);
@@ -221,10 +227,11 @@ describe("logModerationAction", () => {
 			await logModerationAction(mockClient, action);
 
 			expect(mockChannelSend).toHaveBeenCalled();
-			const callArgs = mockChannelSend.mock.calls[0][0] as {
+			const callArgs = mockChannelSend.mock.calls[0]?.[0] as {
 				embeds: EmbedBuilder[];
 			};
 			const embed = callArgs.embeds[0];
+			if (!embed) throw new Error("no embed was sent");
 
 			expect(embed.data.title).toBe("Tempban Expired");
 			expect(embed.data.color).toBe(Colors.DarkGreen);
@@ -247,10 +254,11 @@ describe("logModerationAction", () => {
 
 			await logModerationAction(mockClient, action);
 
-			const callArgs = mockChannelSend.mock.calls[0][0] as {
+			const callArgs = mockChannelSend.mock.calls[0]?.[0] as {
 				embeds: EmbedBuilder[];
 			};
 			const embed = callArgs.embeds[0];
+			if (!embed) throw new Error("no embed was sent");
 
 			expect(embed.data.description).toContain("This is the reason");
 		});
@@ -270,10 +278,11 @@ describe("logModerationAction", () => {
 
 			await logModerationAction(mockClient, action);
 
-			const callArgs = mockChannelSend.mock.calls[0][0] as {
+			const callArgs = mockChannelSend.mock.calls[0]?.[0] as {
 				embeds: EmbedBuilder[];
 			};
 			const embed = callArgs.embeds[0];
+			if (!embed) throw new Error("no embed was sent");
 
 			expect(embed.data.description).toContain("Responsible Moderator");
 		});
@@ -293,10 +302,11 @@ describe("logModerationAction", () => {
 
 			await logModerationAction(mockClient, action);
 
-			const callArgs = mockChannelSend.mock.calls[0][0] as {
+			const callArgs = mockChannelSend.mock.calls[0]?.[0] as {
 				embeds: EmbedBuilder[];
 			};
 			const embed = callArgs.embeds[0];
+			if (!embed) throw new Error("no embed was sent");
 
 			expect(embed.data.description).toContain("Deleted Messages");
 		});

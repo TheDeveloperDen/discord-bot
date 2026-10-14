@@ -289,11 +289,11 @@ export async function getSuggestionByMessageIdOrRecoverFromMessage(
 		embedMessage.id,
 	);
 	// try to recover from message
-	if (embedMessage.embeds.length === 0) {
+	const [embed] = embedMessage.embeds;
+	if (!embed) {
 		return null;
 	}
 
-	const embed = embedMessage.embeds[0];
 	const idField = embed.footer?.text;
 	if (!idField) {
 		return null;

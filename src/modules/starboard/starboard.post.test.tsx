@@ -98,10 +98,10 @@ describe("renderStarboardPost", () => {
 		);
 
 		expect(post.flags).toBe(MessageFlags.IsComponentsV2);
-		const [card, row] = post.components as Node[];
+		const [card, row] = post.components as [Node, Node];
 		expect(card.type).toBe(ComponentType.Container);
 		// the score is the heading; the reply and the text sit beside the author's avatar
-		expect(card.components?.[0].content).toBe(
+		expect(card.components?.[0]?.content).toBe(
 			`## ${config.starboard.emojiId} 5`,
 		);
 		const header = card.components?.[1];
@@ -138,7 +138,7 @@ describe("renderStarboardPost", () => {
 			settings,
 		);
 
-		const [card] = post.components as Node[];
+		const [card] = post.components as [Node];
 		const total = card.components
 			?.map(
 				(c) =>
@@ -164,7 +164,7 @@ describe("renderStarboardPost", () => {
 
 		const post = await renderStarboardPost(message, departed, 5, settings);
 
-		const header = (post.components as Node[])[0].components?.[1];
+		const header = (post.components as Node[])[0]?.components?.[1];
 		expect(header?.components?.map((text) => text.content)).toEqual([
 			"<@30>",
 			"Replying to **<@0>**\n> question",

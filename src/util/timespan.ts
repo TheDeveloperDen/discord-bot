@@ -49,10 +49,11 @@ export function parseTimespan(span: string): number {
 	if (!inputSplit) throw new Error("Invalid timespan");
 	let out = 0;
 
-	for (const element of inputSplit) {
-		const number = Number.parseInt(element[1].trim(), 10);
+	for (const [, digits, unit] of inputSplit) {
+		if (digits === undefined || unit === undefined) continue;
+		const number = Number.parseInt(digits.trim(), 10);
 		if (Number.isNaN(number)) continue;
-		out += number * getDuration(element[2].trim());
+		out += number * getDuration(unit.trim());
 	}
 	return out;
 }

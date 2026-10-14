@@ -215,7 +215,7 @@ export async function createArchiveFromThread(
 					message.author.bot &&
 					message.author.id === thread.client.user.id &&
 					message.embeds.length === 1 &&
-					!message.embeds[0].title
+					!message.embeds[0]?.title
 				);
 			},
 		); // Max 3 retries, up to 50k messages
@@ -233,9 +233,9 @@ export async function createArchiveFromThread(
 					isImage: attachment.contentType?.startsWith("image/") || false,
 				}));
 				const embed = message.embeds[0];
-				const messageContent = embed.description ?? "Unknown";
+				const messageContent = embed?.description ?? "Unknown";
 
-				const author = embed.author as EmbedAuthorData;
+				const author = embed?.author as EmbedAuthorData;
 
 				return {
 					id: message.id,

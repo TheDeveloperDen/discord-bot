@@ -40,13 +40,14 @@ describe("copyForModLog", () => {
 		const copy = copyForModLog(post, "starboard");
 
 		expect(copy.flags).toBe(MessageFlags.IsComponentsV2);
-		const [notice, container] = copy.components as {
+		type Copied = {
 			content?: string;
 			components?: { items?: { media: { url: string } }[] }[];
-		}[];
+		};
+		const [notice, container] = copy.components as unknown as [Copied, Copied];
 		expect(notice.content).toContain("Removed from the starboard");
 		expect(
-			container.components?.[1].items?.map((item) => item.media.url),
+			container.components?.[1]?.items?.map((item) => item.media.url),
 		).toEqual(["attachment://starboard.gif", "https://media.tenor.com/x.png"]);
 		expect(copy.files.map((file) => file.name)).toEqual(["starboard.gif"]);
 		expect(copy.allowedMentions).toEqual({ parse: [] });
@@ -65,7 +66,7 @@ describe("copyForModLog", () => {
 		const copy = copyForModLog(post, "starboard");
 
 		expect("content" in copy && copy.content).toContain(post.content);
-		expect("embeds" in copy && copy.embeds?.[0].image).toEqual({
+		expect("embeds" in copy && copy.embeds?.[0]?.image).toEqual({
 			url: "attachment://starboard.gif",
 		});
 	});

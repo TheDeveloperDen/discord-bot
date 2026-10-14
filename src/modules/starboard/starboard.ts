@@ -109,9 +109,8 @@ export const getImageOrGifEmbed: (message: Message) => Promise<
 	const embeds = message.embeds.filter(
 		(emb) => emb.data.type === "image" || emb.data.type === "gifv",
 	);
-	if (embeds.length > 0) {
-		const embed = embeds[0];
-
+	const [embed] = embeds;
+	if (embed) {
 		if (embed.video) {
 			const gifBuffer = await convertVideoToGif(
 				embed.video.proxyURL ?? embed.video.url,

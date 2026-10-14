@@ -369,7 +369,8 @@ const handleModmailAssignSelect = async (
 			return;
 		}
 
-		const targetUserId = interaction.values[0];
+		const [targetUserId] = interaction.values;
+		if (targetUserId === undefined) return;
 		const targetMember = await interaction.guild?.members.fetch(targetUserId);
 
 		// Check if the target user has moderator permissions

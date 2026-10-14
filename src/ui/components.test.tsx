@@ -37,7 +37,7 @@ describe("ConfirmButtons", () => {
 	test("renders a confirm and a cancel button", () => {
 		const [row] = components(
 			<ConfirmButtons confirmId="set:confirm" cancelId="set:cancel" />,
-		) as { components: Record<string, unknown>[] }[];
+		) as [{ components: Record<string, unknown>[] }];
 		expect(row.components).toEqual([
 			expect.objectContaining({
 				style: ButtonStyle.Success,

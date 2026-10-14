@@ -65,11 +65,10 @@ export function isChatInputCommand(
 export function isSubcommandRoot(
 	command: Command<ApplicationCommandType>,
 ): command is SubcommandRoot {
+	if (!isChatInputCommand(command)) return false;
+	const firstOption = command.options[0]?.type;
 	return (
-		isChatInputCommand(command) &&
-		[
-			ApplicationCommandOptionType.SubcommandGroup,
-			ApplicationCommandOptionType.Subcommand,
-		].includes(command.options[0]?.type)
+		firstOption === ApplicationCommandOptionType.SubcommandGroup ||
+		firstOption === ApplicationCommandOptionType.Subcommand
 	);
 }

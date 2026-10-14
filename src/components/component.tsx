@@ -102,13 +102,17 @@ function buildCustomId(
 	args: Record<string, string>,
 ): string {
 	const values = names.map((name, i) => {
+		const value = args[name];
+		if (value === undefined) {
+			throw new Error(`Component ${id} is missing its "${name}" arg`);
+		}
 		const isLast = i === names.length - 1;
-		if (!isLast && args[name].includes(SEPARATOR)) {
+		if (!isLast && value.includes(SEPARATOR)) {
 			throw new Error(
 				`Arg "${name}" of component ${id} can't contain "${SEPARATOR}" because it isn't the last arg`,
 			);
 		}
-		return args[name];
+		return value;
 	});
 	const customId = [id, ...values].join(SEPARATOR);
 	if (customId.length > MAX_CUSTOM_ID_LENGTH) {
@@ -136,5 +140,7 @@ export function parseCustomId(
 	// the last arg takes whatever is left, so it may contain the separator
 	const last = parts.slice(names.length - 1).join(SEPARATOR);
 	const values = [...parts.slice(0, names.length - 1), last];
-	return Object.fromEntries(names.map((name, i) => [name, values[i]]));
+	return Object.fromEntries(
+		names.map((name, i) => [name, values[i] as string]),
+	);
 }

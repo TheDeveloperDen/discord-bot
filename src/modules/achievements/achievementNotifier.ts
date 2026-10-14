@@ -209,15 +209,17 @@ export async function notifyMultipleAchievements(
 	}
 
 	// If all achievements have the same mode, batch them together
-	if (byMode.size === 1) {
-		const [mode, groupedAchievements] = [...byMode.entries()][0];
+	const [onlyGroup, ...otherGroups] = byMode;
+	if (onlyGroup && otherGroups.length === 0) {
+		const [mode, groupedAchievements] = onlyGroup;
 
 		// For single achievement, use standard notification
-		if (groupedAchievements.length === 1) {
+		const [onlyAchievement, ...otherAchievements] = groupedAchievements;
+		if (onlyAchievement && otherAchievements.length === 0) {
 			await notifyAchievementUnlocked(
 				client,
 				member,
-				groupedAchievements[0],
+				onlyAchievement,
 				triggerChannel,
 			);
 			return;
@@ -237,11 +239,12 @@ export async function notifyMultipleAchievements(
 
 	// For achievements with different modes, send each group separately
 	for (const [mode, groupedAchievements] of byMode) {
-		if (groupedAchievements.length === 1) {
+		const [onlyAchievement, ...otherAchievements] = groupedAchievements;
+		if (onlyAchievement && otherAchievements.length === 0) {
 			await notifyAchievementUnlocked(
 				client,
 				member,
-				groupedAchievements[0],
+				onlyAchievement,
 				triggerChannel,
 			);
 		} else {

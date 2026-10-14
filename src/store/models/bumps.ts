@@ -52,7 +52,9 @@ export const getBumpStreak = async (user: DDUser): Promise<Streak> =>
  * @param bumpStreaks  A list of bump streaks.
  * @returns An associative array of user IDs and their streaks, which may contain user IDs.
  */
-export function getStreaks(bumpStreaks: { userId: bigint }[][]): ({
+export function getStreaks(
+	bumpStreaks: [{ userId: bigint }, ...{ userId: bigint }[]][],
+): ({
 	userId: bigint;
 } & Streak)[] {
 	const maxStreakMap = new Map<bigint, number>();
@@ -75,7 +77,7 @@ export function getStreaks(bumpStreaks: { userId: bigint }[][]): ({
 
 export function getStreak(
 	userId: bigint,
-	bumpStreaks: { userId: bigint }[][],
+	bumpStreaks: [{ userId: bigint }, ...{ userId: bigint }[]][],
 ): Streak {
 	// now search through the streaks for the user's bumps
 	let currentStreak = 0;
@@ -97,9 +99,9 @@ export function getStreak(
 
 export function extractStreaks<T extends { userId: bigint }>(
 	bumps: T[],
-): T[][] {
+): [T, ...T[]][] {
 	// group by same user
-	const streaks: T[][] = [];
+	const streaks: [T, ...T[]][] = [];
 
 	for (const bump of bumps) {
 		const lastStreak = streaks.at(-1);

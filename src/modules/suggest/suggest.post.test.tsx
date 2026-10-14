@@ -52,7 +52,7 @@ describe("renderSuggestion", () => {
 		);
 
 		expect(payload.flags).toBe(MessageFlags.IsComponentsV2);
-		const [card, row] = payload.components as Node[];
+		const [card, row] = payload.components as [Node, Node];
 		expect(card.type).toBe(ComponentType.Container);
 		expect(textOf(card.components)).toEqual(
 			expect.arrayContaining([
@@ -82,7 +82,7 @@ describe("renderSuggestion", () => {
 			),
 		);
 
-		const [card, row] = payload.components as Node[];
+		const [card, row] = payload.components as [Node, Node];
 		expect(card.accent_color).toBe(0xed4245);
 		expect(textOf(card.components)).toEqual(
 			expect.arrayContaining([
@@ -108,7 +108,7 @@ describe("renderSuggestion", () => {
 			),
 		);
 
-		const [card] = payload.components as Node[];
+		const [card] = payload.components as [Node];
 		expect(textOf(card.components).join("").length).toBeLessThanOrEqual(4000);
 	});
 });

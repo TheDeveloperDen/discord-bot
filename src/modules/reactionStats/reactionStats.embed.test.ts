@@ -27,8 +27,8 @@ describe("chunkEmbedFieldValues", () => {
 
 		const chunks = chunkEmbedFieldValues([longLine], EMBED_FIELD_VALUE_LIMIT);
 		expect(chunks).toHaveLength(1);
-		expect(chunks[0].length).toBe(EMBED_FIELD_VALUE_LIMIT);
-		expect(chunks[0].endsWith("...")).toBe(true);
+		expect(chunks[0]?.length).toBe(EMBED_FIELD_VALUE_LIMIT);
+		expect(chunks[0]?.endsWith("...")).toBe(true);
 	});
 });
 

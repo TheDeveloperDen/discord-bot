@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { extractStreaks, getStreak, getStreaks } from "./bumps.js";
 
 test("getStreak", () => {
-	const streakData: { userId: bigint }[][] = [
+	const streakData: [{ userId: bigint }, ...{ userId: bigint }[]][] = [
 		[{ userId: 1n }, { userId: 1n }],
 		[{ userId: 2n }],
 		[{ userId: 1n }, { userId: 1n }, { userId: 1n }],

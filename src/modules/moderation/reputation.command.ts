@@ -358,6 +358,9 @@ function getProgressToNextTier(
 	}
 
 	const nextTier = tiers[currentIndex + 1];
+	if (nextTier === undefined) {
+		return "Max tier reached";
+	}
 	const nextThreshold = REPUTATION_TIER_THRESHOLDS[nextTier];
 	const pointsNeeded = nextThreshold - score;
 

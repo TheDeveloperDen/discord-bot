@@ -30,7 +30,7 @@ export const getTierByLevel = (level: number): number =>
 function findForward(input: string, index: number, set: Set<string>): number {
 	let current = "";
 	while (set.has(current) && index < input.length) {
-		current = current.concat(input[index]);
+		current = current.concat(input.charAt(index));
 		index++;
 	}
 	set.add(current);
@@ -116,8 +116,11 @@ export const tierOf = (level: number) =>
 
 export function tierRoleId(level: number): string {
 	const tier = tierOf(level);
-	if (tier < config.roles.tiers.length) return config.roles.tiers[tier];
-	return config.roles.tiers[config.roles.tiers.length - 1];
+	const tiers = config.roles.tiers;
+	// levels past the last tier keep the highest tier's role
+	const roleId = tiers[Math.min(tier, tiers.length - 1)];
+	if (roleId === undefined) throw new Error("No tier roles are configured");
+	return roleId;
 }
 
 /**
