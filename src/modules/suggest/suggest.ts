@@ -23,6 +23,7 @@ import { logger } from "../../logging.js";
 import { Suggestion, SuggestionStatus } from "../../store/models/Suggestion.js";
 import { SuggestionVote } from "../../store/models/SuggestionVote.js";
 import { createStandardEmbed, standardFooter } from "../../util/embeds.js";
+import { awaitTimeout } from "../../util/timeouts.js";
 import { actualMention, actualMentionById } from "../../util/users.js";
 
 export const SUGGESTION_ID_FIELD_NAME = "Suggestion ID";
@@ -143,8 +144,9 @@ export const createSuggestionEmbedFromEntity: (
 			? suggestion.status
 			: undefined,
 		suggestion.moderatorId ? suggestion.moderatorId.toString() : undefined,
-		moderatorReason,
-		threadUrl,
+		// stored when the suggestion is decided, so re-rendering keeps them
+		moderatorReason ?? suggestion.reason ?? undefined,
+		threadUrl ?? suggestion.threadUrl ?? undefined,
 		upvotes ?? 0,
 		downvotes ?? 0,
 	);
@@ -235,6 +237,26 @@ export async function refreshSuggestionMessage(
 		embeds: [await createSuggestionEmbedFromEntity(client, suggestion)],
 	});
 	return true;
+}
+
+/** Re-renders every suggestion's message from its row, so UI changes reach old suggestions. */
+export async function refreshSuggestions(client: Client) {
+	try {
+		const channels = await getSuggestionChannels(client);
+		const suggestions = await Suggestion.findAll({ include: [SuggestionVote] });
+		for (const suggestion of suggestions) {
+			try {
+				await refreshSuggestionMessage(client, suggestion, channels);
+			} catch (error) {
+				logger.error("Failed to refresh suggestion %s", suggestion.id, error);
+			}
+			// spreads the edits out
+			await awaitTimeout(1000);
+		}
+		logger.info(`Refreshed ${suggestions.length} suggestions`);
+	} catch (error) {
+		logger.error("Failed to refresh suggestions", error);
+	}
 }
 
 export interface RemovedSuggestionVotesResult {
@@ -586,6 +608,10 @@ export async function respondToSuggestionInteraction(
 	}
 
 	const threadUrl = initialMessage.thread?.url;
+	suggestion.reason = moderatorReason ?? null;
+	suggestion.threadUrl = threadUrl ?? null;
+	await suggestion.save();
+
 	const embed = await createSuggestionEmbedFromEntity(
 		interaction.client,
 		suggestion,

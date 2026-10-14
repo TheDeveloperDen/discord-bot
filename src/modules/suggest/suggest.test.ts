@@ -1,16 +1,15 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
 import type { Client, Message, TextBasedChannel, User } from "discord.js";
-import { PermissionFlagsBits } from "discord.js";
 import { config } from "../../Config.js";
 import { Suggestion, SuggestionStatus } from "../../store/models/Suggestion.js";
 import { SuggestionVote } from "../../store/models/SuggestionVote.js";
 import { getSequelizeInstance } from "../../store/storage.js";
 import { createMockUser } from "../../tests/mocks/discord.js";
 import {
+	refreshSuggestionMessage,
 	removeSuggestionVotesForMember,
 	removeSuggestionVotesForMembers,
 } from "./suggest.js";
-import { SyncSuggestionVotesCommand } from "./syncSuggestionVotes.command.js";
 
 afterEach(async () => {
 	await getSequelizeInstance().destroyAll();
@@ -384,138 +383,72 @@ describe("removeSuggestionVotesForMembers", () => {
 	});
 });
 
-describe("SyncSuggestionVotesCommand", () => {
-	test("rejects non-admin users", async () => {
-		const reply = mock(async (_payload: unknown) => ({}));
-
-		await SyncSuggestionVotesCommand.handle({
-			inCachedGuild: () => true,
-			guild: {
-				bans: {
-					fetch: mock(async () => new Map()),
-				},
-			},
-			member: {
-				permissions: {
-					has: () => false,
-				},
-			},
-			reply,
-		} as never);
-
-		expect(reply).toHaveBeenCalledTimes(1);
-		expect((reply.mock.calls[0][0] as { content: string }).content).toContain(
-			"don't have permission",
-		);
-	});
-
-	test("sweeps existing bans and reports the cleanup summary", async () => {
-		const bannedUserId = 777n;
-		const suggestionEdit = mock(async (_payload: unknown) => ({}));
-		const suggestionMessage = {
-			id: "4001",
-			editable: true,
-			edit: suggestionEdit,
-		} as unknown as Message;
-		const suggestionChannel = {
-			id: config.suggest.suggestionsChannel,
-			isTextBased: () => true,
-			messages: {
-				fetch: mock(async (messageId: string) => {
-					if (messageId === suggestionMessage.id) {
-						return suggestionMessage;
-					}
-					throw new Error("Message not found");
-				}),
-			},
-		} as unknown as TextBasedChannel;
-		const archiveChannel = {
+describe("refreshSuggestionMessage", () => {
+	test("keeps the moderator's reason and the thread link stored on the suggestion", async () => {
+		const edit = mock(async (_payload: unknown) => ({}));
+		const message = { id: "5001", editable: true, edit } as unknown as Message;
+		const archive = {
 			id: config.suggest.archiveChannel,
 			isTextBased: () => true,
-			messages: {
-				fetch: mock(async () => {
-					throw new Error("Message not found");
-				}),
-			},
+			messages: { fetch: async () => message },
 		} as unknown as TextBasedChannel;
 		const client = {
-			channels: {
-				fetch: mock(async (channelId: string) => {
-					if (channelId === config.suggest.suggestionsChannel) {
-						return suggestionChannel;
-					}
-					if (channelId === config.suggest.archiveChannel) {
-						return archiveChannel;
-					}
-					return null;
-				}),
-			},
-			users: {
-				fetch: mock(async (userResolvable: string | { id: string }) => {
-					const id =
-						typeof userResolvable === "string"
-							? userResolvable
-							: userResolvable.id;
-					return createTestUser(id);
-				}),
-			},
+			users: { fetch: async (id: string) => createTestUser(id) },
 		} as unknown as Client;
-
-		await Suggestion.create({
-			id: 4n,
-			memberId: 404n,
-			suggestionText: "Banned user cleanup",
-			messageId: BigInt(suggestionMessage.id),
-			status: SuggestionStatus.PENDING,
+		const suggestion = await Suggestion.create({
+			id: 21n,
+			memberId: 1n,
+			suggestionText: "t",
+			messageId: 5001n,
 		});
-		await SuggestionVote.bulkCreate([
-			{
-				suggestionId: 4n,
-				memberId: bannedUserId,
-				vote: 1,
-			},
-			{
-				suggestionId: 4n,
-				memberId: 778n,
-				vote: -1,
-			},
-		]);
+		suggestion.status = SuggestionStatus.APPROVED;
+		suggestion.moderatorId = 2n;
+		suggestion.reason = "good idea";
+		suggestion.threadUrl = "https://discord.com/channels/g/t";
+		await suggestion.save();
 
-		const deferReply = mock(async (_payload: unknown) => ({}));
-		const editReply = mock(async (_payload: unknown) => ({}));
+		const reloaded = await Suggestion.findByPk(21n, {
+			include: [SuggestionVote],
+		});
+		if (!reloaded) throw new Error("suggestion missing");
+		await refreshSuggestionMessage(client, reloaded, [archive]);
 
-		await SyncSuggestionVotesCommand.handle({
-			inCachedGuild: () => true,
-			guild: {
-				bans: {
-					fetch: mock(async () => new Map([[bannedUserId.toString(), {}]])),
-				},
-			},
-			member: {
-				permissions: {
-					has: (permission: bigint) =>
-						permission === PermissionFlagsBits.Administrator,
-				},
-			},
-			client,
-			deferReply,
-			editReply,
-		} as never);
-
-		expect(deferReply).toHaveBeenCalledTimes(1);
-		expect(editReply).toHaveBeenCalledTimes(1);
-		expect(
-			(editReply.mock.calls[0][0] as { content: string }).content,
-		).toContain(
-			"Scanned 1 banned user(s). Removed 1 vote(s) from 1 user(s). Refreshed 1 suggestion message(s).",
+		const payload = edit.mock.calls[0][0] as {
+			embeds: { toJSON(): { fields: { name: string; value: string }[] } }[];
+		};
+		const fields = Object.fromEntries(
+			payload.embeds[0].toJSON().fields.map((f) => [f.name, f.value]),
 		);
-		expect(
-			await SuggestionVote.count({
-				where: {
-					memberId: bannedUserId,
-				},
-			}),
-		).toBe(0);
-		expect(suggestionEdit).toHaveBeenCalledTimes(1);
+		expect(fields).toMatchObject({
+			Status: "**APPROVED**",
+			Reason: "good idea",
+			"Discussion Thread":
+				"[View Discussion](https://discord.com/channels/g/t)",
+		});
+	});
+});
+
+describe("Suggestion model", () => {
+	test("loads the stored status rather than the default", async () => {
+		await Suggestion.create({
+			id: 11n,
+			memberId: 1n,
+			suggestionText: "t",
+			messageId: 11n,
+			status: SuggestionStatus.APPROVED,
+		});
+		await Suggestion.create({
+			id: 12n,
+			memberId: 1n,
+			suggestionText: "t",
+			messageId: 12n,
+		});
+
+		expect((await Suggestion.findByPk(11n))?.status).toBe(
+			SuggestionStatus.APPROVED,
+		);
+		expect((await Suggestion.findByPk(12n))?.status).toBe(
+			SuggestionStatus.PENDING,
+		);
 	});
 });

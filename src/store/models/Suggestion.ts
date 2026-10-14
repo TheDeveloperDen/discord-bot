@@ -65,6 +65,17 @@ export class Suggestion extends Model<
 	@ColumnName("moderatorId")
 	declare public moderatorId: bigint | undefined;
 
+	/** The moderator's reason for approving or rejecting it */
+	@Attribute(DataTypes.TEXT)
+	@AllowNull
+	@ColumnName("reason")
+	declare public reason: CreationOptional<string | null>;
+
+	@Attribute(DataTypes.TEXT)
+	@AllowNull
+	@ColumnName("threadUrl")
+	declare public threadUrl: CreationOptional<string | null>;
+
 	@HasMany(() => SuggestionVote, "suggestionId")
 	declare public votes?: SuggestionVote[];
 }
