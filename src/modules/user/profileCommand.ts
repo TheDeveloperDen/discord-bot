@@ -5,7 +5,6 @@ import { getProfileEmbed } from "./user.js";
 export const ProfileCommand = defineCommand({
 	name: "profile",
 	description: "Look at your profile",
-	default_member_permissions: 0n,
 	async handle(interaction) {
 		const profile = await getProfileEmbed(interaction.member);
 		await interaction.reply({
