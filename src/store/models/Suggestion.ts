@@ -1,4 +1,5 @@
 import {
+	type CreationOptional,
 	DataTypes,
 	type InferAttributes,
 	type InferCreationAttributes,
@@ -57,7 +58,7 @@ export class Suggestion extends Model<
 	@Default(SuggestionStatus.PENDING)
 	@NotNull
 	@ColumnName("status")
-	public status: SuggestionStatus = SuggestionStatus.PENDING;
+	declare public status: CreationOptional<SuggestionStatus>;
 
 	@Attribute(RealBigInt)
 	@AllowNull
