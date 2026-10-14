@@ -24,11 +24,11 @@ import {
 	copyForModLog,
 	createAntiStarboardMessage,
 	createStarboardMessage,
-	createStarboardMessageFromMessage,
 	getAntiStarboardMessageForOriginalMessageId,
 	getStarboardMessageForOriginalMessageId,
 	type StarboardRenderOptions,
 } from "./starboard.js";
+import { renderStarboardPost } from "./starboard.post.js";
 import {
 	getReactionCountForEmoji,
 	getThresholdReactionCount,
@@ -339,7 +339,7 @@ export const StarboardListener: EventListener = {
 					return;
 				}
 
-				const boardMessageContent = await createStarboardMessageFromMessage(
+				const boardMessageContent = await renderStarboardPost(
 					refreshedMessage,
 					member,
 					displayCount,
@@ -572,14 +572,21 @@ async function updateBoardMessage(
 			return;
 		}
 
-		const boardMessageFromMessage = await createStarboardMessageFromMessage(
+		const boardMessageFromMessage = await renderStarboardPost(
 			reactionMessage,
 			member,
 			starCount,
 			board.config,
 			contentStarCount,
 		);
-		await boardMessage.edit({ ...boardMessageFromMessage, attachments: [] });
+		await boardMessage.edit({
+			...boardMessageFromMessage,
+			// clear content and embeds so that we can migrate an old message to components v2 if necessary
+			// clear attachments to remove any orphan attachments
+			content: null,
+			embeds: [],
+			attachments: [],
+		});
 	} catch (error) {
 		logger.error(`Error updating the ${board.name} message`, error);
 	}

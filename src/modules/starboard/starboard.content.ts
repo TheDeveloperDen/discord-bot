@@ -27,20 +27,16 @@ const getAntiStarHintForMessage = (
 		return null;
 	}
 
-	return `(- ${config.antiStarboard.emojiId}: ${antiStarCount})`;
+	return `${config.antiStarboard.emojiId} ${antiStarCount}`;
 };
 
-export const buildStarboardMessageContent = (
-	message: Pick<Message, "url" | "reactions">,
+/** The post's score, e.g. `⭐ 5 | 👎 2`, with the anti-star count only on the starboard */
+export const buildStarboardScore = (
+	message: Pick<Message, "reactions">,
 	stars: number,
 	renderOptions: StarboardContentRenderOptions,
 ): string => {
-	const contentParts = [`${renderOptions.emojiId}: ${stars}`];
 	const antiStarHint = getAntiStarHintForMessage(message, renderOptions);
-	if (antiStarHint) {
-		contentParts.push(antiStarHint);
-	}
-	contentParts.push("|", message.url);
-
-	return contentParts.join(" ");
+	const score = `${renderOptions.emojiId} ${stars}`;
+	return antiStarHint ? `${score} | ${antiStarHint}` : score;
 };

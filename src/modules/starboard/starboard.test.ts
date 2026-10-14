@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { config } from "../../Config.js";
 import {
-	buildStarboardMessageContent,
+	buildStarboardScore,
 	type StarboardContentRenderOptions,
 } from "./starboard.content.js";
 import { createMessageWithUrlAndReactions } from "./starboard.test-utils.js";
@@ -12,7 +12,7 @@ const starboardRenderOptions: StarboardContentRenderOptions = {
 	color: config.starboard.color,
 };
 
-describe("buildStarboardMessageContent", () => {
+describe("buildStarboardScore", () => {
 	test("includes an anti-star hint when normal starboard score was reduced", () => {
 		const antiStarboard = config.antiStarboard;
 		if (!antiStarboard) {
@@ -32,10 +32,8 @@ describe("buildStarboardMessageContent", () => {
 			],
 		);
 
-		expect(
-			buildStarboardMessageContent(message, 5, starboardRenderOptions),
-		).toBe(
-			`${config.starboard.emojiId}: 5 (- ${antiStarboard.emojiId}: 2) | https://discord.test/message`,
+		expect(buildStarboardScore(message, 5, starboardRenderOptions)).toBe(
+			`${config.starboard.emojiId} 5 | ${antiStarboard.emojiId} 2`,
 		);
 	});
 
@@ -45,9 +43,9 @@ describe("buildStarboardMessageContent", () => {
 			[],
 		);
 
-		expect(
-			buildStarboardMessageContent(message, 3, starboardRenderOptions),
-		).toBe(`${config.starboard.emojiId}: 3 | https://discord.test/message`);
+		expect(buildStarboardScore(message, 3, starboardRenderOptions)).toBe(
+			`${config.starboard.emojiId} 3`,
+		);
 	});
 
 	test("does not add anti-star hint to anti-starboard posts", () => {
@@ -70,11 +68,11 @@ describe("buildStarboardMessageContent", () => {
 		);
 
 		expect(
-			buildStarboardMessageContent(message, 2, {
+			buildStarboardScore(message, 2, {
 				emojiId: antiStarboard.emojiId,
 				threshold: antiStarboard.threshold,
 				color: antiStarboard.color,
 			}),
-		).toBe(`${antiStarboard.emojiId}: 2 | https://discord.test/message`);
+		).toBe(`${antiStarboard.emojiId} 2`);
 	});
 });
