@@ -4,6 +4,7 @@ import {
 	type EmbedBuilder,
 	type GuildMember,
 	type Message,
+	type MessageCreateOptions,
 	type Snowflake,
 } from "discord.js";
 import { config } from "../../Config.js";
@@ -267,3 +268,31 @@ export const getImageOrGifEmbed: (message: Message) => Promise<
 
 	return undefined;
 };
+
+/**
+ * A copy of a board post for the mod log. The post's attachments (e.g. a converted GIF) are re-uploaded and the
+ * embeds pointed at the copies, since the post's own attachment links stop working once it's deleted.
+ */
+export function copyForModLog(post: Message, boardName: string) {
+	const files = post.attachments.map(
+		(attachment) =>
+			new AttachmentBuilder(attachment.url, { name: attachment.name }),
+	);
+	const embeds = post.embeds.map((embed) => {
+		const json = embed.toJSON();
+		const image = json.image?.url;
+		const attachment = image
+			? post.attachments.find((a) =>
+					new URL(image).pathname.endsWith(`/${a.name}`),
+				)
+			: undefined;
+		if (attachment) json.image = { url: `attachment://${attachment.name}` };
+		return json;
+	});
+	return {
+		content: `Removed from the ${boardName} because the original message was deleted.\n${post.content}`,
+		embeds,
+		files,
+		allowedMentions: { parse: [] },
+	} satisfies MessageCreateOptions;
+}
