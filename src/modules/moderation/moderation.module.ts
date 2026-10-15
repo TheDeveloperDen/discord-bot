@@ -15,7 +15,6 @@ import { UnbanCommand } from "./unban.command.js";
 import { WarnCommand } from "./warn.command.js";
 import { WarningSchedulerListener } from "./warningScheduler.listener.js";
 import { WarningsCommand } from "./warnings.command.js";
-import { WordlistCommand } from "./wordlist.command.js";
 import { ZookeepCommand } from "./zookeep.command.js";
 
 export const ModerationModule: Module = {
@@ -30,7 +29,6 @@ export const ModerationModule: Module = {
 		WarnCommand,
 		WarningsCommand,
 		PardonCommand,
-		WordlistCommand,
 		ReputationCommand,
 		RemoveSupportThreadCommand,
 	],
