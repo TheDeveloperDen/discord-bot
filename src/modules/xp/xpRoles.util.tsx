@@ -1,15 +1,16 @@
 import type { Client, GuildMember, TextChannel } from "discord.js";
+import { Message, renderDiscordMessage } from "disjsx";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
 import type { DDUser } from "../../store/models/DDUser.js";
-import { createStandardEmbed } from "../../util/embeds.js";
+import { memberAuthor } from "../../ui/index.js";
 import { modifyRoles } from "../../util/roles.js";
 import {
-	actualMention,
-	fakeMention,
 	mentionWithNoPingMessage,
+	userShouldBePinged,
 } from "../../util/users.js";
 import { xpForLevel } from "./levels.js";
+import { LevelUpCard } from "./xp.cards.js";
 import { tierRoleId } from "./xpForMessage.util.js";
 
 /**
@@ -38,10 +39,11 @@ export async function levelUp(
 			newLevel,
 		)})`,
 	);
+	const previousLevel = ddUser.level;
 	ddUser.level = newLevel;
 	logger.info(`${ddUser.id} leveling up to ${newLevel}`);
 	await applyTierRoles(client, user, ddUser);
-	await sendLevelUpMessage(client, user, ddUser);
+	await sendLevelUpMessage(client, user, ddUser, previousLevel);
 }
 
 export function levelForXp(xp: bigint) {
@@ -68,8 +70,8 @@ async function sendLevelUpMessage(
 	client: Client,
 	member: GuildMember,
 	ddUser: DDUser,
+	previousLevel: number,
 ) {
-	const user = member.user;
 	const levelUpChannelId =
 		config.channels.levelUp ?? config.channels.botCommands;
 	const channel = (await client.channels.fetch(
@@ -81,24 +83,21 @@ async function sendLevelUpMessage(
 		);
 		return;
 	}
-	const embed = createStandardEmbed(member)
-		.setTitle("⚡ Level Up!")
-		.setAuthor({
-			name: fakeMention(user),
-			iconURL: user.avatarURL() ?? undefined,
-		})
-		.setFields({
-			name: "📈 XP",
-			value: `${ddUser.xp}/${xpForLevel(ddUser.level + 1)}`,
-		})
-		.setDescription(
-			`${actualMention(member)}, you leveled up to level **${ddUser.level}**!`,
-		);
-
-	const message = mentionWithNoPingMessage(member);
 	await channel.send({
-		content: message,
-		embeds: [embed],
+		...renderDiscordMessage(
+			<Message isV2>
+				<LevelUpCard
+					greeting={mentionWithNoPingMessage(member)}
+					author={memberAuthor(member)}
+					level={ddUser.level}
+					previousLevel={previousLevel}
+					xp={ddUser.xp}
+					tierRole={tierRoleId(ddUser.level)}
+				/>
+			</Message>,
+		),
+		// the card mentions them too, which would ping members who opted out
+		allowedMentions: { users: userShouldBePinged(member) ? [member.id] : [] },
 	});
 }
 
