@@ -140,14 +140,12 @@ export function definePaginator<const A extends readonly string[], T>(
 		return { ...payload, allowedMentions: { parse: [] } };
 	}
 
-	// typed loosely inside: only this file renders the buttons, and it always passes every arg
 	const PageButton = defineComponent({
 		id: definition.id,
 		kind: "button",
 		args: ["page", "owner", ...userArgs],
 		async handle(interaction, { page, owner, ...rest }) {
-			// acknowledge first: a page's fetch may take longer than Discord's 3 seconds.
-			// the owner turns this message; anyone else gets a copy of that page they own
+			// if the user "owns" the message, update globally, otherwise send an ephemeral copy
 			await (interaction.user.id === owner
 				? interaction.deferUpdate()
 				: interaction.deferReply({ flags: MessageFlags.Ephemeral }));
