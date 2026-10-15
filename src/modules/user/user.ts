@@ -12,7 +12,7 @@ import {
 	loadAndDrawImage,
 	setFont,
 } from "../../util/canvas.js";
-import { xpForLevel } from "../xp/xpForMessage.util.js";
+import { xpForLevel } from "../xp/levels.js";
 
 const svgContent = fs.readFileSync("./devden_logo_short.svg", "utf8");
 export const profileFont = "Cascadia Code";

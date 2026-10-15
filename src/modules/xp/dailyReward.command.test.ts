@@ -1,11 +1,11 @@
 import { describe, expect, test } from "bun:test";
 import type { DDUser } from "../../store/models/DDUser.js";
 import {
-	formatDayCount,
 	getActualDailyStreakWithoutSaving,
 	getNextDailyTime,
 	getNextDailyTimeFrom,
 } from "./dailyReward.command.js";
+import { formatDayCount } from "./dailyStreak.js";
 
 describe("formatDayCount", () => {
 	test("returns '1 day' for count of 1", () => {

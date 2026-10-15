@@ -9,7 +9,8 @@ import {
 	fakeMention,
 	mentionWithNoPingMessage,
 } from "../../util/users.js";
-import { tierRoleId, xpForLevel } from "./xpForMessage.util.js";
+import { xpForLevel } from "./levels.js";
+import { tierRoleId } from "./xpForMessage.util.js";
 
 /**
  * Level up a user as many times as they necessary,

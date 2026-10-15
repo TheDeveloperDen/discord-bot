@@ -7,7 +7,7 @@ import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import { getMember } from "../../util/member.js";
 import { actualMention, isSpecialUser } from "../../util/users.js";
 import type { EventListener } from "../module.js";
-import { getTierByLevel } from "../xp/xpForMessage.util.js";
+import { getTierByLevel } from "../xp/levels.js";
 import { dmModerationTarget, logModerationAction } from "./logs.js";
 
 const invitePatterns = [

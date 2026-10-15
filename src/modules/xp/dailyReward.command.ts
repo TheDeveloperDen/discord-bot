@@ -8,6 +8,7 @@ import { isSpecialUser } from "../../util/users.js";
 import { notifyMultipleAchievements } from "../achievements/achievementNotifier.js";
 import { checkAndAwardAchievements } from "../achievements/achievementService.js";
 import { scheduleReminder } from "./dailyReward.reminder.js";
+import { formatDayCount, STREAK_LAPSES_AFTER_MS } from "./dailyStreak.js";
 import { giveXp } from "./xpForMessage.util.js";
 
 const dailiesInProgress = new Set<Snowflake>();
@@ -125,13 +126,6 @@ export const DailyRewardCommand = defineCommand({
 	},
 });
 
-export function formatDayCount(count: number) {
-	if (count === 1) {
-		return "1 day";
-	}
-	return `${count} days`;
-}
-
 /**
  * Gets a user's current daily streak, resetting it to 0 if they haven't used it in 24 hours
  * @param ddUser The user to get the streak for
@@ -153,7 +147,7 @@ export function getActualDailyStreakWithoutSaving(
 	ddUser: DDUser,
 ): [boolean, number] {
 	const difference = Date.now() - (ddUser.lastDailyTime?.getTime() ?? 0);
-	if (difference >= 1000 * 60 * 60 * 24 * 2) {
+	if (difference >= STREAK_LAPSES_AFTER_MS) {
 		// Set streak to 0
 		ddUser.currentDailyStreak = 0;
 		return [true, ddUser.currentDailyStreak];
