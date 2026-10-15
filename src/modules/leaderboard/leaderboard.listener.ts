@@ -70,8 +70,13 @@ export const LeaderboardListener: EventListener = {
 				dayOfWeek: 1, // 0 = Sunday, 1 = Monday, etc.
 			},
 			() =>
-				runObserved({ op: "job", name: "leaderboard.weekly" }, () =>
-					postLeaderboard(guild),
+				runObserved(
+					{
+						op: "job",
+						name: "leaderboard.weekly",
+						monitor: { slug: "leaderboard-weekly", crontab: "0 6 * * 1" },
+					},
+					() => postLeaderboard(guild),
 				),
 		);
 	},
