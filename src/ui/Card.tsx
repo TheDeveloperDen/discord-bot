@@ -1,6 +1,6 @@
 import {
 	type ColorResolvable,
-	type GuildMember,
+	GuildMember,
 	resolveColor,
 	type User,
 } from "discord.js";
@@ -18,10 +18,12 @@ export interface CardAuthor {
 	 * Shows the author as a mention
 	 */
 	userId?: string;
+	/** The card's accent when it doesn't set one, e.g. the member's role colour */
+	color?: ColorResolvable;
 }
 
 export interface CardProps {
-	/** The bar down the left. Defaults to the branding colour */
+	/** The bar down the left. Defaults to the author's colour, then the branding colour */
 	accent?: ColorResolvable;
 	/** A large heading at the top, for what the card is mainly about (e.g. a starboard post's score) */
 	title?: string;
@@ -53,7 +55,9 @@ export function Card({
 }: CardProps) {
 	return (
 		<Container
-			accentColor={resolveColor(accent ?? (branding.color as ColorResolvable))}
+			accentColor={resolveColor(
+				accent ?? author?.color ?? (branding.color as ColorResolvable),
+			)}
 		>
 			{title && <TextDisplay>{`## ${title}`}</TextDisplay>}
 			{author ? (
@@ -108,9 +112,17 @@ function footerText(footer?: string, timestamp?: Date | number) {
 	return `-# ${parts.join(" · ")}`;
 }
 
-/** A card author for a member (their server avatar), or a user who has left (their account avatar), as a mention */
+/**
+ * A card author for a member (their server avatar and role colour), or a user who has left
+ * (their account avatar), as a mention
+ */
 export const memberAuthor = (member: GuildMember | User): CardAuthor => ({
 	name: member.displayName,
 	iconUrl: member.displayAvatarURL(),
 	userId: member.id,
+	// 0 means no coloured role
+	color:
+		member instanceof GuildMember && member.displayColor !== 0
+			? member.displayColor
+			: undefined,
 });

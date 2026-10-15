@@ -1,8 +1,13 @@
 import { describe, expect, test } from "bun:test";
-import { ComponentType, type MessageCreateOptions } from "discord.js";
+import {
+	ComponentType,
+	GuildMember,
+	type MessageCreateOptions,
+	type User,
+} from "discord.js";
 import { Message, renderDiscordMessage, TextDisplay } from "disjsx";
 import { branding } from "../util/branding.js";
-import { Card } from "./Card.js";
+import { Card, memberAuthor } from "./Card.js";
 
 type RenderedCard = {
 	type: number;
@@ -83,5 +88,37 @@ describe("Card", () => {
 			type: ComponentType.TextDisplay,
 			content: "**Alice**",
 		});
+	});
+
+	test("takes the author's colour when no accent is given", () => {
+		const author = { name: "Alice", color: 0x3498db };
+
+		expect(render(<Card author={author} />)[0].accent_color).toBe(0x3498db);
+		expect(render(<Card author={author} accent="Gold" />)[0].accent_color).toBe(
+			0xf1c40f,
+		);
+	});
+});
+
+describe("memberAuthor", () => {
+	const user = {
+		id: "1",
+		displayName: "Alice",
+		displayAvatarURL: () => "https://cdn/a.png",
+	};
+	// displayName and displayColor are getters on GuildMember, so they're defined rather than assigned
+	const member = (displayColor: number) =>
+		Object.create(
+			GuildMember.prototype,
+			Object.getOwnPropertyDescriptors({ ...user, displayColor }),
+		) as GuildMember;
+
+	test("carries a member's role colour", () => {
+		expect(memberAuthor(member(0x3498db)).color).toBe(0x3498db);
+	});
+
+	test("has no colour for a member without a coloured role, or a user", () => {
+		expect(memberAuthor(member(0)).color).toBeUndefined();
+		expect(memberAuthor(user as unknown as User).color).toBeUndefined();
 	});
 });
