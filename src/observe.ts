@@ -32,6 +32,11 @@ export async function runObserved<T>(
 				channel: interaction.channelId ?? "unknown",
 			});
 		}
+		Sentry.addBreadcrumb({
+			category: op,
+			message: `${op} ${name} started`,
+			level: "info",
+		});
 		const attributes = { op, name };
 		const start = performance.now();
 		try {

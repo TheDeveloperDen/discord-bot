@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/bun";
 import type {
 	Client,
 	MessageCreateOptions,
@@ -279,6 +280,14 @@ export async function logModerationAction(
 	client: Client,
 	action: ModerationLog,
 ) {
+	Sentry.addBreadcrumb({
+		category: "moderation",
+		message: `Logging ${action.kind}`,
+		data: {
+			target:
+				typeof action.target === "object" ? action.target.id : action.target,
+		},
+	});
 	await runObserved({ op: "event", name: `modLog.${action.kind}` }, () =>
 		sendModerationLog(client, action),
 	);
