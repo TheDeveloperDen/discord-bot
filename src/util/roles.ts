@@ -37,9 +37,10 @@ export async function modifyRoles(
 		} else {
 			currentRoles.delete(roles.langs);
 		}
-		const tagsSeparator = hasRolesBetween(roles.tags, roles.langs)(
-			currentRoles,
-		);
+		const tagsSeparator = hasRolesBetween(
+			roles.tags,
+			roles.langs,
+		)(currentRoles);
 		if (tagsSeparator) {
 			addRole(roles.tags);
 		} else {

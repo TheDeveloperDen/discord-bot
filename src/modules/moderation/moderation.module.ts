@@ -3,6 +3,7 @@ import { BanCommand } from "./ban.command.js";
 import { DeletedMessagesListener } from "./deletedMessages.listener.js";
 import { InviteListeners } from "./discordInvitesMonitor.listener.js";
 import { KickCommand } from "./kick.command.js";
+import { undoComponents } from "./logs.undo.js";
 import { PardonCommand } from "./pardon.command.js";
 import { ReputationCommand } from "./reputation.command.js";
 import { SoftBanCommand } from "./softBan.command.js";
@@ -33,6 +34,7 @@ export const ModerationModule: Module = {
 		ReputationCommand,
 		RemoveSupportThreadCommand,
 	],
+	components: undoComponents,
 	listeners: [
 		...InviteListeners,
 		TempBanListener,

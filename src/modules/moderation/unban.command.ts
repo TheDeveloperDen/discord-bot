@@ -1,9 +1,7 @@
 import { PermissionFlagsBits } from "discord.js";
 import { defineCommand, option } from "../../commands/index.js";
 import { logger } from "../../logging.js";
-import { fakeMention } from "../../util/users.js";
-import { logModerationAction } from "./logs.js";
-import { getActiveTempBanModAction } from "./tempBan.js";
+import { unbanUser } from "./undo.js";
 
 export const UnbanCommand = defineCommand({
 	name: "unban",
@@ -23,22 +21,14 @@ export const UnbanCommand = defineCommand({
 		try {
 			await interaction.deferReply();
 
-			const user = await interaction.client.users.fetch(userId);
-
-			await interaction.guild.bans.remove(user.id, reason);
-
-			const modAction = await getActiveTempBanModAction(BigInt(user.id));
-			if (modAction) await modAction.destroy();
-
-			await logModerationAction(interaction.client, {
-				kind: "Unban",
-				target: user,
-				moderator: interaction.user,
+			const result = await unbanUser(
+				interaction.guild,
+				interaction.user,
+				userId,
 				reason,
-			});
-
+			);
 			const unbanMessage = await interaction.followUp({
-				content: `Unbanned ${fakeMention(user)} (${user.id})`,
+				content: result.message,
 			});
 
 			setTimeout(() => unbanMessage.delete().catch(() => null), 5000);
