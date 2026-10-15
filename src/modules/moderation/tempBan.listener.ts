@@ -1,7 +1,9 @@
+import * as Sentry from "@sentry/bun";
 import { Op } from "@sequelize/core";
 import * as schedule from "node-schedule";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
+import { runObserved } from "../../observe.js";
 import {
 	ModeratorAction,
 	ModeratorActions,
@@ -16,49 +18,56 @@ export const TempBanListener: EventListener = {
 				minute: 0,
 				second: 0,
 			},
-			async () => {
-				logger.info("Starting Temp Ban Checks...");
-				const tempBans = await ModeratorActions.findAll({
-					where: {
-						action: ModeratorAction.TEMPBAN,
-						expired: false,
-						expires: {
-							[Op.lt]: new Date(), // expires is less than current time
+			() =>
+				runObserved({ op: "job", name: "tempBan.expiry" }, async () => {
+					logger.info("Starting Temp Ban Checks...");
+					const tempBans = await ModeratorActions.findAll({
+						where: {
+							action: ModeratorAction.TEMPBAN,
+							expired: false,
+							expires: {
+								[Op.lt]: new Date(), // expires is less than current time
+							},
 						},
-					},
-				});
-				const guild = await client.guilds.fetch(config.guildId);
-
-				// Process the expired temp bans
-				for (const tempBan of tempBans) {
-					logger.info(
-						`Processing expired temp ban for user %s`,
-						tempBan.ddUserId,
-					);
-
-					await guild.bans.remove(
-						tempBan.ddUserId.toString(),
-						"Temp Ban Expired",
-					);
-
-					await logModerationAction(client, {
-						kind: "TempBanEnded",
-						target: tempBan.ddUserId.toString(),
 					});
+					const guild = await client.guilds.fetch(config.guildId);
 
-					// Mark as expired
-					await tempBan.update({ expired: true });
+					// Process the expired temp bans
+					for (const tempBan of tempBans) {
+						logger.info(
+							`Processing expired temp ban for user %s`,
+							tempBan.ddUserId,
+						);
+						// Which ban we were processing when a later call fails
+						Sentry.addBreadcrumb({
+							category: "moderation",
+							message: "Processing expired temp ban",
+							data: { userId: tempBan.ddUserId.toString() },
+						});
 
-					// Add your logic here to actually unban the user
-					// For example:
-					// const guild = client.guilds.cache.get(guildId);
-					// await guild?.bans.remove(tempBan.dduserId);
+						await guild.bans.remove(
+							tempBan.ddUserId.toString(),
+							"Temp Ban Expired",
+						);
 
-					logger.info(
-						`Processed expired temp ban for user ${tempBan.ddUserId}`,
-					);
-				}
-			},
+						await logModerationAction(client, {
+							kind: "TempBanEnded",
+							target: tempBan.ddUserId.toString(),
+						});
+
+						// Mark as expired
+						await tempBan.update({ expired: true });
+
+						// Add your logic here to actually unban the user
+						// For example:
+						// const guild = client.guilds.cache.get(guildId);
+						// await guild?.bans.remove(tempBan.dduserId);
+
+						logger.info(
+							`Processed expired temp ban for user ${tempBan.ddUserId}`,
+						);
+					}
+				}),
 		);
 	},
 };
