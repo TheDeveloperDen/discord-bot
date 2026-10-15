@@ -38,7 +38,7 @@
 		"disjsx": "github:TheDeveloperDen/disjsx",
 		"expiry-map": "^2.0.0",
 		"handlebars": "^4.7.10",
-		"hot-takes": "git+https://github.com/bristermitten/hot-takes.git#fe74913b7a3d08df5b852eaf2995f6b7ac5e7f2c",
+		"hot-takes": "git+https://github.com/bristermitten/hot-takes.git#96be3e2b94bdf4cc6dd22119fd598456cde2d20e",
 		"node-schedule": "^2.1.1",
 		"pg": "^8.23.1",
 		"react": "^19.3.0",
