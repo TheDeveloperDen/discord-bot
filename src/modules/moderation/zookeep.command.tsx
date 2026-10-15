@@ -1,8 +1,14 @@
 import * as Sentry from "@sentry/bun";
 import { PermissionFlagsBits } from "discord.js";
+import {
+	MediaGallery,
+	MediaGalleryItem,
+	Message,
+	renderDiscordMessage,
+} from "disjsx";
 import { config } from "../../Config.js";
 import { defineContextMenu } from "../../commands/index.js";
-import { createStandardEmbed } from "../../util/embeds.js";
+import { Card } from "../../ui/index.js";
 import randomElementFromArray from "../../util/random.js";
 import { actualMention, type UserMentionable } from "../../util/users.js";
 
@@ -87,11 +93,22 @@ export const ZookeepCommand = defineContextMenu({
 		const gif = randomElementFromArray(zooGifs);
 		const message = randomElementFromArray(zooMessages)(targetUser);
 
-		const embed = createStandardEmbed(targetUser)
-			.setTitle("Zoo Exhibit Captured!")
-			.setDescription(message)
-			.setColor("Purple")
-			.setImage(gif);
+		// the message already mentions them, so the card has no author
+		const zooCard = (description: string) =>
+			renderDiscordMessage(
+				<Message isV2>
+					<Card
+						accent="Purple"
+						title="Zoo Exhibit Captured!"
+						description={description}
+						timestamp={Date.now()}
+					>
+						<MediaGallery>
+							<MediaGalleryItem url={gif} />
+						</MediaGallery>
+					</Card>
+				</Message>,
+			);
 
 		const applicableChannel = interaction.channel;
 
@@ -112,14 +129,15 @@ export const ZookeepCommand = defineContextMenu({
 					content: `Zookeep successfully executed! Posting the result in <#${config.channels.general}>.`,
 					flags: "Ephemeral",
 				});
-				embed.setDescription(
-					`${message}\nThanks ${actualMention(interaction.user)} for keeping our civilization safe!`,
+				await generalChannel.send(
+					zooCard(
+						`${message}\nThanks ${actualMention(interaction.user)} for keeping our civilization safe!`,
+					),
 				);
-				await generalChannel.send({ embeds: [embed] });
 				return;
 			}
 		}
 
-		await interaction.reply({ embeds: [embed] });
+		await interaction.reply(zooCard(message));
 	},
 });

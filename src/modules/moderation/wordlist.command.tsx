@@ -1,4 +1,5 @@
-import { EmbedBuilder, MessageFlags, PermissionFlagsBits } from "discord.js";
+import { MessageFlags, PermissionFlagsBits } from "discord.js";
+import { Message, renderDiscordMessage } from "disjsx";
 import { defineCommand, option, subcommand } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import {
@@ -8,6 +9,8 @@ import {
 	getBlockedWordsByCategory,
 	removeBlockedWord,
 } from "../../store/models/BlockedWord.js";
+import { Card, type DetailItem, Details, Field } from "../../ui/index.js";
+import { excerpt } from "../../util/strings.js";
 import {
 	invalidateBlockedWordsCache,
 	testForToxicContent,
@@ -157,25 +160,31 @@ const ListSubcommand = subcommand({
 				grouped.set(word.category, existing);
 			}
 
-			const embed = new EmbedBuilder()
-				.setTitle("Blocked Words")
-				.setColor("Red")
-				.setTimestamp()
-				.setFooter({ text: `Total: ${words.length} words` });
-
-			for (const [cat, wordList] of grouped) {
-				// Spoiler each word for safety
-				const spoilered = wordList.map((w) => `||${w}||`).join(", ");
-				const truncated =
-					spoilered.length > 1000 ? `${spoilered.slice(0, 997)}...` : spoilered;
-
-				embed.addFields({
-					name: `${CATEGORY_LABELS[cat]} (${wordList.length})`,
-					value: truncated || "None",
-				});
-			}
-
-			return await interaction.editReply({ embeds: [embed] });
+			// about 3000 characters of words across the categories, within a message's 4000
+			const maxPerCategory = Math.floor(3000 / grouped.size);
+			return await interaction.editReply(
+				renderDiscordMessage(
+					<Message isV2>
+						<Card
+							accent="Red"
+							title="Blocked Words"
+							footer={`Total: ${words.length} words`}
+							timestamp={Date.now()}
+						>
+							{[...grouped].map(([cat, wordList]) => {
+								return (
+									<Field
+										key={cat}
+										label={`${CATEGORY_LABELS[cat]} (${wordList.length})`}
+									>
+										{spoilerList(wordList, maxPerCategory)}
+									</Field>
+								);
+							})}
+						</Card>
+					</Message>,
+				),
+			);
 		} catch (error) {
 			logger.error("Failed to list blocked words:", error);
 			return await interaction.editReply({
@@ -184,6 +193,21 @@ const ListSubcommand = subcommand({
 		}
 	},
 });
+
+/** The words spoilered for safety, as many whole words as fit in `maxLength`, then how many more there are */
+export function spoilerList(words: string[], maxLength: number): string {
+	const shown: string[] = [];
+	let length = 0;
+	for (const word of words) {
+		const item = `||${word}||`;
+		// leaves room for the separator and the "and N more"
+		if (length + item.length + 2 > maxLength - 20) break;
+		shown.push(item);
+		length += item.length + 2;
+	}
+	const hidden = words.length - shown.length;
+	return shown.join(", ") + (hidden > 0 ? ` and ${hidden} more` : "");
+}
 
 const WordListTestSubcommand = subcommand({
 	description: "Test if text would trigger the filter",
@@ -208,57 +232,40 @@ const WordListTestSubcommand = subcommand({
 		try {
 			const result = await testForToxicContent(text, detectBypasses);
 
-			const embed = new EmbedBuilder()
-				.setTitle("Wordlist Test Result")
-				.setColor(result.detected ? "Red" : "Green")
-				.addFields(
-					{
-						name: "Input",
-						value: `||${text}||`,
-						inline: false,
-					},
-					{
-						name: "Detected",
-						value: result.detected ? "Yes" : "No",
-						inline: true,
-					},
-					{
-						name: "Bypass Detection",
-						value: detectBypasses ? "Enabled" : "Disabled",
-						inline: true,
-					},
-				)
-				.setTimestamp();
-
+			const details: DetailItem[] = [
+				["Detected", result.detected ? "Yes" : "No"],
+				["Bypass detection", detectBypasses ? "Enabled" : "Disabled"],
+			];
 			if (result.detected) {
-				embed.addFields(
-					{
-						name: "Matched Word",
-						value: `||${result.matchedWord}||`,
-						inline: true,
-					},
-					{
-						name: "Category",
-						value: result.category
-							? CATEGORY_LABELS[result.category]
-							: "Unknown",
-						inline: true,
-					},
+				details.push(
+					["Matched word", `||${result.matchedWord}||`],
+					[
+						"Category",
+						result.category ? CATEGORY_LABELS[result.category] : "Unknown",
+					],
 				);
-
 				if (result.bypassAttempted) {
-					embed.addFields({
-						name: "Bypass Attempted",
-						value: "Yes (text was normalized to detect)",
-						inline: false,
-					});
+					details.push([
+						"Bypass attempted",
+						"Yes (text was normalized to detect)",
+					]);
 				}
 			}
 
-			return await interaction.reply({
-				flags: MessageFlags.Ephemeral,
-				embeds: [embed],
-			});
+			return await interaction.reply(
+				renderDiscordMessage(
+					<Message isV2 flags={MessageFlags.Ephemeral}>
+						<Card
+							accent={result.detected ? "Red" : "Green"}
+							title="Wordlist Test Result"
+							timestamp={Date.now()}
+						>
+							<Field label="Input">{`||${excerpt(text, { maxLength: 1500 })}||`}</Field>
+							<Details items={details} />
+						</Card>
+					</Message>,
+				),
+			);
 		} catch (error) {
 			logger.error("Failed to test text:", error);
 			return await interaction.reply({
