@@ -9,8 +9,9 @@ import { drawText } from "../../util/textRendering.js";
 import { fakeMention } from "../../util/users.js";
 import { format } from "../core/info.command.js";
 import { profileFont } from "../user/user.js";
-import { formatDayCount, getActualDailyStreak } from "./dailyReward.command.js";
-import { getTierByLevel, xpForLevel } from "./xpForMessage.util.js";
+import { getActualDailyStreak } from "./dailyReward.command.js";
+import { formatDayCount } from "./dailyStreak.js";
+import { getTierByLevel, xpForLevel } from "./levels.js";
 
 export const XpCommand = defineCommand({
 	name: "xp",
