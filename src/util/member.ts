@@ -13,7 +13,17 @@ export async function getMember(message: Message) {
 		return await message.guild.members.fetch(message.author.id);
 	} catch (error) {
 		logger.error("Failed to fetch member:", error);
-		Sentry.captureException(error);
+		Sentry.captureException(error, {
+			contexts: {
+				member_lookup: {
+					userId: message.author.id,
+					messageId: message.id,
+					channelId: message.channelId,
+					authorIsWebhook: message.webhookId != null,
+					messageAgeMs: Date.now() - message.createdTimestamp,
+				},
+			},
+		});
 		return null;
 	}
 }
@@ -31,7 +41,15 @@ export async function getMemberFromInteraction(interaction: Interaction) {
 		return await interaction.guild?.members.fetch(interaction.user.id);
 	} catch (error) {
 		logger.error("Failed to fetch member:", error);
-		Sentry.captureException(error);
+		Sentry.captureException(error, {
+			contexts: {
+				member_lookup: {
+					userId: interaction.user.id,
+					interactionId: interaction.id,
+					interactionType: interaction.type,
+				},
+			},
+		});
 		return null;
 	}
 }
