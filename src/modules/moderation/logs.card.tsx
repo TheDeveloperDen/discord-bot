@@ -1,10 +1,19 @@
 import type { Colors, User } from "discord.js";
-import { ActionRow, Message, renderDiscordMessage, TextDisplay } from "disjsx";
-import { Card, type CardAuthor, memberAuthor } from "../../ui/index.js";
+import { ActionRow, Message, renderDiscordMessage } from "disjsx";
+import type { WarningSeverity } from "../../store/models/Warning.js";
+import {
+	Card,
+	type CardAuthor,
+	type DetailItem,
+	Details,
+	detailText,
+	memberAuthor,
+} from "../../ui/index.js";
 import { excerpt } from "../../util/strings.js";
 import { prettyPrintDuration } from "../../util/timespan.js";
 import type { ModerationLog } from "./logs.js";
 import { type UndoAction, UndoButtonView } from "./logs.undo.js";
+import { SEVERITY_ACCENTS, SEVERITY_LABELS } from "./severity.js";
 
 type ModerationKindMapping<T> = {
 	[K in ModerationLog["kind"]]: T;
@@ -45,29 +54,17 @@ const accents: ModerationKindMapping<ColorName> = {
 	ReputationGranted: "Green",
 };
 
-export const SEVERITY_LABELS: Record<number, string> = {
-	1: "Minor",
-	2: "Moderate",
-	3: "Severe",
-};
-
-const severityAccents: Record<number, ColorName> = {
-	1: "Gold",
-	2: "Orange",
-	3: "Red",
-};
-
-type Details = {
+type KindDetails = {
 	[K in ModerationLog["kind"]]?: (
 		log: Extract<ModerationLog, { kind: K }>,
-	) => [label: string, value: string][];
+	) => DetailItem[];
 };
 
 const timestamp = (ms: number, style = "f") =>
 	`<t:${Math.floor(ms / 1000)}:${style}>`;
 
 /** What each kind shows beyond the reason, moderator and DM status */
-const details: Details = {
+const details: KindDetails = {
 	InviteDeleted: (log) => [
 		[
 			"Message",
@@ -78,7 +75,7 @@ const details: Details = {
 	TempBan: (log) => [["Ban duration", prettyPrintDuration(log.banDuration)]],
 	Timeout: (log) => [["Duration", prettyPrintDuration(log.duration)]],
 	Warning: (log) => [
-		["Severity", SEVERITY_LABELS[log.severity] ?? "Unknown"],
+		["Severity", SEVERITY_LABELS[log.severity as WarningSeverity] ?? "Unknown"],
 		["Warning ID", `#${log.warningId}`],
 		["Active warnings", log.warningCount.toString()],
 		[
@@ -123,9 +120,6 @@ const undoFor = (
 	}
 };
 
-const detailText = (lines: [string, string][]) =>
-	lines.map(([label, value]) => `**${label}:** ${value}`).join("\n");
-
 /** A deleted message (or a bulk delete), whose content was uploaded to the paste service */
 export function renderDeletedMessagesLog({
 	title,
@@ -133,7 +127,7 @@ export function renderDeletedMessagesLog({
 	footer,
 }: {
 	title: string;
-	lines: [string, string][];
+	lines: DetailItem[];
 	footer?: string;
 }) {
 	return renderDiscordMessage(
@@ -166,13 +160,13 @@ export function renderModerationLog(
 		: { name: targetId, userId: targetId };
 	const reason = "reason" in log && log.reason ? log.reason : undefined;
 
-	const lines: [string, string][] = [];
+	const lines: DetailItem[] = [];
 	if ("moderator" in log) lines.push(["Moderator", `<@${log.moderator.id}>`]);
 	if ("deleteMessages" in log && log.deleteMessages) {
 		lines.push(["Deleted messages", "Yes"]);
 	}
 	const kindDetails = details[log.kind] as
-		| ((log: ModerationLog) => [string, string][])
+		| ((log: ModerationLog) => DetailItem[])
 		| undefined;
 	lines.push(...(kindDetails?.(log) ?? []));
 	if ("dmSent" in log) lines.push(["DM sent", log.dmSent ? "✅" : "❌"]);
@@ -183,7 +177,8 @@ export function renderModerationLog(
 			<Card
 				accent={
 					log.kind === "Warning"
-						? (severityAccents[log.severity] ?? accents.Warning)
+						? (SEVERITY_ACCENTS[log.severity as WarningSeverity] ??
+							accents.Warning)
 						: accents[log.kind]
 				}
 				title={titles[log.kind]}
@@ -194,7 +189,7 @@ export function renderModerationLog(
 				footer={`User ID: ${targetId}`}
 				timestamp={Date.now()}
 			>
-				{lines.length > 0 && <TextDisplay>{detailText(lines)}</TextDisplay>}
+				<Details items={lines} />
 			</Card>
 			{undo && (
 				<ActionRow>
