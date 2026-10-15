@@ -99,11 +99,11 @@ async function main() {
 
 	await moduleManager.refreshCommands();
 	await moduleManager.init();
-	logger.info("Startup complete");
+	logger.info("Startup complete", { guilds: client.guilds.cache.size });
 }
 
 async function shutdown(signal: NodeJS.Signals) {
-	logger.info(`Received ${signal}, shutting down`);
+	logger.info("Received shutdown signal", { signal });
 	await schedule.gracefulShutdown();
 	await client.destroy();
 	await Sentry.close(2000);

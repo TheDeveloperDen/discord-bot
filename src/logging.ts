@@ -1,6 +1,8 @@
 import * as path from "node:path";
+import * as Sentry from "@sentry/bun";
 import { stringify } from "safe-stable-stringify";
 import { createLogger, format, transports } from "winston";
+import Transport from "winston-transport";
 
 const timestamp = format.timestamp({
 	format: "YYYY-MM-DD HH:mm:ss",
@@ -54,6 +56,9 @@ const cliFormat = format.combine(
 			.join("\n");
 	}),
 );
+const SentryTransport = Sentry.createSentryWinstonTransport(Transport, {
+	levels: ["info", "warn", "error"],
+});
 
 export const logger = createLogger({
 	level: process.env.NODE_ENV === "production" ? "info" : "debug",
@@ -63,6 +68,7 @@ export const logger = createLogger({
 	transports: [
 		// something slightly more readable for the cli
 		new transports.Console({ format: cliFormat }),
+		new SentryTransport() as Transport,
 		//
 		// - Write all logs with level `error` and below to `error.log`
 		// - Write all logs with level `info` and below to `combined.log`
