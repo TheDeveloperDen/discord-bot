@@ -3,6 +3,7 @@ import type { Client, GuildMember } from "discord.js";
 import { type Job, scheduleJob } from "node-schedule";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
+import { runObserved } from "../../observe.js";
 import { DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { actualMention, isSpecialUser } from "../../util/users.js";
 import {
@@ -82,9 +83,10 @@ export const scheduleReminder = async (
 			minute: time.getMinutes(),
 			second: time.getSeconds(),
 		},
-		async () => {
-			await sendReminder(client, user);
-		},
+		() =>
+			runObserved({ op: "job", name: "dailyReward.reminder" }, () =>
+				sendReminder(client, user),
+			),
 	);
 	scheduledReminders.set(ddUser.id, job);
 	logger.info(

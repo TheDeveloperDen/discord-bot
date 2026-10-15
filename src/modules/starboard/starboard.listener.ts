@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/bun";
 import {
 	type Channel,
 	type Client,
@@ -11,6 +12,7 @@ import {
 import * as schedule from "node-schedule";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
+import { runObserved } from "../../observe.js";
 import { AntiStarboardMessage } from "../../store/models/AntiStarboardMessage.js";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import { ReputationEventType } from "../../store/models/ReputationEvent.js";
@@ -225,7 +227,9 @@ const getContentCountForBoard = (
 export const StarboardListener: EventListener = {
 	async clientReady(client) {
 		schedule.scheduleJob({ hour: 0, minute: 0, second: 0 }, () =>
-			refreshBoards(client),
+			runObserved({ op: "job", name: "starboard.refresh" }, () =>
+				refreshBoards(client),
+			),
 		);
 	},
 
@@ -600,6 +604,12 @@ export async function refreshBoards(client: Client) {
 			}
 			const records = await board.model.findAll({ where: { removedAt: null } });
 			for (const record of records) {
+				Sentry.setContext("starboard_refresh", {
+					board: board.name,
+					starboardMessageId: record.starboardMessageId.toString(),
+					originalMessageId: record.originalMessageId.toString(),
+					originalChannelId: record.originalMessageChannelId.toString(),
+				});
 				let message: Message;
 				try {
 					const channel = await client.channels.fetch(

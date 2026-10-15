@@ -2,6 +2,7 @@ import { EmbedBuilder, type Guild } from "discord.js";
 import * as schedule from "node-schedule";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
+import { runObserved } from "../../observe.js";
 import { actualMention } from "../../util/users.js";
 import type { EventListener } from "../module.js";
 import { getUserAndBumpsAggregated, medal } from "./leaderboard.js";
@@ -68,9 +69,10 @@ export const LeaderboardListener: EventListener = {
 				minute: 0,
 				dayOfWeek: 1, // 0 = Sunday, 1 = Monday, etc.
 			},
-			async () => {
-				await postLeaderboard(guild);
-			},
+			() =>
+				runObserved({ op: "job", name: "leaderboard.weekly" }, () =>
+					postLeaderboard(guild),
+				),
 		);
 	},
 };

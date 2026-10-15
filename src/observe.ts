@@ -3,7 +3,7 @@ import { type Interaction, MessageFlags, TextDisplayBuilder } from "discord.js";
 import { logger } from "./logging.js";
 
 export interface ObserveOptions {
-	op: "command" | "component" | "event";
+	op: "command" | "component" | "event" | "job";
 	name: string;
 	interaction?: Interaction;
 	tags?: Record<string, string>;
@@ -20,7 +20,12 @@ export async function runObserved<T>(
 	{ op, name, interaction, tags }: ObserveOptions,
 	fn: () => T | Promise<T>,
 ): Promise<T | undefined> {
-	return Sentry.withIsolationScope(async (scope) => {
+	// Create a new scope to avoid inheriting async contexts and potentially providing wrong information
+	return Sentry.withIsolationScope(new Sentry.Scope(), (scope) =>
+		Sentry.startNewTrace(() => observe(scope)),
+	);
+
+	async function observe(scope: Sentry.Scope) {
 		scope.setTags({ op, name, ...tags });
 		if (interaction) {
 			scope.setUser({
@@ -60,7 +65,7 @@ export async function runObserved<T>(
 				{ unit: "millisecond", attributes },
 			);
 		}
-	});
+	}
 }
 
 /**
