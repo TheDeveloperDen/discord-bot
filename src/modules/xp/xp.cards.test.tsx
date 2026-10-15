@@ -40,8 +40,8 @@ describe("ProfileCard", () => {
 
 		expect(header).toEqual([
 			"## Alice",
-			"**Level 12** · <@&222>",
-			"🔥 3 days (best 10) · 📣 4 bumps",
+			"**Level 12** | <@&222>",
+			"🔥 3 days (max 10) | 📣 4 bumps",
 		]);
 		expect(avatar).toBe("https://cdn/a.png");
 	});
@@ -126,14 +126,14 @@ describe("LevelUpCard", () => {
 		expect(texts[0]).toBe("<@1> (Don't want to be pinged? ...)");
 		expect(header).toEqual([
 			"## ⚡ Level 13!",
-			"**Alice** levelled up · <@&222>",
+			"**Alice** levelled up | <@&222>",
 		]);
 		expect(avatar).toBe("https://cdn/a.png");
 	});
 
 	test("shows the tier in bold without a role", () => {
 		expect(sections(card(13)).header).toContain(
-			"**Alice** levelled up · **Tier 2**",
+			"**Alice** levelled up | **Tier 2**",
 		);
 	});
 

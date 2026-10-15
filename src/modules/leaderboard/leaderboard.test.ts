@@ -132,6 +132,19 @@ describe("getLeaderboardPage", () => {
 		});
 	});
 
+	test("a bumps page past the end still counts everyone", async () => {
+		await user(1, { bumps: 2 });
+		await user(2);
+		await bump(2);
+
+		const page = await getLeaderboardPage(leaderboardFor("bumps"), {
+			offset: 10,
+			limit: 10,
+		});
+
+		expect(page).toEqual({ items: [], total: 2 });
+	});
+
 	test("weekly bumps only count the last 7 days", async () => {
 		await user(1, { bumps: 10 });
 		await bump(1, 30);
