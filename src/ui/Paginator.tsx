@@ -1,4 +1,8 @@
-import { ButtonStyle, MessageFlags } from "discord.js";
+import {
+	ButtonStyle,
+	MessageFlags,
+	type MessageMentionOptions,
+} from "discord.js";
 import { ActionRow, Message, renderDiscordMessage } from "disjsx";
 import type { ReactElement } from "react";
 import {
@@ -58,7 +62,11 @@ export type Paginator<A extends readonly string[]> = ComponentDefinition<
 	message(
 		args: ComponentArgs<A>,
 		options: PageOptions,
-	): Promise<ReturnType<typeof renderDiscordMessage>>;
+	): Promise<
+		ReturnType<typeof renderDiscordMessage> & {
+			allowedMentions: MessageMentionOptions;
+		}
+	>;
 };
 
 /**
@@ -83,18 +91,14 @@ export function definePaginator<const A extends readonly string[], T>(
 		args: ComponentArgs<A>,
 		{ owner, page = 0, ephemeral }: PageOptions,
 	) {
+		const fetchPage = (n: number) =>
+			definition.fetch(args, { offset: n * pageSize, limit: pageSize });
 		let current = Math.max(0, page);
-		let result = await definition.fetch(args, {
-			offset: current * pageSize,
-			limit: pageSize,
-		});
+		let result = await fetchPage(current);
 		const pages = Math.max(1, Math.ceil(result.total / pageSize));
 		if (current >= pages) {
 			current = pages - 1;
-			result = await definition.fetch(args, {
-				offset: current * pageSize,
-				limit: pageSize,
-			});
+			result = await fetchPage(current);
 		}
 
 		const card = definition.render(
@@ -117,7 +121,7 @@ export function definePaginator<const A extends readonly string[], T>(
 				{label}
 			</PageButtonElement>
 		);
-		return renderDiscordMessage(
+		const payload = renderDiscordMessage(
 			<Message isV2 flags={ephemeral ? MessageFlags.Ephemeral : undefined}>
 				{card}
 				{pages > 1 && (
@@ -132,6 +136,8 @@ export function definePaginator<const A extends readonly string[], T>(
 				)}
 			</Message>,
 		);
+		// lists mention lots of people, and unlike in embeds, mentions in text displays ping
+		return { ...payload, allowedMentions: { parse: [] } };
 	}
 
 	// typed loosely inside: only this file renders the buttons, and it always passes every arg
@@ -140,20 +146,17 @@ export function definePaginator<const A extends readonly string[], T>(
 		kind: "button",
 		args: ["page", "owner", ...userArgs],
 		async handle(interaction, { page, owner, ...rest }) {
-			const args = rest as ComponentArgs<A>;
-			const target = Number(page);
-			if (owner === undefined) return;
-			if (interaction.user.id === owner) {
-				await interaction.update(await message(args, { owner, page: target }));
-			} else {
-				await interaction.reply(
-					await message(args, {
-						owner: interaction.user.id,
-						page: target,
-						ephemeral: true,
-					}),
-				);
-			}
+			// acknowledge first: a page's fetch may take longer than Discord's 3 seconds.
+			// the owner turns this message; anyone else gets a copy of that page they own
+			await (interaction.user.id === owner
+				? interaction.deferUpdate()
+				: interaction.deferReply({ flags: MessageFlags.Ephemeral }));
+			await interaction.editReply(
+				await message(rest as ComponentArgs<A>, {
+					owner: interaction.user.id,
+					page: Number(page),
+				}),
+			);
 		},
 	});
 	// its arg index signature would swallow the button props, so the element is called untyped
