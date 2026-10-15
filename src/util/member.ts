@@ -12,7 +12,6 @@ export async function getMember(message: Message) {
 	try {
 		return await message.guild.members.fetch(message.author.id);
 	} catch (error) {
-		logger.error("Failed to fetch member:", error);
 		Sentry.captureException(error, {
 			contexts: {
 				member_lookup: {
@@ -24,6 +23,7 @@ export async function getMember(message: Message) {
 				},
 			},
 		});
+		logger.error("Failed to fetch member:", error);
 		return null;
 	}
 }
@@ -40,7 +40,6 @@ export async function getMemberFromInteraction(interaction: Interaction) {
 	try {
 		return await interaction.guild?.members.fetch(interaction.user.id);
 	} catch (error) {
-		logger.error("Failed to fetch member:", error);
 		Sentry.captureException(error, {
 			contexts: {
 				member_lookup: {
@@ -50,6 +49,7 @@ export async function getMemberFromInteraction(interaction: Interaction) {
 				},
 			},
 		});
+		logger.error("Failed to fetch member:", error);
 		return null;
 	}
 }

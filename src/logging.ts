@@ -1,13 +1,54 @@
 import * as path from "node:path";
 import * as Sentry from "@sentry/bun";
 import { stringify } from "safe-stable-stringify";
+import { SPLAT } from "triple-beam";
 import { createLogger, format, transports } from "winston";
 import Transport from "winston-transport";
+
+const CAPTURED = Symbol("sentryCaptured");
+
+/** Event ids of errors the logger has already sent to Sentry, so `runObserved` can reuse them */
+export const capturedEventIds = new WeakMap<object, string>();
+
+/**
+ * Sends every `logger.error(..., error)` to Sentry as an issue. A lot of the codebase just logs errors and doesn't
+ * report to Sentry, but this does that automagically!
+ *
+ * Sentry should automatically ignore duplicates, so there's nothing to worry about there :)
+ */
+const captureErrors = format((info) => {
+	// winston might call the format multiple times
+	if (info.level !== "error" || info[CAPTURED]) return info;
+	info[CAPTURED] = true;
+	try {
+		const splat = (info[SPLAT] as unknown[] | undefined) ?? [];
+		// `logger.error(error)` loses the Error instance but keeps its stack
+		const error =
+			splat.find((arg): arg is Error => arg instanceof Error) ??
+			(typeof info.stack === "string"
+				? Object.assign(new Error(String(info.message)), {
+						stack: info.stack,
+					})
+				: undefined);
+		if (error && !capturedEventIds.has(error)) {
+			capturedEventIds.set(
+				error,
+				Sentry.captureException(error, {
+					extra: { logMessage: info.message },
+				}),
+			);
+		}
+	} catch {
+		// logging must never throw
+	}
+	return info;
+});
 
 const timestamp = format.timestamp({
 	format: "YYYY-MM-DD HH:mm:ss",
 });
 const baseFormat = format.combine(
+	captureErrors(),
 	timestamp,
 	format.errors({ stack: true }),
 	format.splat(),

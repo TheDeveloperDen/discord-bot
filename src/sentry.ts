@@ -45,12 +45,10 @@ export function initSentry(client: Client) {
 	client.on("shardReady", (id) => gatewayCrumb("shardReady", id));
 
 	client.on("shardError", (error) => {
-		logger.error(error);
-		Sentry.captureException(error);
+		logger.error("Discord shard error", error);
 	});
 
 	client.on("error", (error) => {
-		logger.error(error);
-		Sentry.captureException(error);
+		logger.error("Discord client error", error);
 	});
 }

@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/bun";
 import { type Interaction, MessageFlags, TextDisplayBuilder } from "discord.js";
-import { logger } from "./logging.js";
+import { capturedEventIds, logger } from "./logging.js";
 
 export interface ObserveOptions {
 	op: "command" | "component" | "event" | "job";
@@ -54,7 +54,12 @@ export async function runObserved<T>(
 			Sentry.metrics.count("handler.run", 1, {
 				attributes: { ...attributes, outcome: "error" },
 			});
-			const eventId = Sentry.captureException(error);
+			// the logger may already have captured this error, and a second capture of
+			// the same object is dropped, so reuse its id for the user-facing ref
+			const eventId =
+				(typeof error === "object" && error != null
+					? capturedEventIds.get(error)
+					: undefined) ?? Sentry.captureException(error);
 			logger.error(`Error in ${op} ${name} (ref ${eventId})`, error);
 			if (interaction) await replyWithError(interaction, eventId);
 			return undefined;
