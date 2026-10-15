@@ -1,19 +1,16 @@
 import { describe, expect, mock, test } from "bun:test";
-import {
-	type ButtonInteraction,
-	ComponentType,
-	MessageFlags,
-} from "discord.js";
+import { type ButtonInteraction, MessageFlags } from "discord.js";
 import { TextDisplay } from "disjsx";
 import { parseCustomId } from "../components/component.js";
+import { buttons, type RenderedMessage, texts } from "../tests/render.js";
 import { Card } from "./Card.js";
-import { definePaginator } from "./Paginator.js";
+import { definePaginator, type PageRequest } from "./Paginator.js";
 
 const ITEMS = Array.from({ length: 25 }, (_, i) => `item ${i + 1}`);
 
 function setup(items: string[] = ITEMS) {
 	const fetch = mock(
-		(_args: { list: string }, { offset, limit }: Paginate) => ({
+		(_args: { list: string }, { offset, limit }: PageRequest) => ({
 			items: items.slice(offset, offset + limit),
 			total: items.length,
 		}),
@@ -32,40 +29,20 @@ function setup(items: string[] = ITEMS) {
 	return { Pages, fetch };
 }
 
-type Paginate = { offset: number; limit: number };
-
-type Rendered = {
-	components?: {
-		type: number;
-		components: {
-			type: number;
-			content?: string;
-			custom_id?: string;
-			disabled?: boolean;
-		}[];
-	}[];
-	flags?: number;
-};
-
-const texts = (payload: Rendered) =>
-	payload.components?.[0]?.components.flatMap((c) =>
-		c.content ? [c.content] : [],
-	) ?? [];
-
-const buttons = (payload: Rendered) =>
-	payload.components?.find((c) => c.type === ComponentType.ActionRow)
-		?.components ?? [];
-
+/** A button click that records how it was acknowledged and what it was edited to */
 function click(customId: string, userId: string) {
-	const update = mock((_payload: Rendered) => Promise.resolve());
-	const reply = mock((_payload: Rendered) => Promise.resolve());
+	const deferUpdate = mock(() => Promise.resolve());
+	const deferReply = mock((_options: { flags?: number }) => Promise.resolve());
+	const editReply = mock((_payload: RenderedMessage) => Promise.resolve());
 	const interaction = {
 		customId,
 		user: { id: userId },
-		update,
-		reply,
+		deferUpdate,
+		deferReply,
+		editReply,
 	} as unknown as ButtonInteraction;
-	return { interaction, update, reply };
+	const shown = () => editReply.mock.calls[0]?.[0] as RenderedMessage;
+	return { interaction, deferUpdate, deferReply, shown };
 }
 
 async function clickButton(
@@ -88,7 +65,7 @@ describe("Paginator", () => {
 		const payload = (await Pages.message(
 			{ list: "things" },
 			{ owner: "1" },
-		)) as Rendered;
+		)) as RenderedMessage;
 
 		expect(fetch).toHaveBeenCalledWith(
 			{ list: "things" },
@@ -101,12 +78,19 @@ describe("Paginator", () => {
 		expect(next?.disabled).toBeFalsy();
 	});
 
+	test("pages never ping the people they mention", async () => {
+		const { Pages } = setup();
+		const payload = await Pages.message({ list: "things" }, { owner: "1" });
+
+		expect(payload.allowedMentions).toEqual({ parse: [] });
+	});
+
 	test("a single page has no buttons and no page count", async () => {
 		const { Pages } = setup(ITEMS.slice(0, 4));
 		const payload = (await Pages.message(
 			{ list: "things" },
 			{ owner: "1" },
-		)) as Rendered;
+		)) as RenderedMessage;
 
 		expect(buttons(payload)).toEqual([]);
 		expect(texts(payload).at(-1)).not.toContain("Page");
@@ -117,7 +101,7 @@ describe("Paginator", () => {
 		const payload = (await Pages.message(
 			{ list: "things" },
 			{ owner: "1" },
-		)) as Rendered;
+		)) as RenderedMessage;
 
 		expect(texts(payload)).toContain("nothing");
 		expect(buttons(payload)).toEqual([]);
@@ -128,16 +112,18 @@ describe("Paginator", () => {
 		const first = (await Pages.message(
 			{ list: "a:b" },
 			{ owner: "1" },
-		)) as Rendered;
+		)) as RenderedMessage;
 
-		const { update, reply } = await clickButton(Pages, buttons(first)[1], "1");
+		const clicked = await clickButton(Pages, buttons(first)[1], "1");
 
-		expect(reply).not.toHaveBeenCalled();
+		// acknowledged straight away, since fetching a page may take longer than Discord's 3 seconds
+		expect(clicked.deferUpdate).toHaveBeenCalled();
+		expect(clicked.deferReply).not.toHaveBeenCalled();
 		expect(fetch).toHaveBeenLastCalledWith(
 			{ list: "a:b" },
 			{ offset: 10, limit: 10 },
 		);
-		const second = update.mock.calls[0]?.[0] as Rendered;
+		const second = clicked.shown();
 		expect(texts(second)).toContain(ITEMS.slice(10, 20).join("\n"));
 		expect(texts(second).at(-1)).toContain("Page 2 of 3");
 		const [prev, next] = buttons(second);
@@ -150,7 +136,7 @@ describe("Paginator", () => {
 		const payload = (await Pages.message(
 			{ list: "things" },
 			{ owner: "1", page: 2 },
-		)) as Rendered;
+		)) as RenderedMessage;
 
 		expect(texts(payload)).toContain(ITEMS.slice(20).join("\n"));
 		const [prev, next] = buttons(payload);
@@ -163,21 +149,21 @@ describe("Paginator", () => {
 		const first = (await Pages.message(
 			{ list: "things" },
 			{ owner: "1" },
-		)) as Rendered;
+		)) as RenderedMessage;
 
-		const { update, reply } = await clickButton(Pages, buttons(first)[1], "2");
+		const clicked = await clickButton(Pages, buttons(first)[1], "2");
 
-		expect(update).not.toHaveBeenCalled();
-		const copy = reply.mock.calls[0]?.[0] as Rendered;
-		expect((copy.flags ?? 0) & MessageFlags.Ephemeral).toBeTruthy();
+		expect(clicked.deferUpdate).not.toHaveBeenCalled();
+		expect(clicked.deferReply).toHaveBeenCalledWith({
+			flags: MessageFlags.Ephemeral,
+		});
+		const copy = clicked.shown();
 		expect(texts(copy).at(-1)).toContain("Page 2 of 3");
 
 		// their copy's buttons are theirs, so clicking them turns their copy's page
 		const again = await clickButton(Pages, buttons(copy)[1], "2");
-		expect(again.reply).not.toHaveBeenCalled();
-		expect(texts(again.update.mock.calls[0]?.[0] as Rendered).at(-1)).toContain(
-			"Page 3 of 3",
-		);
+		expect(again.deferUpdate).toHaveBeenCalled();
+		expect(texts(again.shown()).at(-1)).toContain("Page 3 of 3");
 	});
 
 	test("a page past the end (the list shrank) shows the last page", async () => {
@@ -185,7 +171,7 @@ describe("Paginator", () => {
 		const payload = (await Pages.message(
 			{ list: "things" },
 			{ owner: "1", page: 5 },
-		)) as Rendered;
+		)) as RenderedMessage;
 
 		expect(texts(payload)).toContain(ITEMS.slice(10, 15).join("\n"));
 		expect(texts(payload).at(-1)).toContain("Page 2 of 2");
