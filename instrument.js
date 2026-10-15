@@ -8,6 +8,7 @@ Sentry.init({
 	// Git commit SHA, provided by Docker build
 	release: process.env.SENTRY_RELEASE || undefined,
 	sendDefaultPii: true,
+	enableLogs: true,
 	tracesSampleRate: 1.0,
 	integrations: [
 		Sentry.extraErrorDataIntegration(),
