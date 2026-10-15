@@ -97,6 +97,7 @@ export interface Config {
 		introductions?: string;
 		general: string;
 		leaderboard?: string;
+		levelUp?: string;
 	};
 	starboard: {
 		emojiId: string;
@@ -126,7 +127,7 @@ export interface Config {
 		admin: Snowflake;
 		notable?: Snowflake;
 		staff: Snowflake;
-		separators: { general: Snowflake; tags: Snowflake; langs: Snowflake };
+		separators?: { general: Snowflake; tags: Snowflake; langs: Snowflake };
 		noPing: Snowflake;
 		bumpNotifications?: Snowflake;
 		zooExhibit?: Snowflake;
@@ -163,4 +164,11 @@ export interface Config {
 		appealCooldown: string;
 	};
 	achievements?: AchievementsConfig;
+	languageStatus?: {
+		/**
+		 * Custom status texts shown as the bot's activity.
+		 * If set, these are used instead of the default `Coding in <language>`.
+		 */
+		texts?: string[];
+	};
 }
