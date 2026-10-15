@@ -7,6 +7,12 @@ export interface ObserveOptions {
 	name: string;
 	interaction?: Interaction;
 	tags?: Record<string, string>;
+	/**
+	 * Reports each run to a Sentry cron monitor which
+	 * alerts when the job fails or doesn't run on schedule.
+	 * `fn` must throw on failure for the check-in to be marked as failed.
+	 */
+	monitor?: { slug: string; crontab: string; maxRuntimeMinutes?: number };
 }
 
 /**
@@ -17,7 +23,7 @@ export interface ObserveOptions {
  * The promise resolves to the return value of `fn` if it succeeds, or `undefined` if it throws.
  */
 export async function runObserved<T>(
-	{ op, name, interaction, tags }: ObserveOptions,
+	{ op, name, interaction, tags, monitor }: ObserveOptions,
 	fn: () => T | Promise<T>,
 ): Promise<T | undefined> {
 	// Create a new scope to avoid inheriting async contexts and potentially providing wrong information
@@ -45,7 +51,19 @@ export async function runObserved<T>(
 		const attributes = { op, name };
 		const start = performance.now();
 		try {
-			const result = await Sentry.startSpan({ op, name }, fn);
+			const run = monitor
+				? () =>
+						Sentry.withMonitor(monitor.slug, fn, {
+							schedule: { type: "crontab", value: monitor.crontab },
+							timezone: "UTC",
+							maxRuntime: monitor.maxRuntimeMinutes ?? 10,
+							checkinMargin: 5,
+							// only raise an issue after 2 consecutive failures
+							failureIssueThreshold: 2,
+							recoveryThreshold: 1,
+						})
+				: fn;
+			const result = await Sentry.startSpan({ op, name }, run);
 			Sentry.metrics.count("handler.run", 1, {
 				attributes: { ...attributes, outcome: "ok" },
 			});

@@ -227,8 +227,17 @@ const getContentCountForBoard = (
 export const StarboardListener: EventListener = {
 	async clientReady(client) {
 		schedule.scheduleJob({ hour: 0, minute: 0, second: 0 }, () =>
-			runObserved({ op: "job", name: "starboard.refresh" }, () =>
-				refreshBoards(client),
+			runObserved(
+				{
+					op: "job",
+					name: "starboard.refresh",
+					monitor: {
+						slug: "starboard-refresh",
+						crontab: "0 0 * * *",
+						maxRuntimeMinutes: 60,
+					},
+				},
+				() => refreshBoards(client),
 			),
 		);
 	},
@@ -651,6 +660,8 @@ export async function refreshBoards(client: Client) {
 		}
 	} catch (error) {
 		logger.error("Failed to refresh board posts", error);
+		// so the cron monitor sees the run fail
+		throw error;
 	} finally {
 		isRefreshingBoards = false;
 	}
