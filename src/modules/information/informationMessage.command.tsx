@@ -1,13 +1,12 @@
 import {
 	type APIEmbed,
-	ApplicationCommandType,
 	ButtonStyle,
 	MessageFlags,
 	PermissionFlagsBits,
 } from "discord.js";
 import { ActionRow, Button, Message, renderDiscordMessage } from "disjsx";
 import { config } from "../../Config.js";
-import type { Command } from "../../commands/index.js";
+import { defineContextMenu } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import type { InformationButton } from "./information.js";
@@ -70,46 +69,45 @@ export function renderInformationButtons(rows: InformationButton[][]) {
 	);
 }
 
-export const InformationMessageCommand: Command<ApplicationCommandType.Message> =
-	{
-		name: "Set Information Message",
-		default_member_permissions: PermissionFlagsBits.ManageGuild,
-		type: ApplicationCommandType.Message,
-		async handle(interaction) {
-			if (!interaction.targetMessage.editable) {
-				await interaction.reply({
-					flags: MessageFlags.Ephemeral,
-					content: "I can't edit that message.",
-				});
-				return;
-			}
-
-			if (config.informationMessage == null) {
-				await interaction.reply({
-					flags: MessageFlags.Ephemeral,
-					content: "There is no information message configured.",
-				});
-				return;
-			}
-			const informationMessage = config.informationMessage;
-			const embed: APIEmbed = {
-				...createStandardEmbed().data,
-				...informationMessage.embed.data,
-			};
-			const newMessage = await interaction.targetMessage.edit({
-				content: informationMessage.content ?? null,
-				embeds: [embed],
-				components: renderInformationButtons(informationMessage.buttonRows),
-			});
-
-			logger.info(
-				`Information message set for ${newMessage.id} with content ${newMessage.content} and embed ${JSON.stringify(
-					newMessage.embeds[0],
-				)}`,
-			);
+export const InformationMessageCommand = defineContextMenu({
+	type: "message",
+	name: "Set Information Message",
+	default_member_permissions: PermissionFlagsBits.ManageGuild,
+	async handle(interaction) {
+		if (!interaction.targetMessage.editable) {
 			await interaction.reply({
 				flags: MessageFlags.Ephemeral,
-				content: "Information message set.",
+				content: "I can't edit that message.",
 			});
-		},
-	};
+			return;
+		}
+
+		if (config.informationMessage == null) {
+			await interaction.reply({
+				flags: MessageFlags.Ephemeral,
+				content: "There is no information message configured.",
+			});
+			return;
+		}
+		const informationMessage = config.informationMessage;
+		const embed: APIEmbed = {
+			...createStandardEmbed().data,
+			...informationMessage.embed.data,
+		};
+		const newMessage = await interaction.targetMessage.edit({
+			content: informationMessage.content ?? null,
+			embeds: [embed],
+			components: renderInformationButtons(informationMessage.buttonRows),
+		});
+
+		logger.info(
+			`Information message set for ${newMessage.id} with content ${newMessage.content} and embed ${JSON.stringify(
+				newMessage.embeds[0],
+			)}`,
+		);
+		await interaction.reply({
+			flags: MessageFlags.Ephemeral,
+			content: "Information message set.",
+		});
+	},
+});

@@ -62,7 +62,7 @@ const randomItem = <Value>(
 	items: readonly Value[],
 	random: () => number,
 ): Value => {
-	return items[Math.floor(random() * items.length)];
+	return items[Math.floor(random() * items.length)]!;
 };
 
 const isBoardCell = (size: number, cell: unknown): cell is number => {
@@ -82,11 +82,12 @@ const areNeighbors = (size: number, first: number, second: number): boolean => {
 };
 
 const areConnected = (size: number, cells: readonly number[]): boolean => {
-	if (cells.length === 0) return false;
+	const [firstCell] = cells;
+	if (firstCell === undefined) return false;
 
 	const selected = new Set(cells);
 	const visited = new Set<number>();
-	const pending = [cells[0]];
+	const pending = [firstCell];
 
 	while (pending.length > 0) {
 		const cell = pending.pop();
@@ -127,8 +128,8 @@ const availableMerges = (
 	const pairs: RegionPair[] = [];
 	for (let first = 0; first < regions.length; first += 1) {
 		for (let second = first + 1; second < regions.length; second += 1) {
-			const firstRegion = regions[first];
-			const secondRegion = regions[second];
+			const firstRegion = regions[first]!;
+			const secondRegion = regions[second]!;
 			if (
 				firstRegion.cells.length + secondRegion.cells.length <=
 					MAX_REGION_SIZE &&
@@ -143,7 +144,7 @@ const availableMerges = (
 
 const mergeRegions = (regions: Region[], pair: RegionPair): void => {
 	const merged: Region = {
-		cells: [...regions[pair.first].cells, ...regions[pair.second].cells],
+		cells: [...regions[pair.first]!.cells, ...regions[pair.second]!.cells],
 	};
 	regions.splice(pair.second, 1);
 	regions[pair.first] = merged;
@@ -187,8 +188,8 @@ const createRandomRegions = (random: () => number): Region[] | null => {
 
 		const irregularPairs = pairs.filter((pair) => {
 			const cells = [
-				...regions[pair.first].cells,
-				...regions[pair.second].cells,
+				...regions[pair.first]!.cells,
+				...regions[pair.second]!.cells,
 			];
 			return isIrregular(size, cells);
 		});
@@ -207,11 +208,13 @@ const createFallbackRegions = (random: () => number): Region[] => {
 		for (let left = 0; left < size; left += 4) {
 			const flipHorizontally = random() < 0.5;
 			const flipVertically = random() < 0.5;
-			const firstCells = [
-				[0, 0],
-				[1, 0],
-				[0, 1],
-			].map(([column, row]) => {
+			const firstCells = (
+				[
+					[0, 0],
+					[1, 0],
+					[0, 1],
+				] as const
+			).map(([column, row]) => {
 				const transformedColumn = flipHorizontally ? 3 - column : column;
 				const transformedRow = flipVertically ? 1 - row : row;
 				return (top + transformedRow) * size + left + transformedColumn;
@@ -338,7 +341,7 @@ const validateCandidate = (
 	if (matchingClues.length > 1)
 		return fail("A block must contain exactly one clue.");
 
-	const matchingClue = matchingClues[0];
+	const matchingClue = matchingClues[0]!;
 	if (cells.length !== matchingClue.clue.size) {
 		return fail(`This clue must cover ${matchingClue.clue.size} cells.`);
 	}

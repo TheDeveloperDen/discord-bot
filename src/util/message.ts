@@ -58,7 +58,7 @@ export async function fetchAllMessages(
 
 			// If we fetched less than requested, we've reached the end
 			if (messages.size < limit) {
-				console.info("Reached end of channel messages");
+				logger.info("Reached end of channel messages");
 				break;
 			}
 
@@ -72,16 +72,10 @@ export async function fetchAllMessages(
 		logger.info(`Successfully fetched ${allMessages.size} total messages`);
 		return new Collection(allMessages);
 	} catch (error) {
-		logger.error("Error fetching messages:", error);
-
-		// Return what we have so far instead of failing completely
-		if (allMessages.size > 0) {
-			logger.error(
-				`Returning ${allMessages.size} messages fetched before error`,
-			);
-			return new Collection(allMessages);
-		}
-
+		logger.error(
+			`Failed to fetch complete message history after ${allMessages.size} messages:`,
+			error,
+		);
 		throw error;
 	}
 }
@@ -112,7 +106,7 @@ export async function fetchAllMessagesWithRetry(
 			return await fetchAllMessages(channel, maxMessages, delayMs, filter);
 		} catch (error) {
 			lastError = error instanceof Error ? error : new Error(String(error));
-			logger.error(`Attempt ${attempt} failed:`, lastError.message);
+			logger.error(`Attempt ${attempt} failed: ${lastError.message}`);
 
 			if (attempt < maxRetries) {
 				// Exponential backoff: wait longer after each failed attempt

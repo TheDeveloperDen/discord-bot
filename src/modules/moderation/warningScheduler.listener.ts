@@ -86,16 +86,23 @@ export const WarningSchedulerListener: EventListener = {
 		logger.info("Starting warning expiration scheduler");
 
 		schedule.scheduleJob("0 * * * *", () =>
-			runObserved({ op: "event", name: "warningScheduler.job" }, async () => {
-				await expireWarnings();
+			runObserved(
+				{
+					op: "job",
+					name: "warningScheduler.job",
+					monitor: { slug: "warning-expiry", crontab: "0 * * * *" },
+				},
+				async () => {
+					await expireWarnings();
 
-				const guild = await client.guilds
-					.fetch(config.guildId)
-					.catch(() => null);
-				if (guild) {
-					await checkEscalations(guild);
-				}
-			}),
+					const guild = await client.guilds
+						.fetch(config.guildId)
+						.catch(() => null);
+					if (guild) {
+						await checkEscalations(guild);
+					}
+				},
+			),
 		);
 
 		await expireWarnings();

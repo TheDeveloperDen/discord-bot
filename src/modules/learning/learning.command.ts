@@ -1,13 +1,11 @@
 import {
-	ApplicationCommandOptionType,
-	ApplicationCommandType,
 	type Client,
 	type GuildMember,
 	MessageFlags,
 	PermissionFlagsBits,
 	type User,
 } from "discord.js";
-import type { Command, ExecutableSubcommand } from "../../commands/index.js";
+import { defineCommand, option, subcommand } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { createStandardEmbed, standardFooter } from "../../util/embeds.js";
 import { getEmoji, stringifyEmoji } from "../../util/emojis.js";
@@ -92,53 +90,48 @@ export function getResourceEmbed(
 	return embed;
 }
 
-const LearningGetSubcommand: ExecutableSubcommand = {
-	type: ApplicationCommandOptionType.Subcommand,
-	name: "get",
+const LearningGetSubcommand = subcommand({
 	description: "Get a learning resource",
-	options: [
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "resource",
+	options: {
+		resource: option.string({
 			description: "The resource to lookup",
-			choices: resources,
 			required: true,
-		},
-	],
-	async handle(interaction) {
-		const name = interaction.options.get("resource")?.value as string | null;
-		if (!name) return;
+			choices: resources,
+		}),
+	},
+	async handle(interaction, { resource: name }) {
 		const resource = getAllCachedResources().find(
 			([fileName]) => fileName.toLowerCase() === name.toLowerCase(),
 		)?.[1];
 		if (resource == null) {
-			return await interaction.reply({
+			await interaction.reply({
 				flags: MessageFlags.Ephemeral,
 				content: `Could not find resource ${name}`,
 			});
+			return;
 		}
 
 		const embed = getResourceEmbed(
 			interaction.client,
 			resource,
 			interaction.user,
-			(interaction.member as GuildMember) ?? undefined,
+			interaction.member,
 		);
 		await interaction.reply({ embeds: [embed] });
 	},
-};
+});
 
-const LearningUpdateSubcommand: ExecutableSubcommand = {
-	type: ApplicationCommandOptionType.Subcommand,
-	name: "update",
+const LearningUpdateSubcommand = subcommand({
 	description: "Update the learning resources cache",
 	async handle(interaction) {
-		const member = interaction.member as GuildMember;
-		if (!member.permissions.has(PermissionFlagsBits.ManageMessages)) {
-			return await interaction.reply({
+		if (
+			!interaction.member.permissions.has(PermissionFlagsBits.ManageMessages)
+		) {
+			await interaction.reply({
 				flags: MessageFlags.Ephemeral,
 				content: "No permission",
 			});
+			return;
 		}
 
 		await interaction.deferReply({
@@ -148,21 +141,16 @@ const LearningUpdateSubcommand: ExecutableSubcommand = {
 		await getModuleManager().refreshCommands();
 		await interaction.followUp("Updated learning resources cache");
 	},
-};
+});
 
-const LearningListSubcommand: ExecutableSubcommand = {
-	type: ApplicationCommandOptionType.Subcommand,
-	name: "list",
+const LearningListSubcommand = subcommand({
 	description: "List all learning resources",
-	options: [],
 
 	async handle(interaction) {
 		const resources = getAllCachedResources()
 			.map(([, res]) => res.name)
 			.join(", ");
-		const embed = createStandardEmbed(
-			(interaction.member as GuildMember) ?? undefined,
-		)
+		const embed = createStandardEmbed(interaction.member)
 			.setTitle("Resource List")
 			.setDescription(resources + extraFooter)
 			.setFooter({
@@ -177,16 +165,14 @@ const LearningListSubcommand: ExecutableSubcommand = {
 			embeds: [embed],
 		});
 	},
-};
+});
 
-export const LearningCommand: Command<ApplicationCommandType.ChatInput> = {
-	type: ApplicationCommandType.ChatInput,
+export const LearningCommand = defineCommand({
 	name: "learning",
 	description: "Manage learning resources",
-	options: [
-		LearningListSubcommand,
-		LearningGetSubcommand,
-		LearningUpdateSubcommand,
-	],
-	handle() {},
-};
+	subcommands: {
+		list: LearningListSubcommand,
+		get: LearningGetSubcommand,
+		update: LearningUpdateSubcommand,
+	},
+});

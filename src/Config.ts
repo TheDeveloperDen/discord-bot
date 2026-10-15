@@ -58,8 +58,8 @@ const devConfig: Config = {
 		noPing: "932637353263128577",
 		zooExhibit: "1432483356393734194",
 	},
-  clientId: "932387188585398353",
-  guildId: "904478147351806012",
+	clientId: "932387188585398353",
+	guildId: "904478147351806012",
 	poll: {
 		emojiId: "skull",
 		yesEmojiId: "thumbsup",
@@ -70,15 +70,6 @@ const devConfig: Config = {
 		archiveChannel: "1407001847239016550",
 		yesEmojiId: "👍",
 		noEmojiId: "👎",
-	},
-	threatDetection: {
-		enabled: true,
-		alertChannel: "1432483525155623063",
-		scamLinks: {
-			enabled: true,
-			blockShorteners: true,
-			useExternalApi: true,
-		},
 	},
 	modmail: {
 		pingRole: "1412470653050818724",

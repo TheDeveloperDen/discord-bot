@@ -8,6 +8,7 @@ import {
 	type UserResolvable,
 } from "discord.js";
 import { config } from "../Config.js";
+import { logger } from "../logging.js";
 
 export const userShouldBePinged = (
 	user: GuildMember | PartialGuildMember,
@@ -77,8 +78,7 @@ export const safelyFetchUser = async (
 	try {
 		return await client.users.fetch(userId);
 	} catch (error) {
-		// Optionally log the error
-		console.warn(`Could not fetch user ${userId}:`, error);
+		logger.warn(`Could not fetch user ${userId}:`, error);
 		return null;
 	}
 };

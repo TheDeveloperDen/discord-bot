@@ -1,10 +1,5 @@
-import {
-	ApplicationCommandOptionType,
-	ApplicationCommandType,
-	MessageFlags,
-	PermissionFlagsBits,
-} from "discord.js";
-import type { Command } from "../../commands/index.js";
+import { MessageFlags, PermissionFlagsBits } from "discord.js";
+import { defineCommand, option } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { parseTimespan, prettyPrintDuration } from "../../util/timespan.js";
 import { fakeMention } from "../../util/users.js";
@@ -15,60 +10,46 @@ import {
 } from "./logs.js";
 import { createTempBanModAction } from "./tempBan.js";
 
-export const TempBanCommand: Command<ApplicationCommandType.ChatInput> = {
+export const TempBanCommand = defineCommand({
 	name: "tempban",
 	description: "Temp Ban a baaaaad boy",
-	type: ApplicationCommandType.ChatInput,
 	default_member_permissions: PermissionFlagsBits.BanMembers,
-	options: [
-		{
-			type: ApplicationCommandOptionType.User,
-			name: "user",
+	options: {
+		user: option.user({
 			description: "The user to be banned",
 			required: true,
-		},
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "ban_duration_days",
+		}),
+		ban_duration_days: option.string({
 			description: "The duration of the ban",
 			required: true,
-		},
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "reason",
+		}),
+		reason: option.string({
 			description: "The reason why the user gets banned",
-		},
-
-		{
-			type: ApplicationCommandOptionType.Boolean,
-			name: "delete_messages",
+		}),
+		delete_messages: option.boolean({
 			description: "Should the users messages be deleted too? Defaults to True",
-		},
-	],
+		}),
+	},
 
-	handle: async (interaction) => {
-		if (
-			!interaction.isChatInputCommand() ||
-			!interaction.inGuild() ||
-			interaction.guild === null
-		)
-			return;
+	async handle(
+		interaction,
+		{
+			user,
+			ban_duration_days: banDurationDays,
+			reason,
+			delete_messages: deleteMessages = true,
+		},
+	) {
 		try {
 			await interaction.deferReply();
-			const user = interaction.options.getUser("user", true);
-			const reason = interaction.options.getString("reason", false);
-			const banDurationMillis = parseTimespan(
-				interaction.options.getString("ban_duration_days", true),
-			);
-			const deleteMessages =
-				interaction.options.getBoolean("delete_messages", false) ?? true;
+			const banDurationMillis = parseTimespan(banDurationDays);
 			const dmSent = await dmModerationTarget(
 				user,
 				`You were temp-banned from ${interaction.guild.name} ${reason ? `for the reason: ${reason}` : ""} for ${prettyPrintDuration(banDurationMillis)}`,
 			);
 
 			await interaction.guild.bans.create(user, {
-				reason: reason ?? undefined,
+				reason: reason,
 				deleteMessageSeconds: deleteMessages ? 604800 : undefined,
 			});
 			const unbanTimestamp = Math.floor(
@@ -78,7 +59,7 @@ export const TempBanCommand: Command<ApplicationCommandType.ChatInput> = {
 				interaction.user,
 				user,
 				new Date(unbanTimestamp),
-				reason,
+				reason ?? null,
 			);
 
 			await logModerationAction(interaction.client, {
@@ -112,4 +93,4 @@ export const TempBanCommand: Command<ApplicationCommandType.ChatInput> = {
 			}
 		}
 	},
-};
+});

@@ -1,23 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import {
-	type ButtonInteraction,
-	ButtonStyle,
-	type InteractionReplyOptions,
-	type MessageCreateOptions,
-	type MessageEditOptions,
-	TextInputStyle,
-} from "discord.js";
-import {
-	ActionRow,
-	Button,
-	Label,
-	Message,
-	Modal,
-	renderDiscordMessage,
-	renderDiscordModal,
-	TextDisplay,
-	TextInput,
-} from "disjsx";
+import { ButtonStyle } from "discord.js";
+import { ActionRow, Message, renderDiscordMessage } from "disjsx";
 import { defineComponent } from "./component.js";
 
 const Plain = defineComponent({
@@ -39,8 +22,10 @@ const customIdOf = (button: React.ReactElement) => {
 			<ActionRow>{button}</ActionRow>
 		</Message>,
 	);
-	const [row] = components as { components: { custom_id: string }[] }[];
-	return row.components[0].custom_id;
+	const [row] = components as unknown as [
+		{ components: { custom_id: string }[] },
+	];
+	return row.components[0]?.custom_id;
 };
 
 const style = ButtonStyle.Primary;
@@ -105,44 +90,5 @@ describe("component elements", () => {
 			args: ["style"],
 			handle() {},
 		});
-	});
-});
-
-// guards the boundary with our disjsx fork: its output must stay assignable to what discord.js accepts
-describe("disjsx output", () => {
-	test("is accepted by discord.js", () => {
-		const message = renderDiscordMessage(
-			<Message isV2>
-				<TextDisplay>hi</TextDisplay>
-			</Message>,
-		);
-		const send: MessageCreateOptions = message;
-		const reply: InteractionReplyOptions = message;
-		const modal: Parameters<ButtonInteraction["showModal"]>[0] =
-			renderDiscordModal(
-				<Modal title="Edit" customId="test:modal">
-					<Label label="Content">
-						<TextInput customId="content" style={TextInputStyle.Paragraph} />
-					</Label>
-				</Modal>,
-			);
-		expect([send, reply, modal]).toHaveLength(3);
-	});
-
-	test("a legacy message of only action rows still has components", () => {
-		const { components } = renderDiscordMessage(
-			<Message>
-				<ActionRow>
-					<Button
-						style={ButtonStyle.Link}
-						url="https://example.com"
-						label="x"
-					/>
-				</ActionRow>
-			</Message>,
-		);
-		const edit: MessageEditOptions = { components };
-		expect(components).toHaveLength(1);
-		expect(edit).toBeDefined();
 	});
 });

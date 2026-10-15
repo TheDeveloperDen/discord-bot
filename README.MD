@@ -13,11 +13,14 @@ channels from the DevDen Testing server. Invitations to this server are given on
 request to avoid spam. Its use is recommended, as setting up your own testing
 server can be tedious.
 
-- Run `bun install` to install all dependencies.
+- Use Bun `1.4.2` (as pinned in `package.json`) and run `bun install` to install
+  all dependencies.
 - Run `bun run watch-dev` to start the bot and Activity server together, with
   automatic bot reloads. Use `bun run start` without automatic reloads.
 - Development startup builds the Activity frontend automatically. Restart the
   command after frontend HTML/CSS/TypeScript edits; it has no frontend hot reload.
+- Run `bun run typecheck` and `bun run typecheck:prod` to check both the bot and
+  Activity against the shared strict TypeScript settings.
 
 ### Building for Production
 

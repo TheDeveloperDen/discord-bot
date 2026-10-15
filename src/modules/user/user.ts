@@ -2,6 +2,7 @@ import * as fs from "node:fs";
 import Canvas from "@napi-rs/canvas";
 import type { GuildMember } from "discord.js";
 import sharp from "sharp";
+import { logger } from "../../logging.js";
 import { getBumpStreak } from "../../store/models/bumps.js";
 import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { branding } from "../../util/branding.js";
@@ -11,7 +12,7 @@ import {
 	loadAndDrawImage,
 	setFont,
 } from "../../util/canvas.js";
-import { xpForLevel } from "../xp/xpForMessage.util.js";
+import { xpForLevel } from "../xp/levels.js";
 
 const svgContent = fs.readFileSync("./devden_logo_short.svg", "utf8");
 export const profileFont = "Cascadia Code";
@@ -230,7 +231,7 @@ export async function drawDeveloperDenText(
 
 		await loadAndDrawImage(ctx, pngBuffer, x, y, size, size);
 	} catch (error) {
-		console.error("Error drawing SVG:", error);
+		logger.error("Error drawing SVG:", error);
 	}
 }
 

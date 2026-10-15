@@ -21,8 +21,11 @@
 		"strict": true,
 		"skipLibCheck": true,
 		"noFallthroughCasesInSwitch": true,
-		"noUncheckedIndexedAccess": false,
+		"noUncheckedIndexedAccess": true,
 		"noImplicitOverride": true,
+		"noImplicitReturns": true,
+		"isolatedModules": true,
+		"verbatimModuleSyntax": true,
 
 		"noUnusedLocals": false,
 		"noUnusedParameters": false,

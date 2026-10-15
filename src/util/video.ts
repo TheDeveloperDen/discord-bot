@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { logger } from "../logging.js";
 import ffmpegPath from "./ffmpg.js";
 
 const convertVideoToGif: (url: string) => Promise<Buffer> = async (url) => {
@@ -41,7 +42,7 @@ const convertVideoToGif: (url: string) => Promise<Buffer> = async (url) => {
 			});
 
 			ffmpeg.stderr.on("data", (data) => {
-				console.debug("FFmpeg stderr:", data.toString());
+				logger.debug(`FFmpeg stderr: ${data}`);
 			});
 
 			ffmpeg.on("error", (error) => {
@@ -55,7 +56,7 @@ const convertVideoToGif: (url: string) => Promise<Buffer> = async (url) => {
 			});
 		});
 	} catch (error) {
-		console.error("Error converting video to GIF:", error);
+		logger.error("Error converting video to GIF:", error);
 		throw error;
 	}
 };

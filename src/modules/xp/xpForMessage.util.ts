@@ -21,16 +21,10 @@ const stripPunctuation = (message: string) =>
 const stripPings = (message: string) => message.replace(pingRegex, "");
 const strip = compose(stripPunctuation, stripPings);
 
-export const xpForLevel = (level: number): bigint =>
-	BigInt(Math.floor(level ** 3 + 27 * level ** 2 + 125 * level));
-
-export const getTierByLevel = (level: number): number =>
-	level === 0 ? 0 : Math.floor(level / 10) + 1;
-
 function findForward(input: string, index: number, set: Set<string>): number {
 	let current = "";
 	while (set.has(current) && index < input.length) {
-		current = current.concat(input[index]);
+		current = current.concat(input.charAt(index));
 		index++;
 	}
 	set.add(current);
@@ -116,8 +110,11 @@ export const tierOf = (level: number) =>
 
 export function tierRoleId(level: number): string {
 	const tier = tierOf(level);
-	if (tier < config.roles.tiers.length) return config.roles.tiers[tier];
-	return config.roles.tiers[config.roles.tiers.length - 1];
+	const tiers = config.roles.tiers;
+	// levels past the last tier keep the highest tier's role
+	const roleId = tiers[Math.min(tier, tiers.length - 1)];
+	if (roleId === undefined) throw new Error("No tier roles are configured");
+	return roleId;
 }
 
 /**

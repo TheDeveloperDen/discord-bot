@@ -1,10 +1,6 @@
-import {
-	ApplicationCommandOptionType,
-	ApplicationCommandType,
-	MessageFlags,
-	PermissionFlagsBits,
-} from "discord.js";
-import type { Command } from "../../commands/index.js";
+import { MessageFlags, PermissionFlagsBits } from "discord.js";
+import { defineCommand, option } from "../../commands/index.js";
+import { logger } from "../../logging.js";
 import { fakeMention } from "../../util/users.js";
 import {
 	DM_FAILED_WARNING,
@@ -12,44 +8,31 @@ import {
 	logModerationAction,
 } from "./logs.js";
 
-export const KickCommand: Command<ApplicationCommandType.ChatInput> = {
+export const KickCommand = defineCommand({
 	name: "kick",
 	description: "Ban a baaaaad boy",
-	type: ApplicationCommandType.ChatInput,
 	default_member_permissions: PermissionFlagsBits.KickMembers,
-	options: [
-		{
-			type: ApplicationCommandOptionType.User,
-			name: "user",
+	options: {
+		user: option.member({
 			description: "The user to be banned",
 			required: true,
-		},
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "reason",
+		}),
+		reason: option.string({
 			description: "The reason why the user gets banned",
-		},
-	],
+		}),
+	},
 
-	handle: async (interaction) => {
-		if (
-			!interaction.isChatInputCommand() ||
-			!interaction.inGuild() ||
-			interaction.guild === null
-		)
-			return;
+	async handle(interaction, { user: member, reason }) {
 		try {
 			await interaction.deferReply();
-			const user = interaction.options.getUser("user", true);
-			const reason = interaction.options.getString("reason", false);
 
-			const member = await interaction.guild.members.fetch(user.id);
+			const user = member.user;
 			const dmSent = await dmModerationTarget(
 				user,
 				`You were kicked from ${interaction.guild.name} ${reason ? `for the reason: ${reason}` : ""}`,
 			);
 
-			await member.kick(reason ?? undefined);
+			await member.kick(reason);
 
 			await logModerationAction(interaction.client, {
 				kind: "Kick",
@@ -71,7 +54,7 @@ export const KickCommand: Command<ApplicationCommandType.ChatInput> = {
 				});
 			}
 		} catch (e) {
-			console.error("Failed to kick user: ", e);
+			logger.error("Failed to kick user: ", e);
 
 			if (interaction.replied) {
 				await interaction.editReply("Something went wrong!");
@@ -83,4 +66,4 @@ export const KickCommand: Command<ApplicationCommandType.ChatInput> = {
 			}
 		}
 	},
-};
+});

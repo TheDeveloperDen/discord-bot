@@ -7,7 +7,6 @@ import { SqliteDialect } from "@sequelize/sqlite3";
 import type { ConnectionConfig } from "pg";
 import { logger } from "../logging.js";
 import { AntiStarboardMessage } from "./models/AntiStarboardMessage.js";
-import { BlockedWord } from "./models/BlockedWord.js";
 import { Bump } from "./models/Bump.js";
 import { ColourRoles } from "./models/ColourRoles.js";
 import { DDUser } from "./models/DDUser.js";
@@ -22,7 +21,6 @@ import { ScamDomain } from "./models/ScamDomain.js";
 import { StarboardMessage } from "./models/StarboardMessage.js";
 import { Suggestion } from "./models/Suggestion.js";
 import { SuggestionVote } from "./models/SuggestionVote.js";
-import { ThreatLog } from "./models/ThreatLog.js";
 import { Warning } from "./models/Warning.js";
 
 function sequelizeLog(sql: string, timing?: number) {
@@ -91,10 +89,8 @@ export async function initStorage() {
 		ModMailTicket,
 		ModMailNote,
 		DDUserAchievements,
-		ThreatLog,
 		ScamDomain,
 		Warning,
-		BlockedWord,
 		ReputationEvent,
 		ReactionStat,
 	];

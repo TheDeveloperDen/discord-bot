@@ -1,19 +1,16 @@
-import {
-	type Client,
-	type Colors,
-	EmbedBuilder,
-	type MessageCreateOptions,
-	type Snowflake,
-	type User,
-	type UserResolvable,
+import * as Sentry from "@sentry/bun";
+import type {
+	Client,
+	MessageCreateOptions,
+	Snowflake,
+	User,
+	UserResolvable,
 } from "discord.js";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
 import { runObserved } from "../../observe.js";
-import { createStandardEmbed } from "../../util/embeds.js";
-import { prettyPrintDuration } from "../../util/timespan.js";
-import { actualMention, fakeMention } from "../../util/users.js";
 import { upload } from "../pastify/pastify.js";
+import { renderDeletedMessagesLog, renderModerationLog } from "./logs.card.js";
 
 export interface CachedMessage {
 	id: Snowflake;
@@ -33,6 +30,7 @@ export type ModerationLog =
 	| SoftBanLog
 	| KickLog
 	| TimeoutLog
+	| TimeoutRemovedLog
 	| InviteDeletedLog
 	| InviteSpamBanLog
 	| WarningLog
@@ -49,14 +47,14 @@ interface BanLog extends Notified {
 	moderator: User;
 	target: UserResolvable;
 	deleteMessages: boolean;
-	reason: string | null;
+	reason?: string;
 }
 
 interface UnbanLog {
 	kind: "Unban";
 	moderator: User;
 	target: UserResolvable;
-	reason: string | null;
+	reason?: string;
 }
 
 interface SoftBanLog extends Notified {
@@ -64,7 +62,7 @@ interface SoftBanLog extends Notified {
 	moderator: User;
 	target: UserResolvable;
 	deleteMessages: boolean;
-	reason: string | null;
+	reason?: string;
 }
 interface TempBanLog extends Notified {
 	kind: "TempBan";
@@ -72,7 +70,7 @@ interface TempBanLog extends Notified {
 	target: UserResolvable;
 	deleteMessages: boolean;
 	banDuration: number;
-	reason: string | null;
+	reason?: string;
 }
 
 interface TempBanExpiredLog {
@@ -83,7 +81,7 @@ interface KickLog extends Notified {
 	kind: "Kick";
 	moderator: User;
 	target: UserResolvable;
-	reason: string | null;
+	reason?: string;
 }
 
 interface TimeoutLog extends Notified {
@@ -92,6 +90,13 @@ interface TimeoutLog extends Notified {
 	target: UserResolvable;
 	duration: number;
 	reason: string;
+}
+
+interface TimeoutRemovedLog extends Notified {
+	kind: "TimeoutRemoved";
+	moderator: User;
+	target: UserResolvable;
+	reason?: string;
 }
 
 interface InviteDeletedLog {
@@ -141,88 +146,7 @@ interface InviteSpamBanLog extends Notified {
 	triggerReason: "same_channel" | "cross_channel";
 }
 
-type ModerationKindMapping<T> = {
-	[f in ModerationLog["kind"]]: T;
-};
-
-const embedTitles: ModerationKindMapping<string> = {
-	Ban: "Member Banned",
-	Unban: "Member Unbanned",
-	SoftBan: "Member Softbanned",
-	InviteDeleted: "Discord Invite Removed",
-	InviteSpamBan: "Member Auto-Banned (Invite Spam)",
-	TempBan: "Member Tempbanned",
-	Kick: "Member Kicked",
-	Timeout: "Member Timed Out",
-	TempBanEnded: "Tempban Expired",
-	Warning: "Member Warned",
-	WarningPardoned: "Warning Pardoned",
-	ReputationGranted: "Reputation Granted",
-};
-
-const embedColors: ModerationKindMapping<keyof typeof Colors> = {
-	Ban: "Red",
-	TempBan: "Orange",
-	SoftBan: "DarkOrange",
-	Kick: "Yellow",
-	Timeout: "LightGrey",
-	Unban: "Green",
-	TempBanEnded: "DarkGreen",
-	InviteDeleted: "Blurple",
-	InviteSpamBan: "DarkRed",
-	Warning: "Gold",
-	WarningPardoned: "Aqua",
-	ReputationGranted: "Green",
-};
-
-const SEVERITY_LABELS: Record<number, string> = {
-	1: "Minor",
-	2: "Moderate",
-	3: "Severe",
-};
-
-const embedReasons: {
-	[K in ModerationLog["kind"]]?: (
-		t: Extract<ModerationLog, { kind: K }>,
-	) => string;
-} = {
-	InviteDeleted: (inviteDeleted) =>
-		`Message <#${inviteDeleted.messageId}> at <t:${Math.round(
-			inviteDeleted.messageCreatedTimestamp / 1000,
-		)}> ${inviteDeleted.edited ? "was edited to contain " : "included"} a Discord invite!\n
-    **Invites:** ${inviteDeleted.matches.join(", ")}`,
-
-	TempBan: (tempBan) =>
-		`**Ban duration**: \`${prettyPrintDuration(tempBan.banDuration)}\``,
-
-	Timeout: (timeout) =>
-		`**Timeout duration**: \`${prettyPrintDuration(timeout.duration)}\``,
-
-	Warning: (warning) =>
-		`**Severity:** ${SEVERITY_LABELS[warning.severity] || "Unknown"}\n` +
-		`**Warning ID:** #${warning.warningId}\n` +
-		`**Total Active Warnings:** ${warning.warningCount}\n` +
-		(warning.expiresAt
-			? `**Expires:** <t:${Math.floor(warning.expiresAt.getTime() / 1000)}:R>`
-			: "**Expires:** Never"),
-
-	WarningPardoned: (pardon) =>
-		`**Warning ID:** #${pardon.warningId}\n` +
-		`**Pardon Reason:** ${pardon.reason}`,
-
-	ReputationGranted: (rep) =>
-		`**Type:** ${rep.eventType}\n` +
-		`**Score Change:** +${rep.scoreChange}\n` +
-		`**New Score:** ${rep.newScore >= 0 ? "+" : ""}${rep.newScore}`,
-
-	InviteSpamBan: (ban) =>
-		`**Violations:** ${ban.violationCount} in ${ban.violationWindowMs / 1000}s\n` +
-		`**Channels:** ${ban.channelCount}\n` +
-		`**Trigger:** ${ban.triggerReason === "same_channel" ? "4+ violations in same channel" : "Violations across 3+ channels"}`,
-};
-
 async function sendModerationLog(client: Client, action: ModerationLog) {
-	const targetUser = await client.users.fetch(action.target).catch(() => null);
 	const modLogChannel = await client.channels
 		.fetch(config.channels.modLog)
 		.catch(() => null);
@@ -237,37 +161,13 @@ async function sendModerationLog(client: Client, action: ModerationLog) {
 		return;
 	}
 
-	const embed = new EmbedBuilder();
-	embed.setTitle(embedTitles[action.kind]);
-	embed.setColor(embedColors[action.kind]);
-
-	const targetLabel =
-		action.kind === "ReputationGranted" ? "Recipient" : "Offender";
-	let description = `**${targetLabel}**: ${targetUser && fakeMention(targetUser)} ${actualMention(action.target)}\n`;
-	if ("reason" in action && action.reason) {
-		description += `**Reason**:  ${action.reason}\n`;
+	const targetId = client.users.resolveId(action.target);
+	if (!targetId) {
+		logger.error(`Couldn't resolve the target of a ${action.kind} log`);
+		return;
 	}
-	if ("moderator" in action && action.moderator) {
-		description += `**Responsible Moderator**:  ${actualMention(action.moderator)}\n`;
-	}
-
-	if ("deleteMessages" in action && action.deleteMessages) {
-		description += `**Deleted Messages**: ${action.deleteMessages ? "`Yes`" : "`No`"}\n`;
-	}
-
-	const embedReason = embedReasons[action.kind];
-	if (embedReason) {
-		// biome-ignore lint/suspicious/noExplicitAny: we know it's safe, fixing would be too complicated
-		description += embedReason(action as any);
-	}
-	if ("dmSent" in action) {
-		description += `**DM sent**: ${action.dmSent ? "✅" : "❌"}\n`;
-	}
-	embed.setDescription(description);
-
-	await modLogChannel.send({
-		embeds: [embed],
-	});
+	const target = await client.users.fetch(targetId).catch(() => null);
+	await modLogChannel.send(renderModerationLog(action, targetId, target));
 }
 
 function formatMessageForPaste(message: CachedMessage): string {
@@ -298,19 +198,18 @@ export async function logDeletedMessage(
 	const pasteContent = formatMessageForPaste(message);
 	const pasteUrl = await upload({ content: pasteContent });
 
-	const embed = createStandardEmbed(message.authorId)
-		.setTitle("Message Deleted")
-		.setColor("Grey")
-		.setDescription(
-			`**Author**: <@${message.authorId}> (${message.authorTag})\n` +
-				`**Channel**: <#${message.channelId}>\n` +
-				`**Created**: <t:${Math.round(message.createdTimestamp / 1000)}:R>\n\n` +
-				`**Content**: [View on Paste](${pasteUrl})`,
-		)
-		.setFooter({ text: `Message ID: ${message.id}` })
-		.setTimestamp();
-
-	await modLogChannel.send({ embeds: [embed] });
+	await modLogChannel.send(
+		renderDeletedMessagesLog({
+			title: "Message Deleted",
+			lines: [
+				["Author", `<@${message.authorId}> (${message.authorTag})`],
+				["Channel", `<#${message.channelId}>`],
+				["Created", `<t:${Math.round(message.createdTimestamp / 1000)}:R>`],
+				["Content", `[View on Paste](${pasteUrl})`],
+			],
+			footer: `Message ID: ${message.id}`,
+		}),
+	);
 }
 
 export async function logBulkDeletedMessages(
@@ -337,17 +236,16 @@ export async function logBulkDeletedMessages(
 
 	const pasteUrl = await upload({ content: pasteContent });
 
-	const embed = new EmbedBuilder()
-		.setTitle("Bulk Messages Deleted")
-		.setColor("DarkGrey")
-		.setDescription(
-			`**Channel**: <#${channelId}>\n` +
-				`**Count**: ${messages.length} messages\n\n` +
-				`**Messages**: [View on Paste](${pasteUrl})`,
-		)
-		.setTimestamp();
-
-	await modLogChannel.send({ embeds: [embed] });
+	await modLogChannel.send(
+		renderDeletedMessagesLog({
+			title: "Bulk Messages Deleted",
+			lines: [
+				["Channel", `<#${channelId}>`],
+				["Count", `${messages.length} messages`],
+				["Messages", `[View on Paste](${pasteUrl})`],
+			],
+		}),
+	);
 }
 
 /**
@@ -382,6 +280,14 @@ export async function logModerationAction(
 	client: Client,
 	action: ModerationLog,
 ) {
+	Sentry.addBreadcrumb({
+		category: "moderation",
+		message: `Logging ${action.kind}`,
+		data: {
+			target:
+				typeof action.target === "object" ? action.target.id : action.target,
+		},
+	});
 	await runObserved({ op: "event", name: `modLog.${action.kind}` }, () =>
 		sendModerationLog(client, action),
 	);

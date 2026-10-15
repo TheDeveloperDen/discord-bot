@@ -1,10 +1,6 @@
-import {
-	ApplicationCommandOptionType,
-	ApplicationCommandType,
-	MessageFlags,
-	PermissionFlagsBits,
-} from "discord.js";
-import type { Command } from "../../commands/index.js";
+import { MessageFlags, PermissionFlagsBits } from "discord.js";
+import { defineCommand, option } from "../../commands/index.js";
+import { logger } from "../../logging.js";
 import { fakeMention } from "../../util/users.js";
 import {
 	DM_FAILED_WARNING,
@@ -12,49 +8,35 @@ import {
 	logModerationAction,
 } from "./logs.js";
 
-export const BanCommand: Command<ApplicationCommandType.ChatInput> = {
+export const BanCommand = defineCommand({
 	name: "ban",
 	description: "Ban a baaaaad boy",
-	type: ApplicationCommandType.ChatInput,
 	default_member_permissions: PermissionFlagsBits.BanMembers,
-	options: [
-		{
-			type: ApplicationCommandOptionType.User,
-			name: "user",
+	options: {
+		user: option.user({
 			description: "The user to be banned",
 			required: true,
-		},
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "reason",
+		}),
+		reason: option.string({
 			description: "The reason why the user gets banned",
-		},
-		{
-			type: ApplicationCommandOptionType.Boolean,
-			name: "delete_messages",
+		}),
+		delete_messages: option.boolean({
 			description: "Should the users messages be deleted too? Defaults to True",
-		},
-	],
+		}),
+	},
 
-	handle: async (interaction) => {
-		if (
-			!interaction.isChatInputCommand() ||
-			!interaction.inGuild() ||
-			interaction.guild === null
-		)
-			return;
+	async handle(
+		interaction,
+		{ user, reason, delete_messages: deleteMessages = true },
+	) {
 		try {
 			await interaction.deferReply();
-			const deleteMessages =
-				interaction.options.getBoolean("delete_messages") ?? true;
-			const user = interaction.options.getUser("user", true);
-			const reason = interaction.options.getString("reason", false);
 			const dmSent = await dmModerationTarget(
 				user,
 				`You were banned from ${interaction.guild.name} ${reason ? `with the reason: ${reason}` : ""}`,
 			);
 			await interaction.guild.bans.create(user, {
-				reason: reason ?? undefined,
+				reason,
 				deleteMessageSeconds: deleteMessages ? 604800 : undefined,
 			});
 
@@ -79,7 +61,7 @@ export const BanCommand: Command<ApplicationCommandType.ChatInput> = {
 				});
 			}
 		} catch (e) {
-			console.error("Failed to ban user: ", e);
+			logger.error("Failed to ban user: ", e);
 
 			if (interaction.replied) {
 				await interaction.editReply("Something went wrong!");
@@ -88,4 +70,4 @@ export const BanCommand: Command<ApplicationCommandType.ChatInput> = {
 			}
 		}
 	},
-};
+});

@@ -1,57 +1,31 @@
-import {
-	ActionRowBuilder,
-	ApplicationCommandOptionType,
-	ApplicationCommandType,
-	ButtonBuilder,
-	ButtonStyle,
-	type ChatInputCommandInteraction,
-	type GuildMember,
-	MessageFlags,
-} from "discord.js";
+import { MessageFlags } from "discord.js";
 import { config } from "../../Config.js";
-import type { Command } from "../../commands/index.js";
+import { defineCommand, option } from "../../commands/index.js";
 
 import { logger } from "../../logging.js";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
-import { Suggestion } from "../../store/models/Suggestion.js";
+import { Suggestion, SuggestionStatus } from "../../store/models/Suggestion.js";
 import { notifyMultipleAchievements } from "../achievements/achievementNotifier.js";
 import { checkAndAwardAchievements } from "../achievements/achievementService.js";
-import {
-	createSuggestion,
-	createSuggestionEmbed,
-	SUGGESTION_NO_ID,
-	SUGGESTION_VIEW_VOTES_ID,
-	SUGGESTION_YES_ID,
-} from "./suggest.js";
+import { createSuggestion } from "./suggest.js";
+import { renderSuggestion } from "./suggest.post.js";
 
-export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
+export const SuggestCommand = defineCommand({
 	name: "suggest",
 	description: "Create a suggestion",
-	type: ApplicationCommandType.ChatInput,
-	options: [
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "suggestion",
+	options: {
+		suggestion: option.string({
 			description: "The suggestion",
 			required: true,
-		},
-	],
-	handle: async (interaction: ChatInputCommandInteraction) => {
-		if (!interaction.member || !interaction.inGuild()) {
-			await interaction.reply({
-				flags: MessageFlags.Ephemeral,
-				content: "We are not in a guild?",
-			});
-		}
-
-		const member = interaction.member as GuildMember;
+		}),
+	},
+	async handle(interaction, { suggestion: suggestionText }) {
+		const member = interaction.member;
 
 		await interaction.deferReply({
 			flags: MessageFlags.Ephemeral,
 		});
 		// Get the suggestion and optional image
-		const suggestionText = interaction.options.get("suggestion")
-			?.value as string;
 
 		const suggestionChannel = await interaction.client.channels.fetch(
 			config.suggest.suggestionsChannel,
@@ -75,30 +49,16 @@ export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
 
 		const suggestionId = interaction.id;
 
-		const embed = await createSuggestionEmbed(
-			suggestionId,
-			interaction.client,
-			member,
-			suggestionText,
-		);
-
-		const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
-			new ButtonBuilder()
-				.setCustomId(SUGGESTION_YES_ID)
-				.setStyle(ButtonStyle.Success)
-				.setEmoji(config.suggest.yesEmojiId),
-			new ButtonBuilder()
-				.setCustomId(SUGGESTION_NO_ID)
-				.setStyle(ButtonStyle.Danger)
-				.setEmoji(config.suggest.noEmojiId),
-			new ButtonBuilder()
-				.setCustomId(SUGGESTION_VIEW_VOTES_ID)
-				.setStyle(ButtonStyle.Secondary)
-				.setLabel("View Votes"),
-		);
 		const response = await suggestionChannel.send({
-			embeds: [embed],
-			components: [buttons],
+			...(await renderSuggestion(interaction.client, {
+				id: suggestionId,
+				submitterId: member.id,
+				text: suggestionText,
+				status: SuggestionStatus.PENDING,
+				upvotes: 0,
+				downvotes: 0,
+			})),
+			allowedMentions: { parse: [] },
 		});
 
 		await response.startThread({
@@ -142,4 +102,4 @@ export const SuggestCommand: Command<ApplicationCommandType.ChatInput> = {
 			logger.error("Failed to check suggestion achievements", error);
 		}
 	},
-};
+});

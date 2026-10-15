@@ -20,7 +20,8 @@ const LearningResourcePicker = defineComponent({
 	id: "information:learningPicker",
 	kind: "stringSelect",
 	async handle(interaction) {
-		const resourceName = interaction.values[0];
+		const [resourceName] = interaction.values;
+		if (resourceName === undefined) return;
 		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 		const resource = await getResource(resourceName);
 		if (resource == null) {

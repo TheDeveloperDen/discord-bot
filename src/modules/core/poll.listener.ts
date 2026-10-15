@@ -5,6 +5,7 @@ import {
 	type User,
 } from "discord.js";
 import { config } from "../../Config.js";
+import { logger } from "../../logging.js";
 import { isSpecialUser } from "../../util/users.js";
 import type { EventListener } from "../module.js";
 
@@ -14,10 +15,7 @@ export const PollListener: EventListener = {
 			try {
 				await reaction.fetch();
 			} catch (error) {
-				console.error(
-					"Something went wrong when fetching the reaction:",
-					error,
-				);
+				logger.error("Something went wrong when fetching the reaction:", error);
 				return;
 			}
 		}
@@ -36,7 +34,7 @@ export const PollListener: EventListener = {
 			try {
 				await message.fetch();
 			} catch (error) {
-				console.error("Something went wrong when fetching the message:", error);
+				logger.error("Something went wrong when fetching the message:", error);
 				return;
 			}
 		}
@@ -47,7 +45,7 @@ export const PollListener: EventListener = {
 			try {
 				await user.fetch();
 			} catch (error) {
-				console.error("Something went wrong when fetching the user:", error);
+				logger.error("Something went wrong when fetching the user:", error);
 				return;
 			}
 		}

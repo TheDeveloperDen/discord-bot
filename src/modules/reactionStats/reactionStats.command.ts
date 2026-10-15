@@ -1,10 +1,5 @@
-import {
-	ApplicationCommandOptionType,
-	ApplicationCommandType,
-	type Guild,
-	type GuildMember,
-} from "discord.js";
-import type { Command, ExecutableSubcommand } from "../../commands/index.js";
+import type { Guild } from "discord.js";
+import { defineCommand, option, subcommand } from "../../commands/index.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 import { actualMention } from "../../util/users.js";
 import { medal } from "../leaderboard/leaderboard.js";
@@ -34,46 +29,31 @@ const periodChoices = [
 	{ name: "Last 30 Days", value: "month" },
 	{ name: "Last 7 Days", value: "week" },
 	{ name: "Last 24 Hours", value: "day" },
-];
+] as const satisfies { name: string; value: TimePeriod }[];
 
-const UserSubcommand: ExecutableSubcommand = {
-	type: ApplicationCommandOptionType.Subcommand,
-	name: "user",
+const UserSubcommand = subcommand({
 	description: "View reaction stats for a specific user",
-	options: [
-		{
-			type: ApplicationCommandOptionType.User,
-			name: "target",
+	options: {
+		target: option.user({
 			description: "The user to view stats for (defaults to yourself)",
-			required: false,
-		},
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "period",
+		}),
+		period: option.string({
 			description: "Time period to filter by",
-			required: false,
 			choices: periodChoices,
-		},
-	],
-	handle: async (interaction) => {
+		}),
+	},
+	async handle(interaction, { target, period = "all" }) {
 		await interaction.deferReply();
 		const guild = interaction.guild;
-		if (!guild) {
-			await interaction.followUp("This command can only be used in a server.");
-			return;
-		}
 
-		const targetUser =
-			interaction.options.getUser("target") ?? interaction.user;
-		const period = (interaction.options.getString("period") ??
-			"all") as TimePeriod;
+		const targetUser = target ?? interaction.user;
 
 		const stats = await getUserStats(BigInt(targetUser.id), period);
 
 		if (stats.totalReactions === 0) {
 			await interaction.followUp({
 				embeds: [
-					createStandardEmbed(interaction.member as GuildMember)
+					createStandardEmbed(interaction.member)
 						.setTitle(`Reaction Stats: ${targetUser.username}`)
 						.setThumbnail(targetUser.displayAvatarURL())
 						.setDescription(
@@ -96,7 +76,7 @@ const UserSubcommand: ExecutableSubcommand = {
 				)} — **${e.count}** time${e.count !== 1 ? "s" : ""}`,
 		);
 
-		const embed = createStandardEmbed(interaction.member as GuildMember)
+		const embed = createStandardEmbed(interaction.member)
 			.setTitle(`Reaction Stats: ${targetUser.username}`)
 			.setThumbnail(targetUser.displayAvatarURL())
 			.setDescription(`Stats for ${actualMention(targetUser)}`)
@@ -128,37 +108,26 @@ const UserSubcommand: ExecutableSubcommand = {
 
 		await interaction.followUp({ embeds: [embed] });
 	},
-};
+});
 
-const GlobalSubcommand: ExecutableSubcommand = {
-	type: ApplicationCommandOptionType.Subcommand,
-	name: "global",
+const GlobalSubcommand = subcommand({
 	description: "View global reaction statistics",
-	options: [
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "period",
+	options: {
+		period: option.string({
 			description: "Time period to filter by",
-			required: false,
 			choices: periodChoices,
-		},
-	],
-	handle: async (interaction) => {
+		}),
+	},
+	async handle(interaction, { period = "all" }) {
 		await interaction.deferReply();
 		const guild = interaction.guild;
-		if (!guild) {
-			await interaction.followUp("This command can only be used in a server.");
-			return;
-		}
 
-		const period = (interaction.options.getString("period") ??
-			"all") as TimePeriod;
 		const stats = await getGlobalStats(period);
 
 		if (stats.totalReactions === 0) {
 			await interaction.followUp({
 				embeds: [
-					createStandardEmbed(interaction.member as GuildMember)
+					createStandardEmbed(interaction.member)
 						.setTitle("Global Reaction Stats")
 						.setDescription(`No reactions recorded (${periodLabel(period)}).`),
 				],
@@ -198,7 +167,7 @@ const GlobalSubcommand: ExecutableSubcommand = {
 			}),
 		);
 
-		const embed = createStandardEmbed(interaction.member as GuildMember)
+		const embed = createStandardEmbed(interaction.member)
 			.setTitle("Global Reaction Stats")
 			.addFields(
 				{
@@ -239,37 +208,26 @@ const GlobalSubcommand: ExecutableSubcommand = {
 
 		await interaction.followUp({ embeds: [embed] });
 	},
-};
+});
 
-const MessagesSubcommand: ExecutableSubcommand = {
-	type: ApplicationCommandOptionType.Subcommand,
-	name: "messages",
+const MessagesSubcommand = subcommand({
 	description: "View the most reacted messages",
-	options: [
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "period",
+	options: {
+		period: option.string({
 			description: "Time period to filter by",
-			required: false,
 			choices: periodChoices,
-		},
-	],
-	handle: async (interaction) => {
+		}),
+	},
+	async handle(interaction, { period = "all" }) {
 		await interaction.deferReply();
 		const guild = interaction.guild;
-		if (!guild) {
-			await interaction.followUp("This command can only be used in a server.");
-			return;
-		}
 
-		const period = (interaction.options.getString("period") ??
-			"all") as TimePeriod;
 		const topMessages = await getTopMessages(period);
 
 		if (topMessages.length === 0) {
 			await interaction.followUp({
 				embeds: [
-					createStandardEmbed(interaction.member as GuildMember)
+					createStandardEmbed(interaction.member)
 						.setTitle("Most Reacted Messages")
 						.setDescription(`No reactions recorded (${periodLabel(period)}).`),
 				],
@@ -292,9 +250,9 @@ const MessagesSubcommand: ExecutableSubcommand = {
 		);
 		const messageChunks = chunkEmbedFieldValues(messageLines);
 
-		const embed = createStandardEmbed(
-			interaction.member as GuildMember,
-		).setTitle("Most Reacted Messages");
+		const embed = createStandardEmbed(interaction.member).setTitle(
+			"Most Reacted Messages",
+		);
 		embed.addFields({
 			name: "Period",
 			value: periodLabel(period),
@@ -313,12 +271,14 @@ const MessagesSubcommand: ExecutableSubcommand = {
 
 		await interaction.followUp({ embeds: [embed] });
 	},
-};
+});
 
-export const ReactionStatsCommand: Command<ApplicationCommandType.ChatInput> = {
-	type: ApplicationCommandType.ChatInput,
+export const ReactionStatsCommand = defineCommand({
 	name: "reactionstats",
 	description: "View reaction statistics for users, emojis, and messages",
-	options: [UserSubcommand, GlobalSubcommand, MessagesSubcommand],
-	handle() {},
-};
+	subcommands: {
+		user: UserSubcommand,
+		global: GlobalSubcommand,
+		messages: MessagesSubcommand,
+	},
+});

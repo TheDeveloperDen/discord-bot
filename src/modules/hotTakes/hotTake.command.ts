@@ -1,28 +1,19 @@
-import type { CommandInteraction } from "discord.js";
-import { ApplicationCommandType } from "discord.js";
-import type { Command } from "../../commands/index.js";
+import { defineCommand } from "../../commands/index.js";
 import generateHotTake from "./hotTakes.util.js";
 
-export const HotTakeCommand: Command<ApplicationCommandType.ChatInput> = {
+export const HotTakeCommand = defineCommand({
 	name: "hottake",
 	description: "Summon a hot take from the database.",
-	type: ApplicationCommandType.ChatInput,
-	options: [],
 
-	handle: async (interaction: CommandInteraction) => {
-		const guild = interaction.guild;
-		if (guild == null) {
-			await interaction.reply("Not in a guild");
-			return;
-		}
+	async handle(interaction) {
 		await interaction.deferReply();
 
-		const take = await generateHotTake(guild);
+		const take = await generateHotTake(interaction.guild);
 		await interaction.followUp({
 			content: take,
 			allowedMentions: { users: [] },
 		});
 	},
-};
+});
 
 export default HotTakeCommand;

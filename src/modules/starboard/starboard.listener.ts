@@ -1,30 +1,36 @@
-import type {
-	Channel,
-	GuildMember,
-	Message,
-	SendableChannels,
-	Snowflake,
+import * as Sentry from "@sentry/bun";
+import {
+	type Channel,
+	type Client,
+	type GuildMember,
+	type Message,
+	RESTJSONErrorCodes,
+	type SendableChannels,
+	type Snowflake,
+	type User,
 } from "discord.js";
 import * as schedule from "node-schedule";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
+import { runObserved } from "../../observe.js";
 import { AntiStarboardMessage } from "../../store/models/AntiStarboardMessage.js";
 import { getOrCreateUserById } from "../../store/models/DDUser.js";
 import { ReputationEventType } from "../../store/models/ReputationEvent.js";
 import { StarboardMessage } from "../../store/models/StarboardMessage.js";
-import { getMember } from "../../util/member.js";
+import { awaitTimeout } from "../../util/timeouts.js";
 import { notifyMultipleAchievements } from "../achievements/achievementNotifier.js";
 import { checkAndAwardAchievements } from "../achievements/achievementService.js";
 import { grantReputation } from "../moderation/reputation.service.js";
 import type { EventListener } from "../module.js";
 import {
+	copyForModLog,
 	createAntiStarboardMessage,
 	createStarboardMessage,
-	createStarboardMessageFromMessage,
 	getAntiStarboardMessageForOriginalMessageId,
 	getStarboardMessageForOriginalMessageId,
 	type StarboardRenderOptions,
 } from "./starboard.js";
+import { renderStarboardPost } from "./starboard.post.js";
 import {
 	getReactionCountForEmoji,
 	getThresholdReactionCount,
@@ -220,116 +226,28 @@ const getContentCountForBoard = (
 
 export const StarboardListener: EventListener = {
 	async clientReady(client) {
-		let isRunningStarboardCheck = false;
-
-		schedule.scheduleJob(
-			{
-				hour: 0,
-				minute: 0,
-				second: 0,
-			},
-			async () => {
-				if (isRunningStarboardCheck) {
-					return;
-				}
-				isRunningStarboardCheck = true;
-
-				try {
-					const guild = await client.guilds.fetch(config.guildId);
-
-					for (const board of boardDefinitions) {
-						logger.info(`Starting daily ${board.name} check...`);
-						const boardMessages = await board.model.findAll();
-
-						for (const dbBoardMessage of boardMessages) {
-							const channel = await guild.channels.fetch(
-								dbBoardMessage.originalMessageChannelId.toString(),
-							);
-							if (
-								!channel?.isTextBased() ||
-								isChannelBlacklisted(channel, board)
-							) {
-								continue;
-							}
-
-							const boardChannel = await guild.channels.fetch(
-								board.config.channel,
-							);
-							if (!boardChannel?.isTextBased() || !boardChannel.isSendable()) {
-								logger.error(
-									`${board.name} channel not found, not a text channel or not sendable`,
-								);
-								continue;
-							}
-
-							let message: Message | null = null;
-							try {
-								message = await channel.messages.fetch(
-									dbBoardMessage.originalMessageId.toString(),
-								);
-							} catch (error) {
-								logger.error(
-									`There was an error fetching the original ${board.name} message`,
-									error,
-								);
-								continue;
-							}
-
-							const member = await getMember(message);
-							if (!member) {
-								logger.error(
-									"Member not found for message %s",
-									dbBoardMessage.originalMessageId,
-								);
-								continue;
-							}
-
-							let boardMessage: Message | null;
-							try {
-								boardMessage = await boardChannel.messages.fetch(
-									dbBoardMessage.starboardMessageId.toString(),
-								);
-							} catch (error) {
-								logger.error(`Error fetching ${board.name} message`, error);
-								continue;
-							}
-
-							const effectiveStarCount = getDisplayCountForBoard(
-								message,
-								board,
-							);
-							const contentStarCount = getContentCountForBoard(message, board);
-							const boardMessageContent =
-								await createStarboardMessageFromMessage(
-									message,
-									member,
-									effectiveStarCount,
-									board.config,
-									contentStarCount,
-								);
-							if (boardMessage.content !== boardMessageContent.content) {
-								await boardMessage.edit(boardMessageContent);
-								logger.info(
-									`${board.name} message %s for message %s has been updated`,
-									dbBoardMessage.starboardMessageId,
-									dbBoardMessage.originalMessageId,
-								);
-							}
-
-							logger.info(
-								`${board.name} message %s for message %s has been checked`,
-								dbBoardMessage.starboardMessageId,
-								dbBoardMessage.originalMessageId,
-							);
-
-							await new Promise((resolve) => setTimeout(resolve, 1000));
-						}
-					}
-				} finally {
-					isRunningStarboardCheck = false;
-				}
-			},
+		schedule.scheduleJob({ hour: 0, minute: 0, second: 0 }, () =>
+			runObserved(
+				{
+					op: "job",
+					name: "starboard.refresh",
+					monitor: {
+						slug: "starboard-refresh",
+						crontab: "0 0 * * *",
+						maxRuntimeMinutes: 60,
+					},
+				},
+				() => refreshBoards(client),
+			),
 		);
+	},
+
+	async messageDelete(client, message) {
+		await removeBoardPostsFor(client, [message.id]);
+	},
+
+	async messageDeleteBulk(client, messages) {
+		await removeBoardPostsFor(client, [...messages.keys()]);
 	},
 
 	async messageReactionAdd(client, reaction) {
@@ -407,15 +325,9 @@ export const StarboardListener: EventListener = {
 			const existingBoardMessage = await board.getMessageForOriginalMessageId(
 				refreshedMessage.id,
 			);
+			if (existingBoardMessage?.removedAt) return;
 			try {
-				const member = await getMember(refreshedMessage);
-				if (!member) {
-					logger.info(
-						"Member not found for reaction message id %s, skipping",
-						refreshedMessage.id,
-					);
-					return;
-				}
+				const member = await authorOf(refreshedMessage);
 
 				const displayCount = getDisplayCountForBoard(refreshedMessage, board);
 				const contentCount = getContentCountForBoard(refreshedMessage, board);
@@ -433,7 +345,7 @@ export const StarboardListener: EventListener = {
 					return;
 				}
 
-				const boardMessageContent = await createStarboardMessageFromMessage(
+				const boardMessageContent = await renderStarboardPost(
 					refreshedMessage,
 					member,
 					displayCount,
@@ -560,19 +472,12 @@ export const StarboardListener: EventListener = {
 			const existingBoardMessage = await board.getMessageForOriginalMessageId(
 				refreshedMessage.id,
 			);
-			if (!existingBoardMessage) {
+			if (!existingBoardMessage || existingBoardMessage.removedAt) {
 				return;
 			}
 
 			try {
-				const member = await getMember(refreshedMessage);
-				if (!member) {
-					logger.info(
-						"Member not found for reaction message id: %s",
-						refreshedMessage.id,
-					);
-					return;
-				}
+				const member = await authorOf(refreshedMessage);
 
 				const boardChannel = await refreshedMessage.guild.channels.fetch(
 					board.config.channel,
@@ -608,18 +513,11 @@ async function syncStarboardMessageScore(message: Message<true>) {
 
 	const existingStarboardMessage =
 		await starboard.getMessageForOriginalMessageId(message.id);
-	if (!existingStarboardMessage) {
+	if (!existingStarboardMessage || existingStarboardMessage.removedAt) {
 		return;
 	}
 
-	const member = await getMember(message);
-	if (!member) {
-		logger.info(
-			"Member not found while syncing starboard score for message id %s",
-			message.id,
-		);
-		return;
-	}
+	const member = await authorOf(message);
 
 	const boardChannel = await message.guild.channels.fetch(
 		starboard.config.channel,
@@ -647,7 +545,7 @@ async function updateBoardMessage(
 	boardChannel: SendableChannels,
 	boardMessageEntity: BoardMessageRecord,
 	reactionMessage: Message<true>,
-	member: GuildMember,
+	member: GuildMember | User,
 	starCount: number,
 	contentStarCount: number,
 ) {
@@ -659,22 +557,182 @@ async function updateBoardMessage(
 			);
 		} catch (error) {
 			boardMessage = null;
-			logger.error(`Error fetching the ${board.name} message`, error);
+			if (isGone(error)) {
+				// a moderator deleted the post, so keep it off the board instead of failing on every refresh
+				await boardMessageEntity.update({ removedAt: new Date() });
+				logger.info(
+					`${board.name} post ${boardMessageEntity.starboardMessageId} was deleted from the board, so it won't be updated again`,
+				);
+			} else {
+				logger.error(`Error fetching the ${board.name} message`, error);
+			}
 		}
 
 		if (!boardMessage) {
 			return;
 		}
 
-		const boardMessageFromMessage = await createStarboardMessageFromMessage(
+		const boardMessageFromMessage = await renderStarboardPost(
 			reactionMessage,
 			member,
 			starCount,
 			board.config,
 			contentStarCount,
 		);
-		await boardMessage.edit(boardMessageFromMessage);
+		await boardMessage.edit({
+			...boardMessageFromMessage,
+			// clear content and embeds so that we can migrate an old message to components v2 if necessary
+			// clear attachments to remove any orphan attachments
+			content: null,
+			embeds: [],
+			attachments: [],
+		});
 	} catch (error) {
 		logger.error(`Error updating the ${board.name} message`, error);
 	}
+}
+
+let isRefreshingBoards = false;
+
+/**
+ * Re-renders every board post from its original message, so star counts stay accurate and UI changes reach old
+ * posts. A post whose original was deleted is moved to the mod log.
+ */
+export async function refreshBoards(client: Client) {
+	if (isRefreshingBoards) return;
+	isRefreshingBoards = true;
+	try {
+		for (const board of boardDefinitions) {
+			logger.info(`Refreshing ${board.name} posts...`);
+			const boardChannel = await client.channels.fetch(board.config.channel);
+			if (!boardChannel?.isTextBased() || !boardChannel.isSendable()) {
+				logger.error(
+					`${board.name} channel not found, not a text channel or not sendable`,
+				);
+				continue;
+			}
+			const records = await board.model.findAll({ where: { removedAt: null } });
+			for (const record of records) {
+				Sentry.setContext("starboard_refresh", {
+					board: board.name,
+					starboardMessageId: record.starboardMessageId.toString(),
+					originalMessageId: record.originalMessageId.toString(),
+					originalChannelId: record.originalMessageChannelId.toString(),
+				});
+				let message: Message;
+				try {
+					const channel = await client.channels.fetch(
+						record.originalMessageChannelId.toString(),
+					);
+					if (!channel?.isTextBased() || isChannelBlacklisted(channel, board)) {
+						continue;
+					}
+					message = await channel.messages.fetch(
+						record.originalMessageId.toString(),
+					);
+				} catch (error) {
+					if (isGone(error)) {
+						await removeBoardPost(client, board, record);
+					} else {
+						logger.error(
+							`Couldn't fetch the original of ${board.name} post ${record.starboardMessageId}`,
+							error,
+						);
+					}
+					continue;
+				}
+				if (!message.inGuild()) continue;
+
+				const member = await authorOf(message);
+				await updateBoardMessage(
+					board,
+					boardChannel,
+					record,
+					message,
+					member,
+					getDisplayCountForBoard(message, board),
+					getContentCountForBoard(message, board),
+				);
+				// spreads the edits out, so a big board doesn't expend our rate limits
+				await awaitTimeout(1000);
+			}
+			logger.info(`Refreshed ${records.length} ${board.name} posts`);
+		}
+	} catch (error) {
+		logger.error("Failed to refresh board posts", error);
+		// so the cron monitor sees the run fail
+		throw error;
+	} finally {
+		isRefreshingBoards = false;
+	}
+}
+
+/** Moves the board posts of deleted original messages to the mod log */
+async function removeBoardPostsFor(client: Client, messageIds: Snowflake[]) {
+	for (const id of messageIds) {
+		for (const board of boardDefinitions) {
+			const record = await board.getMessageForOriginalMessageId(id);
+			if (record && !record.removedAt) {
+				await removeBoardPost(client, board, record);
+			}
+		}
+	}
+}
+
+/**
+ * Takes a post off the board once its original message is deleted,
+ * keeping a copy in the mod log in case a moderator needs it, and marking the {@link BoardDefinition} as removed.
+ */
+async function removeBoardPost(
+	client: Client,
+	board: BoardDefinition,
+	record: BoardMessageRecord,
+) {
+	if (record.removedAt) return;
+	const boardChannel = await client.channels.fetch(board.config.channel);
+	if (!boardChannel?.isTextBased()) return;
+
+	let post: Message | null = null;
+	try {
+		post = await boardChannel.messages.fetch(
+			record.starboardMessageId.toString(),
+		);
+	} catch (error) {
+		// already gone, so there's nothing to copy
+		if (!isGone(error)) throw error;
+	}
+	if (post) {
+		const modLog = await client.channels.fetch(config.channels.modLog);
+		if (!modLog?.isSendable()) {
+			throw new Error("The mod log channel isn't sendable");
+		}
+		// copy before deleting so a failed copy never loses the post
+		await modLog.send(copyForModLog(post, board.name));
+		await post.delete();
+	}
+	await record.update({ removedAt: new Date() });
+	logger.info(
+		`Removed ${board.name} post ${record.starboardMessageId}: its original message ${record.originalMessageId} was deleted`,
+	);
+}
+
+/** Discord's errors for a message or channel that no longer exists, as opposed to e.g. missing permissions */
+function isGone(error: unknown): boolean {
+	const code = (error as { code?: unknown } | null)?.code;
+	return (
+		code === RESTJSONErrorCodes.UnknownMessage ||
+		code === RESTJSONErrorCodes.UnknownChannel
+	);
+}
+
+/**
+ * The author of a starred message as a member, or as a user if they've left the server, so their posts still render.
+ * Unlike `getMember`, a missing member isn't reported: departed authors are expected, and every refresh would report them
+ */
+async function authorOf(message: Message<true>): Promise<GuildMember | User> {
+	return (
+		message.member ??
+		(await message.guild.members.fetch(message.author.id).catch(() => null)) ??
+		message.author
+	);
 }

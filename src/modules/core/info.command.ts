@@ -1,24 +1,16 @@
-import type { CommandInteraction, GuildMember } from "discord.js";
-import { ApplicationCommandType } from "discord.js";
-import type { Command } from "../../commands/index.js";
+import { defineCommand } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import { DDUser } from "../../store/models/DDUser.js";
 import { branding } from "../../util/branding.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 
-export const InfoCommand: Command<ApplicationCommandType.ChatInput> = {
-	type: ApplicationCommandType.ChatInput,
+export const InfoCommand = defineCommand({
 	name: "info",
 	description: "Show information about the bot and server",
-	options: [],
 
-	async handle(interaction: CommandInteraction) {
+	async handle(interaction) {
 		await interaction.deferReply();
 		const guild = interaction.guild;
-		if (guild == null) {
-			await interaction.reply("This command can only be used in a server");
-			return;
-		}
 		const totalXP = (await DDUser.sum("xp")) ?? 0;
 		const memberCount = guild.memberCount;
 		const membersStored = await DDUser.count();
@@ -28,7 +20,7 @@ export const InfoCommand: Command<ApplicationCommandType.ChatInput> = {
 		logger.debug(`totalXP: ${totalXP} (${typeof totalXP})`);
 		await interaction.followUp({
 			embeds: [
-				createStandardEmbed(interaction.member as GuildMember)
+				createStandardEmbed(interaction.member)
 					.setTitle(branding.name)
 					.setDescription(
 						"This is the bot for the Developer Den server. It's written in **TypeScript** using the **Discord.js** library. " +
@@ -80,7 +72,7 @@ export const InfoCommand: Command<ApplicationCommandType.ChatInput> = {
 			],
 		});
 	},
-};
+});
 
 export const format = (val: string | bigint | number) => {
 	if (typeof val === "string") {

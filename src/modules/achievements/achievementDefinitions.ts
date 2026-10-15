@@ -366,13 +366,6 @@ export function getActiveAchievementsByTrigger(
 }
 
 /**
- * Get all achievements that can be manually granted (manual trigger type)
- */
-export function getManualAchievements(): AchievementDefinition[] {
-	return getActiveAchievements().filter((a) => a.trigger.type === "manual");
-}
-
-/**
  * Category display information
  */
 export const CATEGORY_INFO: Record<

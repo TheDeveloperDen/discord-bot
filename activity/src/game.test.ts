@@ -11,11 +11,12 @@ const areOrthogonallyConnected = (
 	size: number,
 	cells: readonly number[],
 ): boolean => {
-	if (cells.length === 0) return false;
+	const [firstCell] = cells;
+	if (firstCell === undefined) return false;
 
 	const remaining = new Set(cells);
 	const visited = new Set<number>();
-	const pending = [cells[0]];
+	const pending = [firstCell];
 
 	while (pending.length > 0) {
 		const cell = pending.pop();
@@ -78,7 +79,7 @@ describe("generatePuzzle", () => {
 				expect(areOrthogonallyConnected(first.puzzle.size, block.cells)).toBe(
 					true,
 				);
-				expect(block.cells).toContain(first.puzzle.clues[block.clue].cell);
+				expect(block.cells).toContain(first.puzzle.clues[block.clue]!.cell);
 				expect(
 					block.cells.filter((cell) =>
 						first.puzzle.clues.some((clue) => clue.cell === cell),
@@ -190,7 +191,7 @@ describe("validatePlacement", () => {
 
 describe("isSolved", () => {
 	test("requires every valid block and exact non-overlapping coverage", () => {
-		const valid: Block[] = [
+		const valid: [Block, Block] = [
 			{ clue: 0, cells: [0, 1] },
 			{ clue: 1, cells: [2, 3] },
 		];

@@ -33,7 +33,6 @@ import { RolesModule } from "./modules/roles/roles.module.js";
 import { ShowcaseModule } from "./modules/showcase.module.js";
 import { StarboardModule } from "./modules/starboard/starboard.module.js";
 import SuggestModule from "./modules/suggest/suggest.module.js";
-import { ThreatDetectionModule } from "./modules/threatDetection/threatDetection.module.js";
 import { TokenScannerModule } from "./modules/tokenScanner.module.js";
 import { UserModule } from "./modules/user/user.module.js";
 import { XpModule } from "./modules/xp/xp.module.js";
@@ -80,7 +79,6 @@ const moduleManager = new ModuleManager(
 		LeaderboardModule,
 		UserModule,
 		AchievementsModule,
-		ThreatDetectionModule,
 		ReactionStatsModule,
 	],
 );
@@ -119,13 +117,11 @@ async function main() {
 
 	await moduleManager.refreshCommands();
 	await moduleManager.init();
-	logger.info("Startup complete");
+	logger.info("Startup complete", { guilds: client.guilds.cache.size });
 }
 
-const processEvents: NodeJS.EventEmitter = process;
-
 async function shutdown(signal: NodeJS.Signals) {
-	logger.info(`Received ${signal}, shutting down`);
+	logger.info("Received shutdown signal", { signal });
 	if (activityServer) {
 		await activityServer.stop();
 		activityServer = undefined;
@@ -137,7 +133,7 @@ async function shutdown(signal: NodeJS.Signals) {
 }
 
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
-	processEvents.once(signal, () => void shutdown(signal));
+	process.once(signal, () => void shutdown(signal));
 }
 
 try {

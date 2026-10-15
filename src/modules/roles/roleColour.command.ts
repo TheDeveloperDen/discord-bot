@@ -1,24 +1,14 @@
-import * as Sentry from "@sentry/bun";
-import {
-	ApplicationCommandOptionType,
-	ApplicationCommandType,
-	type ColorResolvable,
-	type GuildMember,
-	MessageFlags,
-	type Role,
-} from "discord.js";
+import { type ColorResolvable, MessageFlags, type Role } from "discord.js";
 import { config } from "../../Config.js";
-import type { Command, ExecutableSubcommand } from "../../commands/index.js";
+import { defineCommand, option, subcommand } from "../../commands/index.js";
 import { ColourRoles } from "../../store/models/ColourRoles.js";
 
-const ResetSubcommand: ExecutableSubcommand = {
-	type: ApplicationCommandOptionType.Subcommand,
-	name: "reset",
+const ResetSubcommand = subcommand({
 	description: "Reset your role colour",
 	async handle(interaction) {
 		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 		const user = interaction.user;
-		const member = interaction.member as GuildMember;
+		const member = interaction.member;
 		const roleInfo = await ColourRoles.findOne({
 			where: {
 				id: BigInt(user.id),
@@ -59,84 +49,72 @@ const ResetSubcommand: ExecutableSubcommand = {
 			interaction.followUp("Your role colour has been reset"),
 		]);
 	},
-};
+});
 
-const SetSubcommand: ExecutableSubcommand = {
-	type: ApplicationCommandOptionType.Subcommand,
-	name: "set",
+const SetSubcommand = subcommand({
 	description: "Set your role colour",
-	options: [
-		{
-			type: ApplicationCommandOptionType.String,
-			name: "colour",
+	options: {
+		colour: option.string({
 			description: "The colour to set as a hex string (format: `#RRGGBB`)",
 			required: true,
-		},
-	],
-	async handle(interaction) {
-		await Sentry.startSpan(
-			{ name: "rolecolour/set", op: "command" },
-			async () => {
-				const colour = interaction.options.get("colour", true).value as string;
-				if (!colour.startsWith("#") || colour.length !== 7) {
-					await interaction.reply({
-						content: "Not a valid colour",
-						flags: MessageFlags.Ephemeral,
-					});
-					return;
-				}
-
-				await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-				const user = interaction.user;
-				const member = interaction.member as GuildMember;
-				const roleInfo = await ColourRoles.findOne({
-					where: {
-						id: BigInt(user.id),
-					},
-				});
-				let role: Role | null = null;
-				if (roleInfo != null) {
-					const roleId = roleInfo.getDataValue("role"); // no idea why normal property lookup doesnt work
-					if (!roleId) {
-						throw new Error("No colour role found, database call failed?");
-					}
-					role = member.roles.resolve(roleId.toString());
-					await role?.setColors({ primaryColor: colour as ColorResolvable });
-				}
-
-				if (role == null) {
-					const position =
-						interaction.guild?.roles.resolve(config.roles.separators.general)
-							?.position ?? 0;
-					role = await member.guild.roles.create({
-						colors: { primaryColor: colour as ColorResolvable },
-						permissions: [],
-						name: member.user.username,
-						position,
-					});
-					await ColourRoles.upsert({
-						id: BigInt(user.id),
-						role: BigInt(role.id),
-					});
-				}
-
-				await member.roles.add(role);
-
-				await interaction.editReply({
-					content: `Set your colour to ${colour}`,
-				});
-			},
-		);
+		}),
 	},
-};
+	async handle(interaction, { colour }) {
+		if (!colour.startsWith("#") || colour.length !== 7) {
+			await interaction.reply({
+				content: "Not a valid colour",
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
 
-export const RoleColourCommand: Command<ApplicationCommandType.ChatInput> = {
+		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+		const user = interaction.user;
+		const member = interaction.member;
+		const roleInfo = await ColourRoles.findOne({
+			where: {
+				id: BigInt(user.id),
+			},
+		});
+		let role: Role | null = null;
+		if (roleInfo != null) {
+			const roleId = roleInfo.getDataValue("role"); // no idea why normal property lookup doesnt work
+			if (!roleId) {
+				throw new Error("No colour role found, database call failed?");
+			}
+			role = member.roles.resolve(roleId.toString());
+			await role?.setColors({ primaryColor: colour as ColorResolvable });
+		}
+
+		if (role == null) {
+			const generalSeparator = config.roles.separators?.general;
+			const position =
+				(generalSeparator
+					? interaction.guild?.roles.resolve(generalSeparator)?.position
+					: undefined) ?? 0;
+			role = await member.guild.roles.create({
+				colors: { primaryColor: colour as ColorResolvable },
+				permissions: [],
+				name: member.user.username,
+				position,
+			});
+			await ColourRoles.upsert({
+				id: BigInt(user.id),
+				role: BigInt(role.id),
+			});
+		}
+
+		await member.roles.add(role);
+
+		await interaction.editReply({
+			content: `Set your colour to ${colour}`,
+		});
+	},
+});
+
+export const RoleColourCommand = defineCommand({
 	name: "rolecolour",
 	description: "Set your role colour",
-	type: ApplicationCommandType.ChatInput,
 	default_member_permissions: 0n,
-	options: [SetSubcommand, ResetSubcommand],
-	handle() {
-		throw new Error("This command should not be executed");
-	},
-};
+	subcommands: { set: SetSubcommand, reset: ResetSubcommand },
+});

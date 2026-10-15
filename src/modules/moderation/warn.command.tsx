@@ -1,0 +1,191 @@
+import { MessageFlags, PermissionFlagsBits } from "discord.js";
+import { Message, renderDiscordMessage, TextDisplay } from "disjsx";
+import { config } from "../../Config.js";
+import { defineCommand, option } from "../../commands/index.js";
+import { logger } from "../../logging.js";
+import { getOrCreateUserById } from "../../store/models/DDUser.js";
+import {
+	getWarningCount,
+	Warning,
+	WarningSeverity,
+} from "../../store/models/Warning.js";
+import { Card, type DetailItem, Details } from "../../ui/index.js";
+import { excerpt } from "../../util/strings.js";
+import { parseTimespan } from "../../util/timespan.js";
+import { fakeMention } from "../../util/users.js";
+import { dmModerationTarget, dmWarning, logModerationAction } from "./logs.js";
+import { deductReputation, getWarningEventType } from "./reputation.service.js";
+import { SEVERITY_ACCENTS, SEVERITY_LABELS } from "./severity.js";
+
+const DEFAULT_EXPIRY: Record<WarningSeverity, number | null> = {
+	[WarningSeverity.MINOR]: 30 * 24 * 60 * 60 * 1000,
+	[WarningSeverity.MODERATE]: 60 * 24 * 60 * 60 * 1000,
+	[WarningSeverity.SEVERE]: null,
+};
+
+export const WarnCommand = defineCommand({
+	name: "warn",
+	description: "Issue a formal warning to a user",
+	default_member_permissions: PermissionFlagsBits.ModerateMembers,
+	options: {
+		user: option.user({
+			description: "The user to warn",
+			required: true,
+		}),
+		reason: option.string({
+			description: "Reason for the warning",
+			required: true,
+		}),
+		severity: option.integer({
+			description: "Warning severity (default: Minor)",
+			choices: [
+				{ name: "Minor", value: WarningSeverity.MINOR },
+				{ name: "Moderate", value: WarningSeverity.MODERATE },
+				{ name: "Severe", value: WarningSeverity.SEVERE },
+			],
+		}),
+		duration: option.string({
+			description:
+				"How long before warning expires (e.g., 30d, 90d). Leave empty for default based on severity",
+		}),
+	},
+
+	async handle(
+		interaction,
+		{
+			user,
+			reason: rawReason,
+			severity = WarningSeverity.MINOR,
+			duration: durationStr,
+		},
+	) {
+		try {
+			await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+			const reason = rawReason.trim();
+
+			// Validate reason
+			if (reason.length === 0) {
+				await interaction.editReply("Warning reason cannot be empty.");
+				return;
+			}
+			if (reason.length > 500) {
+				await interaction.editReply(
+					"Warning reason must be under 500 characters.",
+				);
+				return;
+			}
+
+			let expiresAt: Date | null = null;
+			const MAX_DURATION_MS = 365 * 24 * 60 * 60 * 1000; // 1 year
+			if (durationStr) {
+				const durationMs = parseTimespan(durationStr);
+				if (durationMs <= 0) {
+					await interaction.editReply(
+						"Invalid duration format. Use formats like '30d', '2w', '24h'.",
+					);
+					return;
+				}
+				if (durationMs > MAX_DURATION_MS) {
+					await interaction.editReply("Warning duration cannot exceed 1 year.");
+					return;
+				}
+				expiresAt = new Date(Date.now() + durationMs);
+			} else if (DEFAULT_EXPIRY[severity] !== null) {
+				expiresAt = new Date(Date.now() + DEFAULT_EXPIRY[severity]);
+			}
+
+			// Ensure user exists in database before creating warning
+			await getOrCreateUserById(BigInt(user.id));
+
+			const warning = await Warning.create({
+				userId: BigInt(user.id),
+				moderatorId: BigInt(interaction.user.id),
+				reason,
+				severity,
+				expiresAt,
+			});
+
+			// Deduct reputation based on warning severity
+			const reputationEventType = getWarningEventType(severity);
+			await deductReputation(
+				BigInt(user.id),
+				reputationEventType,
+				reason,
+				warning.id,
+			);
+
+			const warningCount = await getWarningCount(BigInt(user.id));
+
+			const details: DetailItem[] = [
+				["Reason", excerpt(reason, { maxLength: 1500 })],
+				["Severity", SEVERITY_LABELS[severity]],
+			];
+			if (expiresAt) {
+				details.push([
+					"Expires",
+					`<t:${Math.floor(expiresAt.getTime() / 1000)}:R>`,
+				]);
+			}
+			const dmSent = await dmModerationTarget(
+				user,
+				renderDiscordMessage(
+					<Message isV2>
+						<Card
+							accent={SEVERITY_ACCENTS[severity]}
+							title="You have received a warning"
+							description={`You have been warned in **${interaction.guild.name}**.`}
+							timestamp={Date.now()}
+						>
+							<Details items={details} />
+							<TextDisplay>
+								{`This is warning #${warningCount}. Please review the server rules to avoid further action.`}
+							</TextDisplay>
+						</Card>
+					</Message>,
+				),
+			);
+
+			await logModerationAction(interaction.client, {
+				kind: "Warning",
+				moderator: interaction.user,
+				target: user,
+				reason,
+				severity,
+				warningId: warning.id,
+				warningCount,
+				expiresAt,
+				dmSent,
+			});
+
+			const thresholds = config.reputation?.warningThresholds;
+			let escalationNote = "";
+			if (thresholds) {
+				if (warningCount >= thresholds.banAt) {
+					escalationNote = `\n\n**Note:** User has ${warningCount} warnings and may be eligible for a ban.`;
+				} else if (warningCount >= thresholds.muteAt) {
+					escalationNote = `\n\n**Note:** User has ${warningCount} warnings and may be eligible for a mute.`;
+				}
+			}
+
+			await interaction.editReply({
+				content:
+					`Warned ${fakeMention(user)} (Warning #${warningCount})\n` +
+					`**Reason:** ${reason}\n` +
+					`**Severity:** ${SEVERITY_LABELS[severity]}` +
+					escalationNote +
+					dmWarning(dmSent),
+			});
+		} catch (e) {
+			logger.error("Failed to warn user:", e);
+			if (interaction.replied || interaction.deferred) {
+				await interaction.editReply("Something went wrong!");
+			} else {
+				await interaction.reply({
+					content: "Something went wrong!",
+					ephemeral: true,
+				});
+			}
+		}
+	},
+});

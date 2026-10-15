@@ -589,21 +589,21 @@ function createCell(
 	const column = (cell % BOARD_SIZE) + 1;
 	const descriptor: string[] = [`Row ${row}, column ${column}`];
 	if (clueIndex !== undefined) {
-		const clue = puzzle.clues[clueIndex];
+		const clue = puzzle.clues[clueIndex]!;
 		button.textContent = String(clue.size);
 		button.classList.add("cell--clue");
 		button.style.setProperty(
 			"--clue-color",
-			PALETTE[clueIndex % PALETTE.length],
+			PALETTE[clueIndex % PALETTE.length]!,
 		);
 		descriptor.push(`clue ${clue.size}`);
 	}
 	if (placedIndex !== undefined) {
-		const placed = blocks[placedIndex];
+		const placed = blocks[placedIndex]!;
 		button.classList.add("cell--placed");
 		button.style.setProperty(
 			"--block-color",
-			PALETTE[placed.clue % PALETTE.length],
+			PALETTE[placed.clue % PALETTE.length]!,
 		);
 		descriptor.push("placed block; tap to remove");
 	}
@@ -616,7 +616,7 @@ function refreshSelectionPreview(): void {
 	const placement =
 		selection.length > 0 ? validatePlacement(puzzle, blocks, selection) : null;
 	const previewColor = placement?.ok
-		? PALETTE[placement.block.clue % PALETTE.length]
+		? PALETTE[placement.block.clue % PALETTE.length]!
 		: null;
 	board.querySelectorAll<HTMLButtonElement>("[data-cell]").forEach((cell) => {
 		const cellIndex = Number(cell.dataset.cell);

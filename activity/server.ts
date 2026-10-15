@@ -125,7 +125,7 @@ export function createActivityRequestHandler(clientId: string | null) {
 			return textResponse("Not Found", 404);
 		}
 
-		return assetResponse(assets[pathname], request.method);
+		return assetResponse(assets[pathname]!, request.method);
 	};
 }
 

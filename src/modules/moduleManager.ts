@@ -75,16 +75,18 @@ export default class ModuleManager {
 		run: (module: Module) => Promise<void> | undefined,
 	) {
 		// turn any thrown exceptions into rejected promises
-		const results = await Promise.allSettled(
-			this.modules.map(async (module) => run(module)),
+		await Promise.all(
+			this.modules.map(async (module) => {
+				try {
+					await run(module);
+				} catch (error) {
+					Sentry.captureException(error, {
+						tags: { module: module.name, hook },
+					});
+					logger.error(`Error in ${hook} for module ${module.name}`, error);
+				}
+			}),
 		);
-		results.forEach((result, i) => {
-			if (result.status === "rejected") {
-				const module = this.modules[i].name;
-				Sentry.captureException(result.reason, { tags: { module, hook } });
-				logger.error(`Error in ${hook} for module ${module}`, result.reason);
-			}
-		});
 	}
 
 	/** Called before login once storage is ready */

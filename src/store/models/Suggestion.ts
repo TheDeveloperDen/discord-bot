@@ -1,4 +1,5 @@
 import {
+	type CreationOptional,
 	DataTypes,
 	type InferAttributes,
 	type InferCreationAttributes,
@@ -57,12 +58,23 @@ export class Suggestion extends Model<
 	@Default(SuggestionStatus.PENDING)
 	@NotNull
 	@ColumnName("status")
-	public status: SuggestionStatus = SuggestionStatus.PENDING;
+	declare public status: CreationOptional<SuggestionStatus>;
 
 	@Attribute(RealBigInt)
 	@AllowNull
 	@ColumnName("moderatorId")
 	declare public moderatorId: bigint | undefined;
+
+	/** The moderator's reason for approving or rejecting it */
+	@Attribute(DataTypes.TEXT)
+	@AllowNull
+	@ColumnName("reason")
+	declare public reason: CreationOptional<string | null>;
+
+	@Attribute(DataTypes.TEXT)
+	@AllowNull
+	@ColumnName("threadUrl")
+	declare public threadUrl: CreationOptional<string | null>;
 
 	@HasMany(() => SuggestionVote, "suggestionId")
 	declare public votes?: SuggestionVote[];

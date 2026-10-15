@@ -1,9 +1,12 @@
 import {
+	type CreationOptional,
+	DataTypes,
 	type InferAttributes,
 	type InferCreationAttributes,
 	Model,
 } from "@sequelize/core";
 import {
+	AllowNull,
 	Attribute,
 	NotNull,
 	PrimaryKey,
@@ -28,4 +31,9 @@ export class AntiStarboardMessage extends Model<
 	@Attribute(RealBigInt)
 	@NotNull
 	public starboardMessageId!: bigint;
+
+	/** When the post was moved to the mod log because its original message was deleted */
+	@Attribute(DataTypes.DATE)
+	@AllowNull
+	declare public removedAt: CreationOptional<Date | null>;
 }

@@ -1,28 +1,18 @@
 import {
 	AttachmentBuilder,
 	type ColorResolvable,
-	type EmbedBuilder,
-	type GuildMember,
+	ComponentType,
 	type Message,
+	type MessageCreateOptions,
+	MessageFlags,
 	type Snowflake,
 } from "discord.js";
-import { config } from "../../Config.js";
 import { AntiStarboardMessage } from "../../store/models/AntiStarboardMessage.js";
 import { StarboardMessage } from "../../store/models/StarboardMessage.js";
-import { createStandardEmbed } from "../../util/embeds.js";
 import { convertVideoToGif } from "../../util/video.js";
-import {
-	buildStarboardMessageContent,
-	type StarboardContentRenderOptions,
-} from "./starboard.content.js";
+import type { StarboardContentRenderOptions } from "./starboard.content.js";
 
 export interface StarboardRenderOptions extends StarboardContentRenderOptions {}
-
-const defaultRenderOptions: StarboardRenderOptions = {
-	emojiId: config.starboard.emojiId,
-	threshold: config.starboard.threshold,
-	color: config.starboard.color,
-};
 
 export const createStarboardMessage: (
 	originalMessageId: Snowflake,
@@ -76,7 +66,7 @@ export const getAntiStarboardMessageForOriginalMessageId: (
 	});
 };
 
-const getColorForStars: (
+export const getColorForStars: (
 	stars: number,
 	threshold: number,
 	baseColor: ColorResolvable,
@@ -98,115 +88,6 @@ const getColorForStars: (
 			return baseColor;
 	}
 };
-export const extractEmbedAndFilesFromMessage: (
-	message: Message,
-	member: GuildMember,
-	stars: number,
-	renderOptions?: StarboardRenderOptions,
-) => Promise<{
-	embed: EmbedBuilder;
-	files?: AttachmentBuilder[];
-}> = async (
-	message: Message,
-	member: GuildMember,
-	stars: number,
-	renderOptions = defaultRenderOptions,
-) => {
-	const embed = createStandardEmbed(member)
-		.setColor(
-			getColorForStars(stars, renderOptions.threshold, renderOptions.color),
-		)
-		.setAuthor({
-			name: member.displayName,
-			iconURL: member.user.displayAvatarURL(),
-			url: `https://discord.com/users/${member.id}`,
-		})
-		.setURL(message.url)
-		.setTimestamp(message.editedTimestamp ?? message.createdTimestamp)
-		.setDescription(message.content.length > 0 ? message.content : null);
-	const files: AttachmentBuilder[] = [];
-	const imageOrGif = await getImageOrGifEmbed(message);
-	if (imageOrGif) {
-		if ("gifBuffer" in imageOrGif) {
-			files.push(
-				new AttachmentBuilder(imageOrGif.gifBuffer, {
-					name: imageOrGif.gifName,
-				}),
-			);
-			embed.setImage(`attachment://${imageOrGif.gifName}`);
-		} else if (imageOrGif.url) {
-			// If we have a regular image URL, use it directly
-			embed.setImage(imageOrGif.url);
-		}
-	}
-
-	return {
-		embed: embed,
-		files: files.length > 0 ? files : undefined,
-	};
-};
-export const createStarboardMessageFromMessage: (
-	message: Message,
-	member: GuildMember,
-	stars: number,
-	renderOptions?: StarboardRenderOptions,
-	contentStars?: number,
-) => Promise<{
-	embeds: EmbedBuilder[];
-	content: string;
-	files?: AttachmentBuilder[];
-}> = async (message, member, stars, renderOptions, contentStars) => {
-	const settings = renderOptions ?? defaultRenderOptions;
-	const embeds: EmbedBuilder[] = [];
-	const files: AttachmentBuilder[] = [];
-	let content = buildStarboardMessageContent(
-		message,
-		contentStars ?? stars,
-		settings,
-	);
-	if (message.reference) {
-		const referencedMessage = await message.fetchReference();
-
-		if (
-			referencedMessage.inGuild() &&
-			referencedMessage.guildId === message.guildId &&
-			referencedMessage.member
-		) {
-			const { embed: referencedEmbed, files: referencedFiles } =
-				await extractEmbedAndFilesFromMessage(
-					referencedMessage,
-					referencedMessage.member,
-					-1,
-					settings,
-				);
-
-			referencedEmbed.setAuthor({
-				name: `Reply to: ${referencedEmbed.data.author?.name}`,
-				iconURL: referencedMessage.member.displayAvatarURL(),
-				url: `https://discord.com/channels/${referencedMessage.guildId}/${referencedMessage.channelId}/${referencedMessage.id}`,
-			});
-			embeds.push(referencedEmbed);
-			if (referencedFiles) {
-				files.push(...referencedFiles);
-			}
-
-			content += ` | Replied to ${referencedMessage.url} by ${referencedMessage.member.displayName}`;
-		}
-	}
-	const { embed, files: mainmessageFiles } =
-		await extractEmbedAndFilesFromMessage(message, member, stars, settings);
-	embeds.push(embed);
-	if (mainmessageFiles) {
-		files.push(...mainmessageFiles);
-	}
-
-	return {
-		embeds: embeds,
-		content: content,
-		files: files.length > 0 ? files : undefined,
-	};
-};
-
 const isEmbedableContentType = (type: string) => {
 	const imageFormats = [
 		"image/jpeg",
@@ -228,9 +109,8 @@ export const getImageOrGifEmbed: (message: Message) => Promise<
 	const embeds = message.embeds.filter(
 		(emb) => emb.data.type === "image" || emb.data.type === "gifv",
 	);
-	if (embeds.length > 0) {
-		const embed = embeds[0];
-
+	const [embed] = embeds;
+	if (embed) {
 		if (embed.video) {
 			const gifBuffer = await convertVideoToGif(
 				embed.video.proxyURL ?? embed.video.url,
@@ -267,3 +147,63 @@ export const getImageOrGifEmbed: (message: Message) => Promise<
 
 	return undefined;
 };
+
+/**
+ * A copy of a board post for the mod log. The post's attachments (e.g. a converted GIF) are re-uploaded and its media
+ * pointed at the copies, since the post's own attachment links stop working once it's deleted.
+ */
+export function copyForModLog(post: Message, boardName: string) {
+	const notice = `Removed from the ${boardName} because the original message was deleted.`;
+	const files = post.attachments.map(
+		(attachment) =>
+			new AttachmentBuilder(attachment.url, { name: attachment.name }),
+	);
+	/** `url`, or a reference to the re-uploaded copy if it's one of the post's attachments */
+	const local = (url: string) => {
+		const attachment = post.attachments.find((a) =>
+			new URL(url).pathname.endsWith(`/${a.name}`),
+		);
+		return attachment ? `attachment://${attachment.name}` : url;
+	};
+
+	if (post.flags.has(MessageFlags.IsComponentsV2)) {
+		return {
+			flags: MessageFlags.IsComponentsV2,
+			components: [
+				{ type: ComponentType.TextDisplay, content: notice },
+				...post.components.map((component) =>
+					withLocalMedia(component.toJSON(), local),
+				),
+			],
+			files,
+			allowedMentions: { parse: [] },
+		} satisfies MessageCreateOptions;
+	}
+	// posts from before starboard used Components V2
+	const embeds = post.embeds.map((embed) => {
+		const json = embed.toJSON();
+		if (json.image?.url) json.image = { url: local(json.image.url) };
+		return json;
+	});
+	return {
+		content: `${notice}\n${post.content}`,
+		embeds,
+		files,
+		allowedMentions: { parse: [] },
+	} satisfies MessageCreateOptions;
+}
+
+/** A copy of a component's JSON with every media URL (thumbnails, gallery items) passed through `local` */
+function withLocalMedia<T>(json: T, local: (url: string) => string): T {
+	if (Array.isArray(json)) {
+		return json.map((item) => withLocalMedia(item, local)) as T;
+	}
+	if (json === null || typeof json !== "object") return json;
+	return Object.fromEntries(
+		Object.entries(json).map(([key, value]) =>
+			key === "media" && value && typeof value === "object" && "url" in value
+				? [key, { ...value, url: local(String(value.url)) }]
+				: [key, withLocalMedia(value, local)],
+		),
+	) as T;
+}
