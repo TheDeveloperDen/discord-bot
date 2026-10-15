@@ -1,9 +1,5 @@
-import {
-	Colors,
-	EmbedBuilder,
-	MessageFlags,
-	PermissionFlagsBits,
-} from "discord.js";
+import { MessageFlags, PermissionFlagsBits } from "discord.js";
+import { Message, renderDiscordMessage, TextDisplay } from "disjsx";
 import { config } from "../../Config.js";
 import { defineCommand, option } from "../../commands/index.js";
 import { logger } from "../../logging.js";
@@ -13,16 +9,13 @@ import {
 	Warning,
 	WarningSeverity,
 } from "../../store/models/Warning.js";
+import { Card, type DetailItem, Details } from "../../ui/index.js";
+import { excerpt } from "../../util/strings.js";
 import { parseTimespan } from "../../util/timespan.js";
 import { fakeMention } from "../../util/users.js";
 import { dmModerationTarget, dmWarning, logModerationAction } from "./logs.js";
 import { deductReputation, getWarningEventType } from "./reputation.service.js";
-
-const SEVERITY_LABELS: Record<WarningSeverity, string> = {
-	[WarningSeverity.MINOR]: "Minor",
-	[WarningSeverity.MODERATE]: "Moderate",
-	[WarningSeverity.SEVERE]: "Severe",
-};
+import { SEVERITY_ACCENTS, SEVERITY_LABELS } from "./severity.js";
 
 const DEFAULT_EXPIRY: Record<WarningSeverity, number | null> = {
 	[WarningSeverity.MINOR]: 30 * 24 * 60 * 60 * 1000,
@@ -124,21 +117,34 @@ export const WarnCommand = defineCommand({
 
 			const warningCount = await getWarningCount(BigInt(user.id));
 
-			const dmEmbed = new EmbedBuilder()
-				.setTitle("You have received a warning")
-				.setColor(Colors.Orange)
-				.setDescription(
-					`You have been warned in **${interaction.guild.name}**.\n\n` +
-						`**Reason:** ${reason}\n` +
-						`**Severity:** ${SEVERITY_LABELS[severity]}\n` +
-						(expiresAt
-							? `**Expires:** <t:${Math.floor(expiresAt.getTime() / 1000)}:R>\n`
-							: "") +
-						`\nThis is warning #${warningCount}. Please review the server rules to avoid further action.`,
-				)
-				.setTimestamp();
-
-			const dmSent = await dmModerationTarget(user, { embeds: [dmEmbed] });
+			const details: DetailItem[] = [
+				["Reason", excerpt(reason, { maxLength: 1500 })],
+				["Severity", SEVERITY_LABELS[severity]],
+			];
+			if (expiresAt) {
+				details.push([
+					"Expires",
+					`<t:${Math.floor(expiresAt.getTime() / 1000)}:R>`,
+				]);
+			}
+			const dmSent = await dmModerationTarget(
+				user,
+				renderDiscordMessage(
+					<Message isV2>
+						<Card
+							accent={SEVERITY_ACCENTS[severity]}
+							title="You have received a warning"
+							description={`You have been warned in **${interaction.guild.name}**.`}
+							timestamp={Date.now()}
+						>
+							<Details items={details} />
+							<TextDisplay>
+								{`This is warning #${warningCount}. Please review the server rules to avoid further action.`}
+							</TextDisplay>
+						</Card>
+					</Message>,
+				),
+			);
 
 			await logModerationAction(interaction.client, {
 				kind: "Warning",

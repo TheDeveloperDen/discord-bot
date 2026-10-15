@@ -1,24 +1,12 @@
-import { EmbedBuilder, MessageFlags } from "discord.js";
+import { MessageFlags } from "discord.js";
+import { Message, renderDiscordMessage } from "disjsx";
 import { defineCommand, option } from "../../commands/index.js";
 import { logger } from "../../logging.js";
-import {
-	getAllWarnings,
-	type Warning,
-	WarningSeverity,
-} from "../../store/models/Warning.js";
+import { getAllWarnings, type Warning } from "../../store/models/Warning.js";
+import { Card, Field, memberAuthor } from "../../ui/index.js";
+import { excerpt } from "../../util/strings.js";
 import { isSpecialUser } from "../../util/users.js";
-
-const SEVERITY_LABELS: Record<WarningSeverity, string> = {
-	[WarningSeverity.MINOR]: "Minor",
-	[WarningSeverity.MODERATE]: "Moderate",
-	[WarningSeverity.SEVERE]: "Severe",
-};
-
-const SEVERITY_EMOJI: Record<WarningSeverity, string> = {
-	[WarningSeverity.MINOR]: "🟡",
-	[WarningSeverity.MODERATE]: "🟠",
-	[WarningSeverity.SEVERE]: "🔴",
-};
+import { SEVERITY_EMOJI, SEVERITY_LABELS } from "./severity.js";
 
 function formatWarning(warning: Warning, isMod: boolean): string {
 	const emoji = SEVERITY_EMOJI[warning.severity];
@@ -92,47 +80,52 @@ export const WarningsCommand = defineCommand({
 			const activeWarnings = warnings.filter((w) => !w.expired && !w.pardoned);
 			const inactiveWarnings = warnings.filter((w) => w.expired || w.pardoned);
 
-			const embed = new EmbedBuilder()
-				.setTitle(
-					isSelf ? "Your Warnings" : `Warnings for ${targetUser.username}`,
-				)
-				.setColor(activeWarnings.length > 0 ? "Orange" : "Green")
-				.setThumbnail(targetUser.displayAvatarURL())
-				.setTimestamp();
+			const listOf = (list: Warning[], max: number) =>
+				excerpt(
+					list
+						.slice(0, max)
+						.map((w) => formatWarning(w, isMod))
+						.join("\n\n"),
+					{ maxLength: 1800 },
+				);
+			const showInactive =
+				effectiveIncludeExpired && inactiveWarnings.length > 0;
 
-			if (activeWarnings.length > 0) {
-				const activeList = activeWarnings
-					.slice(0, 10)
-					.map((w) => formatWarning(w, isMod))
-					.join("\n\n");
-
-				embed.addFields({
-					name: `Active Warnings (${activeWarnings.length})`,
-					value: activeList || "None",
-				});
-			} else {
-				embed.setDescription("No active warnings.");
-			}
-
-			if (effectiveIncludeExpired && inactiveWarnings.length > 0) {
-				const inactiveList = inactiveWarnings
-					.slice(0, 5)
-					.map((w) => formatWarning(w, isMod))
-					.join("\n\n");
-
-				embed.addFields({
-					name: `Expired/Pardoned (${inactiveWarnings.length})`,
-					value: inactiveList,
-				});
-			}
-
-			if (isMod) {
-				embed.setFooter({
-					text: `Total: ${warnings.length} | Active: ${activeWarnings.length}`,
-				});
-			}
-
-			await interaction.editReply({ embeds: [embed] });
+			await interaction.editReply(
+				renderDiscordMessage(
+					<Message isV2>
+						<Card
+							accent={activeWarnings.length > 0 ? "Orange" : "Green"}
+							title={
+								isSelf ? "Your Warnings" : `Warnings for ${targetUser.username}`
+							}
+							author={memberAuthor(targetUser)}
+							description={
+								activeWarnings.length > 0
+									? `${activeWarnings.length} active warning${activeWarnings.length === 1 ? "" : "s"}`
+									: "No active warnings."
+							}
+							footer={
+								isMod
+									? `Total: ${warnings.length} · Active: ${activeWarnings.length}`
+									: undefined
+							}
+							timestamp={Date.now()}
+						>
+							{activeWarnings.length > 0 && (
+								<Field label={`Active Warnings (${activeWarnings.length})`}>
+									{listOf(activeWarnings, 10)}
+								</Field>
+							)}
+							{showInactive && (
+								<Field label={`Expired/Pardoned (${inactiveWarnings.length})`}>
+									{listOf(inactiveWarnings, 5)}
+								</Field>
+							)}
+						</Card>
+					</Message>,
+				),
+			);
 		} catch (e) {
 			logger.error("Failed to fetch warnings:", e);
 			if (interaction.replied || interaction.deferred) {

@@ -1,10 +1,13 @@
-import { EmbedBuilder, MessageFlags, PermissionFlagsBits } from "discord.js";
+import { MessageFlags, PermissionFlagsBits } from "discord.js";
+import { Message, renderDiscordMessage } from "disjsx";
 import { defineCommand, option, subcommand } from "../../commands/index.js";
 import { logger } from "../../logging.js";
 import {
 	REPUTATION_EVENT_LABELS,
 	ReputationEventType,
 } from "../../store/models/ReputationEvent.js";
+import { Card, Details, Field, memberAuthor } from "../../ui/index.js";
+import { excerpt } from "../../util/strings.js";
 import { fakeMention } from "../../util/users.js";
 import { dmModerationTarget, dmWarning, logModerationAction } from "./logs.js";
 import {
@@ -68,50 +71,38 @@ const ViewSubcommand = subcommand({
 				reputation.tier,
 			);
 
-			const embed = new EmbedBuilder()
-				.setTitle(`Reputation: ${targetUser.username}`)
-				.setColor(reputation.tierColor)
-				.setThumbnail(targetUser.displayAvatarURL())
-				.addFields(
-					{
-						name: "Score",
-						value: formatScore(reputation.score),
-						inline: true,
-					},
-					{
-						name: "Tier",
-						value: `${tierEmoji} ${reputation.tierLabel}`,
-						inline: true,
-					},
-					{
-						name: "Progress",
-						value: progressToNextTier,
-						inline: true,
-					},
-				)
-				.setTimestamp();
+			const recentEvents = history
+				.map((event) => {
+					const sign = event.scoreChange >= 0 ? "+" : "";
+					const label = REPUTATION_EVENT_LABELS[event.eventType];
+					const time = `<t:${Math.floor(event.createdAt.getTime() / 1000)}:R>`;
+					return `${sign}${event.scoreChange} - ${label} (${time})`;
+				})
+				.join("\n");
 
-			if (history.length > 0) {
-				const recentEvents = history
-					.map((event) => {
-						const sign = event.scoreChange >= 0 ? "+" : "";
-						const label = REPUTATION_EVENT_LABELS[event.eventType];
-						const time = `<t:${Math.floor(event.createdAt.getTime() / 1000)}:R>`;
-						return `${sign}${event.scoreChange} - ${label} (${time})`;
-					})
-					.join("\n");
-
-				embed.addFields({
-					name: "Recent Activity",
-					value: recentEvents,
-					inline: false,
-				});
-			}
-
-			return await interaction.reply({
-				flags: MessageFlags.Ephemeral,
-				embeds: [embed],
-			});
+			return await interaction.reply(
+				renderDiscordMessage(
+					<Message isV2 flags={MessageFlags.Ephemeral}>
+						<Card
+							accent={reputation.tierColor}
+							title={`Reputation: ${targetUser.username}`}
+							author={memberAuthor(targetUser)}
+							description={`${tierEmoji} **${reputation.tierLabel}**`}
+							timestamp={Date.now()}
+						>
+							<Details
+								items={[
+									["Score", formatScore(reputation.score)],
+									["Progress", progressToNextTier],
+								]}
+							/>
+							{recentEvents && (
+								<Field label="Recent Activity">{recentEvents}</Field>
+							)}
+						</Card>
+					</Message>,
+				),
+			);
 		} catch (error) {
 			logger.error("Failed to fetch reputation:", error);
 			return await interaction.reply({
@@ -276,16 +267,6 @@ const HistorySubcommand = subcommand({
 				});
 			}
 
-			const embed = new EmbedBuilder()
-				.setTitle(`Reputation History: ${targetUser.username}`)
-				.setColor(reputation.tierColor)
-				.setThumbnail(targetUser.displayAvatarURL())
-				.setDescription(
-					`**Current Score:** ${formatScore(reputation.score)} (${reputation.tierLabel})`,
-				)
-				.setTimestamp();
-
-			// Group events by date
 			const eventLines = history.map((event) => {
 				const sign = event.scoreChange >= 0 ? "+" : "";
 				const label = REPUTATION_EVENT_LABELS[event.eventType];
@@ -294,18 +275,23 @@ const HistorySubcommand = subcommand({
 				return `\`${sign}${event.scoreChange.toString().padStart(3)}\` ${label}${reason}\n  ${time}`;
 			});
 
-			// Split into chunks if too long
-			const chunkSize = 10;
-			for (let i = 0; i < eventLines.length; i += chunkSize) {
-				const chunk = eventLines.slice(i, i + chunkSize);
-				embed.addFields({
-					name: i === 0 ? "Events" : "\u200b",
-					value: chunk.join("\n"),
-					inline: false,
-				});
-			}
-
-			return await interaction.editReply({ embeds: [embed] });
+			return await interaction.editReply(
+				renderDiscordMessage(
+					<Message isV2>
+						<Card
+							accent={reputation.tierColor}
+							title={`Reputation History: ${targetUser.username}`}
+							author={memberAuthor(targetUser)}
+							description={`**Current Score:** ${formatScore(reputation.score)} (${reputation.tierLabel})`}
+							timestamp={Date.now()}
+						>
+							<Field label="Events">
+								{excerpt(eventLines.join("\n"), { maxLength: 3000 })}
+							</Field>
+						</Card>
+					</Message>,
+				),
+			);
 		} catch (error) {
 			logger.error("Failed to fetch reputation history:", error);
 			return await interaction.editReply({
