@@ -32,13 +32,28 @@ export async function runObserved<T>(
 				channel: interaction.channelId ?? "unknown",
 			});
 		}
+		const attributes = { op, name };
+		const start = performance.now();
 		try {
-			return await Sentry.startSpan({ op, name }, fn);
+			const result = await Sentry.startSpan({ op, name }, fn);
+			Sentry.metrics.count("handler.run", 1, {
+				attributes: { ...attributes, outcome: "ok" },
+			});
+			return result;
 		} catch (error) {
+			Sentry.metrics.count("handler.run", 1, {
+				attributes: { ...attributes, outcome: "error" },
+			});
 			const eventId = Sentry.captureException(error);
 			logger.error(`Error in ${op} ${name} (ref ${eventId})`, error);
 			if (interaction) await replyWithError(interaction, eventId);
 			return undefined;
+		} finally {
+			Sentry.metrics.distribution(
+				"handler.duration",
+				performance.now() - start,
+				{ unit: "millisecond", attributes },
+			);
 		}
 	});
 }
