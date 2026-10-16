@@ -3,7 +3,7 @@ import { logger } from "../logging.js";
 import { getOrCreateUserById } from "../store/models/DDUser.js";
 import { FAQ } from "../store/models/FAQ.js";
 import { isSpecialUser } from "../util/users.js";
-import { createFaqEmbed } from "./faq/faq.util.js";
+import { renderFaq } from "./faq/faq.render.js";
 import type Module from "./module.js";
 import { tierOf } from "./xp/xpRoles.util.js";
 
@@ -47,7 +47,7 @@ export const AskToAskModule: Module = {
 						logger.error("Could not find FAQ for ask");
 						return;
 					}
-					await message.reply({ embeds: [createFaqEmbed(faq, undefined)] });
+					await message.reply(renderFaq(faq));
 				}
 			},
 		},

@@ -9,7 +9,7 @@ import { FAQ } from "../../store/models/FAQ.js";
 import { getEmoji, toAPIMessageComponentEmoji } from "../../util/emojis.js";
 
 import { truncateTo } from "../../util/strings.js";
-import { createFaqEmbed } from "../faq/faq.util.js";
+import { renderFaq } from "../faq/faq.render.js";
 import { getResourceEmbed } from "../learning/learning.command.js";
 import {
 	getAllCachedResources,
@@ -66,15 +66,13 @@ export const FaqButton = defineComponent({
 			});
 			return;
 		}
-		const embed = createFaqEmbed(
-			faq,
-			interaction.user,
-			(interaction.member as GuildMember) ?? undefined,
+		await interaction.followUp(
+			renderFaq(faq, {
+				requester: interaction.user,
+				member: (interaction.member as GuildMember) ?? undefined,
+				ephemeral: true,
+			}),
 		);
-		await interaction.followUp({
-			flags: MessageFlags.Ephemeral,
-			embeds: [embed],
-		});
 	},
 });
 

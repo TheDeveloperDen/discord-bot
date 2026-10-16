@@ -7,7 +7,7 @@ import { renderDiscordModal } from "disjsx";
 import { defineCommand, option, subcommand } from "../../commands/index.js";
 import { FAQ } from "../../store/models/FAQ.js";
 import { FaqEditForm } from "./faq.modal.js";
-import { createFaqEmbed } from "./faq.util.js";
+import { renderFaq } from "./faq.render.js";
 
 const faqName = (maxLength?: number) =>
 	option.string({
@@ -40,7 +40,7 @@ const GetSubcommand = subcommand({
 				content: "No FAQ found with this name",
 			});
 		}
-		return await interaction.reply({ embeds: [createFaqEmbed(faq)] });
+		return await interaction.reply(renderFaq(faq));
 	},
 });
 

@@ -1,7 +1,7 @@
 import { FAQ } from "../../store/models/FAQ.js";
 import { awaitTimeout } from "../../util/timeouts.js";
 import type { EventListener } from "../module.js";
-import { createFaqEmbed } from "./faq.util.js";
+import { renderFaq } from "./faq.render.js";
 
 export const FaqCommandListener: EventListener = {
 	async messageCreate(_, message) {
@@ -18,11 +18,11 @@ export const FaqCommandListener: EventListener = {
 			return;
 		}
 
-		const embed = createFaqEmbed(
-			faq,
-			message.author,
-			message.member ?? undefined,
+		await message.reply(
+			renderFaq(faq, {
+				requester: message.author,
+				member: message.member ?? undefined,
+			}),
 		);
-		await message.reply({ embeds: [embed] });
 	},
 };
