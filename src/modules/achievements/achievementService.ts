@@ -53,9 +53,7 @@ export async function checkAndAwardAchievements(
 			},
 		},
 		async () => {
-			const relevantAchievements = getActiveAchievementsByTrigger(
-				trigger,
-			).filter((achievement) => achievement.id !== "all_rounder");
+			const relevantAchievements = getActiveAchievementsByTrigger(trigger);
 			const newlyAwarded: AwardedAchievement[] = [];
 
 			// Get user's existing achievements
