@@ -1,7 +1,7 @@
 const CUSTOM_EMOJI_ALIAS_PATTERN = /^a?:[A-Za-z0-9_]+:$/;
 
 /**
- * Joins whole lines until `maxLength` is reached, ending with "…and N more" if some had to be left out,
+ * Joins whole lines until `maxLength` is reached, ending with "...and N more" if some had to be left out,
  * so a long list stays inside a message's total text limit without cutting an entry in half.
  * A single line longer than `maxLength` is truncated.
  */
@@ -14,8 +14,8 @@ export function fitLines(
 	let length = 0;
 	for (const [i, line] of lines.entries()) {
 		const left = lines.length - i - 1;
-		// leaves room for the "…and N more" line, unless this is the last one
-		const reserve = left > 0 ? `${separator}…and ${left} more`.length : 0;
+		// leaves room for the "...and N more" line, unless this is the last one
+		const reserve = left > 0 ? `${separator}...and ${left} more`.length : 0;
 		const next =
 			length + (kept.length > 0 ? separator.length : 0) + line.length;
 		if (next + reserve > maxLength) {
