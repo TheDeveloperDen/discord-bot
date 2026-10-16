@@ -4,8 +4,9 @@ import {
 	ChannelType,
 	type Client,
 } from "discord.js";
+import { File, Message, renderDiscordMessage } from "disjsx";
 import { config } from "../../Config.js";
-import { createStandardEmbed } from "../../util/embeds.js";
+import { Card, Field, withoutPings } from "../../ui/index.js";
 
 export const SUPPORT_THREAD_REMOVAL_CUSTOM_ID_PREFIX = "remove-support-thread";
 
@@ -138,23 +139,25 @@ export function createSupportThreadRemovalDm(
 	archive: AttachmentBuilder,
 	reason: Exclude<SupportThreadRemovalReason, "cancel">,
 ) {
-	const embed = createStandardEmbed()
-		.setTitle("Your support ticket was marked for removal")
-		.setDescription(getSupportThreadRemovalExplanation(reason))
-		.addFields(
-			{ name: "Ticket", value: thread.name },
-			{
-				name: "Conversation copy",
-				value:
-					"A complete HTML transcript of the ticket is attached to this message.",
-			},
-		);
-
-	return {
-		content:
-			"Hi! A moderator reviewed your support ticket and marked it for removal. This is not a punishment; the reason and a recoverable copy of the conversation are included below.",
-		allowedMentions: { parse: [] as [] },
-		embeds: [embed],
+	return withoutPings({
+		...renderDiscordMessage(
+			<Message isV2>
+				<Card
+					title="Your support ticket was marked for removal"
+					description={[
+						"Hi! A moderator reviewed your support ticket and marked it for removal. This is not a punishment; the reason and a recoverable copy of the conversation are included below.",
+						getSupportThreadRemovalExplanation(reason),
+					]}
+				>
+					<Field label="Ticket">{thread.name}</Field>
+					<Field label="Conversation copy">
+						A complete HTML transcript of the ticket is attached to this
+						message.
+					</Field>
+					<File url={`attachment://${archive.name}`} />
+				</Card>
+			</Message>,
+		),
 		files: [archive],
-	};
+	});
 }

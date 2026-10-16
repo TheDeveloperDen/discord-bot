@@ -5,6 +5,7 @@ import {
 	ChannelType,
 	type Client,
 	Collection,
+	ComponentType,
 	type GuildMember,
 	MessageFlags,
 	PermissionFlagsBits,
@@ -15,6 +16,7 @@ import {
 	ModMailTicketCategory,
 	ModMailTicketStatus,
 } from "../../store/models/ModMailTicket.js";
+import { flatten, type RenderedMessage, texts } from "../../tests/render.js";
 import {
 	closeModMailTicketByModMail,
 	sendArchiveToServer,
@@ -430,15 +432,22 @@ describe("SupportThreadRemovalListener", () => {
 			thread.name,
 		);
 		expect(selected.fetchUser).toHaveBeenCalledWith(creatorId);
-		const dmPayload = selected.creatorSend.mock.calls[0]?.[0] as {
-			content: string;
+		const dmPayload = selected.creatorSend.mock
+			.calls[0]?.[0] as RenderedMessage & {
 			files: AttachmentBuilder[];
-			embeds: Array<{ data: { description: string } }>;
 		};
-		expect(dmPayload.content).toContain("recoverable copy of the conversation");
+		// Components V2 messages can't have content, so the text is in the card
+		expect(dmPayload).not.toHaveProperty("content");
+		expect(dmPayload).not.toHaveProperty("embeds");
+		const dmText = texts(dmPayload).join("\n");
+		expect(dmText).toContain("recoverable copy of the conversation");
+		expect(dmText).toContain("promotional tickets");
 		expect(dmPayload.files).toHaveLength(1);
-		expect(dmPayload.embeds[0]?.data.description).toContain(
-			"promotional tickets",
+		const archiveFile = flatten(dmPayload).find(
+			(c) => c.type === ComponentType.File,
+		) as unknown as { file: { url: string } } | undefined;
+		expect(archiveFile?.file.url).toBe(
+			`attachment://${dmPayload.files[0]?.name}`,
 		);
 		expect(selected.editReply).toHaveBeenCalledWith(
 			expect.objectContaining({ content: expect.stringContaining("removed") }),
