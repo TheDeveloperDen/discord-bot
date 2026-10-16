@@ -13,13 +13,17 @@ import type {
 } from "discord.js";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
-import { createStandardEmbed } from "../../util/embeds.js";
-import { mentionIfPingable } from "../../util/users.js";
 import type {
 	AchievementDefinition,
 	NotificationMode,
 } from "./achievementDefinitions.js";
 import { getAchievementProgress } from "./achievementService.js";
+import {
+	renderAchievementsUnlocked,
+	renderAchievementUnlocked,
+} from "./achievements.cards.js";
+
+type Notification = ReturnType<typeof renderAchievementUnlocked>;
 
 interface AchievementConfig {
 	notificationMode: NotificationMode;
@@ -53,15 +57,7 @@ export async function notifyAchievementUnlocked(
 	const achievementConfig = getAchievementConfig();
 	const progress = await getAchievementProgress(BigInt(member.id));
 
-	const embed = createStandardEmbed(member)
-		.setTitle("Achievement Unlocked!")
-		.setDescription(
-			`${mentionIfPingable(member)} earned **${achievement.name}**!\n> ${achievement.description}`,
-		)
-		.setThumbnail(member.user.displayAvatarURL({ size: 128 }))
-		.setFooter({
-			text: `${achievement.category.charAt(0).toUpperCase() + achievement.category.slice(1)} Achievements | ${progress.unlocked}/${progress.total} total`,
-		});
+	const notification = renderAchievementUnlocked(member, achievement, progress);
 
 	// Use per-achievement override if set, otherwise fall back to global config
 	const mode =
@@ -71,7 +67,7 @@ export async function notifyAchievementUnlocked(
 		await sendByMode(
 			client,
 			member,
-			embed,
+			notification,
 			mode,
 			achievementConfig,
 			triggerChannel,
@@ -85,28 +81,32 @@ export async function notifyAchievementUnlocked(
 }
 
 /**
- * Send an embed using the specified notification mode.
+ * Send a notification using the specified notification mode.
  * Centralizes the mode-based routing logic.
  */
 async function sendByMode(
 	client: Client,
 	member: GuildMember,
-	embed: ReturnType<typeof createStandardEmbed>,
+	notification: Notification,
 	mode: NotificationMode,
 	achievementConfig: AchievementConfig,
 	triggerChannel?: TextBasedChannel,
 ): Promise<void> {
 	switch (mode) {
 		case "dm":
-			await sendDM(client, member, embed, achievementConfig);
+			await sendDM(client, member, notification, achievementConfig);
 			break;
 		case "channel":
-			await sendToChannel(client, embed, achievementConfig.notificationChannel);
+			await sendToChannel(
+				client,
+				notification,
+				achievementConfig.notificationChannel,
+			);
 			break;
 		case "trigger":
 			await sendToTriggerLocation(
 				client,
-				embed,
+				notification,
 				triggerChannel,
 				achievementConfig,
 			);
@@ -120,18 +120,18 @@ async function sendByMode(
 async function sendDM(
 	client: Client,
 	member: GuildMember,
-	embed: ReturnType<typeof createStandardEmbed>,
+	notification: Notification,
 	achievementConfig: AchievementConfig,
 ): Promise<void> {
 	try {
-		await member.send({ embeds: [embed] });
+		await member.send(notification);
 		logger.debug(`Sent achievement DM to ${member.id}`);
 	} catch {
 		// DM failed (probably blocked), fall back to channel
 		logger.debug(`DM failed for ${member.id}, falling back to channel`);
 		const fallbackChannelId =
 			achievementConfig.fallbackChannel ?? config.channels.botCommands;
-		await sendToChannel(client, embed, fallbackChannelId);
+		await sendToChannel(client, notification, fallbackChannelId);
 	}
 }
 
@@ -140,7 +140,7 @@ async function sendDM(
  */
 async function sendToChannel(
 	client: Client,
-	embed: ReturnType<typeof createStandardEmbed>,
+	notification: Notification,
 	channelId?: string,
 ): Promise<void> {
 	if (!channelId) {
@@ -154,7 +154,7 @@ async function sendToChannel(
 		return;
 	}
 
-	await (channel as TextChannel).send({ embeds: [embed] });
+	await (channel as TextChannel).send(notification);
 	logger.debug(`Sent achievement notification to channel ${channelId}`);
 }
 
@@ -163,25 +163,29 @@ async function sendToChannel(
  */
 async function sendToTriggerLocation(
 	client: Client,
-	embed: ReturnType<typeof createStandardEmbed>,
+	notification: Notification,
 	triggerChannel: TextBasedChannel | undefined,
 	achievementConfig: AchievementConfig,
 ): Promise<void> {
 	// Try trigger channel first
 	if (triggerChannel && "send" in triggerChannel) {
-		await triggerChannel.send({ embeds: [embed] });
+		await triggerChannel.send(notification);
 		logger.debug(`Sent achievement notification to trigger channel`);
 		return;
 	}
 
 	// Fall back to configured fallback channel
 	if (achievementConfig.fallbackChannel) {
-		await sendToChannel(client, embed, achievementConfig.fallbackChannel);
+		await sendToChannel(
+			client,
+			notification,
+			achievementConfig.fallbackChannel,
+		);
 		return;
 	}
 
 	// Final fallback to botCommands
-	await sendToChannel(client, embed, config.channels.botCommands);
+	await sendToChannel(client, notification, config.channels.botCommands);
 }
 
 /**
@@ -273,25 +277,17 @@ async function sendAchievementGroup(
 ): Promise<void> {
 	const progress = await getAchievementProgress(BigInt(member.id));
 
-	const achievementList = achievements
-		.map((a) => `${a.emoji} **${a.name}** - ${a.description}`)
-		.join("\n");
-
-	const embed = createStandardEmbed(member)
-		.setTitle(`${achievements.length} Achievements Unlocked!`)
-		.setDescription(
-			`${mentionIfPingable(member)} earned:\n\n${achievementList}`,
-		)
-		.setThumbnail(member.user.displayAvatarURL({ size: 128 }))
-		.setFooter({
-			text: `${progress.unlocked}/${progress.total} achievements unlocked`,
-		});
+	const notification = renderAchievementsUnlocked(
+		member,
+		achievements,
+		progress,
+	);
 
 	try {
 		await sendByMode(
 			client,
 			member,
-			embed,
+			notification,
 			mode,
 			achievementConfig,
 			triggerChannel,
