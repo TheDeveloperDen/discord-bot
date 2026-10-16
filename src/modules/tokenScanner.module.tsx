@@ -1,4 +1,5 @@
-import { createStandardEmbed } from "../util/embeds.js";
+import { Message, renderDiscordMessage } from "disjsx";
+import { Card, Field, memberAuthor, withoutPings } from "../ui/index.js";
 import type Module from "./module.js";
 
 const tokenPattern = /[MN][A-Za-z\d]{23}\.[\w-]{6}\.[\w-]{27}/g;
@@ -38,29 +39,29 @@ export const TokenScannerModule: Module = {
 					tokenTypes.push(`GitHub`);
 				}
 
-				await message.member?.send({
-					embeds: [
-						{
-							...createStandardEmbed(message.member),
-							title: ":exclamation: TOKENS DETECTED :exclamation:",
-							description: `We found ${tokenTypes.join(" and ")} tokens in a message you sent!\n\n${allMatches
-								.map((x) => `\`${x}\``)
-								.join("\n")}\n
+				await message.member?.send(
+					withoutPings(
+						renderDiscordMessage(
+							<Message isV2>
+								<Card
+									accent={memberAuthor(message.member).color}
+									title=":exclamation: TOKENS DETECTED :exclamation:"
+									description={`We found ${tokenTypes.join(" and ")} tokens in a message you sent!\n\n${allMatches
+										.map((x) => `\`${x}\``)
+										.join("\n")}\n
 We've deleted the message, but we can't reset the token for you - make sure to do this yourself.
-Be careful when handling tokens in the future - **they're secrets, keep them that way!**`,
-							fields: [
-								{
-									name: "Invalidation Guides",
-									value: tokenTypes
-										.map((x) => {
-											return invalidationGuides[x] || "";
-										})
-										.join(""),
-								},
-							],
-						},
-					],
-				});
+Be careful when handling tokens in the future - **they're secrets, keep them that way!**`}
+								>
+									<Field label="Invalidation Guides">
+										{tokenTypes
+											.map((x) => invalidationGuides[x] || "")
+											.join("")}
+									</Field>
+								</Card>
+							</Message>,
+						),
+					),
+				);
 			},
 		},
 	],
