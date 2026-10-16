@@ -4,10 +4,11 @@ import type {
 	PartialGuildMember,
 	TextChannel,
 } from "discord.js";
+import { Message, renderDiscordMessage } from "disjsx";
 import { config } from "../Config.js";
 import { logger } from "../logging.js";
+import { Card, withoutPings } from "../ui/index.js";
 import { branding } from "../util/branding.js";
-import { createStandardEmbed } from "../util/embeds.js";
 import { awaitTimeout } from "../util/timeouts.js";
 import { fakeMention } from "../util/users.js";
 import type Module from "./module.js";
@@ -24,25 +25,29 @@ const handler =
 		}
 		await awaitTimeout(1000);
 		await client.users.fetch(member.id);
-		await channel.send({
-			embeds: [
-				createStandardEmbed(member)
-					.setTitle(`members${isAdding ? "++" : "--"};`)
-					.setDescription(
-						isAdding
-							? branding.welcomeMessage(member)
-							: branding.goodbyeMessage(member),
-					)
-					.setColor(isAdding ? "#77dd77" : "#aa4344")
-					.setThumbnail(
-						member.user.avatarURL() ??
-							"https://cdn.discordapp.com/embed/avatars/0.png",
-					)
-					.setAuthor({
-						name: fakeMention(member.user),
-					}),
-			],
-		});
+		await channel.send(
+			withoutPings(
+				renderDiscordMessage(
+					<Message isV2>
+						<Card
+							accent={isAdding ? "#77dd77" : "#aa4344"}
+							title={`members${isAdding ? "++" : "--"};`}
+							author={{
+								name: fakeMention(member.user),
+								iconUrl:
+									member.user.avatarURL() ??
+									"https://cdn.discordapp.com/embed/avatars/0.png",
+							}}
+							description={
+								isAdding
+									? branding.welcomeMessage(member)
+									: branding.goodbyeMessage(member)
+							}
+						/>
+					</Message>,
+				),
+			),
+		);
 	};
 
 export const JoinLeaveMessageModule: Module = {
