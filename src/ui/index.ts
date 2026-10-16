@@ -10,3 +10,4 @@ export {
 	type Paginator,
 } from "./Paginator.js";
 export { Quote, quoteText } from "./Quote.js";
+export { withoutPings } from "./withoutPings.js";

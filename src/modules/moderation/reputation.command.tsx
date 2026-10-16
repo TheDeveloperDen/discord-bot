@@ -6,7 +6,13 @@ import {
 	REPUTATION_EVENT_LABELS,
 	ReputationEventType,
 } from "../../store/models/ReputationEvent.js";
-import { Card, Details, Field, memberAuthor } from "../../ui/index.js";
+import {
+	Card,
+	Details,
+	Field,
+	memberAuthor,
+	withoutPings,
+} from "../../ui/index.js";
 import { excerpt } from "../../util/strings.js";
 import { fakeMention } from "../../util/users.js";
 import { dmModerationTarget, dmWarning, logModerationAction } from "./logs.js";
@@ -276,20 +282,22 @@ const HistorySubcommand = subcommand({
 			});
 
 			return await interaction.editReply(
-				renderDiscordMessage(
-					<Message isV2>
-						<Card
-							accent={reputation.tierColor}
-							title={`Reputation History: ${targetUser.username}`}
-							author={memberAuthor(targetUser)}
-							description={`**Current Score:** ${formatScore(reputation.score)} (${reputation.tierLabel})`}
-							timestamp={Date.now()}
-						>
-							<Field label="Events">
-								{excerpt(eventLines.join("\n"), { maxLength: 3000 })}
-							</Field>
-						</Card>
-					</Message>,
+				withoutPings(
+					renderDiscordMessage(
+						<Message isV2>
+							<Card
+								accent={reputation.tierColor}
+								title={`Reputation History: ${targetUser.username}`}
+								author={memberAuthor(targetUser)}
+								description={`**Current Score:** ${formatScore(reputation.score)} (${reputation.tierLabel})`}
+								timestamp={Date.now()}
+							>
+								<Field label="Events">
+									{excerpt(eventLines.join("\n"), { maxLength: 3000 })}
+								</Field>
+							</Card>
+						</Message>,
+					),
 				),
 			);
 		} catch (error) {

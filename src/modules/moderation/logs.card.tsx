@@ -8,6 +8,7 @@ import {
 	Details,
 	detailText,
 	memberAuthor,
+	withoutPings,
 } from "../../ui/index.js";
 import { excerpt } from "../../util/strings.js";
 import { prettyPrintDuration } from "../../util/timespan.js";
@@ -130,16 +131,18 @@ export function renderDeletedMessagesLog({
 	lines: DetailItem[];
 	footer?: string;
 }) {
-	return renderDiscordMessage(
-		<Message isV2>
-			<Card
-				accent="Grey"
-				title={title}
-				description={detailText(lines)}
-				footer={footer}
-				timestamp={Date.now()}
-			/>
-		</Message>,
+	return withoutPings(
+		renderDiscordMessage(
+			<Message isV2>
+				<Card
+					accent="Grey"
+					title={title}
+					description={detailText(lines)}
+					footer={footer}
+					timestamp={Date.now()}
+				/>
+			</Message>,
+		),
 	);
 }
 
@@ -172,30 +175,32 @@ export function renderModerationLog(
 	if ("dmSent" in log) lines.push(["DM sent", log.dmSent ? "✅" : "❌"]);
 
 	const undo = undoFor(log, targetId);
-	return renderDiscordMessage(
-		<Message isV2>
-			<Card
-				accent={
-					log.kind === "Warning"
-						? (SEVERITY_ACCENTS[log.severity as WarningSeverity] ??
-							accents.Warning)
-						: accents[log.kind]
-				}
-				title={titles[log.kind]}
-				author={author}
-				description={
-					reason && excerpt(reason, { maxLength: MAX_REASON_LENGTH })
-				}
-				footer={`User ID: ${targetId}`}
-				timestamp={Date.now()}
-			>
-				<Details items={lines} />
-			</Card>
-			{undo && (
-				<ActionRow>
-					<UndoButtonView action={undo.action} targetId={undo.targetId} />
-				</ActionRow>
-			)}
-		</Message>,
+	return withoutPings(
+		renderDiscordMessage(
+			<Message isV2>
+				<Card
+					accent={
+						log.kind === "Warning"
+							? (SEVERITY_ACCENTS[log.severity as WarningSeverity] ??
+								accents.Warning)
+							: accents[log.kind]
+					}
+					title={titles[log.kind]}
+					author={author}
+					description={
+						reason && excerpt(reason, { maxLength: MAX_REASON_LENGTH })
+					}
+					footer={`User ID: ${targetId}`}
+					timestamp={Date.now()}
+				>
+					<Details items={lines} />
+				</Card>
+				{undo && (
+					<ActionRow>
+						<UndoButtonView action={undo.action} targetId={undo.targetId} />
+					</ActionRow>
+				)}
+			</Message>,
+		),
 	);
 }

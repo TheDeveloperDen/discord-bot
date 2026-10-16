@@ -1,7 +1,13 @@
 import { describe, expect, test } from "bun:test";
 import { ButtonStyle, ComponentType, type GuildMember } from "discord.js";
 import { Message, renderDiscordMessage } from "disjsx";
-import { ConfirmButtons, Field, memberAuthor, Quote } from "./index.js";
+import {
+	ConfirmButtons,
+	Field,
+	memberAuthor,
+	Quote,
+	withoutPings,
+} from "./index.js";
 
 const components = (children: React.ReactElement) =>
 	renderDiscordMessage(<Message isV2>{children}</Message>)
@@ -64,6 +70,16 @@ describe("memberAuthor", () => {
 			name: "Alice (server nick)",
 			iconUrl: "https://cdn/server-avatar.png",
 			userId: "1",
+		});
+	});
+});
+
+describe("withoutPings", () => {
+	test("keeps the payload and parses no mentions", () => {
+		const payload = withoutPings({ content: "hi <@1>" });
+		expect(payload).toEqual({
+			content: "hi <@1>",
+			allowedMentions: { parse: [] },
 		});
 	});
 });
