@@ -383,6 +383,7 @@ const SPECIAL_ACHIEVEMENTS: AchievementDefinition[] = [
 		description: "Earn achievements in 4 different categories",
 		emoji: "🌟",
 		category: "special",
+
 		trigger: { type: "achievement", event: "achievement_earned" },
 		checkCondition: (ctx) => (ctx.earnedCategoryCount ?? 0) >= 4,
 		notificationMode: "trigger",
@@ -461,7 +462,7 @@ export const CATEGORY_INFO: Record<
 	daily: { name: "Daily Achievements", emoji: "🌅" },
 	level: { name: "Level Achievements", emoji: "⬆️" },
 	starboard: { name: "Starboard Achievements", emoji: "⭐" },
-	reaction: { name: "Reaction Achievements", emoji: "💖" },
+	reaction: { name: "Reaction Achievements", emoji: "👏" },
 	introduction: { name: "Introduction Achievements", emoji: "👋" },
 	suggestion: { name: "Suggestion Achievements", emoji: "💡" },
 	special: { name: "Special Achievements", emoji: "🛠️" },
