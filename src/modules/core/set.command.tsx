@@ -1,17 +1,20 @@
 import {
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle,
 	Colors,
 	type ComponentType,
 	MessageFlags,
 	PermissionFlagsBits,
 } from "discord.js";
+import { Message, renderDiscordMessage } from "disjsx";
 import { defineCommand, option } from "../../commands/index.js";
 import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
-import { createStandardEmbed } from "../../util/embeds.js";
-
-import { mentionIfPingable } from "../../util/users.js";
+import {
+	Card,
+	ConfirmButtons,
+	Details,
+	memberAuthor,
+	withoutPings,
+} from "../../ui/index.js";
+import { actualMention } from "../../util/users.js";
 import { evaluateLevelAchievements } from "../xp/xpForMessage.util.js";
 import { levelForXp } from "../xp/xpRoles.util.js";
 
@@ -45,38 +48,26 @@ export const SetCommand = defineCommand({
 		const setter = setters.get(field);
 		if (getter == null || setter == null) return;
 
-		const embed = createStandardEmbed(target)
-			.setTitle("Confirm")
-			.setDescription(
-				`Are you sure you want to set ${mentionIfPingable(
-					target,
-				)}'s ${field} to ${value}?`,
-			)
-			.setFields([
-				{
-					name: "Current Value",
-					value: getter(user).toString(),
-					inline: true,
-				},
-				{
-					name: "New Value",
-					value: value.toString(),
-					inline: true,
-				},
-			]);
-		const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
-			new ButtonBuilder()
-				.setCustomId("confirm")
-				.setStyle(ButtonStyle.Success)
-				.setLabel("Confirm"),
-			new ButtonBuilder()
-				.setCustomId("cancel")
-				.setStyle(ButtonStyle.Danger)
-				.setLabel("Cancel"),
-		);
 		const reply = await interaction.reply({
-			embeds: [embed],
-			components: [buttons],
+			...withoutPings(
+				renderDiscordMessage(
+					<Message isV2>
+						<Card
+							accent={memberAuthor(target).color}
+							title="Confirm"
+							description={`Are you sure you want to set ${actualMention(target)}'s ${field} to ${value}?`}
+						>
+							<Details
+								items={[
+									["Current Value", getter(user).toString()],
+									["New Value", value.toString()],
+								]}
+							/>
+							<ConfirmButtons confirmId="confirm" cancelId="cancel" />
+						</Card>
+					</Message>,
+				),
+			),
 			withResponse: false,
 		});
 
@@ -114,17 +105,19 @@ export const SetCommand = defineCommand({
 			if (field === "xp") {
 				await evaluateLevelAchievements(target, user, channel);
 			}
-			await reply.edit({
-				components: [],
-				embeds: [
-					createStandardEmbed(target)
-						.setTitle("Success")
-						.setColor(Colors.Green)
-						.setDescription(
-							`Set ${mentionIfPingable(target)}'s ${field} to ${value}`,
-						),
-				],
-			});
+			await reply.edit(
+				withoutPings(
+					renderDiscordMessage(
+						<Message isV2>
+							<Card
+								accent={Colors.Green}
+								title="Success"
+								description={`Set ${actualMention(target)}'s ${field} to ${value}`}
+							/>
+						</Message>,
+					),
+				),
+			);
 			await event.followUp({
 				flags: MessageFlags.Ephemeral,
 				content: "Success!",
