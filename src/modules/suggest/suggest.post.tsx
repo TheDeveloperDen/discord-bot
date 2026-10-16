@@ -1,6 +1,8 @@
 import {
 	ButtonStyle,
 	type Client,
+	type GuildMember,
+	MessageFlags,
 	resolvePartialEmoji,
 	SnowflakeUtil,
 } from "discord.js";
@@ -8,8 +10,16 @@ import { ActionRow, Button, Message, renderDiscordMessage } from "disjsx";
 import { config } from "../../Config.js";
 import type { Suggestion } from "../../store/models/Suggestion.js";
 import { SuggestionStatus } from "../../store/models/Suggestion.js";
-import { Card, type CardAuthor, Field, memberAuthor } from "../../ui/index.js";
+import type { SuggestionVote } from "../../store/models/SuggestionVote.js";
+import {
+	Card,
+	type CardAuthor,
+	Field,
+	memberAuthor,
+	withoutPings,
+} from "../../ui/index.js";
 import { excerpt } from "../../util/strings.js";
+import { actualMentionById } from "../../util/users.js";
 import {
 	SUGGESTION_ID_FIELD_NAME,
 	SUGGESTION_NO_ID,
@@ -112,6 +122,39 @@ export async function renderSuggestion(
 				</Button>
 			</ActionRow>
 		</Message>,
+	);
+}
+
+const MAX_VOTERS_LENGTH = 1500;
+
+/** Who voted which way, shown only to the member who asked */
+export function renderVotes(
+	member: GuildMember,
+	upvotes: SuggestionVote[],
+	downvotes: SuggestionVote[],
+) {
+	const voters = (votes: SuggestionVote[]) =>
+		excerpt(
+			votes
+				.map((vote) =>
+					vote.memberId ? actualMentionById(vote.memberId) : "Unknown Voter",
+				)
+				.join("\n") || "Nobody yet",
+			{ maxLength: MAX_VOTERS_LENGTH },
+		);
+	return withoutPings(
+		renderDiscordMessage(
+			<Message isV2 flags={MessageFlags.Ephemeral}>
+				<Card accent={memberAuthor(member).color} title="Suggestion Votes">
+					<Field label={`${config.suggest.yesEmojiId} Upvotes`}>
+						{voters(upvotes)}
+					</Field>
+					<Field label={`${config.suggest.noEmojiId} Downvotes`}>
+						{voters(downvotes)}
+					</Field>
+				</Card>
+			</Message>,
+		),
 	);
 }
 

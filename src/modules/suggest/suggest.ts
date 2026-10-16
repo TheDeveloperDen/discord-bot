@@ -5,8 +5,6 @@ import {
 	type ButtonInteraction,
 	ButtonStyle,
 	type Client,
-	type EmbedBuilder,
-	type GuildMember,
 	type Message,
 	MessageFlags,
 	ModalBuilder,
@@ -21,9 +19,7 @@ import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
 import { Suggestion, SuggestionStatus } from "../../store/models/Suggestion.js";
 import { SuggestionVote } from "../../store/models/SuggestionVote.js";
-import { createStandardEmbed } from "../../util/embeds.js";
 import { awaitTimeout } from "../../util/timeouts.js";
-import { actualMentionById } from "../../util/users.js";
 
 import {
 	SUGGESTION_MANAGE_APPROVE_ID,
@@ -417,29 +413,6 @@ export const createVote: (
 		memberId: memberId,
 		vote: vote,
 	});
-};
-
-export const createVotesEmbed: (
-	member: GuildMember,
-	upvotes: SuggestionVote[],
-	downvotes: SuggestionVote[],
-) => EmbedBuilder = (member, upvotes, downvotes) => {
-	const mentionVoter = (vote: SuggestionVote) =>
-		vote.memberId ? actualMentionById(vote.memberId) : "Unknown Voter";
-	return createStandardEmbed(member)
-		.setTitle("Suggestion Votes")
-		.addFields([
-			{
-				name: `${config.suggest.yesEmojiId} Upvotes`,
-				value: upvotes.map(mentionVoter).join("\n"),
-				inline: true,
-			},
-			{
-				name: `${config.suggest.noEmojiId} Downvotes`,
-				value: downvotes.map(mentionVoter).join("\n"),
-				inline: true,
-			},
-		]);
 };
 
 export const createSuggestionManageButtons: () => ActionRowBuilder<ButtonBuilder> =

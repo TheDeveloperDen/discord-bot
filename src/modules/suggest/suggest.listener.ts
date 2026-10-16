@@ -15,7 +15,6 @@ import { checkAndAwardAchievements } from "../achievements/achievementService.js
 import type { EventListener } from "../module.js";
 import {
 	createReasonModal,
-	createVotesEmbed,
 	generateVoteMessage,
 	getSuggestionByMessageIdOrRecoverFromMessage,
 	removeSuggestionVotesForMember,
@@ -33,6 +32,7 @@ import {
 } from "./suggest.js";
 import {
 	renderSuggestion,
+	renderVotes,
 	suggestionEdit,
 	suggestionView,
 } from "./suggest.post.js";
@@ -103,12 +103,8 @@ async function handleViewVotesInteraction(
 
 	const yesVotes = suggestion.votes?.filter((vote) => vote.vote === 1) || [];
 	const noVotes = suggestion.votes?.filter((vote) => vote.vote === -1) || [];
-	const embed = createVotesEmbed(member, yesVotes, noVotes);
 
-	await interaction.followUp({
-		embeds: [embed],
-		flags: MessageFlags.Ephemeral,
-	});
+	await interaction.followUp(renderVotes(member, yesVotes, noVotes));
 }
 
 async function handleManageModalSubmission(

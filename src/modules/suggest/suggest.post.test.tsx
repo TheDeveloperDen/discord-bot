@@ -1,12 +1,23 @@
 import { describe, expect, test } from "bun:test";
-import { type Client, ComponentType, MessageFlags } from "discord.js";
+import {
+	type Client,
+	ComponentType,
+	type GuildMember,
+	MessageFlags,
+} from "discord.js";
 import { Suggestion, SuggestionStatus } from "../../store/models/Suggestion.js";
+import type { SuggestionVote } from "../../store/models/SuggestionVote.js";
+import { texts } from "../../tests/render.js";
 import {
 	SUGGESTION_NO_ID,
 	SUGGESTION_VIEW_VOTES_ID,
 	SUGGESTION_YES_ID,
 } from "./suggest.constants.js";
-import { renderSuggestion, suggestionView } from "./suggest.post.js";
+import {
+	renderSuggestion,
+	renderVotes,
+	suggestionView,
+} from "./suggest.post.js";
 
 // a submitter who has left the server, so they're shown from their account
 const client = {
@@ -110,5 +121,40 @@ describe("renderSuggestion", () => {
 
 		const [card] = payload.components as [Node];
 		expect(textOf(card.components).join("").length).toBeLessThanOrEqual(4000);
+	});
+});
+
+describe("renderVotes", () => {
+	const member = {
+		displayColor: 0,
+		displayName: "Ada",
+		displayAvatarURL: () => "https://cdn/ada.png",
+	} as unknown as GuildMember;
+	const vote = (memberId: bigint | null) => ({ memberId }) as SuggestionVote;
+
+	test("lists each side's voters, ephemeral and without pinging them", () => {
+		const message = renderVotes(
+			member,
+			[vote(1n), vote(2n)],
+			[vote(null)],
+		) as unknown as { flags: number; allowedMentions: object };
+		expect(message.flags & MessageFlags.Ephemeral).toBeTruthy();
+		expect(message).not.toHaveProperty("content");
+		expect(message.allowedMentions).toEqual({ parse: [] });
+		const text = texts(message as never).join("\n");
+		expect(text).toContain("<@1>\n<@2>");
+		expect(text).toContain("Unknown Voter");
+	});
+
+	test("says so when nobody voted a way", () => {
+		expect(texts(renderVotes(member, [], []) as never).join("\n")).toContain(
+			"Nobody yet",
+		);
+	});
+
+	test("a huge voter list stays inside a message", () => {
+		const many = Array.from({ length: 400 }, (_, i) => vote(BigInt(i + 1)));
+		const message = renderVotes(member, many, many) as never;
+		expect(texts(message).join("").length).toBeLessThan(4000);
 	});
 });
