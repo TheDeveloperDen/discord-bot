@@ -5,6 +5,7 @@ export { Field } from "./Field.js";
 export {
 	definePaginator,
 	type Page,
+	type PageContext,
 	type PageRequest,
 	type PageView,
 	type Paginator,

@@ -2,6 +2,7 @@ import { describe, expect, mock, test } from "bun:test";
 import {
 	AttachmentBuilder,
 	type ButtonInteraction,
+	type Client,
 	MessageFlags,
 } from "discord.js";
 import { TextDisplay } from "disjsx";
@@ -9,6 +10,8 @@ import { parseCustomId } from "../components/component.js";
 import { buttons, type RenderedMessage, texts } from "../tests/render.js";
 import { Card } from "./Card.js";
 import { definePaginator, type PageRequest } from "./Paginator.js";
+
+const client = {} as Client;
 
 const ITEMS = Array.from({ length: 25 }, (_, i) => `item ${i + 1}`);
 
@@ -40,6 +43,7 @@ function click(customId: string, userId: string) {
 	const editReply = mock((_payload: RenderedMessage) => Promise.resolve());
 	const interaction = {
 		customId,
+		client,
 		user: { id: userId },
 		deferUpdate,
 		deferReply,
@@ -68,7 +72,7 @@ describe("Paginator", () => {
 		const { Pages, fetch } = setup();
 		const payload = (await Pages.message(
 			{ list: "things" },
-			{ owner: "1" },
+			{ client, owner: "1" },
 		)) as RenderedMessage;
 
 		expect(fetch).toHaveBeenCalledWith(
@@ -84,7 +88,10 @@ describe("Paginator", () => {
 
 	test("pages never ping the people they mention", async () => {
 		const { Pages } = setup();
-		const payload = await Pages.message({ list: "things" }, { owner: "1" });
+		const payload = await Pages.message(
+			{ list: "things" },
+			{ client, owner: "1" },
+		);
 
 		expect(payload.allowedMentions).toEqual({ parse: [] });
 	});
@@ -98,19 +105,50 @@ describe("Paginator", () => {
 			render: () => <Card title="t" />,
 			files: () => [file],
 		});
-		const payload = await withFiles.message({}, { owner: "1" });
+		const payload = await withFiles.message({}, { client, owner: "1" });
 		expect(payload.files).toEqual([file]);
 
 		const { Pages } = setup();
-		const plain = await Pages.message({ list: "things" }, { owner: "1" });
+		const plain = await Pages.message(
+			{ list: "things" },
+			{ client, owner: "1" },
+		);
 		expect("files" in plain).toBe(false);
+	});
+
+	test("render and files get the client, also on a button click", async () => {
+		const seen: unknown[] = [];
+		const Pages = definePaginator({
+			id: "test:client",
+			pageSize: 1,
+			fetch: () => ({ items: ["a"], total: 2 }),
+			render: (_view, _args, context) => {
+				seen.push(context.client);
+				return <Card title="t" />;
+			},
+			files: (_args, context) => {
+				seen.push(context.client);
+				return [];
+			},
+		});
+		const payload = (await Pages.message(
+			{},
+			{ client, owner: "1" },
+		)) as RenderedMessage;
+		const next = buttons(payload)[1];
+		const clicked = click(next?.custom_id ?? "", "1");
+		await Pages.handle(clicked.interaction, {
+			...(parseCustomId(Pages, next?.custom_id ?? "") as object),
+		} as never);
+
+		expect(seen).toEqual([client, client, client, client]);
 	});
 
 	test("a single page has no buttons and no page count", async () => {
 		const { Pages } = setup(ITEMS.slice(0, 4));
 		const payload = (await Pages.message(
 			{ list: "things" },
-			{ owner: "1" },
+			{ client, owner: "1" },
 		)) as RenderedMessage;
 
 		expect(buttons(payload)).toEqual([]);
@@ -121,7 +159,7 @@ describe("Paginator", () => {
 		const { Pages } = setup([]);
 		const payload = (await Pages.message(
 			{ list: "things" },
-			{ owner: "1" },
+			{ client, owner: "1" },
 		)) as RenderedMessage;
 
 		expect(texts(payload)).toContain("nothing");
@@ -132,7 +170,7 @@ describe("Paginator", () => {
 		const { Pages, fetch } = setup();
 		const first = (await Pages.message(
 			{ list: "a:b" },
-			{ owner: "1" },
+			{ client, owner: "1" },
 		)) as RenderedMessage;
 
 		const clicked = await clickButton(Pages, buttons(first)[1], "1");
@@ -156,7 +194,7 @@ describe("Paginator", () => {
 		const { Pages } = setup();
 		const payload = (await Pages.message(
 			{ list: "things" },
-			{ owner: "1", page: 2 },
+			{ client, owner: "1", page: 2 },
 		)) as RenderedMessage;
 
 		expect(texts(payload)).toContain(ITEMS.slice(20).join("\n"));
@@ -169,7 +207,7 @@ describe("Paginator", () => {
 		const { Pages } = setup();
 		const first = (await Pages.message(
 			{ list: "things" },
-			{ owner: "1" },
+			{ client, owner: "1" },
 		)) as RenderedMessage;
 
 		const clicked = await clickButton(Pages, buttons(first)[1], "2");
@@ -191,7 +229,7 @@ describe("Paginator", () => {
 		const { Pages } = setup(ITEMS.slice(0, 15));
 		const payload = (await Pages.message(
 			{ list: "things" },
-			{ owner: "1", page: 5 },
+			{ client, owner: "1", page: 5 },
 		)) as RenderedMessage;
 
 		expect(texts(payload)).toContain(ITEMS.slice(10, 15).join("\n"));

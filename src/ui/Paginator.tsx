@@ -1,6 +1,7 @@
 import {
 	type AttachmentBuilder,
 	ButtonStyle,
+	type Client,
 	MessageFlags,
 	type MessageMentionOptions,
 } from "discord.js";
@@ -43,15 +44,24 @@ export interface PaginatorDefinition<A extends readonly string[], T> {
 		request: PageRequest,
 	): Page<T> | Promise<Page<T>>;
 	/** The page's card. The paginator adds the buttons after it */
-	render(view: PageView<T>, args: ComponentArgs<A>): ReactElement;
+	render(
+		view: PageView<T>,
+		args: ComponentArgs<A>,
+		context: PageContext,
+	): ReactElement;
 	/**
 	 * Files the page's `attachment://` urls point at. Sent with every page, because editing a message
 	 * replaces its files. Called after `fetch`, so it can read what `fetch` prepared
 	 */
-	files?(args: ComponentArgs<A>): AttachmentBuilder[];
+	files?(args: ComponentArgs<A>, context: PageContext): AttachmentBuilder[];
 }
 
-export interface PageOptions {
+/** What a page can use that isn't in its args, e.g. the client to look up custom emoji */
+export interface PageContext {
+	client: Client;
+}
+
+export interface PageOptions extends PageContext {
 	/** The user whose clicks turn this message's pages. Anyone else gets their own ephemeral copy */
 	owner: string;
 	/** Zero-based. Past the end shows the last page */
@@ -96,7 +106,7 @@ export function definePaginator<const A extends readonly string[], T>(
 
 	async function message(
 		args: ComponentArgs<A>,
-		{ owner, page = 0, ephemeral }: PageOptions,
+		{ owner, page = 0, ephemeral, client }: PageOptions,
 	) {
 		const fetchPage = (n: number) =>
 			definition.fetch(args, { offset: n * pageSize, limit: pageSize });
@@ -115,6 +125,7 @@ export function definePaginator<const A extends readonly string[], T>(
 				footer: pages > 1 ? `Page ${current + 1} of ${pages}` : undefined,
 			},
 			args,
+			{ client },
 		);
 		// the disabled ends point at the current page, so prev and next never share a customId
 		const turnTo = (target: number, label: string, disabled: boolean) => (
@@ -144,7 +155,7 @@ export function definePaginator<const A extends readonly string[], T>(
 			</Message>,
 		);
 		// lists mention lots of people, and unlike in embeds, mentions in text displays ping
-		const files = definition.files?.(args);
+		const files = definition.files?.(args, { client });
 		return {
 			...payload,
 			allowedMentions: { parse: [] },
@@ -163,6 +174,7 @@ export function definePaginator<const A extends readonly string[], T>(
 				: interaction.deferReply({ flags: MessageFlags.Ephemeral }));
 			await interaction.editReply(
 				await message(rest as ComponentArgs<A>, {
+					client: interaction.client,
 					owner: interaction.user.id,
 					page: Number(page),
 				}),

@@ -37,7 +37,10 @@ export const LeaderboardCommand = defineCommand({
 	async handle(interaction, { type }) {
 		await interaction.deferReply();
 		await interaction.followUp(
-			await LeaderboardPages.message({ type }, { owner: interaction.user.id }),
+			await LeaderboardPages.message(
+				{ type },
+				{ client: interaction.client, owner: interaction.user.id },
+			),
 		);
 	},
 });
