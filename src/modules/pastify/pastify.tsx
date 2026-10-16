@@ -1,4 +1,3 @@
-import { fetch } from "bun";
 import type { Message } from "discord.js";
 import { Message as MessageComponent, renderDiscordMessage } from "disjsx";
 import { config } from "../../Config.js";
@@ -32,18 +31,27 @@ export function splitMessage(
 			continue;
 		}
 
-		if (match.groups?.content ?? match[0].match(/[{}<>()=]+/g) != null) {
-			out.push({
-				content: match.groups?.content ?? match[0],
-				language: match?.groups?.lang ?? undefined,
-			});
-		}
+		const block = match.groups?.content;
+		// a code block counts if it isn't empty, anything else only if it looks like code
+		const isCode =
+			block !== undefined ? block.trim() !== "" : /[{}<>()=]+/.test(match[0]);
+		// long text that isn't code stays in the message as it was
+		out.push(
+			isCode
+				? { content: block ?? match[0], language: match.groups?.lang }
+				: { text: match[0] },
+		);
 	}
 
 	return out;
 }
 
-export async function upload(component: SplitMessageComponent) {
+export const PASTING_FAILED = "Pasting failed";
+
+/** Uploads the component and returns its link, or null if the paste service refused it */
+async function tryUpload(
+	component: SplitMessageComponent,
+): Promise<string | null> {
 	if ("text" in component) {
 		return component.text;
 	}
@@ -70,17 +78,25 @@ export async function upload(component: SplitMessageComponent) {
 		logger.error(
 			`Failed to upload message to pastebin: ${response.statusText}`,
 		);
-		return "Pasting failed";
+		return null;
 	}
 
 	const id = ((await response.json()) as { id: string }).id;
 
 	if (!id) {
 		logger.warn("Id was missing from pastebin response");
-		return "Pasting failed";
+		return null;
 	}
 
 	return `${config.devbin.url}/paste/${id}`;
+}
+
+/** Tries to upload and returns a friendly string result:
+ * The link to the paste, or `PASTING_FAILED` in its place */
+export async function upload(
+	component: SplitMessageComponent,
+): Promise<string> {
+	return (await tryUpload(component)) ?? PASTING_FAILED;
 }
 
 const renderPastified = (message: Message, lines: string[]) =>
@@ -96,35 +112,36 @@ const renderPastified = (message: Message, lines: string[]) =>
 		),
 	);
 
-type PastifyReturn<T extends boolean> = T extends true
-	? ReturnType<typeof renderPastified>
-	: ReturnType<typeof renderPastified> | null;
-
 /**
- * Pastifies a message.
+ * Replaces a message's code with links to pastes of it, deleting the message and returning a card
+ * to send in its place.
  * @param message the message to pastify
- * @param forcePaste whether to pastify the message regardless of whether there's any code
- * @param threshold the point at which a message should be uploaded to the pastebin
- * @return a card containing a pastified message, or null if the message is empty
+ * @param threshold how many lines a block needs before it's uploaded to the pastebin
+ * @return the card, or null if there's nothing to paste or a paste failed (the message is then left alone)
  */
-export async function pastify<force extends boolean = false>(
+export async function pastify(
 	message: Message,
-	forcePaste?: force,
 	threshold?: number,
-): Promise<PastifyReturn<force>> {
+): Promise<ReturnType<typeof renderPastified> | null> {
 	const split = splitMessage(message.content, threshold);
 
-	// if it's just a string, do nothing
-	if (!forcePaste || !split.some((part) => "content" in part)) {
-		return null as PastifyReturn<force>;
-	}
+	// nothing to paste: no code, or an empty message (e.g. just an image)
+	if (!split.some((part) => "content" in part)) return null;
 
-	const lines = await Promise.all(split.map(upload));
+	let lines: (string | null)[];
+	try {
+		lines = await Promise.all(split.map(tryUpload));
+	} catch (error) {
+		logger.error("Failed to upload a message to the pastebin:", error);
+		return null;
+	}
+	// deleting the message would lose the code, so don't do anything
+	if (lines.some((line) => line === null)) return null;
 
 	pastifiedMessages.add(BigInt(message.id));
 
 	await message.delete();
-	return renderPastified(message, lines);
+	return renderPastified(message, lines as string[]);
 }
 
 const pastifiedMessages = new Set<bigint>();
