@@ -61,7 +61,11 @@ export const DailyRewardCommand = defineCommand({
 			}
 
 			const xpToGive = 50 + 10 * (ddUser.currentDailyStreak - 1);
-			const { xpGiven, multiplier } = await giveXp(user, xpToGive);
+			const { xpGiven, multiplier } = await giveXp(
+				user,
+				xpToGive,
+				interaction.channel ?? undefined,
+			);
 			ddUser.lastDailyTime = new Date();
 			await Promise.all([
 				interaction.followUp({

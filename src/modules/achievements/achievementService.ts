@@ -53,7 +53,9 @@ export async function checkAndAwardAchievements(
 			},
 		},
 		async () => {
-			const relevantAchievements = getActiveAchievementsByTrigger(trigger);
+			const relevantAchievements = getActiveAchievementsByTrigger(
+				trigger,
+			).filter((achievement) => achievement.id !== "all_rounder");
 			const newlyAwarded: AwardedAchievement[] = [];
 
 			// Get user's existing achievements
@@ -78,6 +80,11 @@ export async function checkAndAwardAchievements(
 						);
 					}
 				}
+			}
+
+			const allRounderAward = await awardAllRounderIfEligible(user.id);
+			if (allRounderAward) {
+				newlyAwarded.push(allRounderAward);
 			}
 
 			return newlyAwarded;
@@ -107,6 +114,57 @@ async function awardAchievement(
 		}
 		throw error;
 	}
+}
+
+/**
+ * Count the distinct categories of active, recognized achievements a user holds
+ * that qualify them for All-Rounder.
+ */
+export async function getAllRounderCategoryCount(
+	userId: bigint,
+): Promise<number> {
+	const activeAchievements = new Map(
+		getActiveAchievements().map((achievement) => [achievement.id, achievement]),
+	);
+	const categories = new Set<AchievementCategory>();
+
+	for (const achievementId of await getUserAchievementIds(userId)) {
+		const achievement = activeAchievements.get(achievementId);
+		if (achievement && achievement.id !== "all_rounder") {
+			categories.add(achievement.category);
+		}
+	}
+
+	return categories.size;
+}
+
+/**
+ * Award All-Rounder when a user currently holds active, recognized
+ * achievements in four distinct categories.
+ */
+async function awardAllRounderIfEligible(
+	userId: bigint,
+): Promise<AwardedAchievement | null> {
+	const allRounder = getAchievementById("all_rounder");
+	if (!allRounder || allRounder.active === false) {
+		return null;
+	}
+
+	const earnedCategoryCount = await getAllRounderCategoryCount(userId);
+
+	if (!allRounder.checkCondition({ earnedCategoryCount })) {
+		return null;
+	}
+
+	if (!(await awardAchievement(userId, allRounder.id))) {
+		return null;
+	}
+
+	logger.info(`Awarded achievement "${allRounder.name}" to user ${userId}`);
+	return {
+		definition: allRounder,
+		awardedAt: new Date(),
+	};
 }
 
 /**
@@ -154,8 +212,8 @@ export async function hasAchievement(
 }
 
 export interface GrantResult {
-	success: boolean;
 	alreadyHad: boolean;
+	awarded: AwardedAchievement[];
 	error?: string;
 }
 
@@ -171,7 +229,7 @@ export interface RevokeResult {
  *
  * @param userId The user ID to grant the achievement to
  * @param achievementId The achievement ID to grant
- * @returns Result indicating success, already had, or error
+ * @returns Result listing newly granted achievements, or indicating an error/already-held badge
  */
 export async function grantAchievement(
 	userId: bigint,
@@ -180,29 +238,40 @@ export async function grantAchievement(
 	const achievement = getAchievementById(achievementId);
 	if (!achievement) {
 		return {
-			success: false,
 			alreadyHad: false,
+			awarded: [],
 			error: "Achievement not found",
 		};
 	}
 
 	if (achievement.active === false) {
 		return {
-			success: false,
 			alreadyHad: false,
+			awarded: [],
 			error: "Achievement is inactive",
 		};
 	}
 
 	const awarded = await awardAchievement(userId, achievementId);
 	if (!awarded) {
-		return { success: false, alreadyHad: true };
+		return { alreadyHad: true, awarded: [] };
+	}
+
+	const newlyAwarded: AwardedAchievement[] = [
+		{
+			definition: achievement,
+			awardedAt: new Date(),
+		},
+	];
+	const allRounderAward = await awardAllRounderIfEligible(userId);
+	if (allRounderAward) {
+		newlyAwarded.push(allRounderAward);
 	}
 
 	logger.info(
 		`Manually granted achievement "${achievement.name}" to user ${userId}`,
 	);
-	return { success: true, alreadyHad: false };
+	return { alreadyHad: false, awarded: newlyAwarded };
 }
 
 /**
@@ -258,23 +327,27 @@ export async function getAchievementProgress(userId: bigint): Promise<{
 	> = {
 		bump: { total: 0, unlocked: 0 },
 		daily: { total: 0, unlocked: 0 },
+		level: { total: 0, unlocked: 0 },
 		starboard: { total: 0, unlocked: 0 },
+		reaction: { total: 0, unlocked: 0 },
 		introduction: { total: 0, unlocked: 0 },
 		suggestion: { total: 0, unlocked: 0 },
 		special: { total: 0, unlocked: 0 },
 	};
 
 	const activeAchievements = getActiveAchievements();
+	let unlocked = 0;
 	for (const achievement of activeAchievements) {
 		byCategory[achievement.category].total++;
 		if (userAchievements.has(achievement.id)) {
 			byCategory[achievement.category].unlocked++;
+			unlocked++;
 		}
 	}
 
 	return {
 		total: activeAchievements.length,
-		unlocked: userAchievements.size,
+		unlocked,
 		byCategory,
 	};
 }

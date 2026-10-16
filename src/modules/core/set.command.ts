@@ -12,6 +12,7 @@ import { type DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
 import { createStandardEmbed } from "../../util/embeds.js";
 
 import { mentionIfPingable } from "../../util/users.js";
+import { evaluateLevelAchievements } from "../xp/xpForMessage.util.js";
 import { levelForXp } from "../xp/xpRoles.util.js";
 
 export const SetCommand = defineCommand({
@@ -110,6 +111,9 @@ export const SetCommand = defineCommand({
 			});
 			setter(user, value);
 			await user.save();
+			if (field === "xp") {
+				await evaluateLevelAchievements(target, user, channel);
+			}
 			await reply.edit({
 				components: [],
 				embeds: [

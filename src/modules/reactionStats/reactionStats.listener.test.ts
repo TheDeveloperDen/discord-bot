@@ -1,15 +1,24 @@
 import { afterEach, beforeAll, describe, expect, mock, test } from "bun:test";
 import {
 	type Client,
+	type Guild,
 	type MessageReaction,
 	type PartialUser,
 	ReactionType,
+	type TextBasedChannel,
 	type User,
 } from "discord.js";
 import { clearUserCache, DDUser } from "../../store/models/DDUser.js";
+import { DDUserAchievements } from "../../store/models/DDUserAchievements.js";
 import { ReactionStat } from "../../store/models/ReactionStat.js";
 import { getSequelizeInstance, initStorage } from "../../store/storage.js";
-import { createMockClient, createMockUser } from "../../tests/mocks/discord.js";
+import {
+	createMockClient,
+	createMockGuild,
+	createMockGuildMember,
+	createMockTextChannel,
+	createMockUser,
+} from "../../tests/mocks/discord.js";
 import { ReactionStatsListener } from "./reactionStats.listener.js";
 
 beforeAll(async () => {
@@ -33,6 +42,8 @@ function createMockReaction(
 		authorBot: boolean;
 		authorSystem: boolean;
 		inGuild: boolean;
+		guild: Guild;
+		channel: TextBasedChannel;
 	}>,
 ): MessageReaction {
 	const messageId = overrides?.messageId ?? "100";
@@ -49,6 +60,12 @@ function createMockReaction(
 			bot: overrides?.authorBot ?? false,
 			system: overrides?.authorSystem ?? false,
 		},
+		guild: overrides?.guild,
+		channel:
+			overrides?.channel ??
+			createMockTextChannel({
+				id: channelId,
+			}),
 		fetch: mock(async () => message),
 	};
 
@@ -122,6 +139,20 @@ describe("ReactionStatsListener.messageReactionAdd", () => {
 
 		const count = await ReactionStat.count();
 		expect(count).toBe(0);
+	});
+
+	test("resolves partial reactors before excluding bot reactions", async () => {
+		const resolvedBot = createMockUser({ id: "10", bot: true });
+		const partialReactor = {
+			id: "10",
+			partial: true,
+			fetch: mock(async () => resolvedBot),
+		} as unknown as PartialUser;
+
+		await handler(mockClient, createMockReaction(), partialReactor);
+
+		expect(partialReactor.fetch).toHaveBeenCalledTimes(1);
+		expect(await ReactionStat.count()).toBe(0);
 	});
 
 	test("ignores reactions on bot messages", async () => {
@@ -240,5 +271,97 @@ describe("ReactionStatsListener.messageReactionAdd", () => {
 			before.getTime(),
 		);
 		expect(record?.reactedAt.getTime()).toBeLessThanOrEqual(after.getTime());
+	});
+
+	test("awards Broad Appeal once to the message author at 25 distinct reactors", async () => {
+		const author = createMockUser({ id: "200" });
+		author.displayAvatarURL = () => "https://example.test/avatar.png";
+		const recipient = createMockGuildMember({ id: "200", user: author });
+		const guild = createMockGuild({
+			members: new Map([["200", recipient]]),
+		});
+		const channel = createMockTextChannel();
+
+		for (let i = 1; i <= 24; i++) {
+			await handler(
+				mockClient,
+				createMockReaction({
+					messageId: String(100 + ((i - 1) % 4)),
+					guild,
+					channel,
+				}),
+				createMockUser({ id: String(i) }),
+			);
+		}
+
+		expect(
+			await DDUserAchievements.count({
+				where: { achievementId: "broad_appeal", ddUserId: 200n },
+			}),
+		).toBe(0);
+
+		const thresholdReaction = createMockReaction({
+			messageId: "104",
+			guild,
+			channel,
+		});
+		await handler(mockClient, thresholdReaction, createMockUser({ id: "25" }));
+		await handler(mockClient, thresholdReaction, createMockUser({ id: "25" }));
+
+		expect(
+			await DDUserAchievements.count({
+				where: { achievementId: "broad_appeal", ddUserId: 200n },
+			}),
+		).toBe(1);
+		expect(guild.members.fetch).toHaveBeenCalledTimes(1);
+		expect(guild.members.fetch).toHaveBeenCalledWith("200");
+	});
+
+	test("requires a fifth distinct message even with 25 distinct reactors", async () => {
+		for (let i = 1; i <= 25; i++) {
+			await handler(
+				mockClient,
+				createMockReaction({
+					messageId: String(100 + ((i - 1) % 4)),
+				}),
+				createMockUser({ id: String(i) }),
+			);
+		}
+
+		expect(
+			await DDUserAchievements.count({
+				where: { achievementId: "broad_appeal", ddUserId: 200n },
+			}),
+		).toBe(0);
+
+		await handler(
+			mockClient,
+			createMockReaction({ messageId: "104" }),
+			createMockUser({ id: "1" }),
+		);
+
+		expect(
+			await DDUserAchievements.count({
+				where: { achievementId: "broad_appeal", ddUserId: 200n },
+			}),
+		).toBe(1);
+	});
+
+	test("does not award Broad Appeal for self-only reaction history", async () => {
+		for (let messageId = 100; messageId < 105; messageId++) {
+			await handler(
+				mockClient,
+				createMockReaction({ messageId: String(messageId) }),
+				createMockUser({ id: "200" }),
+			);
+		}
+
+		expect(await ReactionStat.count({ where: { userId: 200n } })).toBe(5);
+
+		expect(
+			await DDUserAchievements.count({
+				where: { achievementId: "broad_appeal", ddUserId: 200n },
+			}),
+		).toBe(0);
 	});
 });
