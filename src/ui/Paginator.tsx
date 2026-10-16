@@ -1,4 +1,5 @@
 import {
+	type AttachmentBuilder,
 	ButtonStyle,
 	MessageFlags,
 	type MessageMentionOptions,
@@ -43,6 +44,11 @@ export interface PaginatorDefinition<A extends readonly string[], T> {
 	): Page<T> | Promise<Page<T>>;
 	/** The page's card. The paginator adds the buttons after it */
 	render(view: PageView<T>, args: ComponentArgs<A>): ReactElement;
+	/**
+	 * Files the page's `attachment://` urls point at. Sent with every page, because editing a message
+	 * replaces its files. Called after `fetch`, so it can read what `fetch` prepared
+	 */
+	files?(args: ComponentArgs<A>): AttachmentBuilder[];
 }
 
 export interface PageOptions {
@@ -65,6 +71,7 @@ export type Paginator<A extends readonly string[]> = ComponentDefinition<
 	): Promise<
 		ReturnType<typeof renderDiscordMessage> & {
 			allowedMentions: MessageMentionOptions;
+			files?: AttachmentBuilder[];
 		}
 	>;
 };
@@ -137,7 +144,12 @@ export function definePaginator<const A extends readonly string[], T>(
 			</Message>,
 		);
 		// lists mention lots of people, and unlike in embeds, mentions in text displays ping
-		return { ...payload, allowedMentions: { parse: [] } };
+		const files = definition.files?.(args);
+		return {
+			...payload,
+			allowedMentions: { parse: [] },
+			...(files && { files }),
+		};
 	}
 
 	const PageButton = defineComponent({

@@ -1,5 +1,9 @@
 import { describe, expect, mock, test } from "bun:test";
-import { type ButtonInteraction, MessageFlags } from "discord.js";
+import {
+	AttachmentBuilder,
+	type ButtonInteraction,
+	MessageFlags,
+} from "discord.js";
 import { TextDisplay } from "disjsx";
 import { parseCustomId } from "../components/component.js";
 import { buttons, type RenderedMessage, texts } from "../tests/render.js";
@@ -83,6 +87,23 @@ describe("Paginator", () => {
 		const payload = await Pages.message({ list: "things" }, { owner: "1" });
 
 		expect(payload.allowedMentions).toEqual({ parse: [] });
+	});
+
+	test("sends the files the pages refer to, and none when there aren't any", async () => {
+		const file = new AttachmentBuilder(Buffer.from("x"), { name: "a.png" });
+		const withFiles = definePaginator({
+			id: "test:files",
+			pageSize: 10,
+			fetch: () => ({ items: [], total: 0 }),
+			render: () => <Card title="t" />,
+			files: () => [file],
+		});
+		const payload = await withFiles.message({}, { owner: "1" });
+		expect(payload.files).toEqual([file]);
+
+		const { Pages } = setup();
+		const plain = await Pages.message({ list: "things" }, { owner: "1" });
+		expect("files" in plain).toBe(false);
 	});
 
 	test("a single page has no buttons and no page count", async () => {
