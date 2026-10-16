@@ -1,12 +1,13 @@
 import * as Sentry from "@sentry/bun";
 import { MessageFlags, PermissionFlagsBits } from "discord.js";
+import { Message, renderDiscordMessage, TextDisplay } from "disjsx";
 import { defineCommand, option } from "../../commands/index.js";
 import { logger } from "../../logging.js";
-import { createStandardEmbed } from "../../util/embeds.js";
+import { Card, Details, memberAuthor, withoutPings } from "../../ui/index.js";
 import { parseTimespan, prettyPrintDuration } from "../../util/timespan.js";
 import {
+	DM_FAILED_WARNING,
 	dmModerationTarget,
-	dmWarning,
 	logModerationAction,
 } from "../moderation/logs.js";
 
@@ -106,26 +107,30 @@ export const TimeoutCommand = defineCommand({
 			target.user,
 			`You were timed out in ${interaction.guild.name} for **${prettyPrintDuration(period)}**: ${reason}`,
 		);
-		await interaction.editReply({
-			embeds: [
-				{
-					...createStandardEmbed(target),
-					title: "User timed out",
-					description: `<@${target.id}>`,
-					fields: [
-						{
-							name: "Timed out until",
-							value: `<t:${Math.round((Date.now() + period) / 1000)}>`,
-						},
-						{
-							name: "Reason",
-							value: reason,
-						},
-					],
-				},
-			],
-			content: dmWarning(dmSent) || undefined,
-		});
+		await interaction.editReply(
+			withoutPings(
+				renderDiscordMessage(
+					<Message isV2>
+						<Card
+							accent={memberAuthor(target).color}
+							title="User timed out"
+							author={memberAuthor(target)}
+						>
+							<Details
+								items={[
+									[
+										"Timed out until",
+										`<t:${Math.round((Date.now() + period) / 1000)}>`,
+									],
+									["Reason", reason],
+								]}
+							/>
+							{!dmSent && <TextDisplay>{DM_FAILED_WARNING}</TextDisplay>}
+						</Card>
+					</Message>,
+				),
+			),
+		);
 
 		await logModerationAction(interaction.client, {
 			kind: "Timeout",
