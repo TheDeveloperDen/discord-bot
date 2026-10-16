@@ -1,12 +1,10 @@
-import type {
-	APIMessageComponentEmoji,
-	ButtonStyle,
-	EmbedBuilder,
-} from "discord.js";
+import type { APIMessageComponentEmoji, ButtonStyle } from "discord.js";
 
 export interface InformationMessage {
-	content?: string;
-	embed: EmbedBuilder;
+	title: string;
+	description: string;
+	/** An image shown under the description */
+	banner?: string;
 	buttonRows: InformationButton[][];
 }
 

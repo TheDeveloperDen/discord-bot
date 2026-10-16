@@ -1,15 +1,17 @@
+import { ButtonStyle, MessageFlags, PermissionFlagsBits } from "discord.js";
 import {
-	type APIEmbed,
-	ButtonStyle,
-	MessageFlags,
-	PermissionFlagsBits,
-} from "discord.js";
-import { ActionRow, Button, Message, renderDiscordMessage } from "disjsx";
+	ActionRow,
+	Button,
+	MediaGallery,
+	MediaGalleryItem,
+	Message,
+	renderDiscordMessage,
+} from "disjsx";
 import { config } from "../../Config.js";
 import { defineContextMenu } from "../../commands/index.js";
 import { logger } from "../../logging.js";
-import { createStandardEmbed } from "../../util/embeds.js";
-import type { InformationButton } from "./information.js";
+import { Card } from "../../ui/index.js";
+import type { InformationButton, InformationMessage } from "./information.js";
 import {
 	FaqButton,
 	LearningResourcesButton,
@@ -51,12 +53,22 @@ const InformationButtonElement = ({
 	}
 };
 
-/** The information message's button rows, as message components */
-export function renderInformationButtons(rows: InformationButton[][]) {
-	return (
-		renderDiscordMessage(
-			<Message>
-				{rows.map((row, i) => (
+/** The information message as a Components V2 card */
+export function renderInformationMessage({
+	title,
+	description,
+	banner,
+	buttonRows,
+}: InformationMessage) {
+	return renderDiscordMessage(
+		<Message isV2>
+			<Card title={title} description={description}>
+				{banner && (
+					<MediaGallery>
+						<MediaGalleryItem url={banner} />
+					</MediaGallery>
+				)}
+				{buttonRows.map((row, i) => (
 					// biome-ignore lint/suspicious/noArrayIndexKey: rows are static config
 					<ActionRow key={i}>
 						{row.map((button) => (
@@ -64,8 +76,8 @@ export function renderInformationButtons(rows: InformationButton[][]) {
 						))}
 					</ActionRow>
 				))}
-			</Message>,
-		).components ?? []
+			</Card>
+		</Message>,
 	);
 }
 
@@ -89,22 +101,13 @@ export const InformationMessageCommand = defineContextMenu({
 			});
 			return;
 		}
-		const informationMessage = config.informationMessage;
-		const embed: APIEmbed = {
-			...createStandardEmbed().data,
-			...informationMessage.embed.data,
-		};
 		const newMessage = await interaction.targetMessage.edit({
-			content: informationMessage.content ?? null,
-			embeds: [embed],
-			components: renderInformationButtons(informationMessage.buttonRows),
+			...renderInformationMessage(config.informationMessage),
+			content: null,
+			embeds: [],
 		});
 
-		logger.info(
-			`Information message set for ${newMessage.id} with content ${newMessage.content} and embed ${JSON.stringify(
-				newMessage.embeds[0],
-			)}`,
-		);
+		logger.info(`Information message set for ${newMessage.id}`);
 		await interaction.reply({
 			flags: MessageFlags.Ephemeral,
 			content: "Information message set.",

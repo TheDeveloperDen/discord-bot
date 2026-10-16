@@ -1,4 +1,4 @@
-import { ButtonStyle, EmbedBuilder } from "discord.js";
+import { ButtonStyle } from "discord.js";
 import type { Config } from "./config.type.js";
 import { actualMention } from "./util/users.js";
 
@@ -110,11 +110,9 @@ export const config: Config = {
 	},
 
 	informationMessage: {
-		embed: new EmbedBuilder()
-			.setImage("https://static.developerden.org/banner.png")
-			.setTitle("⭐ About the Server ⭐")
-			.setDescription(`
-Welcome to the **Developer Den**!
+		title: "⭐ About the Server ⭐",
+		banner: "https://static.developerden.org/banner.png",
+		description: `Welcome to the **Developer Den**!
 We're a community of programmers who love to share knowledge and ideas.
 
 **Need help?**
@@ -129,7 +127,7 @@ Say hello in <#821743100657270876> or <#1069687712333971527>!
 
 To invite other people to this server, you can use either of these links:
 https://developerden.org/discord
-https://discord.gg/devden`),
+https://discord.gg/devden`,
 
 		buttonRows: [
 			[
