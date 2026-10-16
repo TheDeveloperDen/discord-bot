@@ -1,41 +1,33 @@
-export const EMBED_FIELD_VALUE_LIMIT = 1024;
 const CUSTOM_EMOJI_ALIAS_PATTERN = /^a?:[A-Za-z0-9_]+:$/;
 
-export function chunkEmbedFieldValues(
+/**
+ * Joins whole lines until `maxLength` is reached, ending with "…and N more" if some had to be left out,
+ * so a long list stays inside a message's total text limit without cutting an entry in half.
+ * A single line longer than `maxLength` is truncated.
+ */
+export function fitLines(
 	lines: string[],
-	maxLength = EMBED_FIELD_VALUE_LIMIT,
-): string[] {
-	if (lines.length === 0) return [];
-
-	const chunks: string[] = [];
-	let current = "";
-
-	for (const line of lines) {
-		const normalizedLine =
-			line.length <= maxLength
-				? line
-				: `${line.slice(0, Math.max(0, maxLength - 3))}...`;
-
-		if (current.length === 0) {
-			current = normalizedLine;
-			continue;
+	maxLength: number,
+	separator = "\n",
+): string {
+	const kept: string[] = [];
+	let length = 0;
+	for (const [i, line] of lines.entries()) {
+		const left = lines.length - i - 1;
+		// leaves room for the "…and N more" line, unless this is the last one
+		const reserve = left > 0 ? `${separator}…and ${left} more`.length : 0;
+		const next =
+			length + (kept.length > 0 ? separator.length : 0) + line.length;
+		if (next + reserve > maxLength) {
+			if (kept.length === 0) {
+				return `${line.slice(0, Math.max(0, maxLength - 1))}…`;
+			}
+			return `${kept.join(separator)}${separator}…and ${lines.length - i} more`;
 		}
-
-		const candidate = `${current}\n\n${normalizedLine}`;
-		if (candidate.length <= maxLength) {
-			current = candidate;
-			continue;
-		}
-
-		chunks.push(current);
-		current = normalizedLine;
+		kept.push(line);
+		length = next;
 	}
-
-	if (current.length > 0) {
-		chunks.push(current);
-	}
-
-	return chunks;
+	return kept.join(separator);
 }
 
 function normalizeCustomEmojiName(emojiName: string): string {

@@ -1,12 +1,16 @@
 import type { Guild } from "discord.js";
+import { Message, renderDiscordMessage } from "disjsx";
 import { defineCommand, option, subcommand } from "../../commands/index.js";
-import { createStandardEmbed } from "../../util/embeds.js";
+import {
+	Card,
+	Details,
+	Field,
+	memberAuthor,
+	withoutPings,
+} from "../../ui/index.js";
 import { actualMention } from "../../util/users.js";
 import { medal } from "../leaderboard/leaderboard.js";
-import {
-	chunkEmbedFieldValues,
-	formatEmojiForEmbed,
-} from "./reactionStats.embed.js";
+import { fitLines, formatEmojiForEmbed } from "./reactionStats.embed.js";
 import {
 	getGlobalStats,
 	getTopMessages,
@@ -14,6 +18,12 @@ import {
 	periodLabel,
 	type TimePeriod,
 } from "./reactionStats.service.js";
+
+const MAX_LIST_LENGTH = 1000;
+const MAX_RESULTS_LENGTH = 3000;
+
+const render = (card: React.ReactElement) =>
+	withoutPings(renderDiscordMessage(<Message isV2>{card}</Message>));
 
 function canRenderCustomEmoji(
 	guild: Guild,
@@ -51,16 +61,16 @@ const UserSubcommand = subcommand({
 		const stats = await getUserStats(BigInt(targetUser.id), period);
 
 		if (stats.totalReactions === 0) {
-			await interaction.followUp({
-				embeds: [
-					createStandardEmbed(interaction.member)
-						.setTitle(`Reaction Stats: ${targetUser.username}`)
-						.setThumbnail(targetUser.displayAvatarURL())
-						.setDescription(
-							`No reactions recorded for ${actualMention(targetUser)} (${periodLabel(period)}).`,
-						),
-				],
-			});
+			await interaction.followUp(
+				render(
+					<Card
+						accent={memberAuthor(interaction.member).color}
+						title={`Reaction Stats: ${targetUser.username}`}
+						author={memberAuthor(targetUser)}
+						description={`No reactions recorded for ${actualMention(targetUser)} (${periodLabel(period)}).`}
+					/>,
+				),
+			);
 			return;
 		}
 
@@ -76,37 +86,32 @@ const UserSubcommand = subcommand({
 				)} — **${e.count}** time${e.count !== 1 ? "s" : ""}`,
 		);
 
-		const embed = createStandardEmbed(interaction.member)
-			.setTitle(`Reaction Stats: ${targetUser.username}`)
-			.setThumbnail(targetUser.displayAvatarURL())
-			.setDescription(`Stats for ${actualMention(targetUser)}`)
-			.addFields(
-				{
-					name: "Period",
-					value: periodLabel(period),
-					inline: true,
-				},
-				{
-					name: "Total Reactions",
-					value: stats.totalReactions.toLocaleString(),
-					inline: true,
-				},
-				{
-					name: "Messages Reacted To",
-					value: stats.uniqueMessagesReacted.toLocaleString(),
-					inline: true,
-				},
-			);
-
-		if (emojiLines.length > 0) {
-			embed.addFields({
-				name: `Top ${emojiLines.length} Emojis`,
-				value: emojiLines.join("\n"),
-				inline: false,
-			});
-		}
-
-		await interaction.followUp({ embeds: [embed] });
+		await interaction.followUp(
+			render(
+				<Card
+					accent={memberAuthor(interaction.member).color}
+					title={`Reaction Stats: ${targetUser.username}`}
+					author={memberAuthor(targetUser)}
+					description={`Stats for ${actualMention(targetUser)}`}
+				>
+					<Details
+						items={[
+							["Period", periodLabel(period)],
+							["Total Reactions", stats.totalReactions.toLocaleString()],
+							[
+								"Messages Reacted To",
+								stats.uniqueMessagesReacted.toLocaleString(),
+							],
+						]}
+					/>
+					{emojiLines.length > 0 && (
+						<Field label={`Top ${emojiLines.length} Emojis`}>
+							{fitLines(emojiLines, MAX_LIST_LENGTH)}
+						</Field>
+					)}
+				</Card>,
+			),
+		);
 	},
 });
 
@@ -125,13 +130,15 @@ const GlobalSubcommand = subcommand({
 		const stats = await getGlobalStats(period);
 
 		if (stats.totalReactions === 0) {
-			await interaction.followUp({
-				embeds: [
-					createStandardEmbed(interaction.member)
-						.setTitle("Global Reaction Stats")
-						.setDescription(`No reactions recorded (${periodLabel(period)}).`),
-				],
-			});
+			await interaction.followUp(
+				render(
+					<Card
+						accent={memberAuthor(interaction.member).color}
+						title="Global Reaction Stats"
+						description={`No reactions recorded (${periodLabel(period)}).`}
+					/>,
+				),
+			);
 			return;
 		}
 
@@ -167,46 +174,36 @@ const GlobalSubcommand = subcommand({
 			}),
 		);
 
-		const embed = createStandardEmbed(interaction.member)
-			.setTitle("Global Reaction Stats")
-			.addFields(
-				{
-					name: "Period",
-					value: periodLabel(period),
-					inline: true,
-				},
-				{
-					name: "Total Reactions",
-					value: stats.totalReactions.toLocaleString(),
-					inline: true,
-				},
-			);
-
-		if (reactorLines.length > 0) {
-			embed.addFields({
-				name: "🏆 Top Reactors",
-				value: reactorLines.join("\n"),
-				inline: false,
-			});
-		}
-
-		if (emojiLines.length > 0) {
-			embed.addFields({
-				name: "🔥 Most Used Emojis",
-				value: emojiLines.join("\n"),
-				inline: false,
-			});
-		}
-
-		if (receiverLines.length > 0) {
-			embed.addFields({
-				name: "💬 Most Reacted Users (received)",
-				value: receiverLines.join("\n"),
-				inline: false,
-			});
-		}
-
-		await interaction.followUp({ embeds: [embed] });
+		await interaction.followUp(
+			render(
+				<Card
+					accent={memberAuthor(interaction.member).color}
+					title="Global Reaction Stats"
+				>
+					<Details
+						items={[
+							["Period", periodLabel(period)],
+							["Total Reactions", stats.totalReactions.toLocaleString()],
+						]}
+					/>
+					{reactorLines.length > 0 && (
+						<Field label="🏆 Top Reactors">
+							{fitLines(reactorLines, MAX_LIST_LENGTH)}
+						</Field>
+					)}
+					{emojiLines.length > 0 && (
+						<Field label="🔥 Most Used Emojis">
+							{fitLines(emojiLines, MAX_LIST_LENGTH)}
+						</Field>
+					)}
+					{receiverLines.length > 0 && (
+						<Field label="💬 Most Reacted Users (received)">
+							{fitLines(receiverLines, MAX_LIST_LENGTH)}
+						</Field>
+					)}
+				</Card>,
+			),
+		);
 	},
 });
 
@@ -225,13 +222,15 @@ const MessagesSubcommand = subcommand({
 		const topMessages = await getTopMessages(period);
 
 		if (topMessages.length === 0) {
-			await interaction.followUp({
-				embeds: [
-					createStandardEmbed(interaction.member)
-						.setTitle("Most Reacted Messages")
-						.setDescription(`No reactions recorded (${periodLabel(period)}).`),
-				],
-			});
+			await interaction.followUp(
+				render(
+					<Card
+						accent={memberAuthor(interaction.member).color}
+						title="Most Reacted Messages"
+						description={`No reactions recorded (${periodLabel(period)}).`}
+					/>,
+				),
+			);
 			return;
 		}
 
@@ -248,28 +247,20 @@ const MessagesSubcommand = subcommand({
 				);
 			}),
 		);
-		const messageChunks = chunkEmbedFieldValues(messageLines);
 
-		const embed = createStandardEmbed(interaction.member).setTitle(
-			"Most Reacted Messages",
+		await interaction.followUp(
+			render(
+				<Card
+					accent={memberAuthor(interaction.member).color}
+					title="Most Reacted Messages"
+				>
+					<Details items={[["Period", periodLabel(period)]]} />
+					<Field label="Results">
+						{fitLines(messageLines, MAX_RESULTS_LENGTH, "\n\n")}
+					</Field>
+				</Card>,
+			),
 		);
-		embed.addFields({
-			name: "Period",
-			value: periodLabel(period),
-			inline: true,
-		});
-		for (const [index, chunk] of messageChunks.entries()) {
-			embed.addFields({
-				name:
-					messageChunks.length > 1
-						? `Results (${index + 1}/${messageChunks.length})`
-						: "Results",
-				value: chunk,
-				inline: false,
-			});
-		}
-
-		await interaction.followUp({ embeds: [embed] });
 	},
 });
 

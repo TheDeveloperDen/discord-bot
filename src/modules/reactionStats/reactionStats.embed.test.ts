@@ -1,34 +1,40 @@
 import { describe, expect, test } from "bun:test";
-import {
-	chunkEmbedFieldValues,
-	EMBED_FIELD_VALUE_LIMIT,
-	formatEmojiForEmbed,
-} from "./reactionStats.embed.js";
+import { fitLines, formatEmojiForEmbed } from "./reactionStats.embed.js";
 
-describe("chunkEmbedFieldValues", () => {
-	test("returns one chunk when all lines fit", () => {
-		const chunks = chunkEmbedFieldValues(["one", "two", "three"], 1024);
-		expect(chunks).toHaveLength(1);
-		expect(chunks[0]).toBe("one\n\ntwo\n\nthree");
+describe("fitLines", () => {
+	test("joins every line when they fit", () => {
+		expect(fitLines(["one", "two", "three"], 100)).toBe("one\ntwo\nthree");
 	});
 
-	test("splits output when a field would exceed the max length", () => {
-		const lineA = "a".repeat(700);
-		const lineB = "b".repeat(700);
-
-		const chunks = chunkEmbedFieldValues([lineA, lineB], 1024);
-		expect(chunks).toHaveLength(2);
-		expect(chunks[0]).toBe(lineA);
-		expect(chunks[1]).toBe(lineB);
+	test("uses the separator it's given", () => {
+		expect(fitLines(["one", "two"], 100, "\n\n")).toBe("one\n\ntwo");
 	});
 
-	test("truncates a single overlong line to the field limit", () => {
-		const longLine = "x".repeat(EMBED_FIELD_VALUE_LIMIT + 200);
+	test("drops whole lines that don't fit and says how many", () => {
+		const lines = ["a".repeat(40), "b".repeat(40), "c".repeat(40)];
+		const result = fitLines(lines, 100);
+		expect(result).toBe(`${"a".repeat(40)}\n${"b".repeat(40)}\n…and 1 more`);
+		expect(result.length).toBeLessThanOrEqual(100);
+	});
 
-		const chunks = chunkEmbedFieldValues([longLine], EMBED_FIELD_VALUE_LIMIT);
-		expect(chunks).toHaveLength(1);
-		expect(chunks[0]?.length).toBe(EMBED_FIELD_VALUE_LIMIT);
-		expect(chunks[0]?.endsWith("...")).toBe(true);
+	test("never goes over the limit, whatever is dropped", () => {
+		const lines = Array.from(
+			{ length: 50 },
+			(_, i) => `line ${i} ${"x".repeat(i)}`,
+		);
+		for (const max of [30, 100, 500]) {
+			expect(fitLines(lines, max).length).toBeLessThanOrEqual(max);
+		}
+	});
+
+	test("truncates a single overlong line", () => {
+		const result = fitLines(["x".repeat(300)], 100);
+		expect(result).toHaveLength(100);
+		expect(result.endsWith("…")).toBe(true);
+	});
+
+	test("an empty list is empty", () => {
+		expect(fitLines([], 100)).toBe("");
 	});
 });
 
