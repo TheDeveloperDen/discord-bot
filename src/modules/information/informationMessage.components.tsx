@@ -10,11 +10,8 @@ import { getEmoji, toAPIMessageComponentEmoji } from "../../util/emojis.js";
 
 import { truncateTo } from "../../util/strings.js";
 import { renderFaq } from "../faq/faq.render.js";
-import { getResourceEmbed } from "../learning/learning.command.js";
-import {
-	getAllCachedResources,
-	getResource,
-} from "../learning/resourcesCache.util.js";
+import { ResourcePages } from "../learning/learning.command.js";
+import { getAllCachedResources } from "../learning/resourcesCache.util.js";
 
 const LearningResourcePicker = defineComponent({
 	id: "information:learningPicker",
@@ -23,25 +20,16 @@ const LearningResourcePicker = defineComponent({
 		const [resourceName] = interaction.values;
 		if (resourceName === undefined) return;
 		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-		const resource = await getResource(resourceName);
-		if (resource == null) {
-			await interaction.followUp({
-				content: "That resource no longer exists",
-				flags: MessageFlags.Ephemeral,
-			});
-			return;
-		}
-		const embed = getResourceEmbed(
-			interaction.client,
-			resource,
-			interaction.user,
-			(interaction.member as GuildMember) ?? undefined,
+		await interaction.followUp(
+			await ResourcePages.message(
+				{ resource: resourceName },
+				{
+					client: interaction.client,
+					owner: interaction.user.id,
+					ephemeral: true,
+				},
+			),
 		);
-
-		await interaction.followUp({
-			embeds: [embed],
-			flags: MessageFlags.Ephemeral,
-		});
 	},
 });
 

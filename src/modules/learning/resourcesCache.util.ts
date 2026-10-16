@@ -24,6 +24,12 @@ export async function getResource(
 	return resource;
 }
 
+export function getCachedResource(
+	name: FileName,
+): LearningResource | undefined {
+	return cache.get(name.toLowerCase());
+}
+
 export async function updateAllResources() {
 	cache.clear();
 	(await queryAll()).forEach(([fileName, resource]) => {
