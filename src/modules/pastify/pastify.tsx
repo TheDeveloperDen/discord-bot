@@ -1,9 +1,10 @@
 import { fetch } from "bun";
-import type { InteractionReplyOptions, Message } from "discord.js";
+import type { Message } from "discord.js";
+import { Message as MessageComponent, renderDiscordMessage } from "disjsx";
 import { config } from "../../Config.js";
 import { logger } from "../../logging.js";
-import { createStandardEmbed } from "../../util/embeds.js";
-import { mentionIfPingable } from "../../util/users.js";
+import { Card, memberAuthor, withoutPings } from "../../ui/index.js";
+import { excerpt } from "../../util/strings.js";
 
 const BYPASS_TOKEN = process.env.DDB_PASTE_BYPASS_TOKEN;
 
@@ -82,16 +83,29 @@ export async function upload(component: SplitMessageComponent) {
 	return `${config.devbin.url}/paste/${id}`;
 }
 
+const renderPastified = (message: Message, lines: string[]) =>
+	withoutPings(
+		renderDiscordMessage(
+			<MessageComponent isV2>
+				<Card
+					author={memberAuthor(message.member ?? message.author)}
+					description={excerpt(lines.join("\n"), { maxLength: 3600 })}
+					footer="This message was converted automatically to keep the channels clean from large code blocks."
+				/>
+			</MessageComponent>,
+		),
+	);
+
 type PastifyReturn<T extends boolean> = T extends true
-	? InteractionReplyOptions
-	: InteractionReplyOptions | null;
+	? ReturnType<typeof renderPastified>
+	: ReturnType<typeof renderPastified> | null;
 
 /**
  * Pastifies a message.
  * @param message the message to pastify
  * @param forcePaste whether to pastify the message regardless of whether there's any code
  * @param threshold the point at which a message should be uploaded to the pastebin
- * @return an embed containing a pastified message, or null if the message is empty
+ * @return a card containing a pastified message, or null if the message is empty
  */
 export async function pastify<force extends boolean = false>(
 	message: Message,
@@ -110,19 +124,7 @@ export async function pastify<force extends boolean = false>(
 	pastifiedMessages.add(BigInt(message.id));
 
 	await message.delete();
-	return {
-		embeds: [
-			{
-				...createStandardEmbed(message.member ?? undefined),
-				description: `${mentionIfPingable(
-					message.member ?? message.author,
-				)} \n${lines.join("\n")}`,
-				footer: {
-					text: "This message was converted automatically to keep the channels clean from large code blocks.",
-				},
-			},
-		],
-	};
+	return renderPastified(message, lines);
 }
 
 const pastifiedMessages = new Set<bigint>();
