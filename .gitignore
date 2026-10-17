@@ -9,6 +9,7 @@ logs/
 .vscode/
 .DS_Store
 eslint-results.sarif
+/.cache/docs/
 
 # Yarn new stuff
 .yarn/*
