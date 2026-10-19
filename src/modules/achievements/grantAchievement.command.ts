@@ -15,7 +15,6 @@ import {
 import { notifyMultipleAchievements } from "./achievementNotifier.js";
 import { grantAchievement } from "./achievementService.js";
 
-// Build choices from manual achievements at startup
 const achievementChoices = getActiveAchievements().map((a) => ({
 	name: `${a.emoji} ${a.name}`,
 	value: a.id,
@@ -33,7 +32,7 @@ export const GrantAchievementCommand = defineCommand({
 		achievement: option.string({
 			description: "The achievement to grant",
 			required: true,
-			choices: achievementChoices,
+			autocomplete: () => achievementChoices,
 		}),
 		silent: option.boolean({
 			description: "Don't send a notification to the user (default: false)",

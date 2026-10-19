@@ -14,7 +14,6 @@ import {
 } from "./achievementDefinitions.js";
 import { revokeAchievement } from "./achievementService.js";
 
-// Build choices from manual achievements at startup
 const achievementChoices = getActiveAchievements().map((a) => ({
 	name: `${a.emoji} ${a.name}`,
 	value: a.id,
@@ -32,7 +31,7 @@ export const RevokeAchievementCommand = defineCommand({
 		achievement: option.string({
 			description: "The achievement to revoke",
 			required: true,
-			choices: achievementChoices,
+			autocomplete: () => achievementChoices,
 		}),
 	},
 
