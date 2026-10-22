@@ -276,7 +276,7 @@ export const StarboardListener: EventListener = {
 			}
 		}
 
-		if (!message.inGuild() || message.author.bot || message.author.system) {
+		if (!message.inGuild() || message.author.system) {
 			return;
 		}
 
