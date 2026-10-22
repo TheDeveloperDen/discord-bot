@@ -23,7 +23,6 @@ import { ModmailModule } from "./modules/modmail/modmail.module.js";
 import ModuleManager, { setModuleManager } from "./modules/moduleManager.js";
 import PastifyModule from "./modules/pastify/pastify.module.js";
 import { ReactionStatsModule } from "./modules/reactionStats/reactionStats.module.js";
-import { RegexModule } from "./modules/regex/regex.module.js";
 import { RolesModule } from "./modules/roles/roles.module.js";
 import { ShowcaseModule } from "./modules/showcase.module.js";
 import { StarboardModule } from "./modules/starboard/starboard.module.js";
@@ -61,7 +60,6 @@ const moduleManager = new ModuleManager(
 		LanguageStatusModule,
 		LearningModule,
 		PastifyModule,
-		RegexModule,
 		RolesModule,
 		ShowcaseModule,
 		TokenScannerModule,
