@@ -291,7 +291,10 @@ describe("GitHub user lookup API", () => {
 		displayAvatarURL: () => "https://cdn.example/avatar.png",
 	};
 
-	async function lookup(username: string, headers: HeadersInit = {}) {
+	async function lookup(
+		username: string,
+		headers: Record<string, string> = {},
+	) {
 		const server = Bun.serve({
 			port: 0,
 			hostname: "127.0.0.1",

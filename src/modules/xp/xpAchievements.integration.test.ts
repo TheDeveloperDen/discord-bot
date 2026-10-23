@@ -17,11 +17,8 @@ import {
 	createMockUser,
 } from "../../tests/mocks/discord.js";
 import { DailyRewardCommand } from "./dailyReward.command.js";
-import {
-	evaluateLevelAchievements,
-	giveXp,
-	xpForLevel,
-} from "./xpForMessage.util.js";
+import { xpForLevel } from "./levels.js";
+import { evaluateLevelAchievements, giveXp } from "./xpForMessage.util.js";
 
 const levelAchievementIds = ["level_5", "level_10", "level_25", "level_50"];
 
