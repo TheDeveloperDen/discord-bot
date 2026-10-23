@@ -1,3 +1,5 @@
+import { timingSafeEqual } from "node:crypto";
+import { col, fn, where } from "@sequelize/core";
 import type { Client } from "discord.js";
 import { logger } from "../../logging.js";
 import { DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
@@ -25,11 +27,56 @@ function redirectToResult(result: LinkResult, origin: GitHubLinkOrigin = {}) {
 	return Response.redirect(url.toString(), 302);
 }
 
+function hasValidToken(req: Request, token: string) {
+	const given = Buffer.from(
+		req.headers.get("authorization")?.replace(/^Bearer /, "") ?? "",
+	);
+	const expected = Buffer.from(token);
+	// yay i love not being vulnerable to timing attacks :D
+	return given.length === expected.length && timingSafeEqual(given, expected);
+}
+
+// authenticated endpoint to retrieve a discord id, displayname, avatar url, and level from their github
+// authenticated since obviously privacy yada yada
+function lookupGitHubUser(client: Pick<Client, "users">, token: string) {
+	return async (req: Request) => {
+		if (!hasValidToken(req, token)) {
+			return Response.json({ error: "Unauthorized" }, { status: 401 });
+		}
+		const username = decodeURIComponent(
+			new URL(req.url).pathname.split("/").pop() ?? "",
+		);
+
+		const user = await DDUser.findOne({
+			where: where(fn("lower", col("githubUsername")), username.toLowerCase()),
+		});
+		if (!user) {
+			return Response.json({ error: "Not found" }, { status: 404 });
+		}
+		try {
+			const discordUser = await client.users.fetch(user.id.toString());
+			return Response.json({
+				discordId: discordUser.id,
+				displayName: discordUser.displayName,
+				avatarUrl: discordUser.displayAvatarURL(),
+				level: user.level,
+			});
+		} catch (error) {
+			logger.error(`Could not fetch Discord user ${user.id}: ${error}`);
+			return Response.json({ error: "Discord lookup failed" }, { status: 502 });
+		}
+	};
+}
+
 export function githubRoutes(
 	client: Pick<Client, "users">,
 	fetchImpl: typeof fetch = fetch,
 ) {
+	const lookupToken = process.env.GITHUB_LOOKUP_TOKEN;
 	return {
+		...(lookupToken && {
+			"/api/github/:username": lookupGitHubUser(client, lookupToken),
+		}),
 		"/auth/github/callback": async (req: Request) => {
 			const params = new URL(req.url).searchParams;
 			const state = params.get("state");

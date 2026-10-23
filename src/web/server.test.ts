@@ -283,6 +283,86 @@ describe("GitHub OAuth callback state and notifications", () => {
 	});
 });
 
+describe("GitHub user lookup API", () => {
+	const TOKEN = "test-lookup-token";
+	const discordUser = {
+		id: "123456900",
+		displayName: "Octo Cat",
+		displayAvatarURL: () => "https://cdn.example/avatar.png",
+	};
+
+	async function lookup(username: string, headers: HeadersInit = {}) {
+		const server = Bun.serve({
+			port: 0,
+			hostname: "127.0.0.1",
+			routes: createRoutes({
+				users: { fetch: async () => discordUser },
+			} as unknown as Pick<Client, "users">),
+		});
+		try {
+			return await httpFetch(
+				`http://127.0.0.1:${server.port}/api/github/${username}`,
+				{ headers },
+			);
+		} finally {
+			await server.stop(true);
+		}
+	}
+
+	const authed = { Authorization: `Bearer ${TOKEN}` };
+
+	beforeAll(() => {
+		process.env.GITHUB_LOOKUP_TOKEN = TOKEN;
+	});
+	afterAll(() => {
+		delete process.env.GITHUB_LOOKUP_TOKEN;
+	});
+
+	test("returns the display name, avatar and level, ignoring username case", async () => {
+		const user = await getOrCreateUserById(123456900n);
+		user.githubId = "70";
+		user.githubUsername = "Octocat";
+		user.level = 7;
+		await user.save();
+
+		const response = await lookup("octocat", authed);
+
+		expect(response.status).toBe(200);
+		expect(await response.json()).toEqual({
+			discordId: "123456900",
+			displayName: "Octo Cat",
+			avatarUrl: "https://cdn.example/avatar.png",
+			level: 7,
+		});
+	});
+
+	test("refuses a missing or wrong token without revealing whether the user exists", async () => {
+		const user = await getOrCreateUserById(123456901n);
+		user.githubId = "71";
+		user.githubUsername = "secret-linker";
+		await user.save();
+
+		expect((await lookup("secret-linker")).status).toBe(401);
+		expect(
+			(await lookup("secret-linker", { Authorization: "Bearer nope" })).status,
+		).toBe(401);
+		expect((await lookup("nobody")).status).toBe(401);
+	});
+
+	test("404s for a username nobody linked", async () => {
+		expect((await lookup("nobody", authed)).status).toBe(404);
+	});
+
+	test("does not exist when no token is configured", async () => {
+		delete process.env.GITHUB_LOOKUP_TOKEN;
+		try {
+			expect((await lookup("octocat", authed)).status).toBe(404);
+		} finally {
+			process.env.GITHUB_LOOKUP_TOKEN = TOKEN;
+		}
+	});
+});
+
 describe("web server routes", () => {
 	test("reports unhealthy until the bot has started", async () => {
 		const server = Bun.serve({
