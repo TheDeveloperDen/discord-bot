@@ -130,6 +130,7 @@ export function createMockGuildMember(
 			},
 		},
 		toString: () => `<@${overrides?.id ?? user.id}>`,
+		displayAvatarURL: () => `avatar url for ${overrides?.id ?? user.id}`,
 	} as unknown as GuildMember;
 }
 

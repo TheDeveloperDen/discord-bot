@@ -147,6 +147,10 @@ interface InviteSpamBanLog extends Notified {
 }
 
 async function sendModerationLog(client: Client, action: ModerationLog) {
+	if (!config.channels.modLog) {
+		logger.error("Moderation log channel is not defined");
+		return;
+	}
 	const modLogChannel = await client.channels
 		.fetch(config.channels.modLog)
 		.catch(() => null);
