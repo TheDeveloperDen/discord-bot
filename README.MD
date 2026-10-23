@@ -92,12 +92,11 @@ following environment variables:
 ### GitHub Account Linking
 
 GitHub account linking requires `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, and
-`GITHUB_REDIRECT_URI`. The OAuth callback server listens on `OAUTH_PORT`, which
+`GITHUB_REDIRECT_URI`. The OAuth callback server listens on `WEB_PORT`, which
 defaults to `3000`.
 
 The affected Discord user receives a direct message after their GitHub account
-is linked or unlinked, including administrator-initiated unlinks. Notification
-delivery is best-effort; disabled DMs do not roll back the status change.
+is linked or unlinked, including administrator-initiated unlinks.
 
 ## Contributing Guidelines
 
