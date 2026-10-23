@@ -5,7 +5,6 @@ import { setupBranding } from "./util/branding.js";
 import "./util/random.js";
 import * as Sentry from "@sentry/bun";
 import * as schedule from "node-schedule";
-import { startHealthCheck } from "./healthcheck.js";
 import { logger } from "./logging.js";
 import { AchievementsModule } from "./modules/achievements/achievements.module.js";
 import AskToAskModule from "./modules/askToAsk.module.js";
@@ -33,7 +32,7 @@ import { UserModule } from "./modules/user/user.module.js";
 import { XpModule } from "./modules/xp/xp.module.js";
 import { initSentry } from "./sentry.js";
 import { initStorage } from "./store/storage.js";
-import { startOAuthServer } from "./web/server.js";
+import { markStarted, startWebServer } from "./web/server.js";
 
 const client = new Client({
 	intents: [
@@ -94,16 +93,17 @@ async function logIn() {
 }
 
 async function main() {
+	// first, so a port clash stops us before we log in. /health stays unhealthy until startup completes
+	startWebServer(client);
 	await initStorage();
 	await moduleManager.preInit();
-	await startOAuthServer();
 	await logIn();
-	await startOAuthServer(client);
 	const guild = await client.guilds.fetch(config.guildId);
 	await setupBranding(guild);
 
 	await moduleManager.refreshCommands();
 	await moduleManager.init();
+	markStarted();
 	logger.info("Startup complete", { guilds: client.guilds.cache.size });
 }
 
@@ -120,7 +120,6 @@ for (const signal of ["SIGINT", "SIGTERM"] as const) {
 }
 
 try {
-	startHealthCheck();
 	await main();
 } catch (e) {
 	Sentry.captureException(e);
