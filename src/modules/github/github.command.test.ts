@@ -1,7 +1,6 @@
 import { afterEach, beforeAll, describe, expect, mock, test } from "bun:test";
-import type { ChatInputCommandInteraction, User } from "discord.js";
+import type { User } from "discord.js";
 import { MessageFlags } from "discord.js";
-import type { ExecutableSubcommand } from "djs-slash-helper";
 import {
 	clearUserCache,
 	DDUser,
@@ -9,7 +8,7 @@ import {
 } from "../../store/models/DDUser.js";
 import { getSequelizeInstance, initStorage } from "../../store/storage.js";
 import { createMockUser } from "../../tests/mocks/discord.js";
-import { GitHubCommand } from "./github.command.js";
+import { unlinkMember, unlinkSelf } from "./github.command.js";
 
 beforeAll(async () => {
 	await initStorage();
@@ -19,18 +18,6 @@ afterEach(async () => {
 	await getSequelizeInstance().destroyAll();
 	clearUserCache();
 });
-
-const subcommands = GitHubCommand.options as ExecutableSubcommand[];
-const unlinkSubcommand = subcommands.find((option) => option.name === "unlink");
-const adminUnlinkSubcommand = subcommands.find(
-	(option) => option.name === "admin-unlink",
-);
-
-if (!unlinkSubcommand || !adminUnlinkSubcommand) {
-	throw new Error("GitHub unlink subcommands must be registered");
-}
-
-type Reply = (response: unknown) => Promise<void>;
 
 async function linkUser(userId: string, githubUsername: string) {
 	const ddUser = await getOrCreateUserById(BigInt(userId));
@@ -43,26 +30,7 @@ async function getPersistedUser(userId: string) {
 	return await DDUser.findByPk(BigInt(userId));
 }
 
-function createSelfUnlinkInteraction(user: User, reply: Reply) {
-	return {
-		user,
-		reply,
-	} as unknown as ChatInputCommandInteraction;
-}
-
-function createAdminUnlinkInteraction(
-	administrator: User,
-	targetUser: User,
-	reply: Reply,
-) {
-	return {
-		user: administrator,
-		options: {
-			getUser: mock(() => targetUser),
-		},
-		reply,
-	} as unknown as ChatInputCommandInteraction;
-}
+type Interaction = Parameters<typeof unlinkSelf>[0];
 
 describe("GitHubCommand unlink notifications", () => {
 	test("self unlink persists the removal before DMing the linked user", async () => {
@@ -78,7 +46,7 @@ describe("GitHubCommand unlink notifications", () => {
 		const reply = mock(async () => {});
 		await linkUser(user.id, "octocat");
 
-		await unlinkSubcommand.handle(createSelfUnlinkInteraction(user, reply));
+		await unlinkSelf({ user, reply } as unknown as Interaction);
 
 		expect(await getPersistedUser(user.id)).toMatchObject({
 			githubId: null,
@@ -91,7 +59,7 @@ describe("GitHubCommand unlink notifications", () => {
 		expect(reply).toHaveBeenCalledWith({
 			flags: MessageFlags.Ephemeral,
 			content:
-				"✅ Successfully unlinked GitHub account **octocat** from your profile.",
+				"Successfully unlinked GitHub account **octocat** from your profile.",
 		});
 	});
 
@@ -105,8 +73,9 @@ describe("GitHubCommand unlink notifications", () => {
 		const reply = mock(async () => {});
 		await linkUser(targetUser.id, "hubot");
 
-		await adminUnlinkSubcommand.handle(
-			createAdminUnlinkInteraction(administrator, targetUser, reply),
+		await unlinkMember(
+			{ user: administrator, reply } as unknown as Interaction,
+			targetUser,
 		);
 
 		expect(await getPersistedUser(targetUser.id)).toMatchObject({
@@ -119,8 +88,7 @@ describe("GitHubCommand unlink notifications", () => {
 		);
 		expect(reply).toHaveBeenCalledWith({
 			flags: MessageFlags.Ephemeral,
-			content:
-				"✅ Successfully unlinked GitHub account **hubot** from <@2002>.",
+			content: "Successfully unlinked GitHub account **hubot** from <@2002>.",
 		});
 	});
 
@@ -129,7 +97,7 @@ describe("GitHubCommand unlink notifications", () => {
 		const user = { ...createMockUser({ id: "3001" }), send } as unknown as User;
 		const reply = mock(async () => {});
 
-		await unlinkSubcommand.handle(createSelfUnlinkInteraction(user, reply));
+		await unlinkSelf({ user, reply } as unknown as Interaction);
 
 		expect(await getPersistedUser(user.id)).toMatchObject({
 			githubId: null,
@@ -138,7 +106,7 @@ describe("GitHubCommand unlink notifications", () => {
 		expect(send).not.toHaveBeenCalled();
 		expect(reply).toHaveBeenCalledWith({
 			flags: MessageFlags.Ephemeral,
-			content: "❌ You don't have a GitHub account linked. Nothing to unlink.",
+			content: "You don't have a GitHub account linked. Nothing to unlink.",
 		});
 	});
 
@@ -150,7 +118,7 @@ describe("GitHubCommand unlink notifications", () => {
 		const reply = mock(async () => {});
 		await linkUser(user.id, "dependabot");
 
-		await unlinkSubcommand.handle(createSelfUnlinkInteraction(user, reply));
+		await unlinkSelf({ user, reply } as unknown as Interaction);
 
 		expect(await getPersistedUser(user.id)).toMatchObject({
 			githubId: null,
@@ -160,7 +128,7 @@ describe("GitHubCommand unlink notifications", () => {
 		expect(reply).toHaveBeenCalledWith({
 			flags: MessageFlags.Ephemeral,
 			content:
-				"✅ Successfully unlinked GitHub account **dependabot** from your profile.",
+				"Successfully unlinked GitHub account **dependabot** from your profile.",
 		});
 	});
 
@@ -174,7 +142,7 @@ describe("GitHubCommand unlink notifications", () => {
 
 		let replyError: unknown;
 		try {
-			await unlinkSubcommand.handle(createSelfUnlinkInteraction(user, reply));
+			await unlinkSelf({ user, reply } as unknown as Interaction);
 		} catch (error) {
 			replyError = error;
 		}

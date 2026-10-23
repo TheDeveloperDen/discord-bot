@@ -61,11 +61,11 @@ export class DDUser extends Model<
 
 	@AllowNull
 	@Attribute(DataTypes.STRING)
-	public declare githubId: string | null;
+	declare public githubId: string | null;
 
 	@AllowNull
 	@Attribute(DataTypes.STRING)
-	public declare githubUsername: string | null;
+	declare public githubUsername: string | null;
 
 	@AllowNull
 	@Attribute(DataTypes.DATE)
