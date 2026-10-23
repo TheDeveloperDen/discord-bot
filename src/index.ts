@@ -5,12 +5,12 @@ import { setupBranding } from "./util/branding.js";
 import "./util/random.js";
 import * as Sentry from "@sentry/bun";
 import * as schedule from "node-schedule";
-import { startHealthCheck } from "./healthcheck.js";
 import { logger } from "./logging.js";
 import { AchievementsModule } from "./modules/achievements/achievements.module.js";
 import AskToAskModule from "./modules/askToAsk.module.js";
 import { CoreModule } from "./modules/core/core.module.js";
 import FaqModule from "./modules/faq/faq.module.js";
+import { GitHubModule } from "./modules/github/github.module.js";
 import { HotTakesModule } from "./modules/hotTakes/hotTakes.module.js";
 import ImageForwarderModule from "./modules/imageForwarder.module.js";
 import { InformationModule } from "./modules/information/information.module.js";
@@ -32,6 +32,7 @@ import { UserModule } from "./modules/user/user.module.js";
 import { XpModule } from "./modules/xp/xp.module.js";
 import { initSentry } from "./sentry.js";
 import { initStorage } from "./store/storage.js";
+import { markStarted, startWebServer } from "./web/server.js";
 
 const client = new Client({
 	intents: [
@@ -72,6 +73,7 @@ const moduleManager = new ModuleManager(
 		UserModule,
 		AchievementsModule,
 		ReactionStatsModule,
+		GitHubModule,
 	],
 );
 
@@ -91,6 +93,8 @@ async function logIn() {
 }
 
 async function main() {
+	// first, so a port clash stops us before we log in. /health stays unhealthy until startup completes
+	startWebServer(client);
 	await initStorage();
 	await moduleManager.preInit();
 	await logIn();
@@ -99,6 +103,7 @@ async function main() {
 
 	await moduleManager.refreshCommands();
 	await moduleManager.init();
+	markStarted();
 	logger.info("Startup complete", { guilds: client.guilds.cache.size });
 }
 
@@ -115,7 +120,6 @@ for (const signal of ["SIGINT", "SIGTERM"] as const) {
 }
 
 try {
-	startHealthCheck();
 	await main();
 } catch (e) {
 	Sentry.captureException(e);
