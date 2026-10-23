@@ -2,7 +2,12 @@ import type { User } from "discord.js";
 import { logger } from "../../logging.js";
 
 export type GitHubLinkStatusChange =
-	| { kind: "linked"; githubUsername: string }
+	| {
+			kind: "linked";
+			githubUsername: string;
+			/** The account this link replaced, if the user had a different one linked */
+			replacedUsername?: string | null;
+	  }
 	| {
 			kind: "unlinked";
 			githubUsername: string;
@@ -15,7 +20,7 @@ export async function notifyGitHubLinkStatusChange(
 ): Promise<void> {
 	const content =
 		change.kind === "linked"
-			? `Your GitHub account **${change.githubUsername}** has been linked to your Developer Den profile.`
+			? `Your GitHub account **${change.githubUsername}** has been linked to your Developer Den profile${change.replacedUsername ? `, replacing **${change.replacedUsername}**` : ""}.`
 			: change.actor === "administrator"
 				? `Your GitHub account **${change.githubUsername}** has been unlinked from your Developer Den profile by an administrator.`
 				: `Your GitHub account **${change.githubUsername}** has been unlinked from your Developer Den profile.`;

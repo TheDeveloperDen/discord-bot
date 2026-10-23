@@ -1,7 +1,16 @@
 import { randomBytes } from "node:crypto";
 
-export interface GitHubState {
+/** Where in Discord the link was started, so the website can send them back there */
+export interface GitHubLinkOrigin {
+	/** Absent when the command was run in a DM */
+	guildId?: string;
+	channelId?: string | null;
+}
+
+export interface GitHubState extends GitHubLinkOrigin {
 	userId: string;
+	/** Called once the account is linked, e.g. to update the message that held the authorise link */
+	onLinked?: (githubUsername: string) => Promise<unknown>;
 	expiresAt: number;
 }
 
@@ -9,13 +18,17 @@ class GitHubServiceInstance {
 	private stateCache = new Map<string, GitHubState>();
 	private readonly STATE_TTL = 10 * 60 * 1000; // 10 minutes
 
-	public generateAuthUrl(userId: string): {
+	public generateAuthUrl(
+		userId: string,
+		options: GitHubLinkOrigin & Pick<GitHubState, "onLinked"> = {},
+	): {
 		url: string;
 		state: string;
 	} {
 		const state = randomBytes(16).toString("hex");
 
 		this.stateCache.set(state, {
+			...options,
 			userId,
 			expiresAt: Date.now() + this.STATE_TTL,
 		});
@@ -34,7 +47,7 @@ class GitHubServiceInstance {
 		return { url, state };
 	}
 
-	public getUserIdByState(state: string): string | null {
+	public getState(state: string): GitHubState | null {
 		const data = this.stateCache.get(state);
 		if (!data) return null;
 
@@ -43,7 +56,7 @@ class GitHubServiceInstance {
 			return null;
 		}
 
-		return data.userId;
+		return data;
 	}
 
 	public removeState(state: string) {
@@ -52,3 +65,5 @@ class GitHubServiceInstance {
 }
 
 export const GitHubService = new GitHubServiceInstance();
+
+export const githubLinkingEnabled = () => Boolean(process.env.WEBSITE_URL);
