@@ -1,5 +1,5 @@
 # base image with system dependencies
-FROM oven/bun:1.4.2 AS base
+FROM oven/bun:1.4.3 AS base
 WORKDIR /usr/src/app
 # hadolint ignore=DL3008
 RUN apt-get update \
