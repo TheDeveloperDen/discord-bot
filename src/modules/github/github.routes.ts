@@ -1,7 +1,10 @@
-import { col, fn, where } from "@sequelize/core";
 import type { Client } from "discord.js";
 import { logger } from "../../logging.js";
-import { DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
+import {
+	DDUser,
+	findUserByGitHubUsername,
+	getOrCreateUserById,
+} from "../../store/models/DDUser.js";
 import { hasValidToken } from "../../web/auth.js";
 import { notifyGitHubLinkStatusChange } from "./github.notification.js";
 import { type GitHubLinkOrigin, GitHubService } from "./github.service.js";
@@ -38,9 +41,7 @@ function lookupGitHubUser(client: Pick<Client, "users">, token: string) {
 			new URL(req.url).pathname.split("/").pop() ?? "",
 		);
 
-		const user = await DDUser.findOne({
-			where: where(fn("lower", col("githubUsername")), username.toLowerCase()),
-		});
+		const user = await findUserByGitHubUsername(username);
 		if (!user) {
 			return Response.json({ error: "Not found" }, { status: 404 });
 		}

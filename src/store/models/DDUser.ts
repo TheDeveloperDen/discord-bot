@@ -1,11 +1,14 @@
 import * as Sentry from "@sentry/bun";
 import {
 	type CreationOptional,
+	col,
 	DataTypes,
+	fn,
 	type InferAttributes,
 	type InferCreationAttributes,
 	Model,
 	type SaveOptions,
+	where,
 } from "@sequelize/core";
 import {
 	AllowNull,
@@ -123,6 +126,11 @@ export class DDUser extends Model<
 		);
 	}
 }
+
+export const findUserByGitHubUsername = (login: string) =>
+	DDUser.findOne({
+		where: where(fn("lower", col("githubUsername")), login.toLowerCase()),
+	});
 
 export const getOrCreateUserById = async (id: bigint) =>
 	await Sentry.startSpan(
