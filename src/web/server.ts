@@ -1,5 +1,6 @@
 import type { Client } from "discord.js";
 import { logger } from "../logging.js";
+import { blogRoutes } from "../modules/blog/blog.routes.js";
 import { githubRoutes } from "../modules/github/github.routes.js";
 import { githubLinkingEnabled } from "../modules/github/github.service.js";
 
@@ -11,7 +12,7 @@ export function markStarted() {
 }
 
 export function createRoutes(
-	client: Pick<Client, "users">,
+	client: Pick<Client, "users" | "channels">,
 	fetchImpl: typeof fetch = fetch,
 ): Record<string, (req: Request) => Response | Promise<Response>> {
 	return {
@@ -19,6 +20,7 @@ export function createRoutes(
 		"/health": () =>
 			started ? new Response("OK") : new Response("Starting", { status: 503 }),
 		...(githubLinkingEnabled() ? githubRoutes(client, fetchImpl) : {}),
+		...blogRoutes(client),
 	};
 }
 

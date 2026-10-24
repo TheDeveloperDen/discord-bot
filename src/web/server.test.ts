@@ -53,7 +53,7 @@ afterAll(() => {
 });
 
 async function requestOAuthCallback(
-	client: Pick<Client, "users">,
+	client: Pick<Client, "users" | "channels">,
 	state: string,
 	oauthFetch: typeof fetch,
 ): Promise<Response> {
@@ -106,7 +106,7 @@ describe("GitHub OAuth callback notifications", () => {
 		const fetchDiscordUser = mock(async () => recipient);
 		const client = {
 			users: { fetch: fetchDiscordUser },
-		} as unknown as Pick<Client, "users">;
+		} as unknown as Pick<Client, "users" | "channels">;
 		const { state } = GitHubService.generateAuthUrl(discordUserId);
 		const oauthFetch = createGitHubOAuthFetch("42", "octocat");
 
@@ -133,7 +133,7 @@ describe("GitHub OAuth callback notifications", () => {
 		});
 		const client = {
 			users: { fetch: fetchDiscordUser },
-		} as unknown as Pick<Client, "users">;
+		} as unknown as Pick<Client, "users" | "channels">;
 		const { state } = GitHubService.generateAuthUrl(discordUserId);
 		const oauthFetch = createGitHubOAuthFetch("42", "octocat");
 
@@ -151,7 +151,7 @@ describe("GitHub OAuth callback notifications", () => {
 		});
 		const client = {
 			users: { fetch: fetchDiscordUser },
-		} as unknown as Pick<Client, "users">;
+		} as unknown as Pick<Client, "users" | "channels">;
 		const { state } = GitHubService.generateAuthUrl(discordUserId);
 		const oauthFetch = createGitHubOAuthFetch("43", "hubot");
 
@@ -187,7 +187,7 @@ describe("GitHub OAuth callback notifications", () => {
 		const fetchDiscordUser = mock(async () => recipient);
 		const client = {
 			users: { fetch: fetchDiscordUser },
-		} as unknown as Pick<Client, "users">;
+		} as unknown as Pick<Client, "users" | "channels">;
 		const { state } = GitHubService.generateAuthUrl(discordUserId);
 		const oauthFetch = createGitHubOAuthFetch("44", "github-actions");
 
@@ -228,7 +228,7 @@ describe("GitHub OAuth callback state and notifications", () => {
 	const client = () =>
 		({
 			users: { fetch: mock(async () => ({ send: async () => undefined })) },
-		}) as unknown as Pick<Client, "users">;
+		}) as unknown as Pick<Client, "users" | "channels">;
 
 	test("a replayed state is expired", async () => {
 		const { state } = GitHubService.generateAuthUrl("123456800");
@@ -271,7 +271,7 @@ describe("GitHub OAuth callback state and notifications", () => {
 		await requestOAuthCallback(
 			{ users: { fetch: async () => ({ send }) } } as unknown as Pick<
 				Client,
-				"users"
+				"users" | "channels"
 			>,
 			state,
 			createGitHubOAuthFetch("61", "new-account"),
@@ -300,7 +300,7 @@ describe("GitHub user lookup API", () => {
 			hostname: "127.0.0.1",
 			routes: createRoutes({
 				users: { fetch: async () => discordUser },
-			} as unknown as Pick<Client, "users">),
+			} as unknown as Pick<Client, "users" | "channels">),
 		});
 		try {
 			return await httpFetch(
@@ -371,7 +371,7 @@ describe("web server routes", () => {
 		const server = Bun.serve({
 			port: 0,
 			hostname: "127.0.0.1",
-			routes: createRoutes({} as Pick<Client, "users">),
+			routes: createRoutes({} as Pick<Client, "users" | "channels">),
 		});
 		try {
 			const url = `http://127.0.0.1:${server.port}/health`;
@@ -387,7 +387,7 @@ describe("web server routes", () => {
 		const server = Bun.serve({
 			port: 0,
 			hostname: "127.0.0.1",
-			routes: createRoutes({} as Pick<Client, "users">),
+			routes: createRoutes({} as Pick<Client, "users" | "channels">),
 		});
 		try {
 			const health = await httpFetch(`http://127.0.0.1:${server.port}/health`);
@@ -400,7 +400,7 @@ describe("web server routes", () => {
 	test("sends the person back to the channel they started the link in", async () => {
 		const client = {
 			users: { fetch: mock(async () => ({ send: async () => undefined })) },
-		} as unknown as Pick<Client, "users">;
+		} as unknown as Pick<Client, "users" | "channels">;
 		const { state } = GitHubService.generateAuthUrl("123456792", {
 			guildId: "111",
 			channelId: "222",
@@ -426,7 +426,7 @@ describe("web server routes", () => {
 	test("uses @me as the guild for a DM", async () => {
 		const client = {
 			users: { fetch: mock(async () => ({ send: async () => undefined })) },
-		} as unknown as Pick<Client, "users">;
+		} as unknown as Pick<Client, "users" | "channels">;
 		const { state } = GitHubService.generateAuthUrl("123456793", {
 			guildId: undefined,
 			channelId: "333",
@@ -446,9 +446,9 @@ describe("web server routes", () => {
 	test("leaves the GitHub callback out when WEBSITE_URL is unset", async () => {
 		delete process.env.WEBSITE_URL;
 		try {
-			expect(createRoutes({} as Pick<Client, "users">)).not.toHaveProperty(
-				"/auth/github/callback",
-			);
+			expect(
+				createRoutes({} as Pick<Client, "users" | "channels">),
+			).not.toHaveProperty("/auth/github/callback");
 		} finally {
 			process.env.WEBSITE_URL = "https://developerden.org";
 		}
@@ -456,7 +456,7 @@ describe("web server routes", () => {
 
 	test("reports an unknown state as expired, with no origin", async () => {
 		const response = await requestOAuthCallback(
-			{} as Pick<Client, "users">,
+			{} as Pick<Client, "users" | "channels">,
 			"not-a-real-state",
 			createGitHubOAuthFetch("47", "nobody"),
 		);
@@ -468,7 +468,7 @@ describe("web server routes", () => {
 	test("tells the link's owner it worked, and survives that failing", async () => {
 		const client = {
 			users: { fetch: mock(async () => ({ send: async () => undefined })) },
-		} as unknown as Pick<Client, "users">;
+		} as unknown as Pick<Client, "users" | "channels">;
 		const onLinked = mock(async () => {
 			throw new Error("Unknown Webhook");
 		});
@@ -492,7 +492,7 @@ describe("web server routes", () => {
 		) as unknown as typeof fetch;
 
 		const response = await requestOAuthCallback(
-			{} as Pick<Client, "users">,
+			{} as Pick<Client, "users" | "channels">,
 			state,
 			oauthFetch,
 		);
