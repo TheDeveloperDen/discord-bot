@@ -18,7 +18,7 @@ export const config: Config = {
 		// levelUp: "000000000000000000",
 		// Optional: channel where new blog posts are announced.
 		// If unset, the /api/blog/announce API endpoint will be disabled
-		// blog: "000000000000000000",
+		blog: "1563576876063264900",
 	},
 	starboard: {
 		emojiId: "⭐",
