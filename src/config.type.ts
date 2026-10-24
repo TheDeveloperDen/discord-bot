@@ -46,6 +46,7 @@ export interface Config {
 		general: string;
 		leaderboard?: string;
 		levelUp?: string;
+		blog?: string;
 	};
 	starboard: {
 		emojiId: string;

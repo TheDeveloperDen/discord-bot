@@ -16,6 +16,9 @@ export const config: Config = {
 		// Optional: channel where level-up messages are posted.
 		// If unset, it falls back to `botCommands`.
 		// levelUp: "000000000000000000",
+		// Optional: channel where new blog posts are announced.
+		// If unset, the /api/blog/announce API endpoint will be disabled
+		// blog: "000000000000000000",
 	},
 	starboard: {
 		emojiId: "⭐",
