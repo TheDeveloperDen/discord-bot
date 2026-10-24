@@ -14,6 +14,7 @@ const devConfig: Config = {
 		modLog: "994623474557538415",
 		general: "904478147351806015",
 		leaderboard: "904478147351806015",
+		blog: "000000000000000", // arbitrary
 	},
 	starboard: {
 		emojiId: "⭐",
