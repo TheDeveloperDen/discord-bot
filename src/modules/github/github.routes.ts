@@ -1,8 +1,8 @@
-import { timingSafeEqual } from "node:crypto";
 import { col, fn, where } from "@sequelize/core";
 import type { Client } from "discord.js";
 import { logger } from "../../logging.js";
 import { DDUser, getOrCreateUserById } from "../../store/models/DDUser.js";
+import { hasValidToken } from "../../web/auth.js";
 import { notifyGitHubLinkStatusChange } from "./github.notification.js";
 import { type GitHubLinkOrigin, GitHubService } from "./github.service.js";
 
@@ -25,15 +25,6 @@ function redirectToResult(result: LinkResult, origin: GitHubLinkOrigin = {}) {
 		url.searchParams.set("channel", origin.channelId);
 	}
 	return Response.redirect(url.toString(), 302);
-}
-
-function hasValidToken(req: Request, token: string) {
-	const given = Buffer.from(
-		req.headers.get("authorization")?.replace(/^Bearer /, "") ?? "",
-	);
-	const expected = Buffer.from(token);
-	// yay i love not being vulnerable to timing attacks :D
-	return given.length === expected.length && timingSafeEqual(given, expected);
 }
 
 // authenticated endpoint to retrieve a discord id, displayname, avatar url, and level from their github
